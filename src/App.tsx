@@ -1,4 +1,4 @@
-aimport React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Package, ShoppingCart, Search, ChevronRight, ChevronLeft, 
   Trash2, Loader2, Image as ImageIcon, CheckCircle2, 

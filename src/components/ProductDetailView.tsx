@@ -80,17 +80,10 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   const printArea = product?.motor_de_personalizacion?.area_impresion;
 
   useEffect(() => {
-    const baseProductCost = basePrice * quantity;
-    let totalSetupFee = 0;
-    let unitPrintCost = 0;
-    if (logoFormat === 'text_only') { unitPrintCost = 18.00; totalSetupFee = 0; }
-    else if (logoFormat === '1_color') { unitPrintCost = 8.50; totalSetupFee = 350.00; }
-    else if (logoFormat === 'full_color') { unitPrintCost = 16.50; totalSetupFee = 1050.00; }
-    const totalPrintCost = unitPrintCost * quantity;
-    const finalTotal = baseProductCost + totalSetupFee + totalPrintCost;
-    setEstimatedTotal(finalTotal);
-    setEstimatedUnit(quantity > 0 ? finalTotal / quantity : 0);
-  }, [quantity, logoFormat, basePrice]);
+    const subtotal = basePrice * quantity;
+    setEstimatedTotal(subtotal);
+    setEstimatedUnit(quantity > 0 ? basePrice : 0);
+  }, [quantity, basePrice]);
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

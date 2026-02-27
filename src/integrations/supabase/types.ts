@@ -14,7 +14,111 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cotizaciones_leads: {
+        Row: {
+          articulos_cotizados: Json
+          created_at: string | null
+          datos_cliente: Json
+          estado_cotizacion: string | null
+          id: string
+          total_estimado: number | null
+        }
+        Insert: {
+          articulos_cotizados?: Json
+          created_at?: string | null
+          datos_cliente?: Json
+          estado_cotizacion?: string | null
+          id?: string
+          total_estimado?: number | null
+        }
+        Update: {
+          articulos_cotizados?: Json
+          created_at?: string | null
+          datos_cliente?: Json
+          estado_cotizacion?: string | null
+          id?: string
+          total_estimado?: number | null
+        }
+        Relationships: []
+      }
+      productos_b2b: {
+        Row: {
+          activo: boolean | null
+          costeo: Json | null
+          created_at: string | null
+          datos_generales: Json | null
+          datos_logistica_b2b: Json | null
+          especificaciones_tecnicas: Json | null
+          id: string
+          id_interno: string
+          imagenes: Json | null
+          motor_de_personalizacion: Json | null
+          proveedor_nombre: string
+          sku_base: string | null
+          updated_at: string | null
+          variantes: Json | null
+        }
+        Insert: {
+          activo?: boolean | null
+          costeo?: Json | null
+          created_at?: string | null
+          datos_generales?: Json | null
+          datos_logistica_b2b?: Json | null
+          especificaciones_tecnicas?: Json | null
+          id?: string
+          id_interno: string
+          imagenes?: Json | null
+          motor_de_personalizacion?: Json | null
+          proveedor_nombre: string
+          sku_base?: string | null
+          updated_at?: string | null
+          variantes?: Json | null
+        }
+        Update: {
+          activo?: boolean | null
+          costeo?: Json | null
+          created_at?: string | null
+          datos_generales?: Json | null
+          datos_logistica_b2b?: Json | null
+          especificaciones_tecnicas?: Json | null
+          id?: string
+          id_interno?: string
+          imagenes?: Json | null
+          motor_de_personalizacion?: Json | null
+          proveedor_nombre?: string
+          sku_base?: string | null
+          updated_at?: string | null
+          variantes?: Json | null
+        }
+        Relationships: []
+      }
+      tabuladores_impresion: {
+        Row: {
+          activo: boolean | null
+          costo_setup_fijo: number | null
+          id: string
+          tarifas_por_volumen: Json | null
+          tecnica_nombre: string
+          updated_at: string | null
+        }
+        Insert: {
+          activo?: boolean | null
+          costo_setup_fijo?: number | null
+          id?: string
+          tarifas_por_volumen?: Json | null
+          tecnica_nombre: string
+          updated_at?: string | null
+        }
+        Update: {
+          activo?: boolean | null
+          costo_setup_fijo?: number | null
+          id?: string
+          tarifas_por_volumen?: Json | null
+          tecnica_nombre?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

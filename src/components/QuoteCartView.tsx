@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-  ChevronLeft, CheckCircle2, ShoppingCart, Coffee, Trash2,
+  ChevronLeft, CheckCircle2, ShoppingCart, Package, Trash2,
   FileText, Users, ArrowRight, MessageSquare, Settings2,
   Image as ImageIcon, User, Building, Phone, Mail
 } from 'lucide-react';
@@ -84,8 +84,11 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
             <div className="lg:col-span-2 space-y-4">
               {checkoutStep === 'cart' && cart.map((item) => (
                 <div key={item.cartId} className="bg-card p-4 rounded-xl border border-border shadow-sm flex gap-4 items-center">
-                  <div className="w-20 h-20 rounded-lg flex items-center justify-center shrink-0 border border-border" style={{ backgroundColor: `${item.color.hex}15` }}>
-                    <Coffee size={40} style={{ color: item.color.hex }} className="opacity-80" />
+                  <div className="w-20 h-20 rounded-lg flex items-center justify-center shrink-0 border border-border overflow-hidden bg-secondary">
+                    {item.imageUrl ? (
+                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover rounded-md" onError={(e) => { e.currentTarget.style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove('hidden'); }} />
+                    ) : null}
+                    <Package size={32} className={`opacity-40 text-muted-foreground ${item.imageUrl ? 'hidden' : ''}`} />
                   </div>
                   <div className="flex-1">
                     <h4 className="font-bold text-foreground">{item.name}</h4>

@@ -118,15 +118,22 @@ export default function CatalogView({ onViewChange }: CatalogViewProps) {
 
                   return (
                     <div key={prod.id} className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-md transition-shadow group cursor-pointer" onClick={() => onViewChange('pdp')}>
-                      <div className="aspect-square bg-secondary relative flex items-center justify-center">
-                        <div className="absolute top-3 left-3 bg-card/90 backdrop-blur px-2 py-1 rounded-md text-[10px] font-bold text-foreground border border-border">
-                          {prod.categoria_principal ?? 'General'}
-                        </div>
-                        {imgUrl ? (
-                          <img src={imgUrl} alt={nombre} className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                        ) : (
-                          <Package size={80} className="opacity-40 group-hover:scale-110 transition-transform duration-500 text-muted-foreground" />
-                        )}
+                        <div className="aspect-square bg-secondary relative flex items-center justify-center overflow-hidden">
+                          <div className="absolute top-3 left-3 bg-card/90 backdrop-blur px-2 py-1 rounded-md text-[10px] font-bold text-foreground border border-border z-10">
+                            {prod.categoria_principal ?? 'General'}
+                          </div>
+                          {imgUrl ? (
+                            <img
+                              src={imgUrl}
+                              alt={nombre}
+                              className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove('hidden');
+                              }}
+                            />
+                          ) : null}
+                          <Package size={80} className={`opacity-40 group-hover:scale-110 transition-transform duration-500 text-muted-foreground absolute ${imgUrl ? 'hidden' : ''}`} />
                       </div>
                       <div className="p-5">
                         <p className={`text-xs font-bold mb-1 flex items-center gap-1 ${stock > 0 ? 'text-success' : 'text-destructive'}`}>

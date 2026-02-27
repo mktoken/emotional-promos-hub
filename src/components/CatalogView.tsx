@@ -1,6 +1,19 @@
-import { useState } from 'react';
-import { Search, Filter } from 'lucide-react';
-import { catalogMock } from '@/data/mockData';
+import { useState, useEffect } from 'react';
+import { Search, Filter, Package } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+
+interface ProductoB2B {
+  id: string;
+  id_interno: string;
+  proveedor_nombre: string;
+  sku_base: string | null;
+  categoria_principal: string | null;
+  datos_generales: { nombre?: string; descripcion?: string } | null;
+  variantes: Array<{ sku_variante?: string; color_nombre?: string; stock_total?: number }> | null;
+  imagenes: string[] | null;
+  costeo: { moneda?: string; precio_neto_distribuidor?: number } | null;
+  activo: boolean | null;
+}
 
 interface CatalogViewProps {
   onViewChange: (view: string) => void;
@@ -8,6 +21,37 @@ interface CatalogViewProps {
 
 export default function CatalogView({ onViewChange }: CatalogViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [productos, setProductos] = useState<ProductoB2B[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState('Todos');
+
+  useEffect(() => {
+    async function fetchProductos() {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('productos_b2b')
+        .select('*');
+
+      if (!error && data) {
+        setProductos(data as unknown as ProductoB2B[]);
+      }
+      setLoading(false);
+    }
+    fetchProductos();
+  }, []);
+
+  const categories = ['Todos', ...new Set(productos.map(p => p.categoria_principal).filter(Boolean))];
+
+  const filtered = productos.filter(p => {
+    const nombre = p.datos_generales?.nombre ?? '';
+    const matchSearch = nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.sku_base ?? '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchCategory = selectedCategory === 'Todos' || p.categoria_principal === selectedCategory;
+    return matchSearch && matchCategory;
+  });
+
+  const getTotalStock = (p: ProductoB2B) =>
+    (p.variantes ?? []).reduce((sum, v) => sum + (v.stock_total ?? 0), 0);
 
   return (
     <div className="pb-20 bg-surface min-h-screen">
@@ -40,9 +84,15 @@ export default function CatalogView({ onViewChange }: CatalogViewProps) {
                 <div>
                   <h4 className="text-sm font-semibold text-foreground mb-3">Categorías</h4>
                   <div className="space-y-2">
-                    {['Todos', 'Drinkware', 'Oficina', 'Eco', 'Tecnología', 'Mochilas'].map(cat => (
+                    {categories.map(cat => (
                       <label key={cat} className="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="category" defaultChecked={cat === 'Todos'} className="text-primary focus:ring-primary accent-primary" />
+                        <input
+                          type="radio"
+                          name="category"
+                          checked={selectedCategory === cat}
+                          onChange={() => setSelectedCategory(cat as string)}
+                          className="text-primary focus:ring-primary accent-primary"
+                        />
                         <span className="text-sm text-muted-foreground hover:text-foreground">{cat}</span>
                       </label>
                     ))}
@@ -54,31 +104,46 @@ export default function CatalogView({ onViewChange }: CatalogViewProps) {
 
           {/* Grid */}
           <div className="flex-1">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {catalogMock.map(prod => {
-                const IconComponent = prod.icon;
-                return (
-                  <div key={prod.id} className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-md transition-shadow group cursor-pointer" onClick={() => onViewChange('pdp')}>
-                    <div className={`aspect-square ${prod.color} relative flex items-center justify-center transition-colors`}>
-                      <div className="absolute top-3 left-3 bg-card/90 backdrop-blur px-2 py-1 rounded-md text-[10px] font-bold text-foreground border border-border">
-                        {prod.category}
+            {loading ? (
+              <div className="text-center py-20 text-muted-foreground">Cargando productos...</div>
+            ) : filtered.length === 0 ? (
+              <div className="text-center py-20 text-muted-foreground">No se encontraron productos.</div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filtered.map(prod => {
+                  const stock = getTotalStock(prod);
+                  const nombre = prod.datos_generales?.nombre ?? prod.id_interno;
+                  const precio = prod.costeo?.precio_neto_distribuidor ?? 0;
+                  const imgUrl = prod.imagenes?.[0];
+
+                  return (
+                    <div key={prod.id} className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-md transition-shadow group cursor-pointer" onClick={() => onViewChange('pdp')}>
+                      <div className="aspect-square bg-secondary relative flex items-center justify-center">
+                        <div className="absolute top-3 left-3 bg-card/90 backdrop-blur px-2 py-1 rounded-md text-[10px] font-bold text-foreground border border-border">
+                          {prod.categoria_principal ?? 'General'}
+                        </div>
+                        {imgUrl ? (
+                          <img src={imgUrl} alt={nombre} className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                        ) : (
+                          <Package size={80} className="opacity-40 group-hover:scale-110 transition-transform duration-500 text-muted-foreground" />
+                        )}
                       </div>
-                      <IconComponent size={80} className="opacity-40 group-hover:scale-110 transition-transform duration-500" />
+                      <div className="p-5">
+                        <p className={`text-xs font-bold mb-1 flex items-center gap-1 ${stock > 0 ? 'text-success' : 'text-destructive'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${stock > 0 ? 'bg-success animate-pulse' : 'bg-destructive'}`}></span>
+                          {stock > 0 ? `${stock.toLocaleString()} disp.` : 'Sin stock'}
+                        </p>
+                        <h3 className="font-bold text-foreground mb-2 line-clamp-1">{nombre}</h3>
+                        <p className="text-muted-foreground text-sm mb-4">Desde <strong className="text-foreground">${precio.toFixed(2)}</strong> c/u</p>
+                        <button className="w-full bg-secondary hover:bg-primary/10 text-secondary-foreground hover:text-primary font-semibold py-2 rounded-lg transition-colors border border-transparent hover:border-primary/20 text-sm">
+                          Ver Detalles
+                        </button>
+                      </div>
                     </div>
-                    <div className="p-5">
-                      <p className="text-xs text-success font-bold mb-1 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span> {prod.stock.toLocaleString()} disp.
-                      </p>
-                      <h3 className="font-bold text-foreground mb-2 line-clamp-1">{prod.name}</h3>
-                      <p className="text-muted-foreground text-sm mb-4">Desde <strong className="text-foreground">${prod.price.toFixed(2)}</strong> c/u</p>
-                      <button className="w-full bg-secondary hover:bg-primary/10 text-secondary-foreground hover:text-primary font-semibold py-2 rounded-lg transition-colors border border-transparent hover:border-primary/20 text-sm">
-                        Ver Detalles
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>

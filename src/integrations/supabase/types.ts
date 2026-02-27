@@ -22,6 +22,7 @@ export type Database = {
           estado_cotizacion: string | null
           id: string
           total_estimado: number | null
+          updated_at: string | null
         }
         Insert: {
           articulos_cotizados?: Json
@@ -30,6 +31,7 @@ export type Database = {
           estado_cotizacion?: string | null
           id?: string
           total_estimado?: number | null
+          updated_at?: string | null
         }
         Update: {
           articulos_cotizados?: Json
@@ -38,12 +40,14 @@ export type Database = {
           estado_cotizacion?: string | null
           id?: string
           total_estimado?: number | null
+          updated_at?: string | null
         }
         Relationships: []
       }
       productos_b2b: {
         Row: {
           activo: boolean | null
+          categoria_principal: string | null
           costeo: Json | null
           created_at: string | null
           datos_generales: Json | null
@@ -60,6 +64,7 @@ export type Database = {
         }
         Insert: {
           activo?: boolean | null
+          categoria_principal?: string | null
           costeo?: Json | null
           created_at?: string | null
           datos_generales?: Json | null
@@ -76,6 +81,7 @@ export type Database = {
         }
         Update: {
           activo?: boolean | null
+          categoria_principal?: string | null
           costeo?: Json | null
           created_at?: string | null
           datos_generales?: Json | null

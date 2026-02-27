@@ -15,6 +15,16 @@ interface ProductoB2B {
   activo: boolean | null;
 }
 
+const getSafeImageUrl = (imgData: unknown): string | null => {
+  if (!imgData) return null;
+  if (Array.isArray(imgData)) return imgData[0] ?? null;
+  if (typeof imgData === 'string') {
+    try { const parsed = JSON.parse(imgData); return Array.isArray(parsed) ? parsed[0] : parsed; }
+    catch { return (imgData as string).startsWith('http') ? imgData : null; }
+  }
+  return null;
+};
+
 interface CatalogViewProps {
   onViewChange: (view: string) => void;
   onOpenProduct: (productId: string) => void;
@@ -31,7 +41,8 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
       setLoading(true);
       const { data, error } = await supabase
         .from('productos_b2b')
-        .select('*');
+        .select('*')
+        .eq('activo', true);
 
       if (!error && data) {
         setProductos(data as unknown as ProductoB2B[]);
@@ -117,8 +128,8 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
                 {filtered.map(prod => {
                   const stock = getTotalStock(prod);
                   const nombre = prod.datos_generales?.nombre ?? prod.id_interno;
-                  const precio = prod.costeo?.precio_neto_distribuidor ?? 0;
-                  const imgUrl = prod.imagenes?.[0];
+                  const precio = Number(prod.costeo?.precio_neto_distribuidor || 0) * 1.35;
+                  const imgUrl = getSafeImageUrl(prod.imagenes);
 
                   return (
                     <div key={prod.id} className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-md transition-shadow group cursor-pointer" onClick={() => onOpenProduct(prod.id)}>
@@ -145,7 +156,7 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
                           {stock > 0 ? `${stock.toLocaleString()} disp.` : 'Sin stock'}
                         </p>
                         <h3 className="font-bold text-foreground mb-2 line-clamp-1">{nombre}</h3>
-                        <p className="text-muted-foreground text-sm mb-4">Desde <strong className="text-foreground">${precio.toFixed(2)}</strong> c/u</p>
+                        <p className="text-muted-foreground text-sm mb-4">Desde <strong className="text-foreground">{precio.toLocaleString('es-MX', {style: 'currency', currency: 'MXN'})}</strong> c/u</p>
                         <button className="w-full bg-secondary hover:bg-primary/10 text-secondary-foreground hover:text-primary font-semibold py-2 rounded-lg transition-colors border border-transparent hover:border-primary/20 text-sm">
                           Ver Detalles
                         </button>

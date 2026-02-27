@@ -44,7 +44,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
         .from('productos_b2b')
         .select('*')
         .eq('id', productId)
-        .single();
+        .maybeSingle();
       if (!error && data) {
         setProduct(data as unknown as ProductoB2B);
       }
@@ -62,11 +62,21 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   }));
 
   const currentColor = colors[selectedColorIndex] ?? { id: 'c0', name: 'Default', hex: '#94a3b8', stock: 0, imgAlt: '' };
-  const basePrice = product?.costeo?.precio_neto_distribuidor ?? 0;
+  const basePriceRaw = Number(product?.costeo?.precio_neto_distribuidor ?? 0);
+  const basePrice = basePriceRaw * 1.35;
   const productName = product?.datos_generales?.nombre ?? product?.id_interno ?? '';
   const productDesc = product?.datos_generales?.descripcion ?? '';
   const productSku = product?.sku_base ?? '';
-  const mainImage = (product?.imagenes as string[] | null)?.[0] ?? null;
+  const getSafeImageUrl = (imgData: unknown): string | null => {
+    if (!imgData) return null;
+    if (Array.isArray(imgData)) return imgData[0] ?? null;
+    if (typeof imgData === 'string') {
+      try { const parsed = JSON.parse(imgData); return Array.isArray(parsed) ? parsed[0] : parsed; }
+      catch { return (imgData as string).startsWith('http') ? imgData : null; }
+    }
+    return null;
+  };
+  const mainImage = getSafeImageUrl(product?.imagenes);
   const printArea = product?.motor_de_personalizacion?.area_impresion;
 
   useEffect(() => {

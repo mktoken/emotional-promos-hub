@@ -19,11 +19,14 @@ import {
   Info,
 } from "lucide-react";
 
-// Cliente de Supabase (Inyectado por Lovable)
-const supabase = typeof window !== "undefined" && window.supabase ? window.supabase : null;
+// Definición segura del cliente de Supabase para evitar errores de compilación
+// @ts-ignore
+const supabase = typeof window !== "undefined" && (window as any).supabase ? (window as any).supabase : null;
 
 // ESTRATEGIA: Margen de utilidad para Distribuidor (35%)
 const GLOBAL_MARKUP = 1.35;
+// CONTACTO DE CIERRE ESTRATÉGICO
+const WHATSAPP_CONTACT = "5215530311686";
 
 export default function App() {
   const [currentView, setCurrentView] = useState("landing");
@@ -47,7 +50,7 @@ export default function App() {
         if (prodRes.data) setProducts(prodRes.data);
         if (tabRes.data) setTabuladores(tabRes.data);
       } catch (err) {
-        console.error("Falla de sincronización:", err.message);
+        console.error("Falla de sincronización:", err);
       } finally {
         setLoading(false);
       }
@@ -114,7 +117,7 @@ export default function App() {
   );
 }
 
-// --- VISTA: LANDING (EL IMPACTO) ---
+// --- VISTA: LANDING ---
 function LandingView({ onExplore }) {
   return (
     <div className="py-32 text-center px-4">
@@ -139,7 +142,7 @@ function LandingView({ onExplore }) {
   );
 }
 
-// --- VISTA: CATÁLOGO (EL BUSCADOR) ---
+// --- VISTA: CATÁLOGO ---
 function CatalogView({ products, loading, onSelect }) {
   const [query, setQuery] = useState("");
 
@@ -209,13 +212,12 @@ function CatalogView({ products, loading, onSelect }) {
   );
 }
 
-// --- VISTA: DETALLE (EL CIERRE DINÁMICO) ---
+// --- VISTA: DETALLE ---
 function ProductDetailView({ product, tabuladores, onBack, onAdd }) {
-  const [qty, setQty] = useState(1); // CAMBIO: Inicia en 1
+  const [qty, setQty] = useState(1);
   const [tecnica, setTecnica] = useState(tabuladores[0]?.tecnica_nombre || "");
   const [logo, setLogo] = useState(null);
 
-  // LOGICA VENDE MÁS: Cálculo de Precios con Markup y Tabulador
   const unitCost = product.costeo?.precio_neto_distribuidor || 0;
   const unitPriceWithMarkup = unitCost * GLOBAL_MARKUP;
 
@@ -235,7 +237,6 @@ function ProductDetailView({ product, tabuladores, onBack, onAdd }) {
           alt={product.datos_generales?.nombre}
         />
 
-        {/* VIRTUAL SAMPLE: Previsualización del Logo */}
         {logo && (
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-white/40 backdrop-blur-sm border-2 border-dashed border-blue-400 p-4 flex items-center justify-center rounded-2xl">
             <img src={logo} className="max-w-full max-h-full object-contain mix-blend-multiply opacity-80" />
@@ -270,14 +271,17 @@ function ProductDetailView({ product, tabuladores, onBack, onAdd }) {
         </p>
 
         <div className="bg-slate-900 rounded-[3.5rem] p-12 text-white shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)]">
-          {/* ESTRATEGIA: Propiedad Psicológica mediante Carga de Logo */}
           <label className="block mb-10 p-8 border-2 border-dashed border-slate-700 rounded-3xl bg-white/5 text-center cursor-pointer hover:bg-white/10 transition-all group">
             <Upload className="mx-auto text-blue-400 mb-3 group-hover:scale-110 transition-transform" size={32} />
             <span className="text-[10px] font-black uppercase tracking-[0.3em] block text-slate-400">
               Generar Muestra Virtual
             </span>
             <p className="text-xs font-bold text-slate-500 mt-2">Sube tu logo en PNG o JPG</p>
-            <input type="file" className="hidden" onChange={(e) => setLogo(URL.createObjectURL(e.target.files[0]))} />
+            <input
+              type="file"
+              className="hidden"
+              onChange={(e) => setLogo(e.target.files ? URL.createObjectURL(e.target.files[0]) : null)}
+            />
           </label>
 
           <div className="grid grid-cols-2 gap-8 mb-12">
@@ -341,18 +345,17 @@ function ProductDetailView({ product, tabuladores, onBack, onAdd }) {
   );
 }
 
-// --- VISTA: CARRITO (EL CIERRE DE NEGOCIO) ---
+// --- VISTA: CARRITO ---
 function QuoteCartView({ cart, onRemove, onBack }) {
   const [sent, setSent] = useState(false);
   const total = cart.reduce((acc, i) => acc + i.total, 0);
 
   const handleCierreWhatsApp = async (e) => {
     e.preventDefault();
-    const data = new FormData(e.target);
+    const data = new FormData(e.currentTarget);
     const nombre = data.get("nombre");
     const empresa = data.get("empresa");
 
-    // 1. Registro Técnico en Supabase (Auditoría)
     if (supabase) {
       await supabase.from("cotizaciones_leads").insert([
         {
@@ -363,9 +366,8 @@ function QuoteCartView({ cart, onRemove, onBack }) {
       ]);
     }
 
-    // 2. ESTRATEGIA: Cierre Directo (Eludir la espera del Email)
     const msg = `Hola Neguib, soy ${nombre} de ${empresa}. Me interesa cotizar formalmente: ${cart.map((i) => `${i.quantity}pz de ${i.datos_generales?.nombre}`).join(", ")}. Inversión estimada: $${total.toLocaleString()} MXN.`;
-    window.open(`https://wa.me/5215500000000?text=${encodeURIComponent(msg)}`, "_blank"); // <--- CAMBIA TU NUMERO AQUÍ
+    window.open(`https://wa.me/${WHATSAPP_CONTACT}?text=${encodeURIComponent(msg)}`, "_blank");
     setSent(true);
   };
 

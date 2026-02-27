@@ -29,24 +29,29 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
     setSubmitting(true);
     try {
       const payload = {
-        datos_cliente: JSON.parse(JSON.stringify(leadData)),
+        datos_cliente: JSON.parse(JSON.stringify({ nombre: leadData.name, empresa: leadData.company })),
         articulos_cotizados: JSON.parse(JSON.stringify(cart.map(item => ({
-          productId: item.productId,
-          name: item.name,
           sku: item.sku,
-          color: item.color.name,
-          quantity: item.quantity,
-          logoFormat: item.logoFormat,
-          estimatedTotal: item.estimatedTotal,
-          imageUrl: item.imageUrl,
+          cantidad: item.quantity,
+          subtotal: item.estimatedTotal,
         })))),
         total_estimado: grandTotal,
         estado_cotizacion: 'NUEVA',
       };
       const { error } = await supabase.from('cotizaciones_leads').insert([payload]);
-      if (error) console.error('Error al guardar cotización:', error);
+      if (error) {
+        console.error('Error al guardar cotización:', error);
+        setSubmitting(false);
+        return;
+      }
+      // Solo si el INSERT fue exitoso, abrir WhatsApp
+      const resumen = cart.map(i => `${i.quantity}pz de ${i.name}`).join(', ');
+      const mensaje = `Hola, deseo cotizar formalmente mi selección. Resumen: ${resumen}. Inversión estimada: $${grandTotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN.`;
+      window.open(`https://wa.me/5215530311686?text=${encodeURIComponent(mensaje)}`, '_blank');
     } catch (err) {
       console.error('Error de red:', err);
+      setSubmitting(false);
+      return;
     }
     setSubmitting(false);
     setCheckoutStep('success');
@@ -65,7 +70,7 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
             Hemos recibido los <strong>{cart.length} productos</strong> de <strong>{leadData.company}</strong>. Tu asesor te enviará la cotización oficial en breve.
           </p>
           <a
-            href={`https://wa.me/525512345678?text=Hola,%20soy%20${leadData.name}.%20Acabo%20de%20enviar%20mi%20solicitud%20de%20cotizaci%C3%B3n.`}
+            href={`https://wa.me/5215530311686?text=Hola,%20soy%20${leadData.name}.%20Acabo%20de%20enviar%20mi%20solicitud%20de%20cotizaci%C3%B3n.`}
             target="_blank"
             rel="noopener noreferrer"
             className="w-full bg-success hover:bg-success/90 text-success-foreground font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg"
@@ -125,7 +130,7 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-success">${item.estimatedTotal.toLocaleString('es-MX')}</p>
+                    <p className="font-bold text-success">${item.estimatedTotal.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                     <button onClick={() => onRemove(item.cartId)} className="text-destructive/60 hover:text-destructive p-1 bg-destructive/10 hover:bg-destructive/20 rounded transition-colors mt-2">
                       <Trash2 size={16} />
                     </button>
@@ -210,10 +215,10 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                 <div className="p-6 bg-dark-section text-dark-section-foreground">
                   <div className="flex justify-between items-center mb-6">
                     <span className="text-dark-section-foreground/60">Gran Total (Aprox)</span>
-                    <span className="text-2xl font-black text-success">${grandTotal.toLocaleString('es-MX')}</span>
+                    <span className="text-2xl font-black text-success">${grandTotal.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                   {checkoutStep === 'cart' ? (
-                    <button onClick={() => setCheckoutStep('form')} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 rounded-xl transition-all shadow-lg flex justify-center items-center gap-2">
+                    <button disabled={cart.length === 0} onClick={() => setCheckoutStep('form')} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 rounded-xl transition-all shadow-lg flex justify-center items-center gap-2 disabled:opacity-60">
                       Continuar con mis datos <ArrowRight size={20} />
                     </button>
                   ) : (

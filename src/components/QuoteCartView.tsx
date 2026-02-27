@@ -2,8 +2,9 @@ import { useState } from 'react';
 import {
   ChevronLeft, CheckCircle2, ShoppingCart, Package, Trash2,
   FileText, Users, ArrowRight, MessageSquare, Settings2,
-  Image as ImageIcon, User, Building, Phone, Mail
+  Image as ImageIcon, User, Building, Phone, Mail, Loader2
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import type { QuoteItem } from '@/data/mockData';
 
 interface QuoteCartViewProps {
@@ -16,14 +17,38 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
   const [checkoutStep, setCheckoutStep] = useState<'cart' | 'form' | 'success'>('cart');
   const [quoteFormat, setQuoteFormat] = useState('individual');
   const [leadData, setLeadData] = useState({ name: '', company: '', email: '', phone: '' });
+  const [submitting, setSubmitting] = useState(false);
 
   const grandTotal = cart.reduce((sum, item) => sum + item.estimatedTotal, 0);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setLeadData({ ...leadData, [e.target.name]: e.target.value });
 
-  const submitQuote = (e: React.FormEvent) => {
+  const submitQuote = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
+    try {
+      const payload = {
+        datos_cliente: JSON.parse(JSON.stringify(leadData)),
+        articulos_cotizados: JSON.parse(JSON.stringify(cart.map(item => ({
+          productId: item.productId,
+          name: item.name,
+          sku: item.sku,
+          color: item.color.name,
+          quantity: item.quantity,
+          logoFormat: item.logoFormat,
+          estimatedTotal: item.estimatedTotal,
+          imageUrl: item.imageUrl,
+        })))),
+        total_estimado: grandTotal,
+        estado_cotizacion: 'NUEVA',
+      };
+      const { error } = await supabase.from('cotizaciones_leads').insert([payload]);
+      if (error) console.error('Error al guardar cotización:', error);
+    } catch (err) {
+      console.error('Error de red:', err);
+    }
+    setSubmitting(false);
     setCheckoutStep('success');
   };
 
@@ -192,8 +217,8 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                       Continuar con mis datos <ArrowRight size={20} />
                     </button>
                   ) : (
-                    <button form="checkout-form" type="submit" className="w-full bg-success hover:bg-success/90 text-success-foreground font-bold py-4 rounded-xl transition-all flex justify-center items-center gap-2">
-                      Confirmar y Solicitar Cotización
+                    <button form="checkout-form" type="submit" disabled={submitting} className="w-full bg-success hover:bg-success/90 text-success-foreground font-bold py-4 rounded-xl transition-all flex justify-center items-center gap-2 disabled:opacity-60">
+                      {submitting ? <><Loader2 size={20} className="animate-spin" /> Enviando...</> : 'Confirmar y Solicitar Cotización'}
                     </button>
                   )}
                   <p className="text-xs text-dark-section-foreground/60 text-center mt-4">Sin compromisos de pago.</p>

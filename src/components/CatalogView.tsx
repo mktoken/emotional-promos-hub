@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, Package } from 'lucide-react';
+import { Search, Filter, Package, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ProductoB2B {
@@ -105,7 +105,10 @@ export default function CatalogView({ onViewChange }: CatalogViewProps) {
           {/* Grid */}
           <div className="flex-1">
             {loading ? (
-              <div className="text-center py-20 text-muted-foreground">Cargando productos...</div>
+              <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
+                <Loader2 size={40} className="animate-spin text-primary" />
+                <p className="font-medium">Cargando catálogo...</p>
+              </div>
             ) : filtered.length === 0 ? (
               <div className="text-center py-20 text-muted-foreground">No se encontraron productos.</div>
             ) : (

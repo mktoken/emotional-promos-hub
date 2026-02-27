@@ -11,6 +11,7 @@ type ViewType = 'landing' | 'catalog' | 'pdp' | 'cart';
 export default function Index() {
   const [currentView, setCurrentView] = useState<ViewType>('landing');
   const [quoteCart, setQuoteCart] = useState<QuoteItem[]>([]);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
   const addToQuote = (item: Omit<QuoteItem, 'cartId'>) => {
     setQuoteCart([...quoteCart, { ...item, cartId: Date.now() }]);
@@ -19,6 +20,11 @@ export default function Index() {
 
   const removeFromQuote = (cartId: number) => {
     setQuoteCart(quoteCart.filter(item => item.cartId !== cartId));
+  };
+
+  const openProduct = (productId: string) => {
+    setSelectedProductId(productId);
+    setCurrentView('pdp');
   };
 
   return (
@@ -61,8 +67,8 @@ export default function Index() {
 
       {/* VIEWS */}
       {currentView === 'landing' && <LandingView onViewChange={(v) => setCurrentView(v as ViewType)} />}
-      {currentView === 'catalog' && <CatalogView onViewChange={(v) => setCurrentView(v as ViewType)} />}
-      {currentView === 'pdp' && <ProductDetailView onBack={() => setCurrentView('catalog')} onAddToQuote={addToQuote} />}
+      {currentView === 'catalog' && <CatalogView onViewChange={(v) => setCurrentView(v as ViewType)} onOpenProduct={openProduct} />}
+      {currentView === 'pdp' && <ProductDetailView productId={selectedProductId} onBack={() => setCurrentView('catalog')} onAddToQuote={addToQuote} />}
       {currentView === 'cart' && <QuoteCartView cart={quoteCart} onRemove={removeFromQuote} onBack={() => setCurrentView('catalog')} />}
     </div>
   );

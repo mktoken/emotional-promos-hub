@@ -1,28 +1,76 @@
 import { useState, useEffect, useRef } from 'react';
 import {
   ChevronLeft, CheckCircle2, Package, Activity,
-  PenTool, Image as ImageIcon, Upload, Minus, Plus, ShoppingCart
+  PenTool, Image as ImageIcon, Upload, Minus, Plus, ShoppingCart, Loader2
 } from 'lucide-react';
-import { productMock, type QuoteItem } from '@/data/mockData';
+import { supabase } from '@/integrations/supabase/client';
+import type { QuoteItem } from '@/data/mockData';
 
 interface ProductDetailViewProps {
+  productId: string | null;
   onBack: () => void;
   onAddToQuote: (item: Omit<QuoteItem, 'cartId'>) => void;
 }
 
-export default function ProductDetailView({ onBack, onAddToQuote }: ProductDetailViewProps) {
+interface ProductoB2B {
+  id: string;
+  id_interno: string;
+  proveedor_nombre: string;
+  sku_base: string | null;
+  categoria_principal: string | null;
+  datos_generales: { nombre?: string; descripcion?: string } | null;
+  variantes: Array<{ sku_variante?: string; color_nombre?: string; color_hex?: string; stock_total?: number }> | null;
+  imagenes: string[] | null;
+  costeo: { moneda?: string; precio_neto_distribuidor?: number } | null;
+  motor_de_personalizacion: { tecnicas_disponibles?: string[]; area_impresion?: { top?: string; left?: string; width?: string; height?: string } } | null;
+}
+
+export default function ProductDetailView({ productId, onBack, onAddToQuote }: ProductDetailViewProps) {
+  const [product, setProduct] = useState<ProductoB2B | null>(null);
+  const [loading, setLoading] = useState(true);
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
-  const [quantity, setQuantity] = useState(100);
+  const [quantity, setQuantity] = useState(1);
   const [logoFormat, setLogoFormat] = useState('1_color');
   const [estimatedTotal, setEstimatedTotal] = useState(0);
   const [estimatedUnit, setEstimatedUnit] = useState(0);
   const [uploadedLogo, setUploadedLogo] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const currentColor = productMock.colors[selectedColorIndex];
+  useEffect(() => {
+    async function fetchProduct() {
+      if (!productId) return;
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('productos_b2b')
+        .select('*')
+        .eq('id', productId)
+        .single();
+      if (!error && data) {
+        setProduct(data as unknown as ProductoB2B);
+      }
+      setLoading(false);
+    }
+    fetchProduct();
+  }, [productId]);
+
+  const colors = (product?.variantes ?? []).map((v, i) => ({
+    id: `c${i}`,
+    name: v.color_nombre ?? 'Default',
+    hex: v.color_hex ?? '#94a3b8',
+    stock: v.stock_total ?? 0,
+    imgAlt: v.color_nombre ?? 'Color',
+  }));
+
+  const currentColor = colors[selectedColorIndex] ?? { id: 'c0', name: 'Default', hex: '#94a3b8', stock: 0, imgAlt: '' };
+  const basePrice = product?.costeo?.precio_neto_distribuidor ?? 0;
+  const productName = product?.datos_generales?.nombre ?? product?.id_interno ?? '';
+  const productDesc = product?.datos_generales?.descripcion ?? '';
+  const productSku = product?.sku_base ?? '';
+  const mainImage = (product?.imagenes as string[] | null)?.[0] ?? null;
+  const printArea = product?.motor_de_personalizacion?.area_impresion;
 
   useEffect(() => {
-    const baseProductCost = productMock.basePrice * quantity;
+    const baseProductCost = basePrice * quantity;
     let totalSetupFee = 0;
     let unitPrintCost = 0;
     if (logoFormat === 'text_only') { unitPrintCost = 18.00; totalSetupFee = 0; }
@@ -31,8 +79,8 @@ export default function ProductDetailView({ onBack, onAddToQuote }: ProductDetai
     const totalPrintCost = unitPrintCost * quantity;
     const finalTotal = baseProductCost + totalSetupFee + totalPrintCost;
     setEstimatedTotal(finalTotal);
-    setEstimatedUnit(finalTotal / quantity);
-  }, [quantity, logoFormat]);
+    setEstimatedUnit(quantity > 0 ? finalTotal / quantity : 0);
+  }, [quantity, logoFormat, basePrice]);
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -40,20 +88,39 @@ export default function ProductDetailView({ onBack, onAddToQuote }: ProductDetai
   };
 
   const handleAddToCart = () => {
+    if (!product) return;
     const quoteItem = {
-      productId: productMock.id,
-      name: productMock.name,
-      sku: productMock.sku,
+      productId: product.id,
+      name: productName,
+      sku: productSku,
       color: currentColor,
       quantity,
       logoFormat,
       estimatedTotal,
       estimatedUnit,
       hasVirtualSample: !!uploadedLogo,
-      imageUrl: productMock.images?.[0]
+      imageUrl: mainImage ?? undefined,
     };
     onAddToQuote(quoteItem);
   };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32 text-muted-foreground gap-3">
+        <Loader2 size={40} className="animate-spin text-primary" />
+        <p className="font-medium">Cargando producto...</p>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="text-center py-32 text-muted-foreground">
+        <p>Producto no encontrado.</p>
+        <button onClick={onBack} className="mt-4 text-primary underline">Volver al catálogo</button>
+      </div>
+    );
+  }
 
   return (
     <div className="pb-20">
@@ -70,21 +137,20 @@ export default function ProductDetailView({ onBack, onAddToQuote }: ProductDetai
           {/* GALERÍA */}
           <div className="lg:col-span-5 mb-10 lg:mb-0">
             <div
-              className="w-full aspect-square rounded-2xl border border-border flex items-center justify-center mb-4 transition-colors duration-500 relative overflow-hidden sticky top-28"
-              style={{ backgroundColor: `${currentColor.hex}15` }}
+              className="w-full aspect-square rounded-2xl border border-border flex items-center justify-center mb-4 transition-colors duration-500 relative overflow-hidden sticky top-28 bg-white"
             >
               <div className="absolute top-4 left-4 bg-card/90 backdrop-blur text-foreground px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm border border-border flex items-center gap-1.5 z-20">
                 <div className="w-2 h-2 rounded-full bg-success animate-pulse"></div>
                 {currentColor.stock.toLocaleString()} en Stock
               </div>
-              {productMock.images && productMock.images[0] ? (
-                <img src={productMock.images[0]} alt={productMock.name} className="max-w-[80%] max-h-[80%] object-contain z-0" onError={(e) => { e.currentTarget.style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove('hidden'); }} />
+              {mainImage ? (
+                <img src={mainImage} alt={productName} className="max-w-[80%] max-h-[80%] object-contain z-0" onError={(e) => { e.currentTarget.style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove('hidden'); }} />
               ) : null}
-              <Package size={200} className={`opacity-40 text-muted-foreground absolute z-0 ${productMock.images && productMock.images[0] ? 'hidden' : ''}`} />
-              {uploadedLogo && (
+              <Package size={200} className={`opacity-40 text-muted-foreground absolute z-0 ${mainImage ? 'hidden' : ''}`} />
+              {uploadedLogo && printArea && (
                 <div
                   className="absolute border border-primary/30 border-dashed rounded flex items-center justify-center p-1 z-10 overflow-hidden"
-                  style={{ top: productMock.printArea.top, left: productMock.printArea.left, width: productMock.printArea.width, height: productMock.printArea.height }}
+                  style={{ top: printArea.top, left: printArea.left, width: printArea.width, height: printArea.height }}
                 >
                   <img src={uploadedLogo} alt="Logo Virtual" className="max-w-full max-h-full object-contain" style={{ mixBlendMode: 'multiply', opacity: 0.85 }} />
                 </div>
@@ -95,29 +161,31 @@ export default function ProductDetailView({ onBack, onAddToQuote }: ProductDetai
           {/* CONFIGURADOR */}
           <div className="lg:col-span-7 flex flex-col">
             <div className="mb-6 border-b border-border pb-6">
-              <p className="text-sm font-bold text-muted-foreground mb-1">SKU: {productMock.sku}</p>
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-4">{productMock.name}</h1>
-              <p className="text-muted-foreground mb-4">{productMock.description}</p>
+              <p className="text-sm font-bold text-muted-foreground mb-1">SKU: {productSku}</p>
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-4">{productName}</h1>
+              <p className="text-muted-foreground mb-4">{productDesc}</p>
             </div>
 
             {/* Color */}
-            <div className="mb-6 p-6 bg-card rounded-2xl border border-border shadow-sm">
-              <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
-                <span className="bg-foreground text-background w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span> Color
-              </h3>
-              <div className="flex flex-wrap gap-3">
-                {productMock.colors.map((color, idx) => (
-                  <button
-                    key={color.id}
-                    onClick={() => setSelectedColorIndex(idx)}
-                    className={`w-12 h-12 rounded-full transition-all flex items-center justify-center shadow-sm ${selectedColorIndex === idx ? 'ring-2 ring-offset-4 ring-primary scale-110' : 'hover:scale-105 border border-border'}`}
-                    style={{ backgroundColor: color.hex }}
-                  >
-                    {selectedColorIndex === idx && <CheckCircle2 size={20} color={color.hex === '#f8fafc' || color.hex === '#cbd5e1' ? '#1e293b' : '#ffffff'} />}
-                  </button>
-                ))}
+            {colors.length > 0 && (
+              <div className="mb-6 p-6 bg-card rounded-2xl border border-border shadow-sm">
+                <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                  <span className="bg-foreground text-background w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span> Color
+                </h3>
+                <div className="flex flex-wrap gap-3">
+                  {colors.map((color, idx) => (
+                    <button
+                      key={color.id}
+                      onClick={() => setSelectedColorIndex(idx)}
+                      className={`w-12 h-12 rounded-full transition-all flex items-center justify-center shadow-sm ${selectedColorIndex === idx ? 'ring-2 ring-offset-4 ring-primary scale-110' : 'hover:scale-105 border border-border'}`}
+                      style={{ backgroundColor: color.hex }}
+                    >
+                      {selectedColorIndex === idx && <CheckCircle2 size={20} color={color.hex === '#f8fafc' || color.hex === '#cbd5e1' ? '#1e293b' : '#ffffff'} />}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Diseño */}
             <div className="mb-6 p-6 bg-primary/5 rounded-2xl border border-primary/20 shadow-sm">
@@ -163,11 +231,11 @@ export default function ProductDetailView({ onBack, onAddToQuote }: ProductDetai
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-6">
                 <div>
-                  <label className="block text-sm text-dark-section-foreground/60 mb-2">Piezas a cotizar (Min. 50)</label>
+                  <label className="block text-sm text-dark-section-foreground/60 mb-2">Piezas a cotizar (Min. 1)</label>
                   <div className="bg-dark-section/80 rounded-xl p-2 flex items-center justify-between border border-dark-section-foreground/10 w-full">
-                    <button onClick={() => setQuantity(q => Math.max(50, q - 50))} className="p-3 hover:bg-dark-section-foreground/10 rounded-lg text-dark-section-foreground/60 hover:text-dark-section-foreground transition-colors"><Minus size={18} /></button>
+                    <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-3 hover:bg-dark-section-foreground/10 rounded-lg text-dark-section-foreground/60 hover:text-dark-section-foreground transition-colors"><Minus size={18} /></button>
                     <span className="font-black text-2xl tracking-tight">{quantity}</span>
-                    <button onClick={() => setQuantity(q => q + 50)} className="p-3 hover:bg-dark-section-foreground/10 rounded-lg text-dark-section-foreground/60 hover:text-dark-section-foreground transition-colors"><Plus size={18} /></button>
+                    <button onClick={() => setQuantity(q => q + 1)} className="p-3 hover:bg-dark-section-foreground/10 rounded-lg text-dark-section-foreground/60 hover:text-dark-section-foreground transition-colors"><Plus size={18} /></button>
                   </div>
                 </div>
                 <div className="flex flex-col justify-center border-l border-dark-section-foreground/10 pl-6 relative">

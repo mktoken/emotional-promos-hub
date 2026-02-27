@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  ChevronLeft, CheckCircle2, Coffee, Package, Activity,
+  ChevronLeft, CheckCircle2, Package, Activity,
   PenTool, Image as ImageIcon, Upload, Minus, Plus, ShoppingCart
 } from 'lucide-react';
 import { productMock, type QuoteItem } from '@/data/mockData';
@@ -49,7 +49,8 @@ export default function ProductDetailView({ onBack, onAddToQuote }: ProductDetai
       logoFormat,
       estimatedTotal,
       estimatedUnit,
-      hasVirtualSample: !!uploadedLogo
+      hasVirtualSample: !!uploadedLogo,
+      imageUrl: productMock.images?.[0]
     };
     onAddToQuote(quoteItem);
   };
@@ -76,7 +77,10 @@ export default function ProductDetailView({ onBack, onAddToQuote }: ProductDetai
                 <div className="w-2 h-2 rounded-full bg-success animate-pulse"></div>
                 {currentColor.stock.toLocaleString()} en Stock
               </div>
-              <Coffee size={200} style={{ color: currentColor.hex }} className="opacity-90 absolute z-0" />
+              {productMock.images && productMock.images[0] ? (
+                <img src={productMock.images[0]} alt={productMock.name} className="max-w-[80%] max-h-[80%] object-contain z-0" onError={(e) => { e.currentTarget.style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove('hidden'); }} />
+              ) : null}
+              <Package size={200} className={`opacity-40 text-muted-foreground absolute z-0 ${productMock.images && productMock.images[0] ? 'hidden' : ''}`} />
               {uploadedLogo && (
                 <div
                   className="absolute border border-primary/30 border-dashed rounded flex items-center justify-center p-1 z-10 overflow-hidden"

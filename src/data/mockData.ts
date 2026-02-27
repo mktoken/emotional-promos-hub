@@ -28,6 +28,7 @@ export interface ProductDetail {
   description: string;
   basePrice: number;
   colors: ProductColor[];
+  images?: string[];
   specs: {
     material: string;
     delivery: string;
@@ -51,6 +52,7 @@ export interface QuoteItem {
   estimatedTotal: number;
   estimatedUnit: number;
   hasVirtualSample: boolean;
+  imageUrl?: string;
 }
 
 export const catalogMock: CatalogProduct[] = [

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, MessageCircle } from 'lucide-react';
 import LandingView from '@/components/LandingView';
 import CatalogView from '@/components/CatalogView';
 import ProductDetailView from '@/components/ProductDetailView';
@@ -70,6 +70,28 @@ export default function Index() {
       {currentView === 'catalog' && <CatalogView onViewChange={(v) => setCurrentView(v as ViewType)} onOpenProduct={openProduct} />}
       {currentView === 'pdp' && <ProductDetailView productId={selectedProductId} onBack={() => setCurrentView('catalog')} onAddToQuote={addToQuote} />}
       {currentView === 'cart' && <QuoteCartView cart={quoteCart} onRemove={removeFromQuote} onBack={() => setCurrentView('catalog')} />}
+
+      {/* Cintillo Global Corporativo */}
+      <div className="bg-foreground text-background py-6 px-4">
+        <div className="max-w-7xl mx-auto text-center space-y-2">
+          <p className="text-xs opacity-70">
+            Sede Operativa: Av. Lomas Verdes 825, Centro Comercial Heliplaza, Loc. 213E. Naucalpan, Edomex. C.P. 53125
+          </p>
+          <p className="text-xs opacity-70">
+            📞 55 3031 1686 &nbsp;|&nbsp; ✉️ promocionalesemocionales@gmail.com
+          </p>
+        </div>
+      </div>
+
+      {/* Botón Flotante WhatsApp */}
+      <a
+        href="https://wa.me/5215530311686"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-[0_10px_25px_rgba(37,211,102,0.5)] hover:scale-110 active:scale-95 transition-all flex items-center justify-center"
+      >
+        <MessageCircle size={32} />
+      </a>
     </div>
   );
 }

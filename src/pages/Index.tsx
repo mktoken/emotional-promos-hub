@@ -71,17 +71,34 @@ export default function Index() {
       {currentView === 'pdp' && <ProductDetailView productId={selectedProductId} onBack={() => setCurrentView('catalog')} onAddToQuote={addToQuote} />}
       {currentView === 'cart' && <QuoteCartView cart={quoteCart} onRemove={removeFromQuote} onBack={() => setCurrentView('catalog')} />}
 
-      {/* Cintillo Global Corporativo */}
-      <div className="bg-foreground text-background py-6 px-4">
-        <div className="max-w-7xl mx-auto text-center space-y-2">
-          <p className="text-xs opacity-70">
+      {/* Footer Corporativo */}
+      <footer className="bg-foreground text-background py-8 px-4">
+        <div className="max-w-7xl mx-auto text-center space-y-3">
+          <address className="not-italic text-xs opacity-70">
             Sede Operativa: Av. Lomas Verdes 825, Centro Comercial Heliplaza, Loc. 213E. Naucalpan, Edomex. C.P. 53125
-          </p>
-          <p className="text-xs opacity-70">
-            📞 55 3031 1686 &nbsp;|&nbsp; ✉️ promocionalesemocionales@gmail.com
+          </address>
+          <div className="text-xs flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+            <a
+              href="tel:+5215530311686"
+              aria-label="Llamar al 55 3031 1686"
+              className="opacity-80 hover:opacity-100 hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+            >
+              📞 55 3031 1686
+            </a>
+            <span className="opacity-40 hidden sm:inline">|</span>
+            <a
+              href="mailto:promocionalesemocionales@gmail.com"
+              aria-label="Enviar correo a promocionalesemocionales@gmail.com"
+              className="opacity-80 hover:opacity-100 hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+            >
+              ✉️ promocionalesemocionales@gmail.com
+            </a>
+          </div>
+          <p className="text-[10px] opacity-50 pt-2">
+            © {new Date().getFullYear()} Promocionales Emocionales. Todos los derechos reservados.
           </p>
         </div>
-      </div>
+      </footer>
 
       {/* Botón Flotante WhatsApp */}
       <a

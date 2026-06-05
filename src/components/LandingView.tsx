@@ -1,13 +1,70 @@
+import { useEffect, useState } from 'react';
 import {
   CheckCircle2, Target, ArrowRight, Gift, Activity,
-  Coffee, BookOpen, ChevronRight, ShieldCheck
+  Coffee, BookOpen, ChevronRight, ShieldCheck, MessageCircle, Loader2, PackageX
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LandingViewProps {
   onViewChange: (view: string) => void;
 }
 
+interface FeaturedProduct {
+  id: string;
+  nombre: string;
+  categoria: string | null;
+  imagen: string | null;
+  disponibilidad: number | null;
+}
+
+const WHATSAPP_HREF =
+  'https://wa.me/5215530311686?text=' +
+  encodeURIComponent('Hola, quiero cotizar artículos promocionales para mi empresa.');
+
 export default function LandingView({ onViewChange }: LandingViewProps) {
+  const [featured, setFeatured] = useState<FeaturedProduct[]>([]);
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
+  const [errorFeatured, setErrorFeatured] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('productos_b2b')
+          .select('id, categoria_principal, datos_generales, imagenes')
+          .eq('activo', true)
+          .limit(4);
+        if (error) throw error;
+        if (cancelled) return;
+        const mapped: FeaturedProduct[] = (data ?? []).map((p: any) => {
+          const imgs = Array.isArray(p.imagenes) ? p.imagenes : [];
+          const dg = p.datos_generales ?? {};
+          return {
+            id: p.id,
+            nombre: dg.nombre ?? 'Producto',
+            categoria: p.categoria_principal ?? null,
+            imagen: typeof imgs[0] === 'string' ? imgs[0] : null,
+            disponibilidad:
+              typeof dg.stock === 'number'
+                ? dg.stock
+                : typeof dg.disponibilidad === 'number'
+                ? dg.disponibilidad
+                : null,
+          };
+        });
+        setFeatured(mapped);
+      } catch {
+        if (!cancelled) setErrorFeatured(true);
+      } finally {
+        if (!cancelled) setLoadingFeatured(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <>
       {/* HERO */}
@@ -29,17 +86,21 @@ export default function LandingView({ onViewChange }: LandingViewProps) {
                 Accede libremente a nuestro catálogo de +10,000 productos con inventario en tiempo real. Arma tu proyecto, visualiza renders virtuales y cotiza al instante.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <a
+                  href={WHATSAPP_HREF}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Cotizar por WhatsApp"
+                  className="w-full sm:w-auto bg-[#25D366] hover:bg-[#1ebe57] text-white font-bold py-4 px-8 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-lg hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#25D366]"
+                >
+                  <MessageCircle size={20} /> Cotizar por WhatsApp
+                </a>
                 <button
                   onClick={() => onViewChange('catalog')}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 px-8 rounded-xl shadow-glow-primary transition-all flex items-center justify-center gap-2 text-lg hover:scale-[1.02]"
+                  aria-label="Explorar catálogo abierto"
+                  className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 px-8 rounded-xl shadow-glow-primary transition-all flex items-center justify-center gap-2 text-lg hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
                 >
-                  Explorar Catálogo Abierto <ArrowRight size={20} />
-                </button>
-                <button
-                  onClick={() => document.getElementById('proceso')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="bg-card hover:bg-surface text-foreground font-bold py-4 px-8 rounded-xl border border-border transition-all flex items-center justify-center gap-2 text-lg"
-                >
-                  ¿Cómo funciona?
+                  Explorar Catálogo <ArrowRight size={20} />
                 </button>
               </div>
               <div className="mt-8 flex items-center justify-center lg:justify-start gap-6 text-sm text-muted-foreground font-medium">
@@ -48,8 +109,8 @@ export default function LandingView({ onViewChange }: LandingViewProps) {
               </div>
             </div>
 
-            {/* Vitrina */}
-            <div className="lg:col-span-6 relative cursor-pointer group" onClick={() => onViewChange('catalog')}>
+            {/* Vitrina (oculta en mobile) */}
+            <div className="hidden lg:block lg:col-span-6 relative cursor-pointer group" onClick={() => onViewChange('catalog')}>
               <div className="bg-card rounded-2xl shadow-xl border border-border p-6 relative z-10 transform transition-transform duration-500 group-hover:scale-[1.02]">
                 <div className="absolute -top-4 -right-4 bg-success text-success-foreground text-xs font-bold px-4 py-1.5 rounded-full shadow-md transform rotate-3 z-20 flex items-center gap-1">
                   <Activity size={12} className="animate-pulse" /> Inventario en Vivo
@@ -91,6 +152,83 @@ export default function LandingView({ onViewChange }: LandingViewProps) {
               <div className="absolute -top-6 -right-6 w-32 h-32 bg-primary/5 rounded-full z-0 opacity-50"></div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* PRODUCTOS DESTACADOS REALES */}
+      <section className="py-16 bg-card border-y border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">Productos destacados</h2>
+              <p className="text-muted-foreground">Algunos de los favoritos de nuestros clientes corporativos.</p>
+            </div>
+            <button
+              onClick={() => onViewChange('catalog')}
+              className="text-primary font-semibold hover:underline inline-flex items-center gap-1"
+            >
+              Ver catálogo completo <ArrowRight size={16} />
+            </button>
+          </div>
+
+          {loadingFeatured ? (
+            <div className="flex items-center justify-center py-12 text-muted-foreground">
+              <Loader2 className="animate-spin mr-2" size={20} /> Cargando productos…
+            </div>
+          ) : errorFeatured || featured.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground text-center">
+              <PackageX size={40} className="mb-3 opacity-60" />
+              <p className="font-medium">
+                {errorFeatured ? 'No pudimos cargar los productos destacados.' : 'Aún no hay productos destacados.'}
+              </p>
+              <button
+                onClick={() => onViewChange('catalog')}
+                className="mt-4 text-primary font-semibold hover:underline"
+              >
+                Explorar el catálogo
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+              {featured.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => onViewChange('catalog')}
+                  aria-label={`Ver ${p.nombre} en el catálogo`}
+                  className="group text-left bg-surface rounded-xl border border-border hover:border-primary/40 hover:shadow-lg transition-all overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <div className="w-full aspect-square bg-muted flex items-center justify-center overflow-hidden">
+                    {p.imagen ? (
+                      <img
+                        src={p.imagen}
+                        alt={p.nombre}
+                        loading="lazy"
+                        className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform"
+                      />
+                    ) : (
+                      <PackageX size={40} className="text-muted-foreground opacity-50" />
+                    )}
+                  </div>
+                  <div className="p-3 md:p-4">
+                    {p.categoria && (
+                      <p className="text-[10px] md:text-xs uppercase tracking-wide text-primary font-bold mb-1">
+                        {p.categoria}
+                      </p>
+                    )}
+                    <p className="font-bold text-foreground text-sm md:text-base mb-1 line-clamp-2">
+                      {p.nombre}
+                    </p>
+                    {typeof p.disponibilidad === 'number' && (
+                      <p className="text-xs text-success font-semibold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
+                        {p.disponibilidad.toLocaleString('es-MX')} disp.
+                      </p>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

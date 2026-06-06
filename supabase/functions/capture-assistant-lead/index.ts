@@ -205,7 +205,7 @@ Deno.serve(async (req) => {
     const emailLower = c.email?.trim().toLowerCase() ?? null;
     const summary =
       body.summary?.trim() || "Solicitud capturada desde asistente virtual";
-    const budget = inferBudgetRange(c.budget_total);
+    const budget = safeBudgetRange(c.budget_total);
 
     // 3) Duplicate search
     safeLog("duplicate_search_started");

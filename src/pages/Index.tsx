@@ -110,6 +110,9 @@ export default function Index() {
       >
         <MessageCircle size={32} />
       </a>
+
+      {/* Asistente virtual */}
+      <AssistantWidget />
     </div>
   );
 }

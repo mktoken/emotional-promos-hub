@@ -4,6 +4,7 @@ import LandingView from '@/components/LandingView';
 import CatalogView from '@/components/CatalogView';
 import ProductDetailView from '@/components/ProductDetailView';
 import QuoteCartView from '@/components/QuoteCartView';
+import AssistantWidget from '@/features/assistant/components/AssistantWidget';
 import type { QuoteItem } from '@/data/mockData';
 
 type ViewType = 'landing' | 'catalog' | 'pdp' | 'cart';
@@ -109,6 +110,9 @@ export default function Index() {
       >
         <MessageCircle size={32} />
       </a>
+
+      {/* Asistente virtual */}
+      <AssistantWidget />
     </div>
   );
 }

@@ -36,6 +36,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLead } from "@/features/crm/hooks/useLeads";
 import { useCrmAuth } from "@/features/crm/hooks/useCrmAuth";
 import { LeadHistoryTimeline } from "@/features/crm/components/LeadHistoryTimeline";
+import { LeadConversations } from "@/features/crm/components/LeadConversations";
 import type { Database } from "@/integrations/supabase/types";
 
 type LeadStatus = Database["public"]["Enums"]["lead_status"];
@@ -172,6 +173,7 @@ export default function ProspectDetail() {
         <TabsList>
           <TabsTrigger value="info">Información</TabsTrigger>
           <TabsTrigger value="historial">Historial</TabsTrigger>
+          <TabsTrigger value="conversaciones">Conversaciones</TabsTrigger>
         </TabsList>
 
         <TabsContent value="info" className="space-y-4 mt-4">
@@ -222,6 +224,10 @@ export default function ProspectDetail() {
 
         <TabsContent value="historial" className="mt-4">
           <LeadHistoryTimeline leadId={lead.id} />
+        </TabsContent>
+
+        <TabsContent value="conversaciones" className="mt-4">
+          <LeadConversations leadId={lead.id} />
         </TabsContent>
       </Tabs>
 

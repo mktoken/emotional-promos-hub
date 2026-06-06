@@ -211,6 +211,100 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_chat_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          metadata: Json
+          role: Database["public"]["Enums"]["chat_message_role"]
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          metadata?: Json
+          role: Database["public"]["Enums"]["chat_message_role"]
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          metadata?: Json
+          role?: Database["public"]["Enums"]["chat_message_role"]
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "crm_chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_chat_sessions: {
+        Row: {
+          assigned_to: string | null
+          captured_data: Json
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          intent: string | null
+          lead_id: string | null
+          source: Database["public"]["Enums"]["lead_source"]
+          status: string
+          summary: string | null
+          updated_at: string
+          visitor_id: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          captured_data?: Json
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          intent?: string | null
+          lead_id?: string | null
+          source?: Database["public"]["Enums"]["lead_source"]
+          status?: string
+          summary?: string | null
+          updated_at?: string
+          visitor_id?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          captured_data?: Json
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          intent?: string | null
+          lead_id?: string | null
+          source?: Database["public"]["Enums"]["lead_source"]
+          status?: string
+          summary?: string | null
+          updated_at?: string
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_chat_sessions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_clients: {
         Row: {
           address: string | null
@@ -909,6 +1003,10 @@ export type Database = {
     }
     Functions: {
       can_access_campaign: { Args: { _campaign_id: string }; Returns: boolean }
+      can_access_chat_session: {
+        Args: { _session_id: string }
+        Returns: boolean
+      }
       can_access_client: { Args: { _client_id: string }; Returns: boolean }
       can_access_deal: { Args: { _deal_id: string }; Returns: boolean }
       can_access_lead: { Args: { _lead_id: string }; Returns: boolean }
@@ -976,6 +1074,7 @@ export type Database = {
         | "75000_150000"
         | "mas_150000"
         | "por_definir"
+      chat_message_role: "visitor" | "assistant" | "system" | "agent"
       client_status:
         | "prospecto"
         | "activo"
@@ -1035,6 +1134,8 @@ export type Database = {
         | "evento"
         | "directorio"
         | "base_propia"
+        | "chat_web"
+        | "asistente_virtual"
       lead_status:
         | "nuevo"
         | "asignado"
@@ -1223,6 +1324,7 @@ export const Constants = {
         "mas_150000",
         "por_definir",
       ],
+      chat_message_role: ["visitor", "assistant", "system", "agent"],
       client_status: [
         "prospecto",
         "activo",
@@ -1287,6 +1389,8 @@ export const Constants = {
         "evento",
         "directorio",
         "base_propia",
+        "chat_web",
+        "asistente_virtual",
       ],
       lead_status: [
         "nuevo",

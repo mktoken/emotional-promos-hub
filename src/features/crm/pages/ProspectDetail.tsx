@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -34,21 +35,47 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useLead } from "@/features/crm/hooks/useLeads";
 import { useCrmAuth } from "@/features/crm/hooks/useCrmAuth";
+import { LeadHistoryTimeline } from "@/features/crm/components/LeadHistoryTimeline";
 import type { Database } from "@/integrations/supabase/types";
 
 type LeadStatus = Database["public"]["Enums"]["lead_status"];
+type ActivityType = Database["public"]["Enums"]["activity_type"];
+type ActivityOutcome = Database["public"]["Enums"]["activity_outcome"];
+type ActivityPriority = Database["public"]["Enums"]["activity_priority"];
 
-const STATUSES: LeadStatus[] = [
-  "nuevo",
-  "asignado",
-  "contactado",
-  "interesado",
-  "no_contesta",
-  "llamar_despues",
-  "no_interesado",
-  "convertido",
-  "descartado",
+const ACTIVITY_TYPES: { value: ActivityType; label: string }[] = [
+  { value: "llamada", label: "Llamada" },
+  { value: "whatsapp", label: "WhatsApp" },
+  { value: "email", label: "Email" },
+  { value: "seguimiento_cotizacion", label: "Seguimiento de cotización" },
+  { value: "envio_catalogo", label: "Envío de catálogo" },
 ];
+
+const OUTCOMES: { value: ActivityOutcome; label: string }[] = [
+  { value: "no_contesto", label: "No contestó" },
+  { value: "interesado", label: "Interesado" },
+  { value: "pidio_informacion", label: "Pidió información" },
+  { value: "pidio_cotizacion", label: "Pidió cotización" },
+  { value: "llamar_despues", label: "Llamar después" },
+  { value: "no_interesado", label: "No interesado" },
+];
+
+const PRIORITIES: { value: ActivityPriority; label: string }[] = [
+  { value: "baja", label: "Baja" },
+  { value: "media", label: "Media" },
+  { value: "alta", label: "Alta" },
+  { value: "urgente", label: "Urgente" },
+];
+
+// Mapea resultado de actividad → estado del lead
+const OUTCOME_TO_STATUS: Partial<Record<ActivityOutcome, LeadStatus>> = {
+  no_contesto: "no_contesta",
+  interesado: "interesado",
+  pidio_informacion: "contactado",
+  pidio_cotizacion: "interesado",
+  llamar_despues: "llamar_despues",
+  no_interesado: "no_interesado",
+};
 
 function digits(s: string | null | undefined) {
   return (s ?? "").replace(/\D+/g, "");
@@ -110,7 +137,6 @@ export default function ProspectDetail() {
         <Badge>{lead.status}</Badge>
       </div>
 
-      {/* Quick actions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <Button
           asChild
@@ -142,49 +168,62 @@ export default function ProspectDetail() {
         </Button>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Datos de contacto</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <Row k="Empresa" v={lead.company_name} />
-            <Row k="Contacto" v={lead.contact_name} />
-            <Row k="Teléfono" v={lead.phone} />
-            <Row k="WhatsApp" v={lead.whatsapp} />
-            <Row k="Email" v={lead.email} />
-            <Row k="Ciudad" v={lead.city} />
-            <Row k="Estado" v={lead.state} />
-            <Row k="Giro" v={lead.industry} />
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="info" className="w-full">
+        <TabsList>
+          <TabsTrigger value="info">Información</TabsTrigger>
+          <TabsTrigger value="historial">Historial</TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Información comercial</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <Row k="Producto de interés" v={lead.product_interest} />
-            <Row k="Presupuesto" v={lead.budget_range} />
-            <Row k="Fecha de evento" v={lead.event_date} />
-            <Row k="Origen" v={lead.source} />
-            <Row k="Estado" v={lead.status} />
-            <Row k="Próximo seguimiento" v={lead.next_follow_up_at} />
-            <Row k="Último contacto" v={lead.last_contacted_at} />
-          </CardContent>
-        </Card>
-      </div>
+        <TabsContent value="info" className="space-y-4 mt-4">
+          <div className="grid lg:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Datos de contacto</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <Row k="Empresa" v={lead.company_name} />
+                <Row k="Contacto" v={lead.contact_name} />
+                <Row k="Teléfono" v={lead.phone} />
+                <Row k="WhatsApp" v={lead.whatsapp} />
+                <Row k="Email" v={lead.email} />
+                <Row k="Ciudad" v={lead.city} />
+                <Row k="Estado" v={lead.state} />
+                <Row k="Giro" v={lead.industry} />
+              </CardContent>
+            </Card>
 
-      {lead.notes && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Notas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm whitespace-pre-wrap">{lead.notes}</p>
-          </CardContent>
-        </Card>
-      )}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Información comercial</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <Row k="Producto de interés" v={lead.product_interest} />
+                <Row k="Presupuesto" v={lead.budget_range} />
+                <Row k="Fecha de evento" v={lead.event_date} />
+                <Row k="Origen" v={lead.source} />
+                <Row k="Estado" v={lead.status} />
+                <Row k="Próximo seguimiento" v={lead.next_follow_up_at} />
+                <Row k="Último contacto" v={lead.last_contacted_at} />
+              </CardContent>
+            </Card>
+          </div>
+
+          {lead.notes && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Notas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm whitespace-pre-wrap">{lead.notes}</p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="historial" className="mt-4">
+          <LeadHistoryTimeline leadId={lead.id} />
+        </TabsContent>
+      </Tabs>
 
       <FollowUpDialog
         open={openFollow}
@@ -218,7 +257,9 @@ function FollowUpDialog({
 }) {
   const auth = useCrmAuth();
   const qc = useQueryClient();
-  const [status, setStatus] = useState<LeadStatus>(currentStatus);
+  const [type, setType] = useState<ActivityType>("llamada");
+  const [outcome, setOutcome] = useState<ActivityOutcome | "">("");
+  const [priority, setPriority] = useState<ActivityPriority>("media");
   const [next, setNext] = useState("");
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
@@ -227,32 +268,61 @@ function FollowUpDialog({
     if (!auth.user) return;
     setSaving(true);
 
-    const updates: Database["public"]["Tables"]["crm_leads"]["Update"] = {
-      status,
-      next_follow_up_at: next ? new Date(next).toISOString() : null,
-    };
+    const nowIso = new Date().toISOString();
+    const nextIso = next ? new Date(next).toISOString() : null;
+    const newStatus: LeadStatus = outcome
+      ? OUTCOME_TO_STATUS[outcome as ActivityOutcome] ?? currentStatus
+      : currentStatus;
 
-    const { error: upErr } = await supabase.from("crm_leads").update(updates).eq("id", leadId);
-
-    if (upErr) {
-      setSaving(false);
-      toast.error(upErr.message);
-      return;
+    // 1) Intentar RPC si existe (best-effort)
+    let usedRpc = false;
+    try {
+      // @ts-expect-error RPC opcional, puede no existir en tipos
+      const { error: rpcErr } = await supabase.rpc("register_lead_activity_result", {
+        p_lead_id: leadId,
+        p_type: type,
+        p_outcome: outcome || null,
+        p_priority: priority,
+        p_note: note.trim() || null,
+        p_next_follow_up_at: nextIso,
+      });
+      if (!rpcErr) usedRpc = true;
+    } catch {
+      // Silencioso: caemos al flujo manual
     }
 
-    if (note.trim()) {
+    if (!usedRpc) {
       const { error: actErr } = await supabase.from("crm_activities").insert({
         lead_id: leadId,
-        type: "llamada",
-        title: "Seguimiento",
-        description: note.trim(),
-        completed_at: new Date().toISOString(),
+        type,
+        title: ACTIVITY_TYPES.find((t) => t.value === type)?.label ?? "Seguimiento",
+        description: note.trim() || null,
+        outcome: outcome || null,
+        priority,
+        completed_at: nowIso,
+        due_date: nextIso,
         assigned_to: auth.user.id,
         created_by: auth.user.id,
       });
+
       if (actErr) {
         setSaving(false);
         toast.error(actErr.message);
+        return;
+      }
+
+      const { error: upErr } = await supabase
+        .from("crm_leads")
+        .update({
+          status: newStatus,
+          next_follow_up_at: nextIso,
+          last_contacted_at: nowIso,
+        })
+        .eq("id", leadId);
+
+      if (upErr) {
+        setSaving(false);
+        toast.error(upErr.message);
         return;
       }
     }
@@ -260,8 +330,11 @@ function FollowUpDialog({
     setSaving(false);
     toast.success("Seguimiento registrado");
     qc.invalidateQueries({ queryKey: ["crm_leads"] });
+    qc.invalidateQueries({ queryKey: ["crm_lead_history", leadId] });
     onOpenChange(false);
     setNote("");
+    setOutcome("");
+    setNext("");
   };
 
   return (
@@ -271,28 +344,54 @@ function FollowUpDialog({
           <DialogTitle>Registrar seguimiento</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="fu_status">Estado</Label>
-            <Select value={status} onValueChange={(v) => setStatus(v as LeadStatus)}>
-              <SelectTrigger id="fu_status"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>{s.replace(/_/g, " ")}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="fu_type">Tipo de actividad</Label>
+              <Select value={type} onValueChange={(v) => setType(v as ActivityType)}>
+                <SelectTrigger id="fu_type"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ACTIVITY_TYPES.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="fu_outcome">Resultado</Label>
+              <Select value={outcome} onValueChange={(v) => setOutcome(v as ActivityOutcome)}>
+                <SelectTrigger id="fu_outcome">
+                  <SelectValue placeholder="Selecciona…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {OUTCOMES.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="fu_priority">Prioridad</Label>
+              <Select value={priority} onValueChange={(v) => setPriority(v as ActivityPriority)}>
+                <SelectTrigger id="fu_priority"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {PRIORITIES.map((p) => (
+                    <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="fu_next">Próximo seguimiento</Label>
+              <Input
+                id="fu_next"
+                type="datetime-local"
+                value={next}
+                onChange={(e) => setNext(e.target.value)}
+              />
+            </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="fu_next">Próximo seguimiento</Label>
-            <Input
-              id="fu_next"
-              type="datetime-local"
-              value={next}
-              onChange={(e) => setNext(e.target.value)}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="fu_note">Notas</Label>
+            <Label htmlFor="fu_note">Nota</Label>
             <Textarea
               id="fu_note"
               rows={3}

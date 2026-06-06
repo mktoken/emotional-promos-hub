@@ -36,6 +36,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLead } from "@/features/crm/hooks/useLeads";
 import { useCrmAuth } from "@/features/crm/hooks/useCrmAuth";
 import { LeadHistoryTimeline } from "@/features/crm/components/LeadHistoryTimeline";
+import { LeadConversations } from "@/features/crm/components/LeadConversations";
 import type { Database } from "@/integrations/supabase/types";
 
 type LeadStatus = Database["public"]["Enums"]["lead_status"];

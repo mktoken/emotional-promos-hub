@@ -219,7 +219,21 @@ export default function AssistantPanel({ open, onClose }: Props) {
           {error && (
             <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/30 rounded-lg p-2 text-xs">
               <AlertCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
-              <span>{error}</span>
+              <div className="space-y-1 min-w-0">
+                <p className="font-bold">No se pudo registrar la solicitud</p>
+                {error.stage && (
+                  <p><span className="font-semibold">Etapa:</span> {error.stage}</p>
+                )}
+                {error.error && (
+                  <p className="break-words"><span className="font-semibold">Error:</span> {error.error}</p>
+                )}
+                {error.details && (
+                  <p className="break-words opacity-80"><span className="font-semibold">Detalles:</span> {error.details}</p>
+                )}
+                {!error.stage && !error.error && (
+                  <p className="break-words">{error.message}</p>
+                )}
+              </div>
             </div>
           )}
         </div>

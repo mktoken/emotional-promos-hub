@@ -173,6 +173,7 @@ export default function ProspectDetail() {
         <TabsList>
           <TabsTrigger value="info">Información</TabsTrigger>
           <TabsTrigger value="historial">Historial</TabsTrigger>
+          <TabsTrigger value="conversaciones">Conversaciones</TabsTrigger>
         </TabsList>
 
         <TabsContent value="info" className="space-y-4 mt-4">

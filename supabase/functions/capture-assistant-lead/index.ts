@@ -54,26 +54,67 @@ function nextBusinessDayISO(): string {
   return d.toISOString();
 }
 
-// Mapea a los valores válidos del enum budget_range en la BD:
-// menos_10000 | 10000_30000 | 30000_75000 | 75000_150000 | mas_150000 | por_definir
-function inferBudgetRange(
-  total: string | undefined,
-):
-  | "menos_10000"
-  | "10000_30000"
-  | "30000_75000"
-  | "75000_150000"
-  | "mas_150000"
-  | "por_definir"
-  | null {
-  if (!total) return null;
-  const n = parseFloat(String(total).replace(/[^0-9.]/g, ""));
+// Valores válidos del enum public.budget_range
+const VALID_BUDGET_RANGES = [
+  "menos_10000",
+  "10000_30000",
+  "30000_75000",
+  "75000_150000",
+  "mas_150000",
+  "por_definir",
+] as const;
+type BudgetRange = (typeof VALID_BUDGET_RANGES)[number];
+
+function classifyBudgetAmount(n: number): BudgetRange {
   if (!isFinite(n) || n <= 0) return "por_definir";
   if (n < 10000) return "menos_10000";
-  if (n < 30000) return "10000_30000";
-  if (n < 75000) return "30000_75000";
-  if (n < 150000) return "75000_150000";
+  if (n <= 30000) return "10000_30000";
+  if (n <= 75000) return "30000_75000";
+  if (n <= 150000) return "75000_150000";
   return "mas_150000";
+}
+
+// Parsea textos: "$12,000", "10 mil", "15k", "entre 15 y 50 mil", "por definir"...
+function inferBudgetRange(total: string | undefined | null): BudgetRange {
+  if (total === null || total === undefined) return "por_definir";
+  const raw = String(total).trim().toLowerCase();
+  if (!raw) return "por_definir";
+  if (/(por\s*definir|no\s*s[eé]|sin\s*presupuesto|no\s*tengo|n\/?a)/.test(raw)) {
+    return "por_definir";
+  }
+
+  // Extraer tokens numéricos con sufijo opcional k / mil
+  const regex = /(\d+(?:[.,]\d+)?)\s*(k|mil(?:es)?)?/gi;
+  const amounts: number[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = regex.exec(raw)) !== null) {
+    const num = parseFloat(m[1].replace(/,/g, ""));
+    if (!isFinite(num)) continue;
+    const suffix = (m[2] ?? "").toLowerCase();
+    const mult = suffix === "k" || suffix.startsWith("mil") ? 1000 : 1;
+    amounts.push(num * mult);
+  }
+  if (amounts.length === 0) return "por_definir";
+
+  // Para rangos, usar el mayor
+  const value = Math.max(...amounts);
+  return classifyBudgetAmount(value);
+}
+
+function safeBudgetRange(total: string | undefined | null): BudgetRange {
+  const r = inferBudgetRange(total);
+  const safe = (VALID_BUDGET_RANGES as readonly string[]).includes(r)
+    ? r
+    : "por_definir";
+  try {
+    console.log(
+      "budget_range_mapped",
+      JSON.stringify({ rawBudget_len: total ? String(total).length : 0, budgetRange: safe }),
+    );
+  } catch {
+    // noop
+  }
+  return safe;
 }
 
 function jsonResponse(status: number, body: Record<string, unknown>) {
@@ -164,7 +205,7 @@ Deno.serve(async (req) => {
     const emailLower = c.email?.trim().toLowerCase() ?? null;
     const summary =
       body.summary?.trim() || "Solicitud capturada desde asistente virtual";
-    const budget = inferBudgetRange(c.budget_total);
+    const budget = safeBudgetRange(c.budget_total);
 
     // 3) Duplicate search
     safeLog("duplicate_search_started");

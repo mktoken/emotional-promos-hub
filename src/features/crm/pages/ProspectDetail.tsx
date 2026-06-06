@@ -225,6 +225,10 @@ export default function ProspectDetail() {
         <TabsContent value="historial" className="mt-4">
           <LeadHistoryTimeline leadId={lead.id} />
         </TabsContent>
+
+        <TabsContent value="conversaciones" className="mt-4">
+          <LeadConversations leadId={lead.id} />
+        </TabsContent>
       </Tabs>
 
       <FollowUpDialog

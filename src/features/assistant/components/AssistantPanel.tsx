@@ -118,6 +118,7 @@ export default function AssistantPanel({ open, onClose }: Props) {
     setMessages([]);
     setDraft("");
     setPhase("chat");
+    reset();
   }
 
   function handleBack() {

@@ -23,9 +23,7 @@ export function useLeadHistory(leadId: string | undefined) {
       const [actsRes, notesRes, logsRes] = await Promise.all([
         supabase
           .from("crm_activities")
-          .select(
-            "id, type, title, description, outcome, completed_at, due_date, created_at, assigned_to, created_by",
-          )
+          .select("id, type, title, description, outcome, completed_at, due_date, created_at, assigned_to, created_by")
           .eq("lead_id", leadId!)
           .is("deleted_at", null)
           .order("created_at", { ascending: false })
@@ -40,7 +38,7 @@ export function useLeadHistory(leadId: string | undefined) {
         supabase
           .from("crm_activity_logs")
           .select("id, action, diff, created_at, actor_id, entity_type, entity_id")
-          .eq("entity_type", "crm_leads")
+          .in("entity_type", ["lead", "crm_leads"])
           .eq("entity_id", leadId!)
           .order("created_at", { ascending: false })
           .limit(200),
@@ -88,10 +86,7 @@ export function useLeadHistory(leadId: string | undefined) {
             date: l.created_at,
             type: l.action,
             title: l.action.replace(/_/g, " "),
-            description:
-              l.diff && typeof l.diff === "object"
-                ? JSON.stringify(l.diff)
-                : null,
+            description: l.diff && typeof l.diff === "object" ? JSON.stringify(l.diff) : null,
             outcome: null,
             next_follow_up_at: null,
             actor_id: l.actor_id ?? null,

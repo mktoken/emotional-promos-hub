@@ -21,7 +21,7 @@ export default function AssistantPanel({ open, onClose }: Props) {
   const [draft, setDraft] = useState("");
   const [phase, setPhase] = useState<Phase>("chat");
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { submit, loading, error, success } = useAssistantLeadCapture();
+  const { submit, loading, error, success, reset } = useAssistantLeadCapture();
 
   const step: Step | undefined = STEPS[stepIdx];
 

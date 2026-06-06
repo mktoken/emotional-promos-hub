@@ -5,6 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Content-Type": "application/json",
 };
 
 interface ChatMessage {
@@ -53,53 +54,122 @@ function nextBusinessDayISO(): string {
   return d.toISOString();
 }
 
+// Mapea a los valores válidos del enum budget_range en la BD:
+// menos_10000 | 10000_30000 | 30000_75000 | 75000_150000 | mas_150000 | por_definir
 function inferBudgetRange(
   total: string | undefined,
 ):
-  | "menos_5k"
-  | "5k_15k"
-  | "15k_50k"
-  | "50k_150k"
-  | "mas_150k"
+  | "menos_10000"
+  | "10000_30000"
+  | "30000_75000"
+  | "75000_150000"
+  | "mas_150000"
   | "por_definir"
   | null {
   if (!total) return null;
   const n = parseFloat(String(total).replace(/[^0-9.]/g, ""));
   if (!isFinite(n) || n <= 0) return "por_definir";
-  if (n < 5000) return "menos_5k";
-  if (n < 15000) return "5k_15k";
-  if (n < 50000) return "15k_50k";
-  if (n < 150000) return "50k_150k";
-  return "mas_150k";
+  if (n < 10000) return "menos_10000";
+  if (n < 30000) return "10000_30000";
+  if (n < 75000) return "30000_75000";
+  if (n < 150000) return "75000_150000";
+  return "mas_150000";
+}
+
+function jsonResponse(status: number, body: Record<string, unknown>) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: corsHeaders,
+  });
+}
+
+function safeLog(stage: string, extra?: Record<string, unknown>) {
+  try {
+    console.log(JSON.stringify({ stage, ...(extra ?? {}) }));
+  } catch {
+    console.log(stage);
+  }
 }
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { status: 200, headers: corsHeaders });
   }
 
   try {
-    const body = (await req.json()) as Payload;
-    const c = body.captured ?? {};
+    safeLog("request_received", { method: req.method });
 
-    if (!c.contact_name || (!c.whatsapp && !c.email && !c.comments)) {
-      return new Response(
-        JSON.stringify({ error: "Faltan datos mínimos de contacto." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+    // 1) Env validation
+    safeLog("env_validation_started");
+    const SUPABASE_URL =
+      Deno.env.get("SUPABASE_URL") ?? Deno.env.get("VITE_SUPABASE_URL") ?? "";
+    const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+    if (!SERVICE_ROLE) {
+      return jsonResponse(500, {
+        success: false,
+        stage: "env_validation",
+        error: "Missing SUPABASE_SERVICE_ROLE_KEY",
+        message:
+          "Agrega SUPABASE_SERVICE_ROLE_KEY en Cloud > Secrets para permitir que la Edge Function escriba en CRM.",
+      });
+    }
+    if (!SUPABASE_URL) {
+      return jsonResponse(500, {
+        success: false,
+        stage: "env_validation",
+        error: "Missing SUPABASE_URL",
+        message: "Agrega SUPABASE_URL en Cloud > Secrets.",
+      });
+    }
+    safeLog("env_validation_passed", {
+      has_supabase_url: true,
+      has_service_role: true,
+    });
+
+    // 2) Parse payload
+    safeLog("payload_parse_started");
+    let body: Payload;
+    try {
+      body = (await req.json()) as Payload;
+    } catch (e) {
+      return jsonResponse(400, {
+        success: false,
+        stage: "payload_parse",
+        error: "Invalid JSON",
+        details: e instanceof Error ? e.message : String(e),
+      });
     }
 
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-    const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const c = body?.captured ?? ({} as Payload["captured"]);
+    if (!c.contact_name || (!c.whatsapp && !c.email && !c.comments)) {
+      return jsonResponse(400, {
+        success: false,
+        stage: "payload_parse",
+        error: "Faltan datos mínimos de contacto.",
+      });
+    }
+    safeLog("payload_parse_passed", {
+      has_whatsapp: !!c.whatsapp,
+      has_email: !!c.email,
+      has_company: !!c.company_name,
+      messages_count: Array.isArray(body.messages) ? body.messages.length : 0,
+    });
+
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE, {
       auth: { persistSession: false },
     });
 
     const waDigits = digits(c.whatsapp);
     const emailLower = c.email?.trim().toLowerCase() ?? null;
+    const summary =
+      body.summary?.trim() || "Solicitud capturada desde asistente virtual";
+    const budget = inferBudgetRange(c.budget_total);
 
-    // 1) Buscar duplicado
+    // 3) Duplicate search
+    safeLog("duplicate_search_started");
     let leadId: string | null = null;
+    let reused = false;
     {
       const orFilters: string[] = [];
       if (waDigits) {
@@ -109,28 +179,38 @@ Deno.serve(async (req) => {
       if (emailLower) orFilters.push(`email.eq.${emailLower}`);
 
       if (orFilters.length > 0) {
-        const { data: existing } = await admin
+        const { data: existing, error: dupErr } = await admin
           .from("crm_leads")
           .select("id")
           .or(orFilters.join(","))
           .is("deleted_at", null)
           .limit(1)
           .maybeSingle();
-        if (existing?.id) leadId = existing.id;
+        if (dupErr) {
+          return jsonResponse(500, {
+            success: false,
+            stage: "duplicate_search",
+            error: dupErr.message,
+            details: dupErr.details ?? null,
+          });
+        }
+        if (existing?.id) {
+          leadId = existing.id;
+          reused = true;
+        }
       }
     }
 
-    const summary = body.summary?.trim() || "Solicitud capturada desde asistente virtual";
-    const budget = inferBudgetRange(c.budget_total);
-
-    // 2) Crear o actualizar lead
+    // 4) Lead insert or update
+    safeLog("lead_insert_started", { reused });
     if (!leadId) {
       const { data: inserted, error: insErr } = await admin
         .from("crm_leads")
         .insert({
           source: "asistente_virtual",
           status: "interesado",
-          company_name: c.company_name?.trim() || c.contact_name?.trim() || "Sin empresa",
+          company_name:
+            c.company_name?.trim() || c.contact_name?.trim() || "Sin empresa",
           contact_name: c.contact_name?.trim() || null,
           phone: waDigits || null,
           whatsapp: waDigits || null,
@@ -147,14 +227,16 @@ Deno.serve(async (req) => {
         .single();
 
       if (insErr) {
-        return new Response(JSON.stringify({ error: insErr.message }), {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        return jsonResponse(500, {
+          success: false,
+          stage: "lead_insert",
+          error: insErr.message,
+          details: insErr.details ?? null,
         });
       }
       leadId = inserted.id;
     } else {
-      await admin
+      const { error: updErr } = await admin
         .from("crm_leads")
         .update({
           status: "interesado",
@@ -163,30 +245,63 @@ Deno.serve(async (req) => {
           notes: summary,
         })
         .eq("id", leadId);
+      if (updErr) {
+        return jsonResponse(500, {
+          success: false,
+          stage: "lead_update",
+          error: updErr.message,
+          details: updErr.details ?? null,
+        });
+      }
     }
 
-    // 3) Activity
+    // 5) Activity
+    safeLog("activity_insert_started");
     const priority: "media" | "alta" =
-      c.event_date && new Date(c.event_date).getTime() - Date.now() < 1000 * 60 * 60 * 24 * 14
+      c.event_date &&
+      new Date(c.event_date).getTime() - Date.now() <
+        1000 * 60 * 60 * 24 * 14
         ? "alta"
         : "media";
 
-    await admin.from("crm_activities").insert({
-      lead_id: leadId,
-      type: "seguimiento_cotizacion",
-      title: "Solicitud recibida desde asistente virtual",
-      description: summary,
-      priority,
-      due_date: nextBusinessDayISO(),
-    });
+    {
+      const { error: actErr } = await admin.from("crm_activities").insert({
+        lead_id: leadId,
+        type: "seguimiento_cotizacion",
+        title: "Solicitud recibida desde asistente virtual",
+        description: summary,
+        priority,
+        due_date: nextBusinessDayISO(),
+      });
+      if (actErr) {
+        return jsonResponse(500, {
+          success: false,
+          stage: "activity_insert",
+          error: actErr.message,
+          details: actErr.details ?? null,
+        });
+      }
+    }
 
-    // 4) Note
-    await admin.from("crm_notes").insert({
-      lead_id: leadId,
-      note: summary,
-    });
+    // 6) Note
+    safeLog("note_insert_started");
+    {
+      const { error: noteErr } = await admin.from("crm_notes").insert({
+        lead_id: leadId,
+        note: summary,
+      });
+      if (noteErr) {
+        return jsonResponse(500, {
+          success: false,
+          stage: "note_insert",
+          error: noteErr.message,
+          details: noteErr.details ?? null,
+        });
+      }
+    }
 
-    // 5) Chat session
+    // 7) Chat session
+    safeLog("chat_session_insert_started");
     const { data: session, error: sessErr } = await admin
       .from("crm_chat_sessions")
       .insert({
@@ -203,13 +318,17 @@ Deno.serve(async (req) => {
       .single();
 
     if (sessErr) {
-      return new Response(JSON.stringify({ error: sessErr.message, lead_id: leadId }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return jsonResponse(500, {
+        success: false,
+        stage: "chat_session_insert",
+        error: sessErr.message,
+        details: sessErr.details ?? null,
+        lead_id: leadId,
       });
     }
 
-    // 6) Messages
+    // 8) Messages
+    safeLog("chat_messages_insert_started");
     const msgs = (body.messages ?? [])
       .filter((m) => m && m.message && m.role)
       .slice(0, 200)
@@ -220,17 +339,38 @@ Deno.serve(async (req) => {
         metadata: m.metadata ?? {},
       }));
     if (msgs.length > 0) {
-      await admin.from("crm_chat_messages").insert(msgs);
+      const { error: msgErr } = await admin
+        .from("crm_chat_messages")
+        .insert(msgs);
+      if (msgErr) {
+        return jsonResponse(500, {
+          success: false,
+          stage: "chat_messages_insert",
+          error: msgErr.message,
+          details: msgErr.details ?? null,
+          lead_id: leadId,
+          session_id: session.id,
+        });
+      }
     }
 
-    return new Response(
-      JSON.stringify({ ok: true, lead_id: leadId, session_id: session.id }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+    safeLog("completed", { lead_id: leadId, session_id: session.id, reused });
+    return jsonResponse(200, {
+      success: true,
+      ok: true,
+      lead_id: leadId,
+      session_id: session.id,
+      reused,
+    });
   } catch (e) {
-    return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Error desconocido" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+    const message = e instanceof Error ? e.message : "Error desconocido";
+    const stack = e instanceof Error ? e.stack : undefined;
+    safeLog("unhandled_exception", { message });
+    return jsonResponse(500, {
+      success: false,
+      stage: "unhandled_exception",
+      error: message,
+      details: stack ?? null,
+    });
   }
 });

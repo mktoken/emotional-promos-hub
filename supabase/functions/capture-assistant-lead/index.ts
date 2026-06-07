@@ -143,6 +143,45 @@ function normalizeMessageRole(role: unknown): "visitor" | "assistant" | "system"
   return "visitor";
 }
 
+// Limpia texto libre: colapsa espacios, recorta y corta a max chars
+function cleanText(v: unknown, max = 500): string | null {
+  if (v === null || v === undefined) return null;
+  const s = String(v).replace(/\s+/g, " ").trim();
+  if (!s) return null;
+  return s.length > max ? s.slice(0, max).trim() : s;
+}
+
+// Saneamiento específico para product_interest: solo el nombre del producto/categoría.
+// Quita verbos introductorios, cifras, fechas, presupuestos, ciudades pegadas, etc.
+function sanitizeProductInterest(v: unknown): string | null {
+  const base = cleanText(v, 240);
+  if (!base) return null;
+  let s = base.toLowerCase();
+
+  // Eliminar frases comunes que no son producto
+  s = s.replace(
+    /\b(hola|buenas|buen d[ií]a|quiero|quisiera|necesito|busco|me interesa(?:n)?|me gustar[ií]a|para|por\s*favor|cotizar|cotizaci[oó]n|gracias)\b/g,
+    " ",
+  );
+  // Eliminar cantidades, presupuestos y fechas (\d con sufijos)
+  s = s.replace(/\$?\s*\d+(?:[.,]\d+)?\s*(k|mil(?:es)?|pzs?|piezas?|unidades?|mxn|pesos?)?/g, " ");
+  // Eliminar palabras de tiempo/lugar pegadas
+  s = s.replace(
+    /\b(evento|campa[nñ]a|entrega|fecha|hoy|ma[nñ]ana|semana|mes|cdmx|edomex|m[eé]xico|guadalajara|monterrey)\b/g,
+    " ",
+  );
+  // Cortar en el primer separador fuerte si hay varias ideas
+  const firstChunk = s.split(/[,.;\n]|(?:\s-\s)/)[0] ?? s;
+  s = firstChunk.replace(/\s+/g, " ").trim();
+  if (!s) {
+    // Si quedó vacío, devolvemos el texto original recortado
+    return base.slice(0, 120);
+  }
+  // Capitaliza primera letra y limita longitud
+  const out = s.charAt(0).toUpperCase() + s.slice(1);
+  return out.slice(0, 120);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { status: 200, headers: corsHeaders });

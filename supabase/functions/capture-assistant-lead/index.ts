@@ -417,7 +417,15 @@ Deno.serve(async (req) => {
         status: "completed",
         intent: c.intent ?? null,
         summary,
-        captured_data: c,
+        captured_data: {
+          ...c,
+          product_interest: cleanProductInterest,
+          delivery_city: cleanCity,
+          delivery_state: cleanState,
+          contact_name: cleanContactName,
+          company_name: cleanCompanyName,
+          comments: cleanComments,
+        },
         completed_at: new Date().toISOString(),
       })
       .select("id")

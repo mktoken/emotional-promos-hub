@@ -132,6 +132,17 @@ function safeLog(stage: string, extra?: Record<string, unknown>) {
   }
 }
 
+const VALID_CHAT_MESSAGE_ROLES = ["visitor", "assistant", "system", "agent"] as const;
+
+function normalizeMessageRole(role: unknown): "visitor" | "assistant" | "system" | "agent" {
+  const normalized = String(role ?? "").toLowerCase().trim();
+  if (normalized === "user") return "visitor";
+  if (VALID_CHAT_MESSAGE_ROLES.includes(normalized as any)) {
+    return normalized as "visitor" | "assistant" | "system" | "agent";
+  }
+  return "visitor";
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { status: 200, headers: corsHeaders });

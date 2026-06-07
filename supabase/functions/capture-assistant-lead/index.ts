@@ -292,6 +292,18 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Saneamiento por campo (evita texto mezclado en product_interest, etc.)
+    const cleanProductInterest = sanitizeProductInterest(c.product_interest);
+    const cleanCity = cleanText(c.delivery_city, 80);
+    const cleanState = cleanText(c.delivery_state, 80);
+    const cleanContactName = cleanText(c.contact_name, 120);
+    const cleanCompanyName = cleanText(c.company_name, 160);
+    const cleanComments = cleanText(c.comments, 1000);
+    safeLog("captured_sanitized", {
+      product_interest_in_len: c.product_interest ? String(c.product_interest).length : 0,
+      product_interest_out_len: cleanProductInterest?.length ?? 0,
+    });
+
     // 4) Lead insert or update
     safeLog("lead_insert_started", { reused });
     if (!leadId) {
@@ -301,14 +313,14 @@ Deno.serve(async (req) => {
           source: "asistente_virtual",
           status: "interesado",
           company_name:
-            c.company_name?.trim() || c.contact_name?.trim() || "Sin empresa",
-          contact_name: c.contact_name?.trim() || null,
+            cleanCompanyName || cleanContactName || "Sin empresa",
+          contact_name: cleanContactName,
           phone: waDigits || null,
           whatsapp: waDigits || null,
           email: emailLower,
-          city: c.delivery_city || null,
-          state: c.delivery_state || null,
-          product_interest: c.product_interest || null,
+          city: cleanCity,
+          state: cleanState,
+          product_interest: cleanProductInterest,
           budget_range: budget,
           event_date: c.event_date || null,
           notes: summary,
@@ -334,6 +346,9 @@ Deno.serve(async (req) => {
           last_contacted_at: new Date().toISOString(),
           next_follow_up_at: nextBusinessDayISO(),
           notes: summary,
+          ...(cleanProductInterest ? { product_interest: cleanProductInterest } : {}),
+          ...(cleanCity ? { city: cleanCity } : {}),
+          ...(cleanState ? { state: cleanState } : {}),
         })
         .eq("id", leadId);
       if (updErr) {

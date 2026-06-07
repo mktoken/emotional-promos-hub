@@ -143,6 +143,45 @@ function normalizeMessageRole(role: unknown): "visitor" | "assistant" | "system"
   return "visitor";
 }
 
+// Limpia texto libre: colapsa espacios, recorta y corta a max chars
+function cleanText(v: unknown, max = 500): string | null {
+  if (v === null || v === undefined) return null;
+  const s = String(v).replace(/\s+/g, " ").trim();
+  if (!s) return null;
+  return s.length > max ? s.slice(0, max).trim() : s;
+}
+
+// Saneamiento específico para product_interest: solo el nombre del producto/categoría.
+// Quita verbos introductorios, cifras, fechas, presupuestos, ciudades pegadas, etc.
+function sanitizeProductInterest(v: unknown): string | null {
+  const base = cleanText(v, 240);
+  if (!base) return null;
+  let s = base.toLowerCase();
+
+  // Eliminar frases comunes que no son producto
+  s = s.replace(
+    /\b(hola|buenas|buen d[ií]a|quiero|quisiera|necesito|busco|me interesa(?:n)?|me gustar[ií]a|para|por\s*favor|cotizar|cotizaci[oó]n|gracias)\b/g,
+    " ",
+  );
+  // Eliminar cantidades, presupuestos y fechas (\d con sufijos)
+  s = s.replace(/\$?\s*\d+(?:[.,]\d+)?\s*(k|mil(?:es)?|pzs?|piezas?|unidades?|mxn|pesos?)?/g, " ");
+  // Eliminar palabras de tiempo/lugar pegadas
+  s = s.replace(
+    /\b(evento|campa[nñ]a|entrega|fecha|hoy|ma[nñ]ana|semana|mes|cdmx|edomex|m[eé]xico|guadalajara|monterrey)\b/g,
+    " ",
+  );
+  // Cortar en el primer separador fuerte si hay varias ideas
+  const firstChunk = s.split(/[,.;\n]|(?:\s-\s)/)[0] ?? s;
+  s = firstChunk.replace(/\s+/g, " ").trim();
+  if (!s) {
+    // Si quedó vacío, devolvemos el texto original recortado
+    return base.slice(0, 120);
+  }
+  // Capitaliza primera letra y limita longitud
+  const out = s.charAt(0).toUpperCase() + s.slice(1);
+  return out.slice(0, 120);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { status: 200, headers: corsHeaders });
@@ -253,6 +292,18 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Saneamiento por campo (evita texto mezclado en product_interest, etc.)
+    const cleanProductInterest = sanitizeProductInterest(c.product_interest);
+    const cleanCity = cleanText(c.delivery_city, 80);
+    const cleanState = cleanText(c.delivery_state, 80);
+    const cleanContactName = cleanText(c.contact_name, 120);
+    const cleanCompanyName = cleanText(c.company_name, 160);
+    const cleanComments = cleanText(c.comments, 1000);
+    safeLog("captured_sanitized", {
+      product_interest_in_len: c.product_interest ? String(c.product_interest).length : 0,
+      product_interest_out_len: cleanProductInterest?.length ?? 0,
+    });
+
     // 4) Lead insert or update
     safeLog("lead_insert_started", { reused });
     if (!leadId) {
@@ -262,14 +313,14 @@ Deno.serve(async (req) => {
           source: "asistente_virtual",
           status: "interesado",
           company_name:
-            c.company_name?.trim() || c.contact_name?.trim() || "Sin empresa",
-          contact_name: c.contact_name?.trim() || null,
+            cleanCompanyName || cleanContactName || "Sin empresa",
+          contact_name: cleanContactName,
           phone: waDigits || null,
           whatsapp: waDigits || null,
           email: emailLower,
-          city: c.delivery_city || null,
-          state: c.delivery_state || null,
-          product_interest: c.product_interest || null,
+          city: cleanCity,
+          state: cleanState,
+          product_interest: cleanProductInterest,
           budget_range: budget,
           event_date: c.event_date || null,
           notes: summary,
@@ -295,6 +346,9 @@ Deno.serve(async (req) => {
           last_contacted_at: new Date().toISOString(),
           next_follow_up_at: nextBusinessDayISO(),
           notes: summary,
+          ...(cleanProductInterest ? { product_interest: cleanProductInterest } : {}),
+          ...(cleanCity ? { city: cleanCity } : {}),
+          ...(cleanState ? { state: cleanState } : {}),
         })
         .eq("id", leadId);
       if (updErr) {
@@ -363,7 +417,15 @@ Deno.serve(async (req) => {
         status: "completed",
         intent: c.intent ?? null,
         summary,
-        captured_data: c,
+        captured_data: {
+          ...c,
+          product_interest: cleanProductInterest,
+          delivery_city: cleanCity,
+          delivery_state: cleanState,
+          contact_name: cleanContactName,
+          company_name: cleanCompanyName,
+          comments: cleanComments,
+        },
         completed_at: new Date().toISOString(),
       })
       .select("id")

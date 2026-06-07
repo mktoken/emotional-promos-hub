@@ -384,12 +384,24 @@ Deno.serve(async (req) => {
     const msgs = (body.messages ?? [])
       .filter((m) => m && m.message && m.role)
       .slice(0, 200)
-      .map((m) => ({
-        session_id: session.id,
-        role: m.role,
-        message: m.message,
-        metadata: m.metadata ?? {},
-      }));
+      .map((m) => {
+        const originalRole = m.role;
+        const mappedRole = normalizeMessageRole(originalRole);
+        try {
+          console.log(
+            "chat_message_role_mapped",
+            JSON.stringify({ originalRole, mappedRole }),
+          );
+        } catch {
+          // noop
+        }
+        return {
+          session_id: session.id,
+          role: mappedRole,
+          message: m.message,
+          metadata: m.metadata ?? {},
+        };
+      });
     if (msgs.length > 0) {
       const { error: msgErr } = await admin
         .from("crm_chat_messages")

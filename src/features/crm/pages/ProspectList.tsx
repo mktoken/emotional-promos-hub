@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Loader2, Plus, AlertCircle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { useLeads, type CrmLead } from "@/features/crm/hooks/useLeads";
 import { ProspectForm } from "@/features/crm/components/ProspectForm";
-import { cn } from "@/lib/utils";
 
 const STATUS_LABEL: Record<string, string> = {
   nuevo: "Nuevo",
@@ -34,17 +33,6 @@ const SOURCE_LABEL: Record<string, string> = {
   base_propia: "Base propia",
 };
 
-// Estados considerados archivados (cerrados / sin seguimiento activo).
-const ARCHIVED_STATUSES = new Set<string>([
-  "no_interesado",
-  "convertido",
-  "descartado",
-]);
-
-function isArchived(l: CrmLead) {
-  return ARCHIVED_STATUSES.has(l.status as unknown as string);
-}
-
 function fmtDate(d: string | null) {
   if (!d) return "—";
   try {
@@ -54,20 +42,9 @@ function fmtDate(d: string | null) {
   }
 }
 
-type View = "activos" | "archivados";
-
 export default function ProspectList() {
   const { data, isLoading, error } = useLeads();
   const [openNew, setOpenNew] = useState(false);
-  const [view, setView] = useState<View>("activos");
-
-  const { activos, archivados, visible } = useMemo(() => {
-    const all = data ?? [];
-    const archivados = all.filter(isArchived);
-    const activos = all.filter((l) => !isArchived(l));
-    const visible = view === "activos" ? activos : archivados;
-    return { activos, archivados, visible };
-  }, [data, view]);
 
   return (
     <div className="space-y-4">
@@ -81,41 +58,6 @@ export default function ProspectList() {
         <Button onClick={() => setOpenNew(true)}>
           <Plus className="w-4 h-4 mr-2" /> Nuevo prospecto
         </Button>
-      </div>
-
-      {/* Selector Activos / Archivados */}
-      <div className="space-y-2">
-        <div className="inline-flex rounded-lg border border-border bg-muted/30 p-1 w-full sm:w-auto">
-          <button
-            type="button"
-            onClick={() => setView("activos")}
-            className={cn(
-              "flex-1 sm:flex-none px-4 py-2 text-sm font-medium rounded-md transition-colors",
-              view === "activos"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            Activos ({activos.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setView("archivados")}
-            className={cn(
-              "flex-1 sm:flex-none px-4 py-2 text-sm font-medium rounded-md transition-colors",
-              view === "archivados"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            Archivados ({archivados.length})
-          </button>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          {view === "activos"
-            ? "Leads que todavía requieren atención o seguimiento."
-            : "Estos leads están cerrados o ya no requieren seguimiento activo."}
-        </p>
       </div>
 
       {isLoading && (
@@ -138,28 +80,20 @@ export default function ProspectList() {
         </Card>
       )}
 
-      {!isLoading && !error && visible.length === 0 && (
+      {!isLoading && !error && (data?.length ?? 0) === 0 && (
         <Card className="p-10 text-center">
           <Users className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-          <p className="font-medium">
-            {view === "activos"
-              ? "No hay prospectos activos"
-              : "No hay prospectos archivados"}
-          </p>
+          <p className="font-medium">Aún no hay prospectos</p>
           <p className="text-sm text-muted-foreground mb-4">
-            {view === "activos"
-              ? "Crea tu primer prospecto para empezar a darle seguimiento."
-              : "Los leads cerrados o sin seguimiento aparecerán aquí."}
+            Crea tu primer prospecto para empezar a darle seguimiento.
           </p>
-          {view === "activos" && (
-            <Button onClick={() => setOpenNew(true)}>
-              <Plus className="w-4 h-4 mr-2" /> Nuevo prospecto
-            </Button>
-          )}
+          <Button onClick={() => setOpenNew(true)}>
+            <Plus className="w-4 h-4 mr-2" /> Nuevo prospecto
+          </Button>
         </Card>
       )}
 
-      {!isLoading && !error && visible.length > 0 && (
+      {!isLoading && !error && (data?.length ?? 0) > 0 && (
         <>
           {/* Desktop table */}
           <div className="hidden md:block border border-border rounded-lg overflow-x-auto">
@@ -176,7 +110,7 @@ export default function ProspectList() {
                 </tr>
               </thead>
               <tbody>
-                {visible.map((l) => (
+                {data!.map((l) => (
                   <tr key={l.id} className="border-t border-border hover:bg-muted/30">
                     <td className="px-3 py-2">
                       <Link to={`/crm/prospectos/${l.id}`} className="text-primary hover:underline font-medium">
@@ -205,7 +139,7 @@ export default function ProspectList() {
 
           {/* Mobile cards */}
           <div className="md:hidden space-y-3">
-            {visible.map((l) => (
+            {data!.map((l) => (
               <ProspectMobileCard key={l.id} lead={l} />
             ))}
           </div>

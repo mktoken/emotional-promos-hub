@@ -534,12 +534,17 @@ Deno.serve(async (req) => {
       provider: PROVIDER_CODE,
       batch_id: batchId,
       status: finalStatus,
-      items_received: itemsReceived,
+      total_received: itemsReceived,
+      offset_applied: offset,
+      limit_applied: limit ?? null,
+      items_processed: slice.length,
       items_upserted: upserted,
       items_failed: failed,
-      limit_applied: limit ?? null,
+      next_offset: hasMore ? nextOffset : null,
+      has_more: hasMore,
+      next_url_suggested: nextUrlSuggested,
       failed_sample: failedSkus.slice(0, 20),
-      note: "soft-delete desactivado en esta fase; vínculo a productos_b2b queda en null.",
+      note: "soft-delete desactivado en esta fase; vínculo a productos_b2b queda en null. Procesa por bloques con limit/offset hasta has_more=false.",
     });
   } catch (e) {
     console.log("fatal", { stage, error: e instanceof Error ? e.message : "unknown" });

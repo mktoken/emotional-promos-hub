@@ -293,7 +293,13 @@ Deno.serve(async (req) => {
 
     const { list, topLevelKeys } = locateProductList(parsed);
     const itemsReceived = list.length;
-    const slice = limit ? list.slice(0, limit) : list;
+    const sliceEnd = limit ? offset + limit : list.length;
+    const slice = list.slice(offset, sliceEnd);
+    const nextOffset = offset + slice.length;
+    const hasMore = nextOffset < itemsReceived;
+    const nextUrlSuggested = hasMore
+      ? `${url.pathname}?mode=${encodeURIComponent(url.searchParams.get("mode") ?? "dry_run")}&limit=${limit ?? slice.length}&offset=${nextOffset}&test_key=<PROVIDERS_TEST_KEY>`
+      : null;
     const firstKeys = slice.length > 0 && slice[0] && typeof slice[0] === "object"
       ? Object.keys(slice[0] as Record<string, unknown>)
       : [];

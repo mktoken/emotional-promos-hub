@@ -1,6 +1,5 @@
 // Edge Function temporal: test-forpromotional-connection
-// Diagnóstico de conexión con API ForPromotional / 4Promotional.
-// No persiste datos. No expone tokens. No expone proveedor al frontend público.
+// Diagnóstico seguro de estructura. No expone valores ni tokens.
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,10 +13,62 @@ function jsonResponse(status: number, body: Record<string, unknown>) {
   return new Response(JSON.stringify(body), { status, headers: corsHeaders });
 }
 
-function safeBool(v: unknown): boolean {
-  if (Array.isArray(v)) return v.length > 0;
-  if (v && typeof v === "object") return Object.keys(v as object).length > 0;
-  return Boolean(v);
+const PRICE_PATTERNS = [
+  "precio", "price", "cost", "costo", "tarifa", "importe", "amount", "valor",
+];
+const STOCK_PATTERNS = [
+  "stock", "inventario", "inventory", "existencia", "available",
+  "disponib", "quantity", "cantidad",
+];
+const IMAGE_PATTERNS = [
+  "image", "imagen", "img", "foto", "picture", "photo", "thumbnail", "thumb",
+];
+const VARIANT_PATTERNS = [
+  "variant", "variacion", "variación", "color", "modelo", "model",
+  "option", "talla", "size", "material",
+];
+
+function matchFields(keys: string[], patterns: string[]): string[] {
+  const lower = keys.map((k) => ({ raw: k, low: k.toLowerCase() }));
+  const found = new Set<string>();
+  for (const { raw, low } of lower) {
+    for (const p of patterns) {
+      if (low.includes(p)) {
+        found.add(raw);
+        break;
+      }
+    }
+  }
+  return Array.from(found);
+}
+
+function collectKeys(obj: Record<string, unknown>): string[] {
+  const out = new Set<string>(Object.keys(obj));
+  // un nivel de anidación, sin valores
+  for (const v of Object.values(obj)) {
+    if (v && typeof v === "object" && !Array.isArray(v)) {
+      for (const k of Object.keys(v as Record<string, unknown>)) {
+        out.add(k);
+      }
+    } else if (Array.isArray(v) && v.length > 0 && typeof v[0] === "object" && v[0] !== null) {
+      for (const k of Object.keys(v[0] as Record<string, unknown>)) {
+        out.add(k);
+      }
+    }
+  }
+  return Array.from(out);
+}
+
+function shapeSummary(obj: Record<string, unknown>): string {
+  const parts: string[] = [];
+  for (const [k, v] of Object.entries(obj)) {
+    let t: string = typeof v;
+    if (v === null) t = "null";
+    else if (Array.isArray(v)) t = `array[${v.length}]`;
+    else if (typeof v === "object") t = "object";
+    parts.push(`${k}:${t}`);
+  }
+  return parts.join(", ");
 }
 
 Deno.serve(async (req) => {
@@ -58,82 +109,64 @@ Deno.serve(async (req) => {
     try {
       data = JSON.parse(text);
     } catch {
-      // respuesta no-JSON
+      // no-JSON
     }
 
-    // Localizar primer producto en la estructura
+    let topLevelKeys: string[] = [];
+    let productList: unknown[] = [];
     let firstProduct: Record<string, unknown> | null = null;
-    if (Array.isArray(data) && data.length > 0 && typeof data[0] === "object") {
-      firstProduct = data[0] as Record<string, unknown>;
+
+    if (Array.isArray(data)) {
+      productList = data;
+      topLevelKeys = ["<root_array>"];
     } else if (data && typeof data === "object") {
       const obj = data as Record<string, unknown>;
-      const candidateKeys = ["products", "data", "items", "results"];
+      topLevelKeys = Object.keys(obj);
+      const candidateKeys = ["products", "productos", "data", "items", "results", "articulos"];
       for (const k of candidateKeys) {
         const arr = obj[k];
-        if (Array.isArray(arr) && arr.length > 0 && typeof arr[0] === "object") {
-          firstProduct = arr[0] as Record<string, unknown>;
+        if (Array.isArray(arr)) {
+          productList = arr;
           break;
+        }
+      }
+      if (productList.length === 0) {
+        // buscar primer array de objetos
+        for (const v of Object.values(obj)) {
+          if (Array.isArray(v) && v.length > 0 && typeof v[0] === "object") {
+            productList = v;
+            break;
+          }
         }
       }
     }
 
-    const hasProducts = firstProduct !== null;
-    const hasPrice = hasProducts
-      ? safeBool(
-          firstProduct!["price"] ??
-            firstProduct!["prices"] ??
-            firstProduct!["unit_price"] ??
-            firstProduct!["cost"],
-        )
-      : false;
-    const hasStock = hasProducts
-      ? safeBool(
-          firstProduct!["stock"] ??
-            firstProduct!["inventory"] ??
-            firstProduct!["available"] ??
-            firstProduct!["quantity"],
-        )
-      : false;
-    const hasImages = hasProducts
-      ? safeBool(
-          firstProduct!["images"] ??
-            firstProduct!["image"] ??
-            firstProduct!["picture"] ??
-            firstProduct!["photos"],
-        )
-      : false;
-    const hasVariants = hasProducts
-      ? safeBool(
-          firstProduct!["variants"] ??
-            firstProduct!["variations"] ??
-            firstProduct!["colors"] ??
-            firstProduct!["options"],
-        )
-      : false;
-
-    if (!res.ok) {
-      return jsonResponse(res.status, {
-        ok: false,
-        provider: "forpromotional",
-        status: res.status,
-        hasProducts,
-        hasPrice,
-        hasStock,
-        hasImages,
-        hasVariants,
-        error_message: `HTTP ${res.status}`,
-      });
+    if (productList.length > 0 && typeof productList[0] === "object" && productList[0] !== null) {
+      firstProduct = productList[0] as Record<string, unknown>;
     }
 
-    return jsonResponse(200, {
-      ok: true,
+    const firstProductKeys = firstProduct ? collectKeys(firstProduct) : [];
+    const safeShapeSummary = firstProduct ? shapeSummary(firstProduct) : "";
+
+    const detectedPriceFields = matchFields(firstProductKeys, PRICE_PATTERNS);
+    const detectedStockFields = matchFields(firstProductKeys, STOCK_PATTERNS);
+    const detectedImageFields = matchFields(firstProductKeys, IMAGE_PATTERNS);
+    const detectedVariantFields = matchFields(firstProductKeys, VARIANT_PATTERNS);
+
+    return jsonResponse(res.ok ? 200 : res.status, {
+      ok: res.ok,
       provider: "forpromotional",
       status: res.status,
-      hasProducts,
-      hasPrice,
-      hasStock,
-      hasImages,
-      hasVariants,
+      hasProducts: firstProduct !== null,
+      productCountDetected: productList.length,
+      topLevelKeys,
+      firstProductKeys,
+      detectedPriceFields,
+      detectedStockFields,
+      detectedImageFields,
+      detectedVariantFields,
+      safeShapeSummary,
+      ...(res.ok ? {} : { error_message: `HTTP ${res.status}` }),
     });
   } catch (e) {
     return jsonResponse(500, {

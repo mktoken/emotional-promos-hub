@@ -184,6 +184,14 @@ Deno.serve(async (req) => {
       return Math.min(n, 5000);
     })();
 
+    const offsetRaw = url.searchParams.get("offset");
+    const offset = (() => {
+      if (!offsetRaw) return 0;
+      const n = parseInt(offsetRaw, 10);
+      if (!Number.isFinite(n) || n < 0) return 0;
+      return n;
+    })();
+
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE, {
       auth: { persistSession: false },
     });

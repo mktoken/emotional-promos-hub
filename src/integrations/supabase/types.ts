@@ -872,6 +872,168 @@ export type Database = {
           },
         ]
       }
+      producto_precio_escalas: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          max_qty: number | null
+          min_qty: number
+          oferta_id: string
+          proveedor_id: string
+          source_field: string | null
+          unit_cost: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          id?: string
+          max_qty?: number | null
+          min_qty?: number
+          oferta_id: string
+          proveedor_id: string
+          source_field?: string | null
+          unit_cost: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          max_qty?: number | null
+          min_qty?: number
+          oferta_id?: string
+          proveedor_id?: string
+          source_field?: string | null
+          unit_cost?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "producto_precio_escalas_oferta_id_fkey"
+            columns: ["oferta_id"]
+            isOneToOne: false
+            referencedRelation: "producto_proveedor_ofertas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "producto_precio_escalas_proveedor_id_fkey"
+            columns: ["proveedor_id"]
+            isOneToOne: false
+            referencedRelation: "proveedores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      producto_proveedor_ofertas: {
+        Row: {
+          activo: boolean
+          atributos: Json
+          color_code: string | null
+          color_nombre: string | null
+          created_at: string
+          id: string
+          imagen_url: string | null
+          material: string | null
+          modelo: string | null
+          proveedor_id: string
+          provider_raw_product_id: string
+          talla: string | null
+          updated_at: string
+          variant_sku: string | null
+        }
+        Insert: {
+          activo?: boolean
+          atributos?: Json
+          color_code?: string | null
+          color_nombre?: string | null
+          created_at?: string
+          id?: string
+          imagen_url?: string | null
+          material?: string | null
+          modelo?: string | null
+          proveedor_id: string
+          provider_raw_product_id: string
+          talla?: string | null
+          updated_at?: string
+          variant_sku?: string | null
+        }
+        Update: {
+          activo?: boolean
+          atributos?: Json
+          color_code?: string | null
+          color_nombre?: string | null
+          created_at?: string
+          id?: string
+          imagen_url?: string | null
+          material?: string | null
+          modelo?: string | null
+          proveedor_id?: string
+          provider_raw_product_id?: string
+          talla?: string | null
+          updated_at?: string
+          variant_sku?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "producto_proveedor_ofertas_proveedor_id_fkey"
+            columns: ["proveedor_id"]
+            isOneToOne: false
+            referencedRelation: "proveedores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "producto_proveedor_ofertas_provider_raw_product_id_fkey"
+            columns: ["provider_raw_product_id"]
+            isOneToOne: false
+            referencedRelation: "provider_raw_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      producto_proveedor_stock: {
+        Row: {
+          cantidad: number
+          disponibilidad: string
+          id: string
+          oferta_id: string
+          proveedor_id: string
+          updated_at: string
+        }
+        Insert: {
+          cantidad?: number
+          disponibilidad?: string
+          id?: string
+          oferta_id: string
+          proveedor_id: string
+          updated_at?: string
+        }
+        Update: {
+          cantidad?: number
+          disponibilidad?: string
+          id?: string
+          oferta_id?: string
+          proveedor_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "producto_proveedor_stock_oferta_id_fkey"
+            columns: ["oferta_id"]
+            isOneToOne: true
+            referencedRelation: "producto_proveedor_ofertas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "producto_proveedor_stock_proveedor_id_fkey"
+            columns: ["proveedor_id"]
+            isOneToOne: false
+            referencedRelation: "proveedores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       productos_b2b: {
         Row: {
           activo: boolean | null
@@ -955,6 +1117,178 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      proveedores: {
+        Row: {
+          activo: boolean
+          code: string
+          config: Json
+          created_at: string
+          id: string
+          last_sync_at: string | null
+          markup_pct: number
+          moneda: string
+          nombre: string
+          updated_at: string
+        }
+        Insert: {
+          activo?: boolean
+          code: string
+          config?: Json
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          markup_pct?: number
+          moneda?: string
+          nombre: string
+          updated_at?: string
+        }
+        Update: {
+          activo?: boolean
+          code?: string
+          config?: Json
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          markup_pct?: number
+          moneda?: string
+          nombre?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      provider_import_batches: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          finished_at: string | null
+          id: string
+          items_failed: number
+          items_received: number
+          items_upserted: number
+          mode: string
+          proveedor_id: string
+          started_at: string
+          status: string
+          triggered_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          items_failed?: number
+          items_received?: number
+          items_upserted?: number
+          mode?: string
+          proveedor_id: string
+          started_at?: string
+          status?: string
+          triggered_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          items_failed?: number
+          items_received?: number
+          items_upserted?: number
+          mode?: string
+          proveedor_id?: string
+          started_at?: string
+          status?: string
+          triggered_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_import_batches_proveedor_id_fkey"
+            columns: ["proveedor_id"]
+            isOneToOne: false
+            referencedRelation: "proveedores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_raw_products: {
+        Row: {
+          activo: boolean
+          batch_id: string | null
+          categoria: string | null
+          created_at: string
+          descripcion: string | null
+          id: string
+          last_seen_at: string
+          nombre: string | null
+          productos_b2b_id: string | null
+          proveedor_id: string
+          provider_sku: string
+          raw_payload: Json
+          subcategoria: string | null
+          updated_at: string
+        }
+        Insert: {
+          activo?: boolean
+          batch_id?: string | null
+          categoria?: string | null
+          created_at?: string
+          descripcion?: string | null
+          id?: string
+          last_seen_at?: string
+          nombre?: string | null
+          productos_b2b_id?: string | null
+          proveedor_id: string
+          provider_sku: string
+          raw_payload: Json
+          subcategoria?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activo?: boolean
+          batch_id?: string | null
+          categoria?: string | null
+          created_at?: string
+          descripcion?: string | null
+          id?: string
+          last_seen_at?: string
+          nombre?: string | null
+          productos_b2b_id?: string | null
+          proveedor_id?: string
+          provider_sku?: string
+          raw_payload?: Json
+          subcategoria?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_raw_products_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "provider_import_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_raw_products_productos_b2b_id_fkey"
+            columns: ["productos_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_raw_products_productos_b2b_id_fkey"
+            columns: ["productos_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_publicos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_raw_products_proveedor_id_fkey"
+            columns: ["proveedor_id"]
+            isOneToOne: false
+            referencedRelation: "proveedores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tabuladores_impresion: {
         Row: {

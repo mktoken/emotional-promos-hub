@@ -184,6 +184,14 @@ Deno.serve(async (req) => {
       return Math.min(n, 5000);
     })();
 
+    const offsetRaw = url.searchParams.get("offset");
+    const offset = (() => {
+      if (!offsetRaw) return 0;
+      const n = parseInt(offsetRaw, 10);
+      if (!Number.isFinite(n) || n < 0) return 0;
+      return n;
+    })();
+
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE, {
       auth: { persistSession: false },
     });
@@ -285,7 +293,13 @@ Deno.serve(async (req) => {
 
     const { list, topLevelKeys } = locateProductList(parsed);
     const itemsReceived = list.length;
-    const slice = limit ? list.slice(0, limit) : list;
+    const sliceEnd = limit ? offset + limit : list.length;
+    const slice = list.slice(offset, sliceEnd);
+    const nextOffset = offset + slice.length;
+    const hasMore = nextOffset < itemsReceived;
+    const nextUrlSuggested = hasMore
+      ? `${url.pathname}?mode=${encodeURIComponent(url.searchParams.get("mode") ?? "dry_run")}&limit=${limit ?? slice.length}&offset=${nextOffset}&test_key=<PROVIDERS_TEST_KEY>`
+      : null;
     const firstKeys = slice.length > 0 && slice[0] && typeof slice[0] === "object"
       ? Object.keys(slice[0] as Record<string, unknown>)
       : [];
@@ -308,9 +322,15 @@ Deno.serve(async (req) => {
         ok: true,
         mode,
         provider: PROVIDER_CODE,
-        items_received: itemsReceived,
-        items_simulated: slice.length,
+        total_received: itemsReceived,
+        offset_applied: offset,
         limit_applied: limit ?? null,
+        items_processed: slice.length,
+        items_upserted: 0,
+        items_failed: 0,
+        next_offset: hasMore ? nextOffset : null,
+        has_more: hasMore,
+        next_url_suggested: nextUrlSuggested,
         topLevelKeys,
         firstProductKeys: firstKeys,
         coverage: {
@@ -514,12 +534,17 @@ Deno.serve(async (req) => {
       provider: PROVIDER_CODE,
       batch_id: batchId,
       status: finalStatus,
-      items_received: itemsReceived,
+      total_received: itemsReceived,
+      offset_applied: offset,
+      limit_applied: limit ?? null,
+      items_processed: slice.length,
       items_upserted: upserted,
       items_failed: failed,
-      limit_applied: limit ?? null,
+      next_offset: hasMore ? nextOffset : null,
+      has_more: hasMore,
+      next_url_suggested: nextUrlSuggested,
       failed_sample: failedSkus.slice(0, 20),
-      note: "soft-delete desactivado en esta fase; vínculo a productos_b2b queda en null.",
+      note: "soft-delete desactivado en esta fase; vínculo a productos_b2b queda en null. Procesa por bloques con limit/offset hasta has_more=false.",
     });
   } catch (e) {
     console.log("fatal", { stage, error: e instanceof Error ? e.message : "unknown" });

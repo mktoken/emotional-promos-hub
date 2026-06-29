@@ -930,7 +930,7 @@ export type Database = {
         Row: {
           activo: boolean
           atributos: Json
-          color_code: string | null
+          color_code: string
           color_nombre: string | null
           created_at: string
           id: string
@@ -939,14 +939,14 @@ export type Database = {
           modelo: string | null
           proveedor_id: string
           provider_raw_product_id: string
-          talla: string | null
+          talla: string
           updated_at: string
-          variant_sku: string | null
+          variant_sku: string
         }
         Insert: {
           activo?: boolean
           atributos?: Json
-          color_code?: string | null
+          color_code?: string
           color_nombre?: string | null
           created_at?: string
           id?: string
@@ -955,14 +955,14 @@ export type Database = {
           modelo?: string | null
           proveedor_id: string
           provider_raw_product_id: string
-          talla?: string | null
+          talla?: string
           updated_at?: string
-          variant_sku?: string | null
+          variant_sku?: string
         }
         Update: {
           activo?: boolean
           atributos?: Json
-          color_code?: string | null
+          color_code?: string
           color_nombre?: string | null
           created_at?: string
           id?: string
@@ -971,9 +971,9 @@ export type Database = {
           modelo?: string | null
           proveedor_id?: string
           provider_raw_product_id?: string
-          talla?: string | null
+          talla?: string
           updated_at?: string
-          variant_sku?: string | null
+          variant_sku?: string
         }
         Relationships: [
           {

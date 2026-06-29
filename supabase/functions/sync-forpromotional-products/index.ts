@@ -126,6 +126,24 @@ function buildOfertaAtributos(p: Record<string, unknown>) {
   return out;
 }
 
+function normalizeKeyPart(v: unknown): string {
+  if (v === null || v === undefined) return "";
+  const s = String(v).trim().toUpperCase().replace(/\s+/g, "_");
+  return s;
+}
+
+function buildVariantSku(p: Record<string, unknown>): string {
+  const parts = [
+    "FP",
+    normalizeKeyPart(p["id_articulo"]),
+    normalizeKeyPart(p["id_artd"]),
+    normalizeKeyPart(p["modelo"]),
+    normalizeKeyPart(p["color"]),
+    normalizeKeyPart(p["talla"]),
+  ];
+  return parts.join("|");
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { status: 200, headers: corsHeaders });
@@ -377,15 +395,17 @@ Deno.serve(async (req) => {
         const rawId = rawRow.id as string;
 
         // 2. oferta upsert
+        const variantSku = buildVariantSku(p);
+        const tallaNorm = normalizeKeyPart(p["talla"]);
         const { data: ofertaRow, error: ofertaErr } = await supabase
           .from("producto_proveedor_ofertas")
           .upsert({
             provider_raw_product_id: rawId,
             proveedor_id,
-            variant_sku: sku,
-            color_code: null,
+            variant_sku: variantSku,
+            color_code: "",
             color_nombre: cleanText(p["color"]),
-            talla: cleanText(p["talla"]),
+            talla: tallaNorm,
             material: cleanText(p["material"]),
             modelo: cleanText(p["modelo"]),
             imagen_url: pickFirstImage(p),

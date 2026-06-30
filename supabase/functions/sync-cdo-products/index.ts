@@ -490,7 +490,7 @@ Deno.serve(async (req) => {
           const ofertaId = ofertaRow.id as string;
 
           // 3. precio (escala única 1-null)
-          const priceInfo = pickPrice(p);
+          const priceInfo = pickPrice(p, variant);
           if (priceInfo) {
             const { data: existingTiers, error: tiersErr } = await supabase
               .from("producto_precio_escalas")

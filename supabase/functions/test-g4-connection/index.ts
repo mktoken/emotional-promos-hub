@@ -97,14 +97,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (mode !== "product" && mode !== "stock") {
+    if (mode !== "product" && mode !== "stock" && mode !== "sample") {
       return jsonResponse(400, {
         ok: false,
-        error: "Parámetro mode debe ser 'product' o 'stock'",
+        error: "Parámetro mode debe ser 'product', 'stock' o 'sample'",
         attempts,
       });
     }
-    if (!sku) {
+    if (mode !== "sample" && !sku) {
       return jsonResponse(400, {
         ok: false,
         error: "Parámetro sku requerido",
@@ -113,7 +113,8 @@ Deno.serve(async (req) => {
     }
 
     const method: "getProduct" | "getProductStock" =
-      mode === "product" ? "getProduct" : "getProductStock";
+      mode === "stock" ? "getProductStock" : "getProduct";
+    const effectiveSku = mode === "sample" ? "" : (sku ?? "");
 
     // Probar varios namespaces comunes para SOAP G4
     const namespaces = [
@@ -128,7 +129,7 @@ Deno.serve(async (req) => {
     let lastStatus = 0;
 
     for (const ns of namespaces) {
-      const envelope = buildSoapEnvelope(method, G4_USER, G4_KEY, sku, ns);
+      const envelope = buildSoapEnvelope(method, G4_USER, G4_KEY, effectiveSku, ns);
       const soapAction = `${ns}${ns.endsWith("/") ? "" : "/"}${method}`;
 
       try {
@@ -155,6 +156,34 @@ Deno.serve(async (req) => {
 
         if (res.ok && !isFault) {
           const decoded = tryDecodeBase64(text) ?? text;
+          if (mode === "sample") {
+            const productMatches = decoded.match(/<([a-zA-Z_][\w.]*:)?product\b[^>]*>/gi) || [];
+            const productCountDetected = productMatches.length;
+            const firstProductMatch = decoded.match(/<([a-zA-Z_][\w.]*:)?product\b[^>]*>([\s\S]*?)<\/([a-zA-Z_][\w.]*:)?product>/i);
+            let firstProductKeys: string[] = [];
+            let sampleSku: string | null = null;
+            if (firstProductMatch) {
+              const inner = firstProductMatch[2];
+              const keyMatches = inner.match(/<([a-zA-Z_][\w.]*)[^>]*>/g) || [];
+              firstProductKeys = [...new Set(keyMatches.map(k => {
+                const m = k.match(/<([a-zA-Z_][\w.]*)[^>]*>/);
+                return m ? m[1].split(":").pop()! : "";
+              }).filter(Boolean))];
+              const skuMatch = inner.match(/<[^>]*\bsku\b[^>]*>([^<]*)<\/[^>]*>/i) || inner.match(/<[^>]*\bcode\b[^>]*>([^<]*)<\/[^>]*>/i);
+              sampleSku = skuMatch ? skuMatch[1].trim() : null;
+            }
+            return jsonResponse(200, {
+              ok: true,
+              mode,
+              method,
+              status: res.status,
+              productCountDetected,
+              firstProductKeys,
+              sampleSku,
+              decodedXmlPreview: decoded.slice(0, 1000),
+              attempts,
+            });
+          }
           return jsonResponse(200, {
             ok: true,
             mode,

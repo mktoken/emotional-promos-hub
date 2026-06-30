@@ -54,29 +54,42 @@ function pickProviderSku(p: Record<string, unknown>): string | null {
   );
 }
 
-function pickPrice(p: Record<string, unknown>): { unit_cost: number; source: string } | null {
-  const net = toNum(p["net_price"]);
-  if (net !== null && net > 0) return { unit_cost: net, source: "net_price" };
-  const list = toNum(p["list_price"]);
-  if (list !== null && list > 0) return { unit_cost: list, source: "list_price" };
+function pickPriceFrom(src: Record<string, unknown>, prefix: string): { unit_cost: number; source: string } | null {
+  const net = toNum(src["net_price"]);
+  if (net !== null && net > 0) return { unit_cost: net, source: `${prefix}.net_price` };
+  const list = toNum(src["list_price"]);
+  if (list !== null && list > 0) return { unit_cost: list, source: `${prefix}.list_price` };
   return null;
 }
 
-function pickStock(p: Record<string, unknown>): number | null {
-  const a = toNum(p["stock_available"]);
+function pickPrice(p: Record<string, unknown>, variant?: Record<string, unknown>): { unit_cost: number; source: string } | null {
+  if (variant) {
+    const v = pickPriceFrom(variant, "variant");
+    if (v) return v;
+  }
+  return pickPriceFrom(p, "product");
+}
+
+function pickStockFrom(src: Record<string, unknown>): number | null {
+  const a = toNum(src["stock_available"]);
   if (a !== null) return a;
-  const b = toNum(p["quantity"]);
+  const b = toNum(src["quantity"]);
   if (b !== null) return b;
-  const c = toNum(p["stock_existent"]);
+  const c = toNum(src["stock_existent"]);
   if (c !== null) return c;
   return null;
 }
 
-function pickFirstImage(p: Record<string, unknown>): string | null {
-  const candidates: unknown[] = [
-    p["picture"],
-    p["detail_picture"],
-  ];
+function pickStock(p: Record<string, unknown>, variant?: Record<string, unknown>): number | null {
+  if (variant) {
+    const v = pickStockFrom(variant);
+    if (v !== null) return v;
+  }
+  return pickStockFrom(p);
+}
+
+function pickImageFrom(src: Record<string, unknown>): string | null {
+  const candidates: unknown[] = [src["picture"], src["detail_picture"]];
   for (const c of candidates) {
     if (c && typeof c === "object") {
       const url =
@@ -89,7 +102,7 @@ function pickFirstImage(p: Record<string, unknown>): string | null {
       return c.trim();
     }
   }
-  const others = p["other_pictures"];
+  const others = src["other_pictures"];
   if (Array.isArray(others)) {
     for (const it of others) {
       if (it && typeof it === "object") {
@@ -103,7 +116,7 @@ function pickFirstImage(p: Record<string, unknown>): string | null {
       }
     }
   }
-  const icons = p["icons"];
+  const icons = src["icons"];
   if (Array.isArray(icons) && icons.length > 0) {
     const it = icons[0];
     if (typeof it === "string" && it.trim()) return it.trim();
@@ -113,6 +126,14 @@ function pickFirstImage(p: Record<string, unknown>): string | null {
     }
   }
   return null;
+}
+
+function pickFirstImage(p: Record<string, unknown>, variant?: Record<string, unknown>): string | null {
+  if (variant) {
+    const v = pickImageFrom(variant);
+    if (v) return v;
+  }
+  return pickImageFrom(p);
 }
 
 function pickCategoria(p: Record<string, unknown>): { categoria: string | null; subcategoria: string | null } {
@@ -148,18 +169,16 @@ function buildOfertaAtributos(p: Record<string, unknown>) {
 }
 
 function buildVariantSku(p: Record<string, unknown>, variant?: Record<string, unknown>): string {
-  const parts = [
-    "CDO",
-    normalizeKeyPart(p["code"] ?? p["sku"] ?? p["id"]),
-  ];
+  const productKey = normalizeKeyPart(p["code"] ?? p["sku"] ?? p["id"]);
   if (variant) {
-    parts.push(normalizeKeyPart(variant["id"]));
-    parts.push(normalizeKeyPart(variant["color"] ?? variant["color_name"]));
-  } else {
-    parts.push("");
-    parts.push(normalizeKeyPart(p["color"]));
+    const vSku = cleanText(variant["sku"]) ?? cleanText(variant["code"]);
+    if (vSku) return `CDO|${normalizeKeyPart(vSku)}`;
+    const discriminator = normalizeKeyPart(
+      variant["id"] ?? variant["color_code"] ?? variant["color"] ?? variant["color_name"],
+    );
+    return `CDO|${productKey}|${discriminator}`;
   }
-  return parts.join("|");
+  return `CDO|${productKey}`;
 }
 
 function stockBucket(qty: number): "disponible" | "bajo" | "agotado" {
@@ -301,15 +320,34 @@ Deno.serve(async (req) => {
     const hasMore = itemsReceived >= limit;
     const nextPage = hasMore ? page + 1 : null;
 
-    // Coverage
+    // Coverage a nivel oferta (producto raíz o cada variant)
     let withPrice = 0, withStock = 0, withImage = 0, missingSku = 0;
+    let variantCountDetected = 0;
+    let itemsProcessed = 0;
+    let firstVariantKeys: string[] = [];
+
     for (const it of list) {
       if (!it || typeof it !== "object") continue;
       const p = it as Record<string, unknown>;
       if (!pickProviderSku(p)) missingSku++;
-      if (pickPrice(p)) withPrice++;
-      if (pickStock(p) !== null) withStock++;
-      if (pickFirstImage(p)) withImage++;
+      const variants = Array.isArray(p["variants"]) ? (p["variants"] as unknown[]).filter(v => v && typeof v === "object") as Array<Record<string, unknown>> : [];
+      if (variants.length > 0) {
+        variantCountDetected += variants.length;
+        if (firstVariantKeys.length === 0) {
+          firstVariantKeys = Object.keys(variants[0]);
+        }
+        for (const v of variants) {
+          itemsProcessed++;
+          if (pickPrice(p, v)) withPrice++;
+          if (pickStock(p, v) !== null) withStock++;
+          if (pickFirstImage(p, v)) withImage++;
+        }
+      } else {
+        itemsProcessed++;
+        if (pickPrice(p)) withPrice++;
+        if (pickStock(p) !== null) withStock++;
+        if (pickFirstImage(p)) withImage++;
+      }
     }
 
     if (mode === "dry_run") {
@@ -324,7 +362,7 @@ Deno.serve(async (req) => {
         page,
         limit,
         items_received: itemsReceived,
-        items_processed: 0,
+        items_processed: itemsProcessed,
         items_upserted: 0,
         items_failed: 0,
         has_more: hasMore,
@@ -338,7 +376,9 @@ Deno.serve(async (req) => {
         },
         topLevelKeys,
         firstProductKeys: sampleItem,
-        note: "dry_run: no se escribió en la base. Soft-delete desactivado.",
+        firstVariantKeys,
+        variantCountDetected,
+        note: "dry_run: no se escribió en la base. Coverage calculada a nivel oferta (variant o producto raíz).",
       });
     }
 
@@ -440,7 +480,7 @@ Deno.serve(async (req) => {
               talla: "",
               material: cleanText(p["material"]),
               modelo: cleanText(p["model"] ?? p["modelo"]),
-              imagen_url: pickFirstImage(p),
+              imagen_url: pickFirstImage(p, variant),
               atributos: buildOfertaAtributos(p),
               activo: true,
             }, { onConflict: "provider_raw_product_id,variant_sku,color_code,talla" })
@@ -450,7 +490,7 @@ Deno.serve(async (req) => {
           const ofertaId = ofertaRow.id as string;
 
           // 3. precio (escala única 1-null)
-          const priceInfo = pickPrice(p);
+          const priceInfo = pickPrice(p, variant);
           if (priceInfo) {
             const { data: existingTiers, error: tiersErr } = await supabase
               .from("producto_precio_escalas")
@@ -493,7 +533,7 @@ Deno.serve(async (req) => {
           }
 
           // 4. stock
-          const stockVal = pickStock(p);
+          const stockVal = pickStock(p, variant);
           const qty = stockVal !== null && stockVal >= 0 ? Math.floor(stockVal) : 0;
           const { error: stockErr } = await supabase
             .from("producto_proveedor_stock")

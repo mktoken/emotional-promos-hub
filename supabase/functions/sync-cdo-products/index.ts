@@ -54,29 +54,42 @@ function pickProviderSku(p: Record<string, unknown>): string | null {
   );
 }
 
-function pickPrice(p: Record<string, unknown>): { unit_cost: number; source: string } | null {
-  const net = toNum(p["net_price"]);
-  if (net !== null && net > 0) return { unit_cost: net, source: "net_price" };
-  const list = toNum(p["list_price"]);
-  if (list !== null && list > 0) return { unit_cost: list, source: "list_price" };
+function pickPriceFrom(src: Record<string, unknown>, prefix: string): { unit_cost: number; source: string } | null {
+  const net = toNum(src["net_price"]);
+  if (net !== null && net > 0) return { unit_cost: net, source: `${prefix}.net_price` };
+  const list = toNum(src["list_price"]);
+  if (list !== null && list > 0) return { unit_cost: list, source: `${prefix}.list_price` };
   return null;
 }
 
-function pickStock(p: Record<string, unknown>): number | null {
-  const a = toNum(p["stock_available"]);
+function pickPrice(p: Record<string, unknown>, variant?: Record<string, unknown>): { unit_cost: number; source: string } | null {
+  if (variant) {
+    const v = pickPriceFrom(variant, "variant");
+    if (v) return v;
+  }
+  return pickPriceFrom(p, "product");
+}
+
+function pickStockFrom(src: Record<string, unknown>): number | null {
+  const a = toNum(src["stock_available"]);
   if (a !== null) return a;
-  const b = toNum(p["quantity"]);
+  const b = toNum(src["quantity"]);
   if (b !== null) return b;
-  const c = toNum(p["stock_existent"]);
+  const c = toNum(src["stock_existent"]);
   if (c !== null) return c;
   return null;
 }
 
-function pickFirstImage(p: Record<string, unknown>): string | null {
-  const candidates: unknown[] = [
-    p["picture"],
-    p["detail_picture"],
-  ];
+function pickStock(p: Record<string, unknown>, variant?: Record<string, unknown>): number | null {
+  if (variant) {
+    const v = pickStockFrom(variant);
+    if (v !== null) return v;
+  }
+  return pickStockFrom(p);
+}
+
+function pickImageFrom(src: Record<string, unknown>): string | null {
+  const candidates: unknown[] = [src["picture"], src["detail_picture"]];
   for (const c of candidates) {
     if (c && typeof c === "object") {
       const url =
@@ -89,7 +102,7 @@ function pickFirstImage(p: Record<string, unknown>): string | null {
       return c.trim();
     }
   }
-  const others = p["other_pictures"];
+  const others = src["other_pictures"];
   if (Array.isArray(others)) {
     for (const it of others) {
       if (it && typeof it === "object") {
@@ -103,7 +116,7 @@ function pickFirstImage(p: Record<string, unknown>): string | null {
       }
     }
   }
-  const icons = p["icons"];
+  const icons = src["icons"];
   if (Array.isArray(icons) && icons.length > 0) {
     const it = icons[0];
     if (typeof it === "string" && it.trim()) return it.trim();
@@ -113,6 +126,14 @@ function pickFirstImage(p: Record<string, unknown>): string | null {
     }
   }
   return null;
+}
+
+function pickFirstImage(p: Record<string, unknown>, variant?: Record<string, unknown>): string | null {
+  if (variant) {
+    const v = pickImageFrom(variant);
+    if (v) return v;
+  }
+  return pickImageFrom(p);
 }
 
 function pickCategoria(p: Record<string, unknown>): { categoria: string | null; subcategoria: string | null } {
@@ -148,18 +169,16 @@ function buildOfertaAtributos(p: Record<string, unknown>) {
 }
 
 function buildVariantSku(p: Record<string, unknown>, variant?: Record<string, unknown>): string {
-  const parts = [
-    "CDO",
-    normalizeKeyPart(p["code"] ?? p["sku"] ?? p["id"]),
-  ];
+  const productKey = normalizeKeyPart(p["code"] ?? p["sku"] ?? p["id"]);
   if (variant) {
-    parts.push(normalizeKeyPart(variant["id"]));
-    parts.push(normalizeKeyPart(variant["color"] ?? variant["color_name"]));
-  } else {
-    parts.push("");
-    parts.push(normalizeKeyPart(p["color"]));
+    const vSku = cleanText(variant["sku"]) ?? cleanText(variant["code"]);
+    if (vSku) return `CDO|${normalizeKeyPart(vSku)}`;
+    const discriminator = normalizeKeyPart(
+      variant["id"] ?? variant["color_code"] ?? variant["color"] ?? variant["color_name"],
+    );
+    return `CDO|${productKey}|${discriminator}`;
   }
-  return parts.join("|");
+  return `CDO|${productKey}`;
 }
 
 function stockBucket(qty: number): "disponible" | "bajo" | "agotado" {

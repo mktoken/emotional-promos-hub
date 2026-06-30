@@ -533,7 +533,7 @@ Deno.serve(async (req) => {
           }
 
           // 4. stock
-          const stockVal = pickStock(p);
+          const stockVal = pickStock(p, variant);
           const qty = stockVal !== null && stockVal >= 0 ? Math.floor(stockVal) : 0;
           const { error: stockErr } = await supabase
             .from("producto_proveedor_stock")

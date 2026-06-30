@@ -27,8 +27,9 @@ function buildSoapEnvelope(
   method: "getProduct" | "getProductStock",
   user: string,
   key: string,
-  sku: string,
+  identifier: string,
   namespace: string,
+  parameterName: string = "sku",
 ): string {
   return `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="${namespace}">
@@ -36,7 +37,7 @@ function buildSoapEnvelope(
     <tns:${method}>
       <tns:user>${escapeXml(user)}</tns:user>
       <tns:key>${escapeXml(key)}</tns:key>
-      <tns:sku>${escapeXml(sku)}</tns:sku>
+      <tns:${parameterName}>${escapeXml(identifier)}</tns:${parameterName}>
     </tns:${method}>
   </soap:Body>
 </soap:Envelope>`;
@@ -44,10 +45,8 @@ function buildSoapEnvelope(
 
 function tryDecodeBase64(text: string): string | null {
   try {
-    // Extraer contenido entre tags del Result/Return si existe
     const inner = text.match(/<[^>]*(?:Result|Return)[^>]*>([\s\S]*?)<\/[^>]*(?:Result|Return)[^>]*>/i);
     const candidate = (inner?.[1] ?? text).trim();
-    // Heurística base64
     if (/^[A-Za-z0-9+/=\s]+$/.test(candidate) && candidate.length > 16) {
       const cleaned = candidate.replace(/\s+/g, "");
       const bin = atob(cleaned);
@@ -59,6 +58,72 @@ function tryDecodeBase64(text: string): string | null {
   } catch {
     return null;
   }
+}
+
+// Detecta si el XML decodificado contiene un producto reconocible
+// Campos esperados: codigo_producto, codigo_color, nombre_producto, precio,
+// existencias, sku, code.
+function detectProductInXml(xml: string): {
+  found: boolean;
+  detectedFields: string[];
+  messageCode: string | null;
+  messageDescription: string | null;
+} {
+  const fieldsToProbe = [
+    "codigo_producto",
+    "codigo_color",
+    "nombre_producto",
+    "precio",
+    "existencias",
+    "sku",
+    "code",
+  ];
+  const detected: string[] = [];
+  for (const f of fieldsToProbe) {
+    const re = new RegExp(`<[^>]*\\b${f}\\b[^>]*>([\\s\\S]*?)<\\/[^>]*\\b${f}\\b[^>]*>`, "i");
+    const m = xml.match(re);
+    if (m && m[1] && m[1].trim().length > 0) {
+      detected.push(f);
+    }
+  }
+
+  // Códigos/mensajes de respuesta típicos de WS PHP
+  const codeMatch = xml.match(/<[^>]*\b(?:codigo|code|status|resultado)\b[^>]*>([^<]+)<\/[^>]*>/i);
+  const descMatch = xml.match(/<[^>]*\b(?:mensaje|message|descripcion|description)\b[^>]*>([^<]+)<\/[^>]*>/i);
+
+  // Considera encontrado si detectó al menos un campo de producto (no solo mensaje)
+  const productFields = detected.filter(
+    (f) => f !== "code" || /<[^>]*\bcode\b[^>]*>[^<]{3,}<\//i.test(xml),
+  );
+  const hasProductIndicators = detected.some((f) =>
+    ["codigo_producto", "nombre_producto", "precio", "existencias", "sku"].includes(f),
+  );
+
+  return {
+    found: hasProductIndicators && productFields.length > 0,
+    detectedFields: detected,
+    messageCode: codeMatch ? codeMatch[1].trim().slice(0, 120) : null,
+    messageDescription: descMatch ? descMatch[1].trim().slice(0, 240) : null,
+  };
+}
+
+function buildValueVariants(raw: string): Array<{ label: string; value: string }> {
+  const original = raw;
+  const variants = [
+    { label: "original", value: original },
+    { label: "uppercase", value: original.toUpperCase() },
+    { label: "lowercase", value: original.toLowerCase() },
+    { label: "sin_guiones", value: original.replace(/-/g, "") },
+    { label: "uppercase_sin_guiones", value: original.toUpperCase().replace(/-/g, "") },
+    { label: "guion_bajo", value: original.replace(/-/g, "_") },
+  ];
+  // Deduplicar por value, conservando primer label
+  const seen = new Set<string>();
+  return variants.filter((v) => {
+    if (seen.has(v.value)) return false;
+    seen.add(v.value);
+    return true;
+  });
 }
 
 Deno.serve(async (req) => {
@@ -97,14 +162,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (mode !== "product" && mode !== "stock" && mode !== "sample") {
+    const validModes = ["product", "stock", "sample", "diagnose-g4-sku"];
+    if (!mode || !validModes.includes(mode)) {
       return jsonResponse(400, {
         ok: false,
-        error: "Parámetro mode debe ser 'product', 'stock' o 'sample'",
+        error: `Parámetro mode debe ser uno de: ${validModes.join(", ")}`,
         attempts,
       });
     }
-    if (mode !== "sample" && !sku) {
+    if ((mode === "product" || mode === "stock" || mode === "diagnose-g4-sku") && !sku) {
       return jsonResponse(400, {
         ok: false,
         error: "Parámetro sku requerido",
@@ -112,18 +178,92 @@ Deno.serve(async (req) => {
       });
     }
 
-    const method: "getProduct" | "getProductStock" =
-      mode === "stock" ? "getProductStock" : "getProduct";
-    const effectiveSku = mode === "sample" ? "" : (sku ?? "");
-
-    // Probar varios namespaces comunes para SOAP G4
+    const endpoint = G4_WSDL_URL.replace(/\?wsdl.*$/i, "");
     const namespaces = [
       "http://tempuri.org/",
       "http://www.4promotional.net/",
       "urn:G4",
     ];
 
-    const endpoint = G4_WSDL_URL.replace(/\?wsdl.*$/i, "");
+    // ===== MODE: diagnose-g4-sku =====
+    if (mode === "diagnose-g4-sku") {
+      const parameterNames = ["sku", "codigo_producto", "codigo", "code", "clave"];
+      const valueVariants = buildValueVariants(sku!);
+      const methods: Array<"getProduct" | "getProductStock"> = ["getProduct", "getProductStock"];
+
+      const diagnoseAttempts: Array<Record<string, unknown>> = [];
+      let successful = 0;
+
+      // Para limitar carga, usamos solo el primer namespace que dé HTTP 200 (no fault) o el primero por defecto
+      // pero para diagnóstico probamos con el primer namespace de la lista únicamente.
+      const ns = namespaces[0];
+
+      for (const method of methods) {
+        for (const paramName of parameterNames) {
+          for (const variant of valueVariants) {
+            const envelope = buildSoapEnvelope(method, G4_USER, G4_KEY, variant.value, ns, paramName);
+            const soapAction = `${ns}${ns.endsWith("/") ? "" : "/"}${method}`;
+            try {
+              const res = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "text/xml; charset=utf-8",
+                  "SOAPAction": `"${soapAction}"`,
+                },
+                body: envelope,
+              });
+              const text = await res.text();
+              const decoded = tryDecodeBase64(text) ?? text;
+              const detection = detectProductInXml(decoded);
+              if (detection.found) successful++;
+              diagnoseAttempts.push({
+                method,
+                parameter_name: paramName,
+                value_variant: variant.label,
+                status: res.status,
+                found_product: detection.found,
+                detected_fields: detection.detectedFields,
+                message_code: detection.messageCode,
+                message_description: detection.messageDescription,
+                decodedXmlPreview: decoded.slice(0, 500),
+              });
+            } catch (err) {
+              diagnoseAttempts.push({
+                method,
+                parameter_name: paramName,
+                value_variant: variant.label,
+                status: 0,
+                found_product: false,
+                error: err instanceof Error ? err.message.slice(0, 200) : String(err).slice(0, 200),
+              });
+            }
+          }
+        }
+      }
+
+      const summary: Record<string, number> = {};
+      for (const a of diagnoseAttempts) {
+        if (a.found_product) {
+          const key = `${a.method}|${a.parameter_name}|${a.value_variant}`;
+          summary[key] = (summary[key] ?? 0) + 1;
+        }
+      }
+
+      return jsonResponse(200, {
+        ok: true,
+        mode,
+        sku_original: sku,
+        namespace_used: ns,
+        successful_attempts: successful,
+        attempts_summary: summary,
+        attempts: diagnoseAttempts,
+      });
+    }
+
+    // ===== MODES: product / stock / sample =====
+    const method: "getProduct" | "getProductStock" =
+      mode === "stock" ? "getProductStock" : "getProduct";
+    const effectiveSku = mode === "sample" ? "" : (sku ?? "");
 
     let lastResponseText = "";
     let lastStatus = 0;
@@ -169,7 +309,7 @@ Deno.serve(async (req) => {
                 const m = k.match(/<([a-zA-Z_][\w.]*)[^>]*>/);
                 return m ? m[1].split(":").pop()! : "";
               }).filter(Boolean))];
-              const skuMatch = inner.match(/<[^>]*\bsku\b[^>]*>([^<]*)<\/[^>]*>/i) || inner.match(/<[^>]*\bcode\b[^>]*>([^<]*)<\/[^>]*>/i);
+              const skuMatch = inner.match(/<[^>]*\b(?:codigo_producto|sku|code|clave)\b[^>]*>([^<]*)<\/[^>]*>/i);
               sampleSku = skuMatch ? skuMatch[1].trim() : null;
             }
             return jsonResponse(200, {

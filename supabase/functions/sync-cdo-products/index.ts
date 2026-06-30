@@ -480,7 +480,7 @@ Deno.serve(async (req) => {
               talla: "",
               material: cleanText(p["material"]),
               modelo: cleanText(p["model"] ?? p["modelo"]),
-              imagen_url: pickFirstImage(p),
+              imagen_url: pickFirstImage(p, variant),
               atributos: buildOfertaAtributos(p),
               activo: true,
             }, { onConflict: "provider_raw_product_id,variant_sku,color_code,talla" })

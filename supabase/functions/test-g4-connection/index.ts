@@ -72,12 +72,13 @@ Deno.serve(async (req) => {
     const G4_USER = Deno.env.get("G4_USER") ?? "";
     const G4_KEY = Deno.env.get("G4_KEY") ?? "";
     const G4_WSDL_URL = Deno.env.get("G4_WSDL_URL") ?? "";
+    const PROVIDERS_TEST_KEY = Deno.env.get("PROVIDERS_TEST_KEY") ?? "";
     const G4_TEST_KEY = Deno.env.get("G4_TEST_KEY") ?? "";
 
-    if (!G4_USER || !G4_KEY || !G4_WSDL_URL || !G4_TEST_KEY) {
+    if (!G4_USER || !G4_KEY || !G4_WSDL_URL || (!PROVIDERS_TEST_KEY && !G4_TEST_KEY)) {
       return jsonResponse(500, {
         ok: false,
-        error: "Faltan secrets G4_USER, G4_KEY, G4_WSDL_URL o G4_TEST_KEY",
+        error: "Faltan secrets G4_USER, G4_KEY, G4_WSDL_URL o algún test_key",
         attempts,
       });
     }
@@ -87,7 +88,8 @@ Deno.serve(async (req) => {
     const sku = url.searchParams.get("sku");
     const testKey = url.searchParams.get("test_key");
 
-    if (testKey !== G4_TEST_KEY) {
+    const validTestKey = PROVIDERS_TEST_KEY || G4_TEST_KEY;
+    if (testKey !== validTestKey) {
       return jsonResponse(401, {
         ok: false,
         error: "test_key inválido",

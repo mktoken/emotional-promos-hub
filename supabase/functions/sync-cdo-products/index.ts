@@ -330,37 +330,55 @@ Deno.serve(async (req) => {
 
     const { list, topLevelKeys } = locateProductList(parsed);
     const itemsReceived = list.length;
-    const hasMore = itemsReceived >= limit;
-    const nextPage = hasMore ? page + 1 : null;
+    const hasMorePages = itemsReceived >= limit;
+    const nextPage = hasMorePages ? page + 1 : null;
 
-    // Coverage a nivel oferta (producto raíz o cada variant)
-    let withPrice = 0, withStock = 0, withImage = 0, missingSku = 0;
+    // Normalizar a ofertas (una por variant o producto raíz)
+    type NormalizedOffer = { p: Record<string, unknown>; v?: Record<string, unknown> };
+    const normalizedOffers: NormalizedOffer[] = [];
+    let missingSku = 0;
     let variantCountDetected = 0;
-    let itemsProcessed = 0;
     let firstVariantKeys: string[] = [];
 
     for (const it of list) {
       if (!it || typeof it !== "object") continue;
       const p = it as Record<string, unknown>;
       if (!pickProviderSku(p)) missingSku++;
-      const variants = Array.isArray(p["variants"]) ? (p["variants"] as unknown[]).filter(v => v && typeof v === "object") as Array<Record<string, unknown>> : [];
+      const variants = Array.isArray(p["variants"])
+        ? (p["variants"] as unknown[]).filter((v) => v && typeof v === "object") as Array<Record<string, unknown>>
+        : [];
       if (variants.length > 0) {
         variantCountDetected += variants.length;
-        if (firstVariantKeys.length === 0) {
-          firstVariantKeys = Object.keys(variants[0]);
-        }
-        for (const v of variants) {
-          itemsProcessed++;
-          if (pickPrice(p, v)) withPrice++;
-          if (pickStock(p, v) !== null) withStock++;
-          if (pickFirstImage(p, v)) withImage++;
-        }
+        if (firstVariantKeys.length === 0) firstVariantKeys = Object.keys(variants[0]);
+        for (const v of variants) normalizedOffers.push({ p, v });
       } else {
-        itemsProcessed++;
-        if (pickPrice(p)) withPrice++;
-        if (pickStock(p) !== null) withStock++;
-        if (pickFirstImage(p)) withImage++;
+        normalizedOffers.push({ p });
       }
+    }
+
+    const totalOffersDetected = normalizedOffers.length;
+    const offerSlice = normalizedOffers.slice(offerOffset, offerOffset + offerLimit);
+    const itemsProcessed = offerSlice.length;
+    const nextOfferOffset = offerOffset + offerLimit;
+    const hasMoreOffers = nextOfferOffset < totalOffersDetected;
+
+    // Coverage solo del slice
+    let withPrice = 0, withStock = 0, withImage = 0;
+    for (const { p, v } of offerSlice) {
+      if (pickPrice(p, v)) withPrice++;
+      if (pickStock(p, v) !== null) withStock++;
+      if (pickFirstImage(p, v)) withImage++;
+    }
+
+    function buildNextUrl(): string | null {
+      const base = `?mode=${mode}&env=${env}&limit=${limit}&offer_limit=${offerLimit}`;
+      if (hasMoreOffers) {
+        return `${base}&page=${page}&offer_offset=${nextOfferOffset}`;
+      }
+      if (hasMorePages) {
+        return `${base}&page=${page + 1}&offer_offset=0`;
+      }
+      return null;
     }
 
     if (mode === "dry_run") {
@@ -375,11 +393,17 @@ Deno.serve(async (req) => {
         page,
         limit,
         items_received: itemsReceived,
+        total_offers_detected: totalOffersDetected,
+        offer_offset_applied: offerOffset,
+        offer_limit_applied: offerLimit,
         items_processed: itemsProcessed,
         items_upserted: 0,
         items_failed: 0,
-        has_more: hasMore,
-        next_page: nextPage,
+        next_offer_offset: hasMoreOffers ? nextOfferOffset : null,
+        has_more_offers: hasMoreOffers,
+        next_page: hasMorePages ? page + 1 : null,
+        has_more_pages: hasMorePages,
+        next_url_suggested: buildNextUrl(),
         failed_sample: [],
         coverage: {
           with_price: withPrice,
@@ -391,7 +415,7 @@ Deno.serve(async (req) => {
         firstProductKeys: sampleItem,
         firstVariantKeys,
         variantCountDetected,
-        note: "dry_run: no se escribió en la base. Coverage calculada a nivel oferta (variant o producto raíz).",
+        note: "dry_run: no se escribió. Procesa por bloques con offer_limit/offer_offset; al terminar ofertas avanza page+1.",
       });
     }
 
@@ -434,13 +458,18 @@ Deno.serve(async (req) => {
     let upserted = 0, failed = 0;
     const failedSkus: string[] = [];
 
-    for (const it of list) {
-      if (!it || typeof it !== "object") { failed++; continue; }
-      const p = it as Record<string, unknown>;
+    // Agrupar slice por producto raíz para no re-upsertar raw N veces
+    const groups = new Map<string, { p: Record<string, unknown>; variants: Array<Record<string, unknown> | undefined> }>();
+    for (const { p, v } of offerSlice) {
       const skuRaw = pickProviderSku(p);
       if (!skuRaw) { failed++; continue; }
       const sku = skuRaw.toUpperCase();
+      const g = groups.get(sku);
+      if (g) g.variants.push(v);
+      else groups.set(sku, { p, variants: [v] });
+    }
 
+    for (const [sku, { p, variants: variantList }] of groups) {
       try {
         const cat = pickCategoria(p);
 
@@ -465,13 +494,6 @@ Deno.serve(async (req) => {
         if (rawErr || !rawRow?.id) throw new Error(rawErr?.message ?? "raw upsert failed");
         const rawId = rawRow.id as string;
 
-        // Iterar variantes (si las hay), si no, un solo registro
-        const variants = Array.isArray(p["variants"]) ? (p["variants"] as unknown[]) : [];
-        const variantList: Array<Record<string, unknown> | undefined> =
-          variants.length > 0
-            ? variants.filter((v) => v && typeof v === "object") as Array<Record<string, unknown>>
-            : [undefined];
-
         for (const variant of variantList) {
           const variantSku = buildVariantSku(p, variant);
           const colorNombre = variant
@@ -481,7 +503,6 @@ Deno.serve(async (req) => {
             ? (cleanText(variant["color_code"] ?? variant["id"]) ?? "")
             : "";
 
-          // 2. oferta
           const { data: ofertaRow, error: ofertaErr } = await supabase
             .from("producto_proveedor_ofertas")
             .upsert({
@@ -502,7 +523,6 @@ Deno.serve(async (req) => {
           if (ofertaErr || !ofertaRow?.id) throw new Error(ofertaErr?.message ?? "oferta upsert failed");
           const ofertaId = ofertaRow.id as string;
 
-          // 3. precio (escala única 1-null)
           const priceInfo = pickPrice(p, variant);
           if (priceInfo) {
             const { data: existingTiers, error: tiersErr } = await supabase
@@ -545,7 +565,6 @@ Deno.serve(async (req) => {
             }
           }
 
-          // 4. stock
           const stockVal = pickStock(p, variant);
           const qty = stockVal !== null && stockVal >= 0 ? Math.floor(stockVal) : 0;
           const { error: stockErr } = await supabase
@@ -558,9 +577,9 @@ Deno.serve(async (req) => {
               updated_at: new Date().toISOString(),
             }, { onConflict: "oferta_id" });
           if (stockErr) throw new Error(`stock upsert: ${stockErr.message}`);
-        }
 
-        upserted++;
+          upserted++;
+        }
       } catch (e) {
         failed++;
         if (failedSkus.length < 20) failedSkus.push(sku);
@@ -568,7 +587,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Cerrar batch
     stage = "batch_close";
     const finalStatus =
       failed === 0 ? "ok" :
@@ -602,11 +620,17 @@ Deno.serve(async (req) => {
       batch_id: batchId,
       status: finalStatus,
       items_received: itemsReceived,
-      items_processed: list.length,
+      total_offers_detected: totalOffersDetected,
+      offer_offset_applied: offerOffset,
+      offer_limit_applied: offerLimit,
+      items_processed: itemsProcessed,
       items_upserted: upserted,
       items_failed: failed,
-      has_more: hasMore,
-      next_page: nextPage,
+      next_offer_offset: hasMoreOffers ? nextOfferOffset : null,
+      has_more_offers: hasMoreOffers,
+      next_page: hasMorePages ? page + 1 : null,
+      has_more_pages: hasMorePages,
+      next_url_suggested: buildNextUrl(),
       failed_sample: failedSkus,
       coverage: {
         with_price: withPrice,
@@ -614,7 +638,7 @@ Deno.serve(async (req) => {
         with_image: withImage,
         missing_sku: missingSku,
       },
-      note: "soft-delete desactivado; productos_b2b_id queda en null. Avanza paginando con page hasta has_more=false.",
+      note: "Procesa por bloques offer_limit/offer_offset; al agotar ofertas avanza page+1 con offer_offset=0.",
     });
   } catch (e) {
     console.log("fatal", { stage, error: e instanceof Error ? e.message : "unknown" });
@@ -625,3 +649,4 @@ Deno.serve(async (req) => {
     });
   }
 });
+

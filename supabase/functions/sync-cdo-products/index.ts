@@ -320,15 +320,34 @@ Deno.serve(async (req) => {
     const hasMore = itemsReceived >= limit;
     const nextPage = hasMore ? page + 1 : null;
 
-    // Coverage
+    // Coverage a nivel oferta (producto raíz o cada variant)
     let withPrice = 0, withStock = 0, withImage = 0, missingSku = 0;
+    let variantCountDetected = 0;
+    let itemsProcessed = 0;
+    let firstVariantKeys: string[] = [];
+
     for (const it of list) {
       if (!it || typeof it !== "object") continue;
       const p = it as Record<string, unknown>;
       if (!pickProviderSku(p)) missingSku++;
-      if (pickPrice(p)) withPrice++;
-      if (pickStock(p) !== null) withStock++;
-      if (pickFirstImage(p)) withImage++;
+      const variants = Array.isArray(p["variants"]) ? (p["variants"] as unknown[]).filter(v => v && typeof v === "object") as Array<Record<string, unknown>> : [];
+      if (variants.length > 0) {
+        variantCountDetected += variants.length;
+        if (firstVariantKeys.length === 0) {
+          firstVariantKeys = Object.keys(variants[0]);
+        }
+        for (const v of variants) {
+          itemsProcessed++;
+          if (pickPrice(p, v)) withPrice++;
+          if (pickStock(p, v) !== null) withStock++;
+          if (pickFirstImage(p, v)) withImage++;
+        }
+      } else {
+        itemsProcessed++;
+        if (pickPrice(p)) withPrice++;
+        if (pickStock(p) !== null) withStock++;
+        if (pickFirstImage(p)) withImage++;
+      }
     }
 
     if (mode === "dry_run") {
@@ -343,7 +362,7 @@ Deno.serve(async (req) => {
         page,
         limit,
         items_received: itemsReceived,
-        items_processed: 0,
+        items_processed: itemsProcessed,
         items_upserted: 0,
         items_failed: 0,
         has_more: hasMore,
@@ -357,7 +376,9 @@ Deno.serve(async (req) => {
         },
         topLevelKeys,
         firstProductKeys: sampleItem,
-        note: "dry_run: no se escribió en la base. Soft-delete desactivado.",
+        firstVariantKeys,
+        variantCountDetected,
+        note: "dry_run: no se escribió en la base. Coverage calculada a nivel oferta (variant o producto raíz).",
       });
     }
 

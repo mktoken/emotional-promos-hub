@@ -265,6 +265,19 @@ Deno.serve(async (req) => {
       return n;
     })();
 
+    const offerLimitRaw = url.searchParams.get("offer_limit");
+    const offerLimit = (() => {
+      const n = offerLimitRaw ? parseInt(offerLimitRaw, 10) : 100;
+      if (!Number.isFinite(n) || n <= 0) return 100;
+      return Math.min(n, 500);
+    })();
+    const offerOffsetRaw = url.searchParams.get("offer_offset");
+    const offerOffset = (() => {
+      const n = offerOffsetRaw ? parseInt(offerOffsetRaw, 10) : 0;
+      if (!Number.isFinite(n) || n < 0) return 0;
+      return n;
+    })();
+
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE, {
       auth: { persistSession: false },
     });

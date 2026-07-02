@@ -1,477 +1,658 @@
-# Plan — `sync-g4-products` (no ejecutar Build todavía)
+# Sprint 2 (v2) — Piloto de promoción proveedor → catálogo interno
 
-Objetivo: crear una Edge Function que consuma el WebService SOAP de G4 (`getProduct` sin SKU para catálogo completo, `getProductStock` para existencias) y lo normalice hacia las tablas proveedor ya existentes, sin tocar `productos_b2b`, sin exponer costos, y sin timeout.
+Correcciones aplicadas respecto a v1: `activo=false` forzado, `id_interno` opaco, `datos_generales` sin campos sensibles, `stock_status` acotado, `base_cost_strategy` alineado a seeds, `productos_publicos` blindado.
 
-## 1. Mapeo G4 → tablas proveedor
+Objetivo: promover 50 productos (20 CDO, 20 ForPromotional, 10 G4) desde tablas proveedor a `productos_b2b` + `producto_b2b_status` + `producto_b2b_oferta_map` + `catalog_price_cache`. Sin tocar frontend, sin tocar `productos_publicos`, sin cambiar RLS, sin calcular impresión.
 
-Proveedor G4 (row en `proveedores` con `slug='g4'` o `codigo='g4'`). Cada `<producto>` de G4 se representa así:
+---
 
-### 1.1 `provider_raw_products` (staging, 1 fila por variante de color)
+## 1. Diagnóstico del esquema real (validado por lectura directa)
 
-- `proveedor_id` → id de G4
-- `external_id` → `codigo_producto` (padre) — o `codigo_producto|codigo_color` si prefieres 1 fila por variante; recomendado: **padre**, y variantes viven como filas propias en `producto_proveedor_ofertas`.
-- `sku_proveedor` → `codigo_producto`
-- `payload_json` → JSON completo del producto tal como decodificado (incluye escalas, colores, imágenes).
-- `import_batch_id` → batch actual.
-- `last_seen_at` → `now()`.
-- `hash_payload` → md5 estable del payload normalizado (para saltar upserts sin cambios).
+### 1.1 `productos_b2b` (existente, no se modifica)
 
-### 1.2 `producto_proveedor_ofertas` (1 fila por variante = producto × color)
+Columnas: `id uuid pk`, `id_interno text UNIQUE NOT NULL`, `proveedor_nombre text NOT NULL`, `sku_base text`, `datos_generales jsonb`, `variantes jsonb`, `imagenes jsonb`, `especificaciones_tecnicas jsonb`, `datos_logistica_b2b jsonb`, `motor_de_personalizacion jsonb`, `costeo jsonb`, `activo bool`, `categoria_principal text`, timestamps.
 
-Clave lógica: `(proveedor_id, variant_sku)` con `variant_sku = buildVariantSku("G4", codigo_producto, model, codigo_color, "")`.
+- Constraints duros: `id_interno` UNIQUE + NOT NULL, `proveedor_nombre` NOT NULL.
+- **Regla crítica Sprint 2**: todo producto piloto se inserta con `**activo = false**`. Motivo: `productos_publicos` es una vista sobre `productos_b2b` y podría filtrarse por `activo=true`; mantener el piloto inactivo garantiza cero exposición pública mientras validamos. La visibilidad piloto se controla exclusivamente en `producto_b2b_status.public_visible` (que aún no se conecta a la vista pública).
 
-Campos:
+### 1.2 `productos_publicos`
 
-- `proveedor_id` → G4
-- `sku_proveedor` → `codigo_producto`
-- `variant_sku` → composite arriba
-- `nombre` → `nombre_producto`
-- `descripcion` → `descripcion`
-- `linea` / `categoria` → `linea`
-- `material` → `material`
-- `color_code` → `codigo_color`
-- `color_nombre` → `nombre_color`
-- `modelo` → `model`
-- `talla` → `""` (G4 no expone talla en el ejemplo; dejar vacío)
-- `activo` → `activo` (bool)
-- `imagen_principal` → `principal`
-- `imagen_ambientada` → `ambientada`
-- `imagenes_adicionales` → array JSON de `adicionales`
-- `precio_base` → precio de la escala más pequeña (menor rango) — costo distribuidor, **nunca expuesto al frontend público**
-- `moneda` → default `MXN`
-- `productos_b2b_id` → **null** (no mapear todavía)
-- `updated_at`, `last_seen_at` → `now()`
+- Vista existente consumida por el frontend. **Intocable en Sprint 2.**
+- Guardaremos snapshot antes y después del Build: `pg_get_viewdef` y `count(*)`.
 
-### 1.3 `producto_precio_escalas` (N filas por oferta)
+### 1.3 `producto_b2b_status`
 
-Por cada `<escala>` del producto:
+Columnas relevantes: `producto_b2b_id`, `id_interno`, `public_visible`, `stock_status`, `stock_qty`, `quote_mode`, `kit_eligible`, `price_valid`, `image_available`, `last_stock_sync_at`.
 
-- `oferta_id` → id de la oferta recién upsertada
-- `rango_min`, `rango_max` → parseados de `rango` (`"1-49"`, `"50-99"`, `">=1000"` → `min=1000, max=null`)
-- `precio` → `precio` de la escala
-- `moneda` → `MXN`
+- Sin UNIQUE en `producto_b2b_id` → idempotencia por `SELECT ... FOR UPDATE` + `INSERT/UPDATE` en tx. Recomendación pos-Sprint 2: agregar UNIQUE.
 
-Antes del insert por batch: `delete where oferta_id = X` para reemplazar escalas viejas (evita duplicar cuando G4 cambia escalones).
+### 1.4 `producto_b2b_oferta_map`
 
-### 1.4 `producto_proveedor_stock` (1 fila por variante)
+`UNIQUE (oferta_id)` presente → `ON CONFLICT (oferta_id) DO UPDATE`.
 
-Clave lógica: `(proveedor_id, variant_sku)` — misma composición que la oferta.
+### 1.5 `catalog_price_cache`
 
-- `existencias` → int de `existencias`
-- `updated_at` → `now()`
-- `source` → `'getProductStock'`
+Columnas: `producto_b2b_id`, `id_interno`, `min_price_before_tax_mxn`, `tax_included bool default false`, `currency`, `pricing_rule_set_id`, `provider_code`, `source_oferta_id`, `price_status default 'pending'`, `pricing_warning`, `calculated_at`.
 
-### 1.5 `provider_import_batches`
+- Sin UNIQUE en `producto_b2b_id` → misma estrategia SELECT+UPSERT en tx. Recomendación pos-Sprint 2: agregar UNIQUE.
 
-- `proveedor_id`, `started_at`, `finished_at`
-- `mode` → `full` | `stock_only` | `dry_run`
-- `items_seen`, `items_upserted`, `items_failed`, `offers_upserted`, `stock_updated`
-- `error_message` truncado
-- Se cierra al final del bloque (aunque falle) con `finished_at`.
+### 1.6 Fuentes (sólo lectura)
 
-## 2. Estrategia `getProduct` sin SKU → catálogo completo
+`provider_raw_products`, `producto_proveedor_ofertas`, `producto_precio_escalas`, `producto_proveedor_stock`, `proveedores.code ∈ { cdo_mx, forpromotional, g4_mx }`.
 
-- Una sola llamada SOAP a `getProduct` con `<user>` y `<key>` (sin `<sku>`).
-- Respuesta = XML Base64 en `*Result`. Decodificar una vez y **cachear en memoria de la invocación** (no re-llamar en cada bloque).
-- Parsear a un array plano de "ofertas" (una entrada por combinación producto × color).
-- Aplicar paginación **interna** (`limit`/`offset` sobre el array plano), igual que ya hicimos en `sync-cdo-products`. Esto evita depender de paginación del proveedor (G4 no la ofrece).
-- Problema: la llamada SOAP inicial puede ser pesada (varios MB). Mitigación:
-  - Timeout HTTP de fetch con `AbortController` a 60 s.
-  - Si el XML supera un umbral (p. ej. 8 MB), reportar `payload_too_large` en el batch y sugerir bajar `limit` externo (no aplica: la respuesta viene completa igual). Alternativa futura: intentar `getProduct` filtrado por `linea` si G4 lo soporta — **no confirmado, no diseñar hoy**.
-- Guardar el XML crudo en memoria; **nunca** persistirlo en BD.
+---
 
-## 3. Estrategia `getProductStock` → refresco de existencias
+## 2. Selección del piloto (determinista)
 
-Dos submodos:
+Filtros por proveedor sobre `provider_raw_products prp` JOIN ofertas activas JOIN stock:
 
-- **Barrido completo** (`sync_stock=true` sin `sku`): llamar `getProductStock` sin SKU si G4 lo permite (confirmado por el usuario: sí acepta solo `user`+`key`). Recorrer array plano `(codigo_producto, codigo_color, existencias)` y `UPSERT` en `producto_proveedor_stock` por `(proveedor_id, variant_sku)`.
-- **Por SKU** (`sync_stock=true` con `sku=...` en query): llamar `getProductStock` con ese SKU y actualizar solo las variantes de ese producto.
+- `prp.activo = true`, `o.activo = true`.
+- `prp.nombre` NOT NULL, `length(trim(prp.nombre)) >= 3`.
+- Existe alguna escala con `unit_cost > 0` en las ofertas del producto.
+- Stock conocido (`producto_proveedor_stock` con row; `cantidad` puede ser 0).
+- `prp.productos_b2b_id IS NULL`.
+- Ninguna oferta del producto está ya en `producto_b2b_oferta_map`.
+- Imagen no bloquea; prioriza los que tienen imagen: `ORDER BY (o.imagen_url IS NOT NULL) DESC, prp.provider_sku ASC`.
+- G4: si no hay 5ª escala, entra pero se marcará `manual_review`; máximo 3 de los 10 pueden salir en `manual_review`.
 
-Reglas:
+Cuotas: 20 `cdo_mx`, 20 `forpromotional`, 10 `g4_mx`. Un `productos_b2b` por `provider_raw_product` (no por oferta).
 
-- No borrar filas de stock existentes: solo upsert. Si una variante desaparece de G4, marcar `existencias=0` **solo** cuando venga explícitamente en la respuesta.
-- Aplicar la misma paginación interna que en el catálogo.
-- Stock puede correrse en modo `stock_only` sin tocar catálogo (útil para cron diario más agresivo).
+---
 
-## 4. Procesamiento por bloques (evitar timeout de 150 s)
+## 3. Mapeo proveedor → destino
 
-Igual patrón que `sync-cdo-products`:
+### 3.1 `productos_b2b`
 
-- Parámetros: `limit` (default 30 ofertas) y `offset` (default 0).
-- La función:
-  1. Llama SOAP una vez.
-  2. Decodifica y aplana a array `offers[]` y `stocks[]`.
-  3. Toma slice `offers.slice(offset, offset+limit)`.
-  4. Upsert oferta + reemplazo de escalas + (si `sync_stock`) upsert de stock de esa variante.
-  5. Devuelve `total_offers_detected`, `processed`, `next_offset`, `next_url_suggested`.
-- El caller (cron/usuario) llama repetidamente avanzando `offset` hasta que `next_offset === null`.
-- Cooldown por proveedor: si hay un batch `full` iniciado hace <10 min y no cerrado, rechazar nuevo `full`.
+- `id_interno` = **opaco y determinista**:  
+`id_interno = 'pp_' || substr(encode(digest(provider_code || ':' || provider_sku, 'sha256'), 'hex'), 1, 24)`  
+(usa `pgcrypto.digest`, ya disponible en Supabase). Idempotente, no revela proveedor.
+- `proveedor_nombre` = nombre humano del proveedor tomado de `proveedores.nombre` (aceptable exponer; el frontend hoy no muestra proveedor porque `activo=false` bloquea la vista).
+- `sku_base` = **NULL** en Sprint 2 para no filtrar el SKU original del proveedor (se puede recuperar vía mapa staff-only).
+- `categoria_principal` = `prp.categoria` normalizada.
+- `datos_generales` (jsonb) — whitelist estricta:
+  ```
+  { "nombre": ..., "descripcion": ..., "promoted_at": "<iso>", "pilot": true }
+  ```
+  **Prohibido** en `datos_generales`: `provider_code`, `provider_sku`, `proveedor_id`, `costo`, `factor`, `raw_payload`, `markup`, `margen`, cualquier cifra de costo.
+- `variantes` = agregado de ofertas con: `color_code`, `color_nombre`, `talla`, `material`, `modelo`, `imagen_url` (sin costos, sin `variant_sku` interno del proveedor si expone SKU proveedor → se guarda un id opaco por variante `v_<hash>` o simplemente el `id` uuid de la oferta que ya es opaco; se opta por `oferta_id` UUID).
+- `imagenes` = array distinct de `imagen_url` no nulos.
+- `especificaciones_tecnicas` = subset de `prp.raw_payload -> 'atributos'` con whitelist (dimensiones, peso, material). Nunca copiar el raw completo.
+- `motor_de_personalizacion` = `{}`.
+- `costeo` = `{}` (costos viven sólo en tablas proveedor).
+- `**activo = false**` (regla crítica del Sprint).
+- `ON CONFLICT (id_interno) DO NOTHING`.
 
-Costo de la llamada SOAP repetida: **alto** si cada bloque re-llama. Mitigación posible (documentar, **no** implementar aún):
+### 3.2 `producto_b2b_oferta_map`
 
-- Opción A (simple, recomendada para Build 1): re-llamar SOAP en cada bloque. Cada llamada devuelve todo, solo se procesa el slice. Aceptable si el WSDL responde en <15 s.
-- Opción B (futura): cachear el XML decodificado en una tabla `provider_raw_snapshots` durante el batch. Fuera de alcance de este Build.
+N filas por producto (una por oferta hija).
 
-## 5. Parámetros de la función
+- `is_primary=true` sólo para la oferta que aporta el `source_oferta_id` del cache.
+- `match_score=1.0`, `match_reason='direct_promotion_from_provider_raw'` (secundarias: `'secondary_variant'`).
+- `ON CONFLICT (oferta_id) DO UPDATE`.
 
-Query params (GET):
+### 3.3 Vínculo inverso
 
+`UPDATE provider_raw_products SET productos_b2b_id = ... WHERE id = prp.id AND productos_b2b_id IS NULL`.
 
-| Param        | Valores                           | Default                                           | Descripción                                                                                                        |
-| ------------ | --------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `mode`       | `dry_run` | `full` | `stock_only` | requerido                                         | `dry_run` no escribe BD; `full` cataloga + escalas + stock opcional; `stock_only` solo `producto_proveedor_stock`. |
-| `limit`      | int                               | 30                                                | Ofertas a procesar en esta invocación.                                                                             |
-| `offset`     | int                               | 0                                                 | Índice inicial en el array plano de ofertas.                                                                       |
-| `sync_stock` | `true` | `false`                  | `false` en `full`, `true` forzado en `stock_only` | Si true en `full`, además de catálogo actualiza stock de las variantes del slice.                                  |
-| `sku`        | string opcional                   | null                                              | Solo aplica a `stock_only`: refresca stock de un `codigo_producto` puntual.                                        |
-| `test_key`   | string                            | requerido                                         | Debe coincidir con `PROVIDERS_TEST_KEY` o `G4_TEST_KEY`.                                                           |
+---
 
+## 4. Precio cacheado (`catalog_price_cache`)
 
-Respuesta JSON (segura, sin costos ni secrets):
+Un row por producto. **Antes de IVA**, `tax_included=false`.
+
+### 4.1 Costo base — usar los valores REALES de `provider_pricing_rules.base_cost_strategy`
+
+Valores válidos alineados con los seeds:
+
+- `**list_price**` — CDO: toma `min(unit_cost)` de escalas de la oferta primaria (precio de lista base).
+- `**list_price_factor**` — ForPromotional: `min(unit_cost) * cost_factor` (seed = 1.03).
+- `**provider_tier_n**` — G4: `unit_cost` de la fila `n` (ordenando escalas por `min_qty ASC`), con `n = provider_pricing_rules.provider_tier_number` (seed = 5).
+
+Si `provider_tier_n` no encuentra la escala solicitada (G4 con <5 escalas) y `fallback_strategy='manual_review'` con `requires_manual_review_on_fallback=true` → resultado `manual_review`, no se inventa precio.
+
+### 4.2 Multiplicador
+
+`margin_tiers WHERE rule_set_id=<activo> AND applies_to='product' AND level_number=1 AND (provider_code=<code> OR provider_code IS NULL) ORDER BY provider_code NULLS LAST LIMIT 1`.
+Resultado: G4 = 1.85, CDO/ForPro = 1.75 (nivel 1, mínimo $1,500 MXN).
+
+### 4.3 Cálculo
 
 ```
+adj_cost   = base según §4.1 (list_price | list_price*factor | tier_n)
+public_min = round(adj_cost * multiplier, 2)
+```
+
+Se guarda en `min_price_before_tax_mxn`.
+
+### 4.4 `price_status`
+
+- `valid`: base confiable, `public_min > 0`, stock conocido, producto activo en fuente.
+- `manual_review`: G4 sin escala requerida, o `adj_cost <= 0`, o cálculo <$1 MXN.
+- `unavailable`: sin ofertas activas o `prp.activo=false`.
+- `pending`: transitorio dentro de la tx; no debe persistir al terminar `full`.
+
+### 4.5 `pricing_warning` (staff-only, sin cifras)
+
+`g4_missing_tier_5`, `cost_base_zero_or_negative`, `no_active_offer`, `provider_rule_missing`.
+
+### 4.6 Row guardado
+
+`producto_b2b_id`, `id_interno`, `min_price_before_tax_mxn`, `tax_included=false`, `currency='MXN'`, `pricing_rule_set_id=<activo>`, `provider_code`, `source_oferta_id`, `price_status`, `pricing_warning`, `calculated_at=now()`.
+
+---
+
+## 5. G4 específico
+
+1. Ordenar escalas `ASC` por `min_qty`; contar.
+2. `count>=5` → base = 5ª fila; `price_status='valid'` (si cumple resto).
+3. `count<5` → `price_status='manual_review'`, `min_price_before_tax_mxn=NULL`, `pricing_warning='g4_missing_tier_5'`. No inventar.
+4. `price_valid=false` cuando `manual_review`/`unavailable`.
+5. Máximo 3 de los 10 G4 pueden salir en `manual_review`.
+
+---
+
+## 6. Reglas `producto_b2b_status`
+
+- `stock_qty = SUM(cantidad)` de las ofertas hijas.
+- `image_available = EXISTS(imagen_url NOT NULL)`.
+- `price_valid = (catalog_price_cache.price_status = 'valid')`.
+- `last_stock_sync_at = MAX(stock.updated_at)`.
+
+`**stock_status` — valores permitidos únicamente: `disponible`, `bajo`, `agotado`, `consultar`.**
+
+
+| Situación                                          | public_visible | stock_status | quote_mode                 | kit_eligible | price_valid |
+| -------------------------------------------------- | -------------- | ------------ | -------------------------- | ------------ | ----------- |
+| fuente activa, price valid, stock_qty ≥ 50, imagen | true           | `disponible` | `cotizable`                | true         | true        |
+| fuente activa, price valid, 0 < stock_qty < 50     | true           | `bajo`       | `cotizable`                | true         | true        |
+| fuente activa, price valid, stock_qty = 0          | false          | `agotado`    | `consultar_disponibilidad` | false        | true        |
+| fuente activa, price manual_review                 | false          | `consultar`  | `consultar_disponibilidad` | false        | false       |
+| fuente activa, price unavailable                   | false          | `consultar`  | `no_cotizable`             | false        | false       |
+| fuente inactiva/descontinuada                      | false          | `agotado`    | `no_cotizable`             | false        | false       |
+
+
+Nota: `public_visible=true` en el status **no** hace visible al producto en `productos_publicos` durante Sprint 2, porque `productos_b2b.activo=false` (regla §3.1). El flag sólo se pre-calcula para el futuro.
+
+Idempotencia: SELECT+UPDATE/INSERT dentro de tx por `producto_b2b_id`.
+
+---
+
+## 7. `producto_b2b_oferta_map`
+
+- Una fila por oferta hija. `is_primary=true` para la oferta usada como `source_oferta_id`; empate → menor UUID.
+- `match_score=1.0` fijo en piloto.
+- `match_reason ∈ {'direct_promotion_from_provider_raw','secondary_variant'}`.
+- `provider_code` y `proveedor_id` denormalizados (staff-only por RLS).
+- Idempotencia via `UNIQUE(oferta_id)`.
+
+---
+
+## 8. Seguridad
+
+- Edge Function corre con service_role, exige `test_key === PROVIDERS_TEST_KEY`; en `mode=full` además exige header `x-lovable-pilot: sprint2`.
+- Nunca devuelve costos, factor, raw_payload, ni SKU proveedor en el JSON de salida.
+- Whitelist estricta en `datos_generales` y `especificaciones_tecnicas`.
+- `productos_publicos` intocable. Snapshot pre/post (§11).
+- RLS sin cambios; nuevas tablas permanecen staff-only.
+- `**productos_b2b.activo=false**` cierra la puerta ante cualquier filtro `activo=true` que exista o pueda existir en la vista.
+
+---
+
+## 9. Contrato Edge Function futura (diseño; NO se crea en este Sprint)
+
+`promote-provider-products-to-catalog`.
+
+### Query params
+
+
+| Param           | Valores                                       | Default   |
+| --------------- | --------------------------------------------- | --------- |
+| `mode`          | `dry_run` | `full`                            | `dry_run` |
+| `provider`      | `all` | `cdo_mx` | `forpromotional` | `g4_mx` | `all`     |
+| `limit`         | int                                           | 50        |
+| `offset`        | int                                           | 0         |
+| `pilot`         | `true` | `false`                              | `true`    |
+| `require_image` | `true` | `false`                              | `false`   |
+| `min_stock`     | int                                           | 0         |
+| `test_key`      | string                                        | requerido |
+
+
+### Comportamiento
+
+- `dry_run`: sólo lectura; devuelve preview y cálculos simulados.
+- `full`: transacción por producto: insert/find `productos_b2b` (con `activo=false`), upsert map, upsert cache, upsert status, actualizar `provider_raw_products.productos_b2b_id`.
+- `pilot=true` fuerza cuotas 20/20/10 e ignora `limit` global.
+- Errores por item se acumulan en `skipped_reasons`; no tumban la corrida.
+
+### Output JSON
+
+```json
 {
-  ok, mode, provider: "g4",
-  batch_id,
-  total_offers_detected,
-  total_stock_detected,
-  processed, offers_upserted, stock_updated, failed,
-  next_offset, next_url_suggested,
-  errors_sample: [ ... primeros 5 ... ],
-  dry_run_shape?: { firstOfferKeys, coverage: {price,stock,image} }
+  "ok": true,
+  "mode": "dry_run",
+  "provider": "all",
+  "selected": { "cdo_mx": 20, "forpromotional": 20, "g4_mx": 10 },
+  "inserted_productos_b2b": 0,
+  "inserted_status": 0,
+  "inserted_maps": 0,
+  "inserted_price_cache": 0,
+  "manual_review_count": 0,
+  "skipped_count": 0,
+  "skipped_reasons": { "no_price": 0, "no_stock_row": 0, "already_promoted": 0, "g4_missing_tier_5": 0 },
+  "sample": [
+    { "id_interno": "pp_XXXXXXXXXXXXXXXXXXXXXXXX", "price_status": "valid", "stock_status": "bajo" }
+  ],
+  "next_offset": null,
+  "has_more": false
 }
 ```
 
-## 6. Riesgos antes de Build
+`sample` **no** incluye `provider_code`, costos ni SKU proveedor.
 
-1. **Tamaño del payload SOAP sin SKU**: si G4 devuelve varios MB, el parser XML en Deno puede degradar; probar primero con `mode=dry_run&limit=1` y medir tamaño real antes de correr `full`.
-2. **Parseo de `rango` de escalas**: formatos como `"1-49"`, `"50 a 99"`, `">=1000"`, `"1000+"` requieren regex tolerante. Riesgo de escalas mal cargadas → precios incorrectos. Mitigación: si no parsea, guardar la escala como `rango_min=null, rango_max=null, precio=X, raw_rango=texto` (agregar columna `raw_rango` si aún no existe **— revisar antes de Build**).
-3. **Variantes sin `codigo_color**`: usar `""` en el composite `variant_sku` para no colisionar con conflict targets existentes; verificar que el índice único de `producto_proveedor_ofertas` acepte `variant_sku` sin `COALESCE` (recordar el bug de ForPromotional).
-4. **Costos expuestos**: `precio_base` y `producto_precio_escalas.precio` son costos de distribuidor. Confirmar que ninguna vista pública (`productos_publicos`) los expone; RLS actual ya restringe a staff, pero validar antes de correr.
-5. `**getProduct` sin SKU no soportado por G4**: aunque el usuario confirmó que funciona, si la respuesta viene vacía o con fault, la función debe cerrar el batch con `error_message` claro y no dejar rows huérfanas.
-6. **Idempotencia**: sin `hash_payload`, cada corrida re-escribe todo. Recomendado incluirlo en `provider_raw_products` (ya existe la columna) para saltar upserts sin cambio.
-7. **Cron y concurrencia**: dos invocaciones simultáneas en `full` pueden corromper el batch counter. Usar lock optimista por `proveedor_id + mode` en `provider_import_batches`.
-8. **Secret `G4_WSDL_URL**`: si G4 rota el endpoint, la función falla en silencio. Log seguro del host (sin credenciales) al iniciar batch.
+---
 
-## 7. Archivos que se tocarían (si se aprueba Build)
+## 10. Idempotencia
 
-- **Nuevo:** `supabase/functions/sync-g4-products/index.ts` — función principal.
-- **Nada más** en frontend, tablas, RLS ni otros syncs.
-- Posible **micro-migración previa** (a discutir en el propio Build, no ahora):
-  - Añadir columna `raw_rango text` a `producto_precio_escalas` si queremos preservar el texto original de rangos no parseables.
-  - Confirmar índice único `(proveedor_id, variant_sku)` en `producto_proveedor_ofertas` **sin `COALESCE**` para poder usar `ON CONFLICT` sin el bug conocido.
+- `productos_b2b`: `ON CONFLICT (id_interno) DO NOTHING`; `id_interno` es hash determinista.
+- `producto_b2b_oferta_map`: `ON CONFLICT (oferta_id) DO UPDATE`.
+- `producto_b2b_status` / `catalog_price_cache`: SELECT+UPDATE/INSERT en tx (sin UNIQUE hoy; ver recomendación).
+- `provider_raw_products.productos_b2b_id`: sólo se escribe si es NULL.
+- Doble corrida idéntica ⇒ 0 nuevos inserts, 0 cambios de precio.
 
-## 8. Checklist antes de Build
+---
 
-- Correr `test-g4-connection?mode=sample` una vez y guardar el payload de ejemplo para fijar el parser.
-- Confirmar existencia de la fila G4 en `proveedores` (si no, sembrarla en una mini-migración aparte).
-- Confirmar índice único correcto en `producto_proveedor_ofertas`.
-- Decidir si añadimos `raw_rango` a `producto_precio_escalas` (recomendado sí).
-- Definir `PROVIDERS_TEST_KEY` como la única vía de autenticación de la función (ya está en secrets).
+## 11. SQL de validación
 
-Cuando aprueben, ejecuto Build tocando solo `supabase/functions/sync-g4-products/index.ts` (y opcionalmente la migración mínima del punto 7).  
+```sql
+-- Snapshot previo (guardar antes del Build)
+SELECT count(*) AS pp_count_before FROM productos_publicos;
+SELECT pg_get_viewdef('public.productos_publicos'::regclass, true) AS pp_def_before;
+
+-- 1) Piloto insertado y con activo=false
+SELECT proveedor_nombre, count(*) FILTER (WHERE activo=false) AS inactivos, count(*) AS total
+FROM productos_b2b
+WHERE datos_generales->>'pilot' = 'true'
+GROUP BY proveedor_nombre;
+-- Esperado: inactivos == total; 20/20/10 según proveedor.
+
+-- 2) Nada de campos prohibidos en datos_generales
+SELECT count(*) FROM productos_b2b
+WHERE datos_generales->>'pilot' = 'true'
+  AND (
+       datos_generales ? 'provider_code'
+    OR datos_generales ? 'provider_sku'
+    OR datos_generales ? 'proveedor_id'
+    OR datos_generales ? 'costo'
+    OR datos_generales ? 'factor'
+    OR datos_generales ? 'raw_payload'
+    OR datos_generales ? 'markup'
+    OR datos_generales ? 'margen'
+  );
+-- Esperado: 0
+
+-- 3) id_interno opaco
+SELECT count(*) FROM productos_b2b
+WHERE datos_generales->>'pilot'='true'
+  AND (id_interno ~* '(cdo_mx|forpromotional|g4_mx)' OR id_interno !~ '^pp_[0-9a-f]{24}$');
+-- Esperado: 0
+
+-- 4) Status generado y stock_status válido
+SELECT stock_status, count(*) FROM producto_b2b_status s
+JOIN productos_b2b p ON p.id=s.producto_b2b_id
+WHERE p.datos_generales->>'pilot'='true'
+GROUP BY stock_status;
+-- stock_status ∈ {disponible,bajo,agotado,consultar}
+
+-- 5) Maps
+SELECT provider_code, count(*), sum(is_primary::int) primaries
+FROM producto_b2b_oferta_map m
+JOIN productos_b2b p ON p.id=m.producto_b2b_id
+WHERE p.datos_generales->>'pilot'='true'
+GROUP BY provider_code;
+-- primaries == count(productos por proveedor)
+
+-- 6) Price cache
+SELECT price_status, count(*) FROM catalog_price_cache c
+JOIN productos_b2b p ON p.id=c.producto_b2b_id
+WHERE p.datos_generales->>'pilot'='true'
+GROUP BY price_status;
+
+-- 7) G4 manual_review
+SELECT id_interno, pricing_warning FROM catalog_price_cache
+WHERE provider_code='g4_mx' AND price_status='manual_review';
+
+-- 8) productos_publicos intocable
+SELECT count(*) AS pp_count_after FROM productos_publicos;      -- debe == pp_count_before
+SELECT pg_get_viewdef('public.productos_publicos'::regclass, true) AS pp_def_after; -- debe == pp_def_before
+
+-- 9) Ningún piloto visible públicamente
+SELECT count(*) FROM productos_publicos pp
+JOIN productos_b2b p ON p.id = pp.id  -- ajustar al join real si difiere
+WHERE p.datos_generales->>'pilot' = 'true';
+-- Esperado: 0
+
+-- 10) Anon no ve tablas internas
+SET ROLE anon;
+SELECT count(*) FROM catalog_price_cache;      -- 0 / permiso denegado
+SELECT count(*) FROM producto_b2b_status;      -- 0 / permiso denegado
+SELECT count(*) FROM producto_b2b_oferta_map;  -- 0 / permiso denegado
+SELECT count(*) FROM provider_pricing_rules;   -- 0 / permiso denegado
+RESET ROLE;
+```
+
+---
+
+## 12. Alcance exacto del Build futuro (si se aprueba)
+
+- **Nuevo archivo**: `supabase/functions/promote-provider-products-to-catalog/index.ts`.
+- **Nada más**: sin migraciones, sin frontend, sin cambios a `productos_publicos`, sin RLS, sin `types.ts`, sin otras Edge Functions.
+
+---
+
+## 13. Riesgos
+
+
+| Riesgo                                          | Mitigación                                                                                                              |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Producto piloto visible en `productos_publicos` | `productos_b2b.activo=false` + validación §11.9                                                                         |
+| `datos_generales` filtra proveedor/costo        | Whitelist estricta + query §11.2                                                                                        |
+| `id_interno` revela proveedor                   | Hash sha256 truncado prefijado `pp_` + query §11.3                                                                      |
+| Precio inflado                                  | Reglas explícitas alineadas a seeds (`list_price`, `list_price_factor`, `provider_tier_n`); `dry_run` obligatorio antes |
+| G4 sin tier 5                                   | `manual_review`, nunca inventar                                                                                         |
+| Duplicados                                      | `id_interno` determinista + `ON CONFLICT`; `UNIQUE(oferta_id)`                                                          |
+| `stock_status` fuera de dominio                 | Sólo `disponible/bajo/agotado/consultar`                                                                                |
+| Cambio accidental a `productos_publicos`        | Función whitelistea 4 tablas destino; snapshot pre/post                                                                 |
+| Fuga de costo en logs/JSON                      | `pricing_warning` sin cifras; sample sin `provider_code`                                                                |
+| Carga masiva accidental                         | `pilot=true` + header `x-lovable-pilot` en `full`                                                                       |
+| Falta de UNIQUE en status/cache                 | Tx SELECT+UPSERT hoy; recomendación pos-Sprint 2                                                                        |
+
+
+---
+
+## 14. Criterios de aceptación
+
+- `dry_run` devuelve `selected={cdo_mx:20, forpromotional:20, g4_mx:10}` y no escribe.
+- `full` inserta 50 productos con **`activo=false`** en 100% de los casos.
+- `id_interno` cumple regex `^pp_[0-9a-f]{24}$` y no contiene `cdo_mx|forpromotional|g4_mx`.
+- `datos_generales` sólo contiene `nombre`, `descripcion`, `promoted_at`, `pilot`. Ninguno de los campos prohibidos aparece.
+- 50 filas en `producto_b2b_status`, 50 en `catalog_price_cache`; ≥1 map por producto con exactamente 1 `is_primary`.
+- `stock_status` ∈ `{disponible,bajo,agotado,consultar}` para las 50 filas.
+- G4: como máximo 3 en `price_status='manual_review'`; ninguno con `min_price_before_tax_mxn NOT NULL` + `manual_review`.
+- CDO y ForPro: todos `valid` con `min_price_before_tax_mxn>0`; `tax_included=false` en las 50.
+- `pp_count_after == pp_count_before` y `pg_get_viewdef` idéntico.
+- `SELECT ... FROM productos_publicos WHERE pilot='true'` = 0.
+- `SET ROLE anon` sobre las 4 tablas nuevas: 0 filas / permiso denegado.
+- Segunda corrida `full` idempotente: 0 nuevos inserts, 0 cambios en cache.
+- Frontend sin cambios.
+
+---
+
+## Recomendaciones detectadas (NO se implementan aquí)
+
+1. Agregar `UNIQUE(producto_b2b_id)` en `producto_b2b_status` y `catalog_price_cache` (Sprint 2.5).
+2. Confirmar en Sprint 3, antes de reconstruir `productos_publicos`, la definición real de la vista y su filtro de `activo`.
+3. Añadir extensión `pgcrypto` explícita al Build futuro si el proyecto no la tiene ya habilitada (verificar en preflight; no ejecutar migración aquí).  
   
-  
-BUILD MÍNIMO.
-
-Crea únicamente una nueva Edge Function:
-
-supabase/functions/sync-g4-products/index.ts
-
-No cambies nada que no se te pida explícitamente.
-
-No rediseñes.
-
-No refactorices archivos no relacionados.
-
-No toques frontend.
-
-No toques productos_b2b.
-
-No toques productos_publicos.
-
-No toques carrito, checkout, CRM, assistant ni funciones no relacionadas.
-
-No modifiques tablas.
-
-No modifiques RLS.
-
-No toques sync-forpromotional-products.
-
-No toques sync-cdo-products.
-
-No escribas en tablas distintas a las tablas proveedor.
-
-No ejecutes sincronización automáticamente.
-
-Contexto validado:
-
-- Proveedor existente en tabla proveedores: code = 'g4_mx'
-
-- G4 usa SOAP WSDL desde secret G4_WSDL_URL
-
-- getProduct funciona con params: user, key, sku
-
-- getProductStock funciona con params: user, key, sku
-
-- Para consultar todos los productos, getProduct debe enviarse solo con user y key, sin sku.
-
-- La respuesta viene en XML base64.
-
-- Producto trae atributos:
-
-  codigo_producto, model, nombre_producto, descripcion, linea, codigo_color, nombre_color, material, activo
-
-- Producto trae imágenes:
-
-  imagenes.principal url, imagenes.ambientada url, imagenes.adicionales
-
-- Producto trae precios:
-
-  precios.escala con rango y precio
-
-- Stock trae:
-
-  codigo_producto, nombre_producto, codigo_color, nombre_color, existencias
-
-Objetivo:
-
-Sincronizar G4 México hacia las tablas proveedor existentes:
-
-- provider_import_batches
-
-- provider_raw_products
-
-- producto_proveedor_ofertas
-
-- producto_precio_escalas
-
-- producto_proveedor_stock
-
-Parámetros de la función:
-
-- mode=dry_run|full, default dry_run
-
-- limit, default 100
-
-- offset, default 0
-
-- sync_stock=true|false, default false
-
-- test_key
-
-Seguridad:
-
-- Validar test_key con PROVIDERS_TEST_KEY.
-
-- Usar G4_USER, G4_KEY y G4_WSDL_URL solo server-side.
-
-- No exponer secrets.
-
-- No devolver XML completo.
-
-- No exponer costos al frontend.
-
-- Mantener productos_b2b_id en null.
-
-Mapeo exacto:
-
-1. proveedores
-
-- Buscar proveedor con code = 'g4_mx'
-
-- Si no existe, devolver error claro. No crear proveedor.
-
-2. provider_import_batches
-
-- Crear batch al iniciar full.
-
-- status: running|ok|error
-
-- mode: full o dry_run
-
-- items_received: total productos detectados en XML de getProduct sin sku
-
-- items_upserted: total ofertas upserted
-
-- items_failed: total errores por item
-
-- error_message si aplica
-
-3. provider_raw_products
-
-- proveedor_id: id de g4_mx
-
-- provider_sku: producto.@attributes.codigo_producto
-
-- batch_id: batch actual
-
-- raw_payload: JSON seguro del producto parseado
-
-- nombre: nombre_producto
-
-- descripcion: descripcion
-
-- categoria: linea
-
-- subcategoria: null
-
-- productos_b2b_id: null
-
-- activo: activo == "1"
-
-- last_seen_at: now()
-
-Upsert:
-
-on conflict proveedor_id, provider_sku
-
-4. producto_proveedor_ofertas
-
-- provider_raw_product_id: id del raw product
-
-- proveedor_id: id de g4_mx
-
-- variant_sku: codigo_producto
-
-- color_code: codigo_color o ''
-
-- color_nombre: nombre_color
-
-- talla: ''
-
-- material: material
-
-- modelo: model
-
-- imagen_url: imagen principal si existe, si no ambientada
-
-- atributos: JSON con medidas, peso, impresión, area_impresion, caja, ventajas, marca, origen, activo
-
-- activo: activo == "1"
-
-Upsert:
-
-on conflict provider_raw_product_id, variant_sku, color_code, talla
-
-5. producto_precio_escalas
-
-Por cada producto.precios.escala:
-
-- oferta_id
-
-- proveedor_id
-
-- min_qty: escala.@attributes.rango como integer
-
-- max_qty: null
-
-- unit_cost: escala.@attributes.precio como numeric
-
-- currency: 'MXN'
-
-- source_field: 'g4_precios_escala'
-
-Importante:
-
-Antes de insertar precios de una oferta, borrar precios existentes de esa oferta para evitar duplicados por escala.
-
-6. producto_proveedor_stock
-
-Si sync_stock=true:
-
-- llamar getProductStock por cada oferta procesada en el bloque actual
-
-- sku = codigo_producto
-
-- cantidad: existencias como integer
-
-- disponibilidad: 'available' si cantidad > 0, si no 'out_of_stock'
-
-- upsert por oferta_id
-
-Si sync_stock=false:
-
-- no llamar getProductStock
-
-- no tocar stock existente
-
-Paginación:
-
-- getProduct sin sku puede traer todo el catálogo.
-
-- Parsear todos los productos.
-
-- Aplicar products.slice(offset, offset + limit)
-
-- Procesar solo ese bloque.
-
-- Responder:
-
-  - total_received
-
-  - offset_applied
-
-  - limit_applied
-
-  - items_processed
-
-  - items_upserted
-
-  - items_failed
-
-  - next_offset
-
-  - has_more
-
-  - failed_sample
-
-  - coverage:
-
-    - with_price
-
-    - with_image
-
-    - active
-
-    - inactive
-
-  - next_url_suggested sin incluir test_key real
-
-Dry run:
-
-- No escribir en base.
-
-- No crear batch.
-
-- No llamar stock salvo que sea estrictamente necesario; default no.
-
-- Debe devolver coverage real del bloque.
-
-Full:
-
-- Escribir solo tablas proveedor.
-
-- Crear batch.
-
-- Manejar errores por item sin tumbar toda la carga.
-
-- Si falla globalmente, cerrar batch con status error.
-
-No activar soft-delete.
-
-No vincular con productos_b2b.
-
-No crear productos_publicos.
-
-No tocar frontend.
-
-Al terminar dime:
-
-- archivos tocados
-
-- si quedó desplegada
-
-- URL dry_run limit=100 offset=0 sync_stock=false
-
-- URL full limit=100 offset=0 sync_stock=false
+BUILD.
+  INSTRUCCIÓN CRÍTICA DE ALCANCE:
+  No cambies nada que no se te pida explícitamente.
+  No modifiques frontend.
+  No rediseñes UI.
+  No refactorices archivos no relacionados.
+  No cambies productos_publicos.
+  No cambies productos_b2b estructura.
+  No cambies RLS.
+  No ejecutes migraciones.
+  No modifiques Edge Functions existentes.
+  No ejecutes sincronizaciones.
+  No publiques.
+  No optimices ni limpies código fuera del alcance solicitado.
+  Alcance exacto:
+  Crear SOLO una nueva Edge Function:
+  supabase/functions/promote-provider-products-to-catalog/index.ts
+  Nada más.
+  No tocar:
+  - frontend
+  - componentes React
+  - rutas
+  - productos_publicos
+  - productos_b2b schema
+  - RLS
+  - migraciones
+  - otras Edge Functions
+  - CRM
+  - carrito
+  - calculate-quote
+  Objetivo:
+  Crear una Edge Function para promover un piloto pequeño desde proveedores hacia catálogo interno.
+  Piloto:
+  - 20 productos CDO / cdo_mx
+  - 20 productos ForPromotional / forpromotional
+  - 10 productos G4 / g4_mx
+  Tablas destino:
+  - productos_b2b
+  - producto_b2b_status
+  - producto_b2b_oferta_map
+  - catalog_price_cache
+  Reglas obligatorias:
+  1. Todos los productos piloto insertados en productos_b2b deben quedar con:
+     activo = false
+  2. No tocar productos_publicos.
+  3. No reconstruir productos_publicos.
+  4. No exponer proveedor, costo, margen, markup, factor, provider_sku, provider_code ni raw_payload en:
+     - datos_generales
+     - variantes
+     - imagenes
+     - output JSON público de la función
+  5. id_interno debe ser opaco y determinista:
+     formato: pp_<hash de 24 hex chars>
+     No debe contener:
+     - cdo_mx
+     - forpromotional
+     - g4_mx
+     - SKU proveedor
+  Preferencia:
+  Generar el hash en TypeScript dentro de la Edge Function usando Web Crypto / SHA-256.
+  No dependas de pgcrypto salvo que ya exista y sea inevitable.
+  No crear migración para pgcrypto.
+  6. datos_generales permitido:
+  {
+    "nombre": "...",
+    "descripcion": "...",
+    "promoted_at": "...",
+    "pilot": true
+  }
+  datos_generales prohibido:
+  - provider_code
+  - provider_sku
+  - proveedor_id
+  - costo
+  - factor
+  - raw_payload
+  - markup
+  - margen
+  7. productos_b2b.sku_base debe quedar NULL en Sprint 2 para no filtrar SKU proveedor.
+  8. productos_b2b.costeo debe quedar vacío:
+  {}
+  9. productos_b2b.motor_de_personalizacion debe quedar vacío:
+  {}
+  10. variantes no debe incluir SKU proveedor.
+  Puede usar oferta_id UUID como identificador opaco.
+  11. catalog_price_cache debe guardar precio antes de IVA:
+  - min_price_before_tax_mxn
+  - tax_included = false
+  - currency = MXN
+  12. No calcular impresión en Sprint 2.
+  13. No crear calculate-quote.
+  14. No guardar snapshots de cotización.
+  Contrato de la Edge Function:
+  Query params:
+  - mode=dry_run|full
+  - provider=all|cdo_mx|forpromotional|g4_mx
+  - limit
+  - offset
+  - pilot=true|false
+  - require_image=true|false
+  - min_stock
+  - test_key
+  Defaults:
+  - mode=dry_run
+  - provider=all
+  - pilot=true
+  - require_image=false
+  - min_stock=0
+  Seguridad:
+  - test_key debe validar contra PROVIDERS_TEST_KEY.
+  - Si mode=full, exigir además header:
+    x-lovable-pilot: sprint2
+  - Si falta test_key o header en full, devolver error 401/403.
+  - Usar service role solo dentro de la función.
+  - Nunca devolver costos, factores, SKU proveedor, raw_payload ni proveedor en sample público.
+  Selección del piloto:
+  - 20 cdo_mx
+  - 20 forpromotional
+  - 10 g4_mx
+  - prp.activo = true
+  - oferta activa
+  - nombre válido
+  - precio válido o manual_review controlado
+  - stock row existente
+  - provider_raw_products.productos_b2b_id IS NULL
+  - oferta no existe ya en producto_b2b_oferta_map
+  - imagen no bloquea
+  - priorizar con imagen
+  - orden determinista por provider_sku o id estable
+  Pricing:
+  Usar pricing_rule_sets activo.
+  Usar provider_pricing_rules reales:
+  - cdo_mx: list_price
+  - forpromotional: list_price_factor con cost_factor 1.03
+  - g4_mx: provider_tier_n con provider_tier_number 5
+  Usar margin_tiers:
+  - nivel 1
+  - G4 escala 1 = 1.85
+  - CDO/ForPro escala 1 = general 1.75
+  G4:
+  - ordenar escalas por min_qty ASC
+  - si tiene 5ta escala, usar esa como base
+  - si no tiene 5ta escala:
+    price_status = manual_review
+    min_price_before_tax_mxn = null
+    pricing_warning = g4_missing_tier_5
+    price_valid = false
+  - no inventar precio
+  price_status:
+  - valid
+  - manual_review
+  - unavailable
+  - pending solo transitorio, no debe persistir al terminar full
+  producto_b2b_status:
+  Usar solo estos stock_status:
+  - disponible
+  - bajo
+  - agotado
+  - consultar
+  Reglas:
+  - stock_qty >= 50 y price valid e imagen:
+    public_visible = true
+    stock_status = disponible
+    quote_mode = cotizable
+    kit_eligible = true
+    price_valid = true
+  - 0 < stock_qty < 50 y price valid:
+    public_visible = true
+    stock_status = bajo
+    quote_mode = cotizable
+    kit_eligible = true
+    price_valid = true
+  - stock_qty = 0 y price valid:
+    public_visible = false
+    stock_status = agotado
+    quote_mode = consultar_disponibilidad
+    kit_eligible = false
+    price_valid = true
+  - price manual_review:
+    public_visible = false
+    stock_status = consultar
+    quote_mode = consultar_disponibilidad
+    kit_eligible = false
+    price_valid = false
+  - price unavailable:
+    public_visible = false
+    stock_status = consultar
+    quote_mode = no_cotizable
+    kit_eligible = false
+    price_valid = false
+  producto_b2b_oferta_map:
+  - una fila por oferta hija
+  - is_primary=true solo para la oferta usada en catalog_price_cache.source_oferta_id
+  - match_score=1.0
+  - match_reason:
+    direct_promotion_from_provider_raw
+    secondary_variant
+  - provider_code sí puede guardarse aquí porque esta tabla es interna/staff-only
+  - unique por oferta_id
+  Idempotencia:
+  - productos_b2b: id_interno hash determinista
+  - producto_b2b_oferta_map: ON CONFLICT oferta_id DO UPDATE
+  - producto_b2b_status: buscar por producto_b2b_id o id_interno y actualizar/insertar dentro de transacción lógica
+  - catalog_price_cache: buscar por producto_b2b_id o id_interno y actualizar/insertar
+  - provider_raw_products.productos_b2b_id: actualizar solo si está NULL
+  - segunda corrida full debe insertar 0 nuevos productos
+  Output JSON:
+  Debe devolver:
+  {
+    ok,
+    mode,
+    provider,
+    selected,
+    inserted_productos_b2b,
+    inserted_status,
+    inserted_maps,
+    inserted_price_cache,
+    manual_review_count,
+    skipped_count,
+    skipped_reasons,
+    sample,
+    next_offset,
+    has_more
+  }
+  sample permitido:
+  - id_interno
+  - price_status
+  - stock_status
+  - image_available
+  - price_valid
+  sample prohibido:
+  - provider_code
+  - provider_sku
+  - proveedor_id
+  - costo
+  - unit_cost
+  - factor
+  - multiplier
+  - raw_payload
+  - margin
+  - markup
+  Validaciones internas:
+  Antes de full:
+  - obtener count(*) de productos_publicos
+  - obtener pg_get_viewdef de productos_publicos
+  Después de full:
+  - confirmar count igual
+  - confirmar viewdef igual
+  Si cambió, devolver error crítico.
+  Importante:
+  No tocar productos_publicos en ningún momento.
+  No tocar frontend.
+  Entrega:
+  1. Crea solo el archivo:
+     supabase/functions/promote-provider-products-to-catalog/index.ts
+  2. Al terminar, resume:
+  - archivo creado
+  - qué tablas lee
+  - qué tablas escribe
+  - cómo probar dry_run
+  - cómo probar full
+  - SQL de validación post-Build
+  3. No ejecutes la función todavía.

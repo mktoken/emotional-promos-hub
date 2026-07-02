@@ -624,35 +624,64 @@ Deno.serve(async (req) => {
 
           // 3.4 stock (opcional)
           if (syncStock) {
-            const stockSoap = await callSoap(
-              endpoint,
-              "getProductStock",
-              G4_USER,
-              G4_KEY,
-              p.codigo_producto,
-            );
-            if (stockSoap.ok) {
+            stock_attempted++;
+            try {
+              const stockSoap = await callSoap(
+                endpoint,
+                "getProductStock",
+                G4_USER,
+                G4_KEY,
+                p.codigo_producto,
+              );
+              if (!stockSoap.ok) {
+                throw new Error(`SOAP getProductStock: ${stockSoap.error ?? "sin respuesta"}`);
+              }
               const stocks = parseG4Stock(stockSoap.decoded);
-              // match por codigo_color; si no hay, usar el primero
-              const match = stocks.find((s) => s.codigo_color === p.codigo_color) ??
-                stocks.find((s) => s.codigo_producto === p.codigo_producto) ??
+              const targetColor = (p.codigo_color ?? "").toLowerCase();
+              const match =
+                stocks.find((s) => (s.codigo_color ?? "").toLowerCase() === targetColor) ??
+                stocks.find(
+                  (s) =>
+                    (s.codigo_producto ?? "").toLowerCase() ===
+                    (p.codigo_producto ?? "").toLowerCase(),
+                ) ??
+                stocks[0] ??
                 null;
-              if (match) {
-                const cantidad = match.existencias;
-                const disponibilidad = cantidad > 0 ? "available" : "out_of_stock";
-                const { error: stErr } = await supabase
-                  .from("producto_proveedor_stock")
-                  .upsert(
-                    {
-                      oferta_id,
-                      proveedor_id,
-                      cantidad,
-                      disponibilidad,
-                      updated_at: new Date().toISOString(),
-                    },
-                    { onConflict: "oferta_id" },
-                  );
-                if (!stErr) stock_updated++;
+              if (!match) {
+                throw new Error("stock XML sin <producto> con existencias");
+              }
+              stock_found++;
+              const cantidad = Number.isFinite(match.existencias) ? match.existencias : 0;
+              const disponibilidad = cantidad > 0 ? "available" : "out_of_stock";
+
+              // Estrategia segura: delete + insert (además cubre casos sin constraint)
+              await supabase
+                .from("producto_proveedor_stock")
+                .delete()
+                .eq("oferta_id", oferta_id);
+
+              const { error: stInsErr } = await supabase
+                .from("producto_proveedor_stock")
+                .insert({
+                  oferta_id,
+                  proveedor_id,
+                  cantidad,
+                  disponibilidad,
+                  updated_at: new Date().toISOString(),
+                });
+              if (stInsErr) throw new Error(`stock insert: ${stInsErr.message}`);
+              stock_updated++;
+            } catch (stockErr) {
+              stock_failed++;
+              if (stock_failed_sample.length < 5) {
+                stock_failed_sample.push({
+                  codigo_producto: p.codigo_producto,
+                  codigo_color: p.codigo_color ?? "",
+                  error:
+                    stockErr instanceof Error
+                      ? stockErr.message.slice(0, 240)
+                      : String(stockErr).slice(0, 240),
+                });
               }
             }
           }

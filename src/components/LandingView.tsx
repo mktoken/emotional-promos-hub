@@ -42,12 +42,12 @@ export default function LandingView({ onViewChange }: LandingViewProps) {
       try {
         const { data, error } = await supabase
           .from("productos_publicos")
-          .select("id,categoria_principal,datos_generales,imagenes")
+          .select("id,categoria_principal,datos_generales,imagenes,updated_at")
+          .order("updated_at", { ascending: false })
           .limit(4);
         if (error) throw error;
         if (cancelled) return;
-        const isHttpUrl = (v: unknown): v is string =>
-          typeof v === "string" && /^https?:\/\//i.test(v);
+        const isHttpUrl = (v: unknown): v is string => typeof v === "string" && /^https?:\/\//i.test(v);
         const pickUrlFromItem = (item: unknown): string | null => {
           if (!item) return null;
           if (isHttpUrl(item)) return item;

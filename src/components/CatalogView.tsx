@@ -16,8 +16,7 @@ interface ProductoB2B {
   precio_desde_mxn: number | null;
 }
 
-const isHttpUrl = (v: unknown): v is string =>
-  typeof v === "string" && /^https?:\/\//i.test(v);
+const isHttpUrl = (v: unknown): v is string => typeof v === "string" && /^https?:\/\//i.test(v);
 
 const pickUrlFromItem = (item: unknown): string | null => {
   if (!item) return null;
@@ -69,7 +68,8 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
         .select(
           "id,id_interno,sku_base,categoria_principal,datos_generales,variantes,imagenes,motor_de_personalizacion,activo,updated_at,precio_desde_mxn",
         )
-        .eq("activo", true);
+        .eq("activo", true)
+        .order("updated_at", { ascending: false });
 
       if (!error && data) {
         setProductos(data as unknown as ProductoB2B[]);

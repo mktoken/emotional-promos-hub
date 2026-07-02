@@ -87,17 +87,35 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   const productName = product?.datos_generales?.nombre ?? product?.id_interno ?? "";
   const productDesc = product?.datos_generales?.descripcion ?? "";
   const productSku = product?.sku_base ?? "";
+  const isHttpUrl = (v: unknown): v is string =>
+    typeof v === "string" && /^https?:\/\//i.test(v);
+  const pickUrlFromItem = (item: unknown): string | null => {
+    if (!item) return null;
+    if (isHttpUrl(item)) return item;
+    if (typeof item === "object") {
+      const url = (item as { url?: unknown }).url;
+      if (isHttpUrl(url)) return url;
+    }
+    return null;
+  };
   const getSafeImageUrl = (imgData: unknown): string | null => {
     if (!imgData) return null;
-    if (Array.isArray(imgData)) return imgData[0] ?? null;
+    if (Array.isArray(imgData)) {
+      for (const item of imgData) {
+        const u = pickUrlFromItem(item);
+        if (u) return u;
+      }
+      return null;
+    }
     if (typeof imgData === "string") {
+      if (isHttpUrl(imgData)) return imgData;
       try {
-        const parsed = JSON.parse(imgData);
-        return Array.isArray(parsed) ? parsed[0] : parsed;
+        return getSafeImageUrl(JSON.parse(imgData));
       } catch {
-        return (imgData as string).startsWith("http") ? imgData : null;
+        return null;
       }
     }
+    if (typeof imgData === "object") return pickUrlFromItem(imgData);
     return null;
   };
   const mainImage = getSafeImageUrl(product?.imagenes);

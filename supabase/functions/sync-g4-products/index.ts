@@ -503,8 +503,12 @@ Deno.serve(async (req) => {
 
     let items_upserted = 0;
     let items_failed = 0;
+    let stock_attempted = 0;
+    let stock_found = 0;
     let stock_updated = 0;
+    let stock_failed = 0;
     const failed_sample: Array<{ codigo_producto: string; error: string }> = [];
+    const stock_failed_sample: Array<{ codigo_producto: string; codigo_color: string; error: string }> = [];
 
     try {
       for (const p of block) {

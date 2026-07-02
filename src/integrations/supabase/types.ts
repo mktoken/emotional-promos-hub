@@ -79,13 +79,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "catalog_price_cache_producto_b2b_id_fkey"
-            columns: ["producto_b2b_id"]
-            isOneToOne: false
-            referencedRelation: "productos_publicos"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "catalog_price_cache_source_oferta_id_fkey"
             columns: ["source_oferta_id"]
             isOneToOne: false
@@ -586,13 +579,6 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "productos_b2b"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_deal_products_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "productos_publicos"
             referencedColumns: ["id"]
           },
         ]
@@ -1571,13 +1557,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "producto_b2b_oferta_map_producto_b2b_id_fkey"
-            columns: ["producto_b2b_id"]
-            isOneToOne: false
-            referencedRelation: "productos_publicos"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "producto_b2b_oferta_map_proveedor_id_fkey"
             columns: ["proveedor_id"]
             isOneToOne: false
@@ -1638,13 +1617,6 @@ export type Database = {
             columns: ["producto_b2b_id"]
             isOneToOne: false
             referencedRelation: "productos_b2b"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "producto_b2b_status_producto_b2b_id_fkey"
-            columns: ["producto_b2b_id"]
-            isOneToOne: false
-            referencedRelation: "productos_publicos"
             referencedColumns: ["id"]
           },
         ]
@@ -2102,13 +2074,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "provider_raw_products_productos_b2b_id_fkey"
-            columns: ["productos_b2b_id"]
-            isOneToOne: false
-            referencedRelation: "productos_publicos"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "provider_raw_products_proveedor_id_fkey"
             columns: ["proveedor_id"]
             isOneToOne: false
@@ -2457,32 +2422,6 @@ export type Database = {
           sku_base: string | null
           updated_at: string | null
           variantes: Json | null
-        }
-        Insert: {
-          activo?: boolean | null
-          categoria_principal?: string | null
-          datos_generales?: Json | null
-          id?: string | null
-          id_interno?: string | null
-          imagenes?: Json | null
-          motor_de_personalizacion?: Json | null
-          precio_desde_mxn?: never
-          sku_base?: string | null
-          updated_at?: string | null
-          variantes?: Json | null
-        }
-        Update: {
-          activo?: boolean | null
-          categoria_principal?: string | null
-          datos_generales?: Json | null
-          id?: string | null
-          id_interno?: string | null
-          imagenes?: Json | null
-          motor_de_personalizacion?: Json | null
-          precio_desde_mxn?: never
-          sku_base?: string | null
-          updated_at?: string | null
-          variantes?: Json | null
         }
         Relationships: []
       }

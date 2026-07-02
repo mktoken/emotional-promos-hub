@@ -46,14 +46,44 @@ export default function LandingView({ onViewChange }: LandingViewProps) {
           .limit(4);
         if (error) throw error;
         if (cancelled) return;
+        const isHttpUrl = (v: unknown): v is string =>
+          typeof v === "string" && /^https?:\/\//i.test(v);
+        const pickUrlFromItem = (item: unknown): string | null => {
+          if (!item) return null;
+          if (isHttpUrl(item)) return item;
+          if (typeof item === "object") {
+            const url = (item as { url?: unknown }).url;
+            if (isHttpUrl(url)) return url;
+          }
+          return null;
+        };
+        const getSafeImageUrl = (imgData: unknown): string | null => {
+          if (!imgData) return null;
+          if (Array.isArray(imgData)) {
+            for (const item of imgData) {
+              const u = pickUrlFromItem(item);
+              if (u) return u;
+            }
+            return null;
+          }
+          if (typeof imgData === "string") {
+            if (isHttpUrl(imgData)) return imgData;
+            try {
+              return getSafeImageUrl(JSON.parse(imgData));
+            } catch {
+              return null;
+            }
+          }
+          if (typeof imgData === "object") return pickUrlFromItem(imgData);
+          return null;
+        };
         const mapped: FeaturedProduct[] = (data ?? []).map((p: any) => {
-          const imgs = Array.isArray(p.imagenes) ? p.imagenes : [];
           const dg = p.datos_generales ?? {};
           return {
             id: p.id,
             nombre: dg.nombre ?? "Producto",
             categoria: p.categoria_principal ?? null,
-            imagen: typeof imgs[0] === "string" ? imgs[0] : null,
+            imagen: getSafeImageUrl(p.imagenes),
             disponibilidad:
               typeof dg.stock === "number"
                 ? dg.stock

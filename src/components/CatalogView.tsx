@@ -9,7 +9,7 @@ interface ProductoB2B {
   categoria_principal: string | null;
   datos_generales: { nombre?: string; descripcion?: string } | null;
   variantes: Array<{ sku_variante?: string; color_nombre?: string; stock_total?: number }> | null;
-  imagenes: string[] | null;
+  imagenes: unknown[] | null;
   motor_de_personalizacion: unknown | null;
   activo: boolean | null;
   updated_at: string | null;

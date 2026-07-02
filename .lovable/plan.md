@@ -1,658 +1,448 @@
-# Sprint 2 (v2) — Piloto de promoción proveedor → catálogo interno
+# Plan Sprint 2.1 — Publicar piloto elegible sin tocar frontend
 
-Correcciones aplicadas respecto a v1: `activo=false` forzado, `id_interno` opaco, `datos_generales` sin campos sensibles, `stock_status` acotado, `base_cost_strategy` alineado a seeds, `productos_publicos` blindado.
+## 1. Definición actual de `productos_publicos`
 
-Objetivo: promover 50 productos (20 CDO, 20 ForPromotional, 10 G4) desde tablas proveedor a `productos_b2b` + `producto_b2b_status` + `producto_b2b_oferta_map` + `catalog_price_cache`. Sin tocar frontend, sin tocar `productos_publicos`, sin cambiar RLS, sin calcular impresión.
-
----
-
-## 1. Diagnóstico del esquema real (validado por lectura directa)
-
-### 1.1 `productos_b2b` (existente, no se modifica)
-
-Columnas: `id uuid pk`, `id_interno text UNIQUE NOT NULL`, `proveedor_nombre text NOT NULL`, `sku_base text`, `datos_generales jsonb`, `variantes jsonb`, `imagenes jsonb`, `especificaciones_tecnicas jsonb`, `datos_logistica_b2b jsonb`, `motor_de_personalizacion jsonb`, `costeo jsonb`, `activo bool`, `categoria_principal text`, timestamps.
-
-- Constraints duros: `id_interno` UNIQUE + NOT NULL, `proveedor_nombre` NOT NULL.
-- **Regla crítica Sprint 2**: todo producto piloto se inserta con `**activo = false**`. Motivo: `productos_publicos` es una vista sobre `productos_b2b` y podría filtrarse por `activo=true`; mantener el piloto inactivo garantiza cero exposición pública mientras validamos. La visibilidad piloto se controla exclusivamente en `producto_b2b_status.public_visible` (que aún no se conecta a la vista pública).
-
-### 1.2 `productos_publicos`
-
-- Vista existente consumida por el frontend. **Intocable en Sprint 2.**
-- Guardaremos snapshot antes y después del Build: `pg_get_viewdef` y `count(*)`.
-
-### 1.3 `producto_b2b_status`
-
-Columnas relevantes: `producto_b2b_id`, `id_interno`, `public_visible`, `stock_status`, `stock_qty`, `quote_mode`, `kit_eligible`, `price_valid`, `image_available`, `last_stock_sync_at`.
-
-- Sin UNIQUE en `producto_b2b_id` → idempotencia por `SELECT ... FOR UPDATE` + `INSERT/UPDATE` en tx. Recomendación pos-Sprint 2: agregar UNIQUE.
-
-### 1.4 `producto_b2b_oferta_map`
-
-`UNIQUE (oferta_id)` presente → `ON CONFLICT (oferta_id) DO UPDATE`.
-
-### 1.5 `catalog_price_cache`
-
-Columnas: `producto_b2b_id`, `id_interno`, `min_price_before_tax_mxn`, `tax_included bool default false`, `currency`, `pricing_rule_set_id`, `provider_code`, `source_oferta_id`, `price_status default 'pending'`, `pricing_warning`, `calculated_at`.
-
-- Sin UNIQUE en `producto_b2b_id` → misma estrategia SELECT+UPSERT en tx. Recomendación pos-Sprint 2: agregar UNIQUE.
-
-### 1.6 Fuentes (sólo lectura)
-
-`provider_raw_products`, `producto_proveedor_ofertas`, `producto_precio_escalas`, `producto_proveedor_stock`, `proveedores.code ∈ { cdo_mx, forpromotional, g4_mx }`.
-
----
-
-## 2. Selección del piloto (determinista)
-
-Filtros por proveedor sobre `provider_raw_products prp` JOIN ofertas activas JOIN stock:
-
-- `prp.activo = true`, `o.activo = true`.
-- `prp.nombre` NOT NULL, `length(trim(prp.nombre)) >= 3`.
-- Existe alguna escala con `unit_cost > 0` en las ofertas del producto.
-- Stock conocido (`producto_proveedor_stock` con row; `cantidad` puede ser 0).
-- `prp.productos_b2b_id IS NULL`.
-- Ninguna oferta del producto está ya en `producto_b2b_oferta_map`.
-- Imagen no bloquea; prioriza los que tienen imagen: `ORDER BY (o.imagen_url IS NOT NULL) DESC, prp.provider_sku ASC`.
-- G4: si no hay 5ª escala, entra pero se marcará `manual_review`; máximo 3 de los 10 pueden salir en `manual_review`.
-
-Cuotas: 20 `cdo_mx`, 20 `forpromotional`, 10 `g4_mx`. Un `productos_b2b` por `provider_raw_product` (no por oferta).
-
----
-
-## 3. Mapeo proveedor → destino
-
-### 3.1 `productos_b2b`
-
-- `id_interno` = **opaco y determinista**:  
-`id_interno = 'pp_' || substr(encode(digest(provider_code || ':' || provider_sku, 'sha256'), 'hex'), 1, 24)`  
-(usa `pgcrypto.digest`, ya disponible en Supabase). Idempotente, no revela proveedor.
-- `proveedor_nombre` = nombre humano del proveedor tomado de `proveedores.nombre` (aceptable exponer; el frontend hoy no muestra proveedor porque `activo=false` bloquea la vista).
-- `sku_base` = **NULL** en Sprint 2 para no filtrar el SKU original del proveedor (se puede recuperar vía mapa staff-only).
-- `categoria_principal` = `prp.categoria` normalizada.
-- `datos_generales` (jsonb) — whitelist estricta:
-  ```
-  { "nombre": ..., "descripcion": ..., "promoted_at": "<iso>", "pilot": true }
-  ```
-  **Prohibido** en `datos_generales`: `provider_code`, `provider_sku`, `proveedor_id`, `costo`, `factor`, `raw_payload`, `markup`, `margen`, cualquier cifra de costo.
-- `variantes` = agregado de ofertas con: `color_code`, `color_nombre`, `talla`, `material`, `modelo`, `imagen_url` (sin costos, sin `variant_sku` interno del proveedor si expone SKU proveedor → se guarda un id opaco por variante `v_<hash>` o simplemente el `id` uuid de la oferta que ya es opaco; se opta por `oferta_id` UUID).
-- `imagenes` = array distinct de `imagen_url` no nulos.
-- `especificaciones_tecnicas` = subset de `prp.raw_payload -> 'atributos'` con whitelist (dimensiones, peso, material). Nunca copiar el raw completo.
-- `motor_de_personalizacion` = `{}`.
-- `costeo` = `{}` (costos viven sólo en tablas proveedor).
-- `**activo = false**` (regla crítica del Sprint).
-- `ON CONFLICT (id_interno) DO NOTHING`.
-
-### 3.2 `producto_b2b_oferta_map`
-
-N filas por producto (una por oferta hija).
-
-- `is_primary=true` sólo para la oferta que aporta el `source_oferta_id` del cache.
-- `match_score=1.0`, `match_reason='direct_promotion_from_provider_raw'` (secundarias: `'secondary_variant'`).
-- `ON CONFLICT (oferta_id) DO UPDATE`.
-
-### 3.3 Vínculo inverso
-
-`UPDATE provider_raw_products SET productos_b2b_id = ... WHERE id = prp.id AND productos_b2b_id IS NULL`.
-
----
-
-## 4. Precio cacheado (`catalog_price_cache`)
-
-Un row por producto. **Antes de IVA**, `tax_included=false`.
-
-### 4.1 Costo base — usar los valores REALES de `provider_pricing_rules.base_cost_strategy`
-
-Valores válidos alineados con los seeds:
-
-- `**list_price**` — CDO: toma `min(unit_cost)` de escalas de la oferta primaria (precio de lista base).
-- `**list_price_factor**` — ForPromotional: `min(unit_cost) * cost_factor` (seed = 1.03).
-- `**provider_tier_n**` — G4: `unit_cost` de la fila `n` (ordenando escalas por `min_qty ASC`), con `n = provider_pricing_rules.provider_tier_number` (seed = 5).
-
-Si `provider_tier_n` no encuentra la escala solicitada (G4 con <5 escalas) y `fallback_strategy='manual_review'` con `requires_manual_review_on_fallback=true` → resultado `manual_review`, no se inventa precio.
-
-### 4.2 Multiplicador
-
-`margin_tiers WHERE rule_set_id=<activo> AND applies_to='product' AND level_number=1 AND (provider_code=<code> OR provider_code IS NULL) ORDER BY provider_code NULLS LAST LIMIT 1`.
-Resultado: G4 = 1.85, CDO/ForPro = 1.75 (nivel 1, mínimo $1,500 MXN).
-
-### 4.3 Cálculo
-
-```
-adj_cost   = base según §4.1 (list_price | list_price*factor | tier_n)
-public_min = round(adj_cost * multiplier, 2)
-```
-
-Se guarda en `min_price_before_tax_mxn`.
-
-### 4.4 `price_status`
-
-- `valid`: base confiable, `public_min > 0`, stock conocido, producto activo en fuente.
-- `manual_review`: G4 sin escala requerida, o `adj_cost <= 0`, o cálculo <$1 MXN.
-- `unavailable`: sin ofertas activas o `prp.activo=false`.
-- `pending`: transitorio dentro de la tx; no debe persistir al terminar `full`.
-
-### 4.5 `pricing_warning` (staff-only, sin cifras)
-
-`g4_missing_tier_5`, `cost_base_zero_or_negative`, `no_active_offer`, `provider_rule_missing`.
-
-### 4.6 Row guardado
-
-`producto_b2b_id`, `id_interno`, `min_price_before_tax_mxn`, `tax_included=false`, `currency='MXN'`, `pricing_rule_set_id=<activo>`, `provider_code`, `source_oferta_id`, `price_status`, `pricing_warning`, `calculated_at=now()`.
-
----
-
-## 5. G4 específico
-
-1. Ordenar escalas `ASC` por `min_qty`; contar.
-2. `count>=5` → base = 5ª fila; `price_status='valid'` (si cumple resto).
-3. `count<5` → `price_status='manual_review'`, `min_price_before_tax_mxn=NULL`, `pricing_warning='g4_missing_tier_5'`. No inventar.
-4. `price_valid=false` cuando `manual_review`/`unavailable`.
-5. Máximo 3 de los 10 G4 pueden salir en `manual_review`.
-
----
-
-## 6. Reglas `producto_b2b_status`
-
-- `stock_qty = SUM(cantidad)` de las ofertas hijas.
-- `image_available = EXISTS(imagen_url NOT NULL)`.
-- `price_valid = (catalog_price_cache.price_status = 'valid')`.
-- `last_stock_sync_at = MAX(stock.updated_at)`.
-
-`**stock_status` — valores permitidos únicamente: `disponible`, `bajo`, `agotado`, `consultar`.**
-
-
-| Situación                                          | public_visible | stock_status | quote_mode                 | kit_eligible | price_valid |
-| -------------------------------------------------- | -------------- | ------------ | -------------------------- | ------------ | ----------- |
-| fuente activa, price valid, stock_qty ≥ 50, imagen | true           | `disponible` | `cotizable`                | true         | true        |
-| fuente activa, price valid, 0 < stock_qty < 50     | true           | `bajo`       | `cotizable`                | true         | true        |
-| fuente activa, price valid, stock_qty = 0          | false          | `agotado`    | `consultar_disponibilidad` | false        | true        |
-| fuente activa, price manual_review                 | false          | `consultar`  | `consultar_disponibilidad` | false        | false       |
-| fuente activa, price unavailable                   | false          | `consultar`  | `no_cotizable`             | false        | false       |
-| fuente inactiva/descontinuada                      | false          | `agotado`    | `no_cotizable`             | false        | false       |
-
-
-Nota: `public_visible=true` en el status **no** hace visible al producto en `productos_publicos` durante Sprint 2, porque `productos_b2b.activo=false` (regla §3.1). El flag sólo se pre-calcula para el futuro.
-
-Idempotencia: SELECT+UPDATE/INSERT dentro de tx por `producto_b2b_id`.
-
----
-
-## 7. `producto_b2b_oferta_map`
-
-- Una fila por oferta hija. `is_primary=true` para la oferta usada como `source_oferta_id`; empate → menor UUID.
-- `match_score=1.0` fijo en piloto.
-- `match_reason ∈ {'direct_promotion_from_provider_raw','secondary_variant'}`.
-- `provider_code` y `proveedor_id` denormalizados (staff-only por RLS).
-- Idempotencia via `UNIQUE(oferta_id)`.
-
----
-
-## 8. Seguridad
-
-- Edge Function corre con service_role, exige `test_key === PROVIDERS_TEST_KEY`; en `mode=full` además exige header `x-lovable-pilot: sprint2`.
-- Nunca devuelve costos, factor, raw_payload, ni SKU proveedor en el JSON de salida.
-- Whitelist estricta en `datos_generales` y `especificaciones_tecnicas`.
-- `productos_publicos` intocable. Snapshot pre/post (§11).
-- RLS sin cambios; nuevas tablas permanecen staff-only.
-- `**productos_b2b.activo=false**` cierra la puerta ante cualquier filtro `activo=true` que exista o pueda existir en la vista.
-
----
-
-## 9. Contrato Edge Function futura (diseño; NO se crea en este Sprint)
-
-`promote-provider-products-to-catalog`.
-
-### Query params
-
-
-| Param           | Valores                                       | Default   |
-| --------------- | --------------------------------------------- | --------- |
-| `mode`          | `dry_run` | `full`                            | `dry_run` |
-| `provider`      | `all` | `cdo_mx` | `forpromotional` | `g4_mx` | `all`     |
-| `limit`         | int                                           | 50        |
-| `offset`        | int                                           | 0         |
-| `pilot`         | `true` | `false`                              | `true`    |
-| `require_image` | `true` | `false`                              | `false`   |
-| `min_stock`     | int                                           | 0         |
-| `test_key`      | string                                        | requerido |
-
-
-### Comportamiento
-
-- `dry_run`: sólo lectura; devuelve preview y cálculos simulados.
-- `full`: transacción por producto: insert/find `productos_b2b` (con `activo=false`), upsert map, upsert cache, upsert status, actualizar `provider_raw_products.productos_b2b_id`.
-- `pilot=true` fuerza cuotas 20/20/10 e ignora `limit` global.
-- Errores por item se acumulan en `skipped_reasons`; no tumban la corrida.
-
-### Output JSON
-
-```json
-{
-  "ok": true,
-  "mode": "dry_run",
-  "provider": "all",
-  "selected": { "cdo_mx": 20, "forpromotional": 20, "g4_mx": 10 },
-  "inserted_productos_b2b": 0,
-  "inserted_status": 0,
-  "inserted_maps": 0,
-  "inserted_price_cache": 0,
-  "manual_review_count": 0,
-  "skipped_count": 0,
-  "skipped_reasons": { "no_price": 0, "no_stock_row": 0, "already_promoted": 0, "g4_missing_tier_5": 0 },
-  "sample": [
-    { "id_interno": "pp_XXXXXXXXXXXXXXXXXXXXXXXX", "price_status": "valid", "stock_status": "bajo" }
-  ],
-  "next_offset": null,
-  "has_more": false
-}
-```
-
-`sample` **no** incluye `provider_code`, costos ni SKU proveedor.
-
----
-
-## 10. Idempotencia
-
-- `productos_b2b`: `ON CONFLICT (id_interno) DO NOTHING`; `id_interno` es hash determinista.
-- `producto_b2b_oferta_map`: `ON CONFLICT (oferta_id) DO UPDATE`.
-- `producto_b2b_status` / `catalog_price_cache`: SELECT+UPDATE/INSERT en tx (sin UNIQUE hoy; ver recomendación).
-- `provider_raw_products.productos_b2b_id`: sólo se escribe si es NULL.
-- Doble corrida idéntica ⇒ 0 nuevos inserts, 0 cambios de precio.
-
----
-
-## 11. SQL de validación
+Vista simple sobre `productos_b2b`:
 
 ```sql
--- Snapshot previo (guardar antes del Build)
-SELECT count(*) AS pp_count_before FROM productos_publicos;
-SELECT pg_get_viewdef('public.productos_publicos'::regclass, true) AS pp_def_before;
+SELECT id, id_interno, sku_base, categoria_principal, datos_generales,
+       variantes, imagenes, motor_de_personalizacion, activo, updated_at,
+       CASE WHEN (costeo->>'precio_neto_distribuidor') ~ '^[0-9]+(\.[0-9]+)?$'
+            THEN round((costeo->>'precio_neto_distribuidor')::numeric * 1.35, 2)
+       END AS precio_desde_mxn
+FROM productos_b2b p
+WHERE activo = true;
+```
 
--- 1) Piloto insertado y con activo=false
-SELECT proveedor_nombre, count(*) FILTER (WHERE activo=false) AS inactivos, count(*) AS total
-FROM productos_b2b
-WHERE datos_generales->>'pilot' = 'true'
-GROUP BY proveedor_nombre;
--- Esperado: inactivos == total; 20/20/10 según proveedor.
+- Filtro único: `activo = true`.
+- Precio derivado inline de `costeo->>'precio_neto_distribuidor' * 1.35`.
+- Hoy devuelve 48 productos legado. Los 50 piloto quedan fuera porque `activo=false`.
 
--- 2) Nada de campos prohibidos en datos_generales
-SELECT count(*) FROM productos_b2b
-WHERE datos_generales->>'pilot' = 'true'
-  AND (
-       datos_generales ? 'provider_code'
-    OR datos_generales ? 'provider_sku'
-    OR datos_generales ? 'proveedor_id'
-    OR datos_generales ? 'costo'
-    OR datos_generales ? 'factor'
-    OR datos_generales ? 'raw_payload'
-    OR datos_generales ? 'markup'
-    OR datos_generales ? 'margen'
-  );
--- Esperado: 0
+## 2. Contrato que consume el frontend (`CatalogView.tsx`)
 
--- 3) id_interno opaco
-SELECT count(*) FROM productos_b2b
-WHERE datos_generales->>'pilot'='true'
-  AND (id_interno ~* '(cdo_mx|forpromotional|g4_mx)' OR id_interno !~ '^pp_[0-9a-f]{24}$');
--- Esperado: 0
+Columnas leídas por `.select(...)`:
 
--- 4) Status generado y stock_status válido
-SELECT stock_status, count(*) FROM producto_b2b_status s
-JOIN productos_b2b p ON p.id=s.producto_b2b_id
-WHERE p.datos_generales->>'pilot'='true'
-GROUP BY stock_status;
--- stock_status ∈ {disponible,bajo,agotado,consultar}
+```
+id, id_interno, sku_base, categoria_principal, datos_generales,
+variantes, imagenes, motor_de_personalizacion, activo, updated_at,
+precio_desde_mxn
+```
 
--- 5) Maps
-SELECT provider_code, count(*), sum(is_primary::int) primaries
-FROM producto_b2b_oferta_map m
-JOIN productos_b2b p ON p.id=m.producto_b2b_id
-WHERE p.datos_generales->>'pilot'='true'
-GROUP BY provider_code;
--- primaries == count(productos por proveedor)
+- `datos_generales.nombre`, `datos_generales.descripcion`
+- `variantes[].stock_total`
+- `imagenes` (array o string JSON)
+- `precio_desde_mxn` (number, MXN, se muestra tal cual — hoy sin IVA visible)
 
--- 6) Price cache
-SELECT price_status, count(*) FROM catalog_price_cache c
-JOIN productos_b2b p ON p.id=c.producto_b2b_id
-WHERE p.datos_generales->>'pilot'='true'
-GROUP BY price_status;
+**El contrato debe conservarse 1:1.** Ningún campo nuevo, ninguno removido, mismos tipos.
 
--- 7) G4 manual_review
-SELECT id_interno, pricing_warning FROM catalog_price_cache
-WHERE provider_code='g4_mx' AND price_status='manual_review';
+## 3. Estrategia — Redefinir la vista como UNION ALL
 
--- 8) productos_publicos intocable
-SELECT count(*) AS pp_count_after FROM productos_publicos;      -- debe == pp_count_before
-SELECT pg_get_viewdef('public.productos_publicos'::regclass, true) AS pp_def_after; -- debe == pp_def_before
+Dos ramas mutuamente excluyentes por `producto_b2b_id`:
 
--- 9) Ningún piloto visible públicamente
-SELECT count(*) FROM productos_publicos pp
-JOIN productos_b2b p ON p.id = pp.id  -- ajustar al join real si difiere
-WHERE p.datos_generales->>'pilot' = 'true';
--- Esperado: 0
+**Rama A — Legado (comportamiento actual, intacto):**
 
--- 10) Anon no ve tablas internas
+- `productos_b2b.activo = true`
+- `precio_desde_mxn` calculado desde `costeo->>'precio_neto_distribuidor' * 1.35` (idéntico a hoy).
+- Excluye los pilotos (todos tienen `activo = false`).
+
+**Rama B — Piloto elegible (nuevo):**
+
+- `productos_b2b.activo = false`
+- `EXISTS` en `producto_b2b_status` con **todas** estas condiciones:
+  - `public_visible = true`
+  - `stock_status = 'disponible'`
+  - `price_valid = true`
+  - `image_available = true`
+- `EXISTS` en `catalog_price_cache` con:
+  - `price_status = 'valid'`
+  - `tax_included = false`
+  - `currency = 'MXN'`
+  - `min_price_before_tax_mxn IS NOT NULL`
+- `precio_desde_mxn = catalog_price_cache.min_price_before_tax_mxn` (pre-IVA, mismo contrato numérico).
+- `activo` se **proyecta como `true**` en la salida de la vista (columna calculada), para que el frontend siga filtrando por `.eq('activo', true)` sin cambios. La fila subyacente en `productos_b2b` sigue en `activo=false`.
+
+Con esto, ~31 pilotos entrarían (los que tienen imagen + stock + precio válido), y los 9 agotados / 10 sin imagen quedan fuera automáticamente.
+
+### Boceto SQL (referencia, no ejecutar aún)
+
+```sql
+CREATE OR REPLACE VIEW public.productos_publicos AS
+-- Rama A: legado
+SELECT
+  p.id, p.id_interno, p.sku_base, p.categoria_principal,
+  p.datos_generales, p.variantes, p.imagenes, p.motor_de_personalizacion,
+  true AS activo,  -- ya filtrado por activo=true
+  p.updated_at,
+  CASE WHEN (p.costeo->>'precio_neto_distribuidor') ~ '^[0-9]+(\.[0-9]+)?$'
+       THEN round((p.costeo->>'precio_neto_distribuidor')::numeric * 1.35, 2)
+  END AS precio_desde_mxn
+FROM public.productos_b2b p
+WHERE p.activo = true
+
+UNION ALL
+
+-- Rama B: piloto elegible
+SELECT
+  p.id, p.id_interno, p.sku_base, p.categoria_principal,
+  p.datos_generales, p.variantes, p.imagenes, p.motor_de_personalizacion,
+  true AS activo,  -- proyectado, no persistido
+  p.updated_at,
+  c.min_price_before_tax_mxn AS precio_desde_mxn
+FROM public.productos_b2b p
+JOIN public.producto_b2b_status s ON s.producto_b2b_id = p.id
+JOIN public.catalog_price_cache  c ON c.producto_b2b_id = p.id
+WHERE p.activo = false
+  AND s.public_visible = true
+  AND s.stock_status  = 'disponible'
+  AND s.price_valid   = true
+  AND s.image_available = true
+  AND c.price_status  = 'valid'
+  AND c.tax_included  = false
+  AND c.currency      = 'MXN'
+  AND c.min_price_before_tax_mxn IS NOT NULL;
+```
+
+## 4. Puntos 4–8 (respuestas directas)
+
+4. **Filtrar por `public_visible=true**` → JOIN con `producto_b2b_status` en Rama B, condiciones combinadas listadas arriba. No hay bandera única "publicable"; se exige la conjunción completa para que el gate sea explícito y auditable.
+5. `**precio_desde_mxn**` en Rama B viene directo de `catalog_price_cache.min_price_before_tax_mxn` (sin multiplicar, ya viene calculado por el pipeline de Sprint 2). Rama A conserva la fórmula histórica `*1.35`.
+6. **Precios "más IVA"**: se garantiza requiriendo `tax_included = false` en la Rama B. Rama A ya opera como "precio base" y no cambia. La vista **no** aplica IVA; comunicar "+ IVA" es responsabilidad del frontend (fuera de alcance de este sprint).
+7. **No exponer datos sensibles**: la vista **sólo proyecta** las 11 columnas del contrato. No se hace `SELECT *` de `catalog_price_cache` (que contiene `provider_code`, `source_oferta_id`, `pricing_warning`). El GRANT a `anon` sigue siendo únicamente sobre `productos_publicos`. `datos_generales` ya pasó por el whitelist del edge function (`nombre`, `descripcion`, `promoted_at`, `pilot`). Se debe reconfirmar con un `SELECT DISTINCT jsonb_object_keys(datos_generales)` sobre los 50 pilotos antes de publicar.
+8. **¿`activo` piloto debe seguir en `false`?** **Sí.** La fila persistida se queda `activo=false` (candado físico contra fugas si alguien usa `productos_b2b` directamente). La visibilidad pública se controla exclusivamente por `producto_b2b_status.public_visible` + condiciones de la Rama B. La vista **proyecta `activo=true**` solo para mantener el contrato con el frontend (`.eq('activo', true)`).
+
+## 5. SQL de validación
+
+### Antes del cambio
+
+```sql
+-- Snapshot
+SELECT count(*) FROM public.productos_publicos;                      -- esperado: 48
+SELECT pg_get_viewdef('public.productos_publicos'::regclass, true);  -- guardar
+SELECT count(*) FROM public.productos_b2b WHERE activo=false;        -- 50 piloto
+SELECT DISTINCT jsonb_object_keys(datos_generales)
+FROM public.productos_b2b
+WHERE id IN (SELECT producto_b2b_id FROM public.catalog_price_cache); -- confirmar whitelist
+```
+
+### Después del cambio
+
+```sql
+-- Conteos
+SELECT count(*) FROM public.productos_publicos;   -- esperado ~48 + 31 = ~79
+SELECT count(*) FROM public.productos_publicos WHERE precio_desde_mxn IS NULL;  -- 0
+
+-- Ningún agotado / sin imagen se cuela
+SELECT count(*) FROM public.productos_publicos pp
+JOIN public.producto_b2b_status s ON s.producto_b2b_id = pp.id
+WHERE s.stock_status <> 'disponible' OR s.image_available = false OR s.price_valid = false;  -- 0
+
+-- Legado intacto
+SELECT count(*) FROM public.productos_publicos pp
+JOIN public.productos_b2b p ON p.id = pp.id
+WHERE p.activo = true;   -- esperado: 48
+
+-- Piloto expuesto sólo si cumple TODO
+SELECT count(*) FROM public.productos_publicos pp
+JOIN public.productos_b2b p ON p.id = pp.id
+WHERE p.activo = false;  -- esperado: 31 (o el número real de elegibles)
+
+-- No hay columnas nuevas / faltantes
+SELECT column_name FROM information_schema.columns
+WHERE table_schema='public' AND table_name='productos_publicos'
+ORDER BY ordinal_position;  -- debe coincidir 1:1 con el contrato
+
+-- Anon RLS
 SET ROLE anon;
-SELECT count(*) FROM catalog_price_cache;      -- 0 / permiso denegado
-SELECT count(*) FROM producto_b2b_status;      -- 0 / permiso denegado
-SELECT count(*) FROM producto_b2b_oferta_map;  -- 0 / permiso denegado
-SELECT count(*) FROM provider_pricing_rules;   -- 0 / permiso denegado
+SELECT count(*) FROM public.productos_publicos;   -- debe funcionar
+SELECT count(*) FROM public.catalog_price_cache;  -- debe fallar / 0
+SELECT count(*) FROM public.producto_b2b_status;  -- debe fallar / 0
 RESET ROLE;
 ```
 
----
+## 6. Riesgos
 
-## 12. Alcance exacto del Build futuro (si se aprueba)
+- **Cambio de conteo** en catálogo público (48 → ~79). Verificable, esperado, reversible con `CREATE OR REPLACE VIEW` a la definición previa.
+- **Fuga por `datos_generales**` si un piloto tiene campos fuera del whitelist. Mitigación: validación previa de keys (script SQL de arriba).
+- **Precio en Rama B sin IVA** vs Rama A cuya base histórica no explicita IVA. Riesgo comercial de comunicar precios mezclados; requiere confirmación de negocio antes del Build. Fuera de alcance modificar copy del frontend.
+- `**activo` proyectado ≠ persistido**: cualquier tool interno que haga JOIN a `productos_b2b.activo` verá `false` para pilotos. Aceptable y deseado (candado).
+- **Performance**: dos JOIN adicionales sobre 50 filas piloto es despreciable; a escala hay que agregar índices en `producto_b2b_status(producto_b2b_id)` y `catalog_price_cache(producto_b2b_id)` — no incluido en este sprint.
+- **RLS/GRANTS**: `catalog_price_cache` y `producto_b2b_status` tienen policies restrictivas; una vista sin `SECURITY INVOKER` en Postgres 15+ corre con permisos del creador. Debe confirmarse que la vista NO exponga datos por debajo (el proyecto sólo devuelve columnas seguras, así que aunque corra como owner sigue sin filtrar datos sensibles).
+- `**UNION ALL` con `activo=true` constante**: si algún día el frontend deja de filtrar por `activo`, el comportamiento no cambia (todas las filas de la vista ya son "publicables").
 
-- **Nuevo archivo**: `supabase/functions/promote-provider-products-to-catalog/index.ts`.
-- **Nada más**: sin migraciones, sin frontend, sin cambios a `productos_publicos`, sin RLS, sin `types.ts`, sin otras Edge Functions.
+## 7. Alcance exacto del futuro Build
 
----
+Un único `CREATE OR REPLACE VIEW public.productos_publicos AS ...` vía migración, más:
 
-## 13. Riesgos
+- `GRANT SELECT ON public.productos_publicos TO anon, authenticated;` (reconfirmar, no ampliar).
+- **Nada más.** Sin cambios en:
+  - `productos_b2b` (los pilotos siguen `activo=false`)
+  - `producto_b2b_status`, `catalog_price_cache` (sólo lectura desde la vista)
+  - Edge functions
+  - Frontend (`CatalogView.tsx`, `types.ts`) — el shape de la vista es idéntico
+  - RLS de tablas subyacentes
+  - Rutas ni UI
 
+## 8. Criterios de aceptación
 
-| Riesgo                                          | Mitigación                                                                                                              |
-| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Producto piloto visible en `productos_publicos` | `productos_b2b.activo=false` + validación §11.9                                                                         |
-| `datos_generales` filtra proveedor/costo        | Whitelist estricta + query §11.2                                                                                        |
-| `id_interno` revela proveedor                   | Hash sha256 truncado prefijado `pp_` + query §11.3                                                                      |
-| Precio inflado                                  | Reglas explícitas alineadas a seeds (`list_price`, `list_price_factor`, `provider_tier_n`); `dry_run` obligatorio antes |
-| G4 sin tier 5                                   | `manual_review`, nunca inventar                                                                                         |
-| Duplicados                                      | `id_interno` determinista + `ON CONFLICT`; `UNIQUE(oferta_id)`                                                          |
-| `stock_status` fuera de dominio                 | Sólo `disponible/bajo/agotado/consultar`                                                                                |
-| Cambio accidental a `productos_publicos`        | Función whitelistea 4 tablas destino; snapshot pre/post                                                                 |
-| Fuga de costo en logs/JSON                      | `pricing_warning` sin cifras; sample sin `provider_code`                                                                |
-| Carga masiva accidental                         | `pilot=true` + header `x-lovable-pilot` en `full`                                                                       |
-| Falta de UNIQUE en status/cache                 | Tx SELECT+UPSERT hoy; recomendación pos-Sprint 2                                                                        |
+- `pg_get_viewdef` posterior contiene las dos ramas (`UNION ALL`).
+- Columnas de la vista: exactamente 11, en el mismo orden y tipo que hoy.
+- `SELECT count(*) FROM productos_publicos` = 48 (legado) + N pilotos elegibles (esperado 31).
+- Ningún piloto con `stock_status ≠ 'disponible'`, `image_available=false`, `price_valid=false`, `tax_included=true`, o `price_status ≠ 'valid'` aparece.
+- `precio_desde_mxn` no NULL para todas las filas publicadas.
+- `SET ROLE anon; SELECT ... FROM catalog_price_cache/producto_b2b_status` sigue denegado.
+- Frontend no requiere cambios; catálogo carga y renderiza precios de pilotos como "Desde $X".
+- Rollback: guardar la definición anterior y validar `CREATE OR REPLACE VIEW` reversible.
 
-
----
-
-## 14. Criterios de aceptación
-
-- `dry_run` devuelve `selected={cdo_mx:20, forpromotional:20, g4_mx:10}` y no escribe.
-- `full` inserta 50 productos con **`activo=false`** en 100% de los casos.
-- `id_interno` cumple regex `^pp_[0-9a-f]{24}$` y no contiene `cdo_mx|forpromotional|g4_mx`.
-- `datos_generales` sólo contiene `nombre`, `descripcion`, `promoted_at`, `pilot`. Ninguno de los campos prohibidos aparece.
-- 50 filas en `producto_b2b_status`, 50 en `catalog_price_cache`; ≥1 map por producto con exactamente 1 `is_primary`.
-- `stock_status` ∈ `{disponible,bajo,agotado,consultar}` para las 50 filas.
-- G4: como máximo 3 en `price_status='manual_review'`; ninguno con `min_price_before_tax_mxn NOT NULL` + `manual_review`.
-- CDO y ForPro: todos `valid` con `min_price_before_tax_mxn>0`; `tax_included=false` en las 50.
-- `pp_count_after == pp_count_before` y `pg_get_viewdef` idéntico.
-- `SELECT ... FROM productos_publicos WHERE pilot='true'` = 0.
-- `SET ROLE anon` sobre las 4 tablas nuevas: 0 filas / permiso denegado.
-- Segunda corrida `full` idempotente: 0 nuevos inserts, 0 cambios en cache.
-- Frontend sin cambios.
-
----
-
-## Recomendaciones detectadas (NO se implementan aquí)
-
-1. Agregar `UNIQUE(producto_b2b_id)` en `producto_b2b_status` y `catalog_price_cache` (Sprint 2.5).
-2. Confirmar en Sprint 3, antes de reconstruir `productos_publicos`, la definición real de la vista y su filtro de `activo`.
-3. Añadir extensión `pgcrypto` explícita al Build futuro si el proyecto no la tiene ya habilitada (verificar en preflight; no ejecutar migración aquí).  
+**No implementar hasta aprobación.**  
   
 BUILD.
-  INSTRUCCIÓN CRÍTICA DE ALCANCE:
-  No cambies nada que no se te pida explícitamente.
-  No modifiques frontend.
-  No rediseñes UI.
-  No refactorices archivos no relacionados.
-  No cambies productos_publicos.
-  No cambies productos_b2b estructura.
-  No cambies RLS.
-  No ejecutes migraciones.
-  No modifiques Edge Functions existentes.
-  No ejecutes sincronizaciones.
-  No publiques.
-  No optimices ni limpies código fuera del alcance solicitado.
-  Alcance exacto:
-  Crear SOLO una nueva Edge Function:
-  supabase/functions/promote-provider-products-to-catalog/index.ts
-  Nada más.
-  No tocar:
-  - frontend
-  - componentes React
-  - rutas
-  - productos_publicos
-  - productos_b2b schema
-  - RLS
-  - migraciones
-  - otras Edge Functions
-  - CRM
-  - carrito
-  - calculate-quote
-  Objetivo:
-  Crear una Edge Function para promover un piloto pequeño desde proveedores hacia catálogo interno.
-  Piloto:
-  - 20 productos CDO / cdo_mx
-  - 20 productos ForPromotional / forpromotional
-  - 10 productos G4 / g4_mx
-  Tablas destino:
-  - productos_b2b
-  - producto_b2b_status
-  - producto_b2b_oferta_map
-  - catalog_price_cache
-  Reglas obligatorias:
-  1. Todos los productos piloto insertados en productos_b2b deben quedar con:
-     activo = false
-  2. No tocar productos_publicos.
-  3. No reconstruir productos_publicos.
-  4. No exponer proveedor, costo, margen, markup, factor, provider_sku, provider_code ni raw_payload en:
-     - datos_generales
-     - variantes
-     - imagenes
-     - output JSON público de la función
-  5. id_interno debe ser opaco y determinista:
-     formato: pp_<hash de 24 hex chars>
-     No debe contener:
-     - cdo_mx
-     - forpromotional
-     - g4_mx
-     - SKU proveedor
-  Preferencia:
-  Generar el hash en TypeScript dentro de la Edge Function usando Web Crypto / SHA-256.
-  No dependas de pgcrypto salvo que ya exista y sea inevitable.
-  No crear migración para pgcrypto.
-  6. datos_generales permitido:
-  {
-    "nombre": "...",
-    "descripcion": "...",
-    "promoted_at": "...",
-    "pilot": true
-  }
-  datos_generales prohibido:
-  - provider_code
-  - provider_sku
-  - proveedor_id
-  - costo
-  - factor
-  - raw_payload
-  - markup
-  - margen
-  7. productos_b2b.sku_base debe quedar NULL en Sprint 2 para no filtrar SKU proveedor.
-  8. productos_b2b.costeo debe quedar vacío:
-  {}
-  9. productos_b2b.motor_de_personalizacion debe quedar vacío:
-  {}
-  10. variantes no debe incluir SKU proveedor.
-  Puede usar oferta_id UUID como identificador opaco.
-  11. catalog_price_cache debe guardar precio antes de IVA:
-  - min_price_before_tax_mxn
-  - tax_included = false
-  - currency = MXN
-  12. No calcular impresión en Sprint 2.
-  13. No crear calculate-quote.
-  14. No guardar snapshots de cotización.
-  Contrato de la Edge Function:
-  Query params:
-  - mode=dry_run|full
-  - provider=all|cdo_mx|forpromotional|g4_mx
-  - limit
-  - offset
-  - pilot=true|false
-  - require_image=true|false
-  - min_stock
-  - test_key
-  Defaults:
-  - mode=dry_run
-  - provider=all
-  - pilot=true
-  - require_image=false
-  - min_stock=0
-  Seguridad:
-  - test_key debe validar contra PROVIDERS_TEST_KEY.
-  - Si mode=full, exigir además header:
-    x-lovable-pilot: sprint2
-  - Si falta test_key o header en full, devolver error 401/403.
-  - Usar service role solo dentro de la función.
-  - Nunca devolver costos, factores, SKU proveedor, raw_payload ni proveedor en sample público.
-  Selección del piloto:
-  - 20 cdo_mx
-  - 20 forpromotional
-  - 10 g4_mx
-  - prp.activo = true
-  - oferta activa
-  - nombre válido
-  - precio válido o manual_review controlado
-  - stock row existente
-  - provider_raw_products.productos_b2b_id IS NULL
-  - oferta no existe ya en producto_b2b_oferta_map
-  - imagen no bloquea
-  - priorizar con imagen
-  - orden determinista por provider_sku o id estable
-  Pricing:
-  Usar pricing_rule_sets activo.
-  Usar provider_pricing_rules reales:
-  - cdo_mx: list_price
-  - forpromotional: list_price_factor con cost_factor 1.03
-  - g4_mx: provider_tier_n con provider_tier_number 5
-  Usar margin_tiers:
-  - nivel 1
-  - G4 escala 1 = 1.85
-  - CDO/ForPro escala 1 = general 1.75
-  G4:
-  - ordenar escalas por min_qty ASC
-  - si tiene 5ta escala, usar esa como base
-  - si no tiene 5ta escala:
-    price_status = manual_review
-    min_price_before_tax_mxn = null
-    pricing_warning = g4_missing_tier_5
-    price_valid = false
-  - no inventar precio
-  price_status:
-  - valid
-  - manual_review
-  - unavailable
-  - pending solo transitorio, no debe persistir al terminar full
-  producto_b2b_status:
-  Usar solo estos stock_status:
-  - disponible
-  - bajo
-  - agotado
-  - consultar
-  Reglas:
-  - stock_qty >= 50 y price valid e imagen:
-    public_visible = true
-    stock_status = disponible
-    quote_mode = cotizable
-    kit_eligible = true
-    price_valid = true
-  - 0 < stock_qty < 50 y price valid:
-    public_visible = true
-    stock_status = bajo
-    quote_mode = cotizable
-    kit_eligible = true
-    price_valid = true
-  - stock_qty = 0 y price valid:
-    public_visible = false
-    stock_status = agotado
-    quote_mode = consultar_disponibilidad
-    kit_eligible = false
-    price_valid = true
-  - price manual_review:
-    public_visible = false
-    stock_status = consultar
-    quote_mode = consultar_disponibilidad
-    kit_eligible = false
-    price_valid = false
-  - price unavailable:
-    public_visible = false
-    stock_status = consultar
-    quote_mode = no_cotizable
-    kit_eligible = false
-    price_valid = false
-  producto_b2b_oferta_map:
-  - una fila por oferta hija
-  - is_primary=true solo para la oferta usada en catalog_price_cache.source_oferta_id
-  - match_score=1.0
-  - match_reason:
-    direct_promotion_from_provider_raw
-    secondary_variant
-  - provider_code sí puede guardarse aquí porque esta tabla es interna/staff-only
-  - unique por oferta_id
-  Idempotencia:
-  - productos_b2b: id_interno hash determinista
-  - producto_b2b_oferta_map: ON CONFLICT oferta_id DO UPDATE
-  - producto_b2b_status: buscar por producto_b2b_id o id_interno y actualizar/insertar dentro de transacción lógica
-  - catalog_price_cache: buscar por producto_b2b_id o id_interno y actualizar/insertar
-  - provider_raw_products.productos_b2b_id: actualizar solo si está NULL
-  - segunda corrida full debe insertar 0 nuevos productos
-  Output JSON:
-  Debe devolver:
-  {
-    ok,
-    mode,
-    provider,
-    selected,
-    inserted_productos_b2b,
-    inserted_status,
-    inserted_maps,
-    inserted_price_cache,
-    manual_review_count,
-    skipped_count,
-    skipped_reasons,
-    sample,
-    next_offset,
-    has_more
-  }
-  sample permitido:
-  - id_interno
-  - price_status
-  - stock_status
-  - image_available
-  - price_valid
-  sample prohibido:
-  - provider_code
-  - provider_sku
-  - proveedor_id
-  - costo
-  - unit_cost
-  - factor
-  - multiplier
-  - raw_payload
-  - margin
-  - markup
-  Validaciones internas:
-  Antes de full:
-  - obtener count(*) de productos_publicos
-  - obtener pg_get_viewdef de productos_publicos
-  Después de full:
-  - confirmar count igual
-  - confirmar viewdef igual
-  Si cambió, devolver error crítico.
-  Importante:
-  No tocar productos_publicos en ningún momento.
-  No tocar frontend.
-  Entrega:
-  1. Crea solo el archivo:
-     supabase/functions/promote-provider-products-to-catalog/index.ts
-  2. Al terminar, resume:
-  - archivo creado
-  - qué tablas lee
-  - qué tablas escribe
-  - cómo probar dry_run
-  - cómo probar full
-  - SQL de validación post-Build
-  3. No ejecutes la función todavía.
+
+INSTRUCCIÓN CRÍTICA DE ALCANCE:
+
+No cambies nada que no se te pida explícitamente.
+
+No modifiques frontend.
+
+No rediseñes UI.
+
+No refactorices archivos no relacionados.
+
+No cambies componentes React.
+
+No cambies rutas.
+
+No ejecutes sincronizaciones.
+
+No promociones más productos.
+
+No modifiques Edge Functions.
+
+No cambies RLS.
+
+No cambies productos_b2b estructura.
+
+No cambies producto_b2b_status estructura.
+
+No cambies catalog_price_cache estructura.
+
+No publiques.
+
+No optimices ni limpies código fuera del alcance solicitado.
+
+Alcance exacto:
+
+Crear SOLO una migración SQL para redefinir la vista:
+
+public.productos_publicos
+
+Nada más.
+
+Contexto validado:
+
+- productos_publicos actual tiene 48 productos.
+
+- Hay 50 productos piloto en productos_b2b con activo=false.
+
+- Hay 31 pilotos elegibles para publicación.
+
+- datos_generales del piloto está limpio, pero la vista debe sanitizarlo de todos modos.
+
+- productos_b2b piloto NO debe activarse.
+
+- productos_b2b.activo debe seguir false para pilotos.
+
+Contrato obligatorio de productos_publicos:
+
+La vista debe conservar exactamente estas 11 columnas y en este orden:
+
+1. id
+
+2. id_interno
+
+3. sku_base
+
+4. categoria_principal
+
+5. datos_generales
+
+6. variantes
+
+7. imagenes
+
+8. motor_de_personalizacion
+
+9. activo
+
+10. updated_at
+
+11. precio_desde_mxn
+
+Objetivo:
+
+Redefinir productos_publicos para mantener los 48 productos actuales y agregar los 31 productos piloto elegibles usando UNION ALL.
+
+Rama 1 — productos actuales legacy:
+
+Mantener la lógica actual:
+
+- FROM public.productos_b2b p
+
+- WHERE p.activo = true
+
+- precio_desde_mxn calculado como hasta ahora desde:
+
+  costeo->>'precio_neto_distribuidor' * 1.35
+
+No cambiar esta rama salvo lo mínimo necesario para el UNION ALL.
+
+Rama 2 — productos piloto:
+
+Agregar productos piloto desde:
+
+- productos_b2b p
+
+- producto_b2b_status s
+
+- catalog_price_cache c mediante JOIN LATERAL
+
+Condiciones obligatorias:
+
+- p.datos_generales->>'pilot' = 'true'
+
+- p.activo = false
+
+- s.producto_b2b_id = [p.id](http://p.id)
+
+- s.public_visible = true
+
+- s.stock_status = 'disponible'
+
+- s.price_valid = true
+
+- s.image_available = true
+
+- s.quote_mode = 'cotizable'
+
+- c.price_status = 'valid'
+
+- [c.tax](http://c.tax)_included = false
+
+- c.currency = 'MXN'
+
+- c.min_price_before_tax_mxn is not null
+
+Importante:
+
+catalog_price_cache puede llegar a tener más de una fila por producto en el futuro.
+
+Usar JOIN LATERAL para tomar una sola fila válida por producto:
+
+order by
+
+  c.calculated_at desc nulls last,
+
+  c.updated_at desc nulls last,
+
+  c.created_at desc nulls last
+
+limit 1
+
+precio_desde_mxn para pilotos:
+
+- debe venir de c.min_price_before_tax_mxn
+
+- es precio antes de IVA
+
+- NO calcular IVA en la vista
+
+Seguridad:
+
+La vista NO debe exponer:
+
+- proveedor
+
+- provider_code
+
+- provider_sku
+
+- proveedor_id
+
+- costo
+
+- unit_cost
+
+- factor
+
+- multiplier
+
+- margen
+
+- markup
+
+- raw_payload
+
+- pricing rules
+
+- source_oferta_id
+
+datos_generales para pilotos debe construirse con jsonb_build_object.
+
+NO usar p.datos_generales completo en la rama piloto.
+
+datos_generales permitido para pilotos:
+
+- nombre
+
+- descripcion
+
+- pilot
+
+- promoted_at
+
+Para pilotos:
+
+- sku_base debe mantenerse como NULL si está NULL.
+
+- activo debe proyectarse como true en la vista, aunque p.activo siga false.
+
+- costeo no aparece porque no es columna de la vista.
+
+- proveedor_nombre no aparece porque no es columna de la vista.
+
+Validaciones esperadas después de la migración:
+
+- productos_publicos total debe pasar de 48 a 79.
+
+- productos_publicos con datos_generales->>'pilot'='true' debe ser 31.
+
+- productos_b2b piloto debe seguir con activo=false en 50 registros.
+
+- No debe haber campos prohibidos en datos_generales del piloto.
+
+- No debe haber id_interno que contenga cdo_mx, forpromotional o g4_mx.
+
+- precio_desde_mxn de pilotos debe ser not null.
+
+- productos_publicos debe conservar las mismas 11 columnas.
+
+Entrega:
+
+1. Crear solo una migración SQL.
+
+2. No tocar frontend.
+
+3. No tocar Edge Functions.
+
+4. No tocar RLS.
+
+5. No ejecutar funciones.
+
+6. Al terminar, resume:
+
+   - archivo creado
+
+   - SQL aplicado para CREATE OR REPLACE VIEW
+
+   - SQL de validación post-migración
+
+   - rollback sugerido usando la definición anterior si fuera necesario

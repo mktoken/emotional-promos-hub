@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      catalog_price_cache: {
+        Row: {
+          calculated_at: string | null
+          created_at: string
+          currency: string
+          id: string
+          id_interno: string | null
+          min_price_before_tax_mxn: number | null
+          price_status: string
+          pricing_rule_set_id: string | null
+          pricing_warning: string | null
+          producto_b2b_id: string | null
+          provider_code: string | null
+          source_oferta_id: string | null
+          tax_included: boolean
+          updated_at: string
+        }
+        Insert: {
+          calculated_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          id_interno?: string | null
+          min_price_before_tax_mxn?: number | null
+          price_status?: string
+          pricing_rule_set_id?: string | null
+          pricing_warning?: string | null
+          producto_b2b_id?: string | null
+          provider_code?: string | null
+          source_oferta_id?: string | null
+          tax_included?: boolean
+          updated_at?: string
+        }
+        Update: {
+          calculated_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          id_interno?: string | null
+          min_price_before_tax_mxn?: number | null
+          price_status?: string
+          pricing_rule_set_id?: string | null
+          pricing_warning?: string | null
+          producto_b2b_id?: string | null
+          provider_code?: string | null
+          source_oferta_id?: string | null
+          tax_included?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_price_cache_pricing_rule_set_id_fkey"
+            columns: ["pricing_rule_set_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_rule_sets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_price_cache_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_price_cache_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_publicos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_price_cache_source_oferta_id_fkey"
+            columns: ["source_oferta_id"]
+            isOneToOne: false
+            referencedRelation: "producto_proveedor_ofertas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cotizaciones_leads: {
         Row: {
           articulos_cotizados: Json
@@ -872,6 +952,703 @@ export type Database = {
           },
         ]
       }
+      discount_rules: {
+        Row: {
+          active_from: string | null
+          active_until: string | null
+          applies_to: string
+          created_at: string
+          id: string
+          is_active: boolean
+          max_discount_percent: number | null
+          min_margin_percent: number | null
+          name: string
+          notes: string | null
+          requires_approval: boolean
+          role_required: string | null
+          rule_type: string
+          updated_at: string
+        }
+        Insert: {
+          active_from?: string | null
+          active_until?: string | null
+          applies_to: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_discount_percent?: number | null
+          min_margin_percent?: number | null
+          name: string
+          notes?: string | null
+          requires_approval?: boolean
+          role_required?: string | null
+          rule_type: string
+          updated_at?: string
+        }
+        Update: {
+          active_from?: string | null
+          active_until?: string | null
+          applies_to?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_discount_percent?: number | null
+          min_margin_percent?: number | null
+          name?: string
+          notes?: string | null
+          requires_approval?: boolean
+          role_required?: string | null
+          rule_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      margin_tiers: {
+        Row: {
+          applies_to: string
+          created_at: string
+          id: string
+          level_number: number
+          multiplier: number
+          notes: string | null
+          provider_code: string | null
+          rule_set_id: string
+        }
+        Insert: {
+          applies_to?: string
+          created_at?: string
+          id?: string
+          level_number: number
+          multiplier: number
+          notes?: string | null
+          provider_code?: string | null
+          rule_set_id: string
+        }
+        Update: {
+          applies_to?: string
+          created_at?: string
+          id?: string
+          level_number?: number
+          multiplier?: number
+          notes?: string | null
+          provider_code?: string | null
+          rule_set_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "margin_tiers_rule_set_id_fkey"
+            columns: ["rule_set_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_rule_sets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_term_rules: {
+        Row: {
+          condition_type: string
+          created_at: string
+          deposit_percent: number
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          payment_due_stage: string
+          requires_approval: boolean
+          updated_at: string
+        }
+        Insert: {
+          condition_type: string
+          created_at?: string
+          deposit_percent: number
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          payment_due_stage?: string
+          requires_approval?: boolean
+          updated_at?: string
+        }
+        Update: {
+          condition_type?: string
+          created_at?: string
+          deposit_percent?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          payment_due_stage?: string
+          requires_approval?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pricing_rule_sets: {
+        Row: {
+          active_from: string
+          active_until: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          active_from?: string
+          active_until?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+          version: string
+        }
+        Update: {
+          active_from?: string
+          active_until?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
+      print_categories: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          material_keywords: string[] | null
+          name: string
+          product_keywords: string[] | null
+          technique_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          material_keywords?: string[] | null
+          name: string
+          product_keywords?: string[] | null
+          technique_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          material_keywords?: string[] | null
+          name?: string
+          product_keywords?: string[] | null
+          technique_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_categories_technique_id_fkey"
+            columns: ["technique_id"]
+            isOneToOne: false
+            referencedRelation: "print_techniques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      print_extra_charges: {
+        Row: {
+          amount: number
+          applies_by_default: boolean
+          category_id: string | null
+          charge_unit: string
+          code: string
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          requires_manual_review: boolean
+          trigger_condition: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          applies_by_default?: boolean
+          category_id?: string | null
+          charge_unit: string
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          requires_manual_review?: boolean
+          trigger_condition?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          applies_by_default?: boolean
+          category_id?: string | null
+          charge_unit?: string
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          requires_manual_review?: boolean
+          trigger_condition?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_extra_charges_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "print_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      print_operational_rules: {
+        Row: {
+          change_ink_same_logo_cost: number | null
+          created_at: string
+          id: string
+          manual_review_threshold: Json
+          normal_lead_time_days: number | null
+          notes: string | null
+          price_book_id: string | null
+          rush_lead_time_days: number | null
+          rush_multiplier: number | null
+          sample_cost: number | null
+          sample_required: boolean
+          technique_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          change_ink_same_logo_cost?: number | null
+          created_at?: string
+          id?: string
+          manual_review_threshold?: Json
+          normal_lead_time_days?: number | null
+          notes?: string | null
+          price_book_id?: string | null
+          rush_lead_time_days?: number | null
+          rush_multiplier?: number | null
+          sample_cost?: number | null
+          sample_required?: boolean
+          technique_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          change_ink_same_logo_cost?: number | null
+          created_at?: string
+          id?: string
+          manual_review_threshold?: Json
+          normal_lead_time_days?: number | null
+          notes?: string | null
+          price_book_id?: string | null
+          rush_lead_time_days?: number | null
+          rush_multiplier?: number | null
+          sample_cost?: number | null
+          sample_required?: boolean
+          technique_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_operational_rules_price_book_id_fkey"
+            columns: ["price_book_id"]
+            isOneToOne: false
+            referencedRelation: "print_price_books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "print_operational_rules_technique_id_fkey"
+            columns: ["technique_id"]
+            isOneToOne: false
+            referencedRelation: "print_techniques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      print_price_books: {
+        Row: {
+          active_from: string
+          active_until: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          supplier_name: string | null
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          active_from?: string
+          active_until?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          supplier_name?: string | null
+          updated_at?: string
+          version: string
+        }
+        Update: {
+          active_from?: string
+          active_until?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          supplier_name?: string | null
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
+      print_required_inputs: {
+        Row: {
+          created_at: string
+          id: string
+          input_key: string
+          input_type: string
+          is_required: boolean
+          label: string
+          technique_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          input_key: string
+          input_type: string
+          is_required?: boolean
+          label: string
+          technique_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          input_key?: string
+          input_type?: string
+          is_required?: boolean
+          label?: string
+          technique_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_required_inputs_technique_id_fkey"
+            columns: ["technique_id"]
+            isOneToOne: false
+            referencedRelation: "print_techniques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      print_setup_charges: {
+        Row: {
+          amount: number
+          applies_by_default: boolean
+          category_id: string | null
+          charge_unit: string
+          code: string
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          requires_manual_review: boolean
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          applies_by_default?: boolean
+          category_id?: string | null
+          charge_unit: string
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          requires_manual_review?: boolean
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          applies_by_default?: boolean
+          category_id?: string | null
+          charge_unit?: string
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          requires_manual_review?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_setup_charges_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "print_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      print_tariff_ranges: {
+        Row: {
+          additional_ink_mode: string
+          additional_ink_price: number | null
+          calculation_model: string
+          category_id: string | null
+          created_at: string
+          first_ink_price: number | null
+          id: string
+          max_qty: number | null
+          min_qty: number
+          min_service_price: number | null
+          notes: string | null
+          requires_manual_review: boolean
+          unit_price: number | null
+          updated_at: string
+          urgency_multiplier: number | null
+        }
+        Insert: {
+          additional_ink_mode?: string
+          additional_ink_price?: number | null
+          calculation_model?: string
+          category_id?: string | null
+          created_at?: string
+          first_ink_price?: number | null
+          id?: string
+          max_qty?: number | null
+          min_qty: number
+          min_service_price?: number | null
+          notes?: string | null
+          requires_manual_review?: boolean
+          unit_price?: number | null
+          updated_at?: string
+          urgency_multiplier?: number | null
+        }
+        Update: {
+          additional_ink_mode?: string
+          additional_ink_price?: number | null
+          calculation_model?: string
+          category_id?: string | null
+          created_at?: string
+          first_ink_price?: number | null
+          id?: string
+          max_qty?: number | null
+          min_qty?: number
+          min_service_price?: number | null
+          notes?: string | null
+          requires_manual_review?: boolean
+          unit_price?: number | null
+          updated_at?: string
+          urgency_multiplier?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_tariff_ranges_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "print_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      print_techniques: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          price_book_id: string | null
+          pricing_mode: string
+          requires_manual_review: boolean
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          price_book_id?: string | null
+          pricing_mode?: string
+          requires_manual_review?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          price_book_id?: string | null
+          pricing_mode?: string
+          requires_manual_review?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_techniques_price_book_id_fkey"
+            columns: ["price_book_id"]
+            isOneToOne: false
+            referencedRelation: "print_price_books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      producto_b2b_oferta_map: {
+        Row: {
+          created_at: string
+          id: string
+          id_interno: string | null
+          is_primary: boolean
+          match_reason: string | null
+          match_score: number | null
+          oferta_id: string
+          producto_b2b_id: string | null
+          proveedor_id: string | null
+          provider_code: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          id_interno?: string | null
+          is_primary?: boolean
+          match_reason?: string | null
+          match_score?: number | null
+          oferta_id: string
+          producto_b2b_id?: string | null
+          proveedor_id?: string | null
+          provider_code?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          id_interno?: string | null
+          is_primary?: boolean
+          match_reason?: string | null
+          match_score?: number | null
+          oferta_id?: string
+          producto_b2b_id?: string | null
+          proveedor_id?: string | null
+          provider_code?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "producto_b2b_oferta_map_oferta_id_fkey"
+            columns: ["oferta_id"]
+            isOneToOne: true
+            referencedRelation: "producto_proveedor_ofertas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "producto_b2b_oferta_map_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "producto_b2b_oferta_map_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_publicos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "producto_b2b_oferta_map_proveedor_id_fkey"
+            columns: ["proveedor_id"]
+            isOneToOne: false
+            referencedRelation: "proveedores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      producto_b2b_status: {
+        Row: {
+          created_at: string
+          id: string
+          id_interno: string | null
+          image_available: boolean
+          kit_eligible: boolean
+          last_stock_sync_at: string | null
+          price_valid: boolean
+          producto_b2b_id: string | null
+          public_visible: boolean
+          quote_mode: string
+          stock_qty: number | null
+          stock_status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          id_interno?: string | null
+          image_available?: boolean
+          kit_eligible?: boolean
+          last_stock_sync_at?: string | null
+          price_valid?: boolean
+          producto_b2b_id?: string | null
+          public_visible?: boolean
+          quote_mode?: string
+          stock_qty?: number | null
+          stock_status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          id_interno?: string | null
+          image_available?: boolean
+          kit_eligible?: boolean
+          last_stock_sync_at?: string | null
+          price_valid?: boolean
+          producto_b2b_id?: string | null
+          public_visible?: boolean
+          quote_mode?: string
+          stock_qty?: number | null
+          stock_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "producto_b2b_status_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "producto_b2b_status_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_publicos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       producto_precio_escalas: {
         Row: {
           created_at: string
@@ -1210,6 +1987,56 @@ export type Database = {
           },
         ]
       }
+      provider_pricing_rules: {
+        Row: {
+          base_cost_strategy: string
+          cost_factor: number
+          created_at: string
+          fallback_strategy: string
+          id: string
+          notes: string | null
+          provider_code: string
+          provider_tier_number: number | null
+          requires_manual_review_on_fallback: boolean
+          rule_set_id: string
+          updated_at: string
+        }
+        Insert: {
+          base_cost_strategy: string
+          cost_factor?: number
+          created_at?: string
+          fallback_strategy?: string
+          id?: string
+          notes?: string | null
+          provider_code: string
+          provider_tier_number?: number | null
+          requires_manual_review_on_fallback?: boolean
+          rule_set_id: string
+          updated_at?: string
+        }
+        Update: {
+          base_cost_strategy?: string
+          cost_factor?: number
+          created_at?: string
+          fallback_strategy?: string
+          id?: string
+          notes?: string | null
+          provider_code?: string
+          provider_tier_number?: number | null
+          requires_manual_review_on_fallback?: boolean
+          rule_set_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_pricing_rules_rule_set_id_fkey"
+            columns: ["rule_set_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_rule_sets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_raw_products: {
         Row: {
           activo: boolean
@@ -1286,6 +2113,283 @@ export type Database = {
             columns: ["proveedor_id"]
             isOneToOne: false
             referencedRelation: "proveedores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_levels: {
+        Row: {
+          created_at: string
+          id: string
+          level_number: number
+          rule_set_id: string
+          threshold_amount_mxn: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          level_number: number
+          rule_set_id: string
+          threshold_amount_mxn: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          level_number?: number
+          rule_set_id?: string
+          threshold_amount_mxn?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_levels_rule_set_id_fkey"
+            columns: ["rule_set_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_rule_sets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quote_approval_requests: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string | null
+          request_type: string
+          requested_by: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          snapshot_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          request_type: string
+          requested_by?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          snapshot_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          request_type?: string
+          requested_by?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          snapshot_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_approval_requests_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "quote_calculation_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quote_calculation_snapshots: {
+        Row: {
+          balance_amount: number | null
+          created_at: string
+          created_by: string | null
+          deposit_amount: number | null
+          deposit_percent: number | null
+          discounts_total: number | null
+          id: string
+          internal_margin_percent: number | null
+          internal_profit: number | null
+          lead_id: string | null
+          pricing_rule_set_id: string | null
+          print_price_book_id: string | null
+          print_subtotal_before_tax: number | null
+          product_subtotal_before_tax: number | null
+          quote_id: string | null
+          snapshot: Json
+          subtotal_before_tax: number | null
+          tax_amount: number | null
+          tax_rate: number
+          total_with_tax: number | null
+        }
+        Insert: {
+          balance_amount?: number | null
+          created_at?: string
+          created_by?: string | null
+          deposit_amount?: number | null
+          deposit_percent?: number | null
+          discounts_total?: number | null
+          id?: string
+          internal_margin_percent?: number | null
+          internal_profit?: number | null
+          lead_id?: string | null
+          pricing_rule_set_id?: string | null
+          print_price_book_id?: string | null
+          print_subtotal_before_tax?: number | null
+          product_subtotal_before_tax?: number | null
+          quote_id?: string | null
+          snapshot: Json
+          subtotal_before_tax?: number | null
+          tax_amount?: number | null
+          tax_rate?: number
+          total_with_tax?: number | null
+        }
+        Update: {
+          balance_amount?: number | null
+          created_at?: string
+          created_by?: string | null
+          deposit_amount?: number | null
+          deposit_percent?: number | null
+          discounts_total?: number | null
+          id?: string
+          internal_margin_percent?: number | null
+          internal_profit?: number | null
+          lead_id?: string | null
+          pricing_rule_set_id?: string | null
+          print_price_book_id?: string | null
+          print_subtotal_before_tax?: number | null
+          product_subtotal_before_tax?: number | null
+          quote_id?: string | null
+          snapshot?: Json
+          subtotal_before_tax?: number | null
+          tax_amount?: number | null
+          tax_rate?: number
+          total_with_tax?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_calculation_snapshots_pricing_rule_set_id_fkey"
+            columns: ["pricing_rule_set_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_rule_sets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_calculation_snapshots_print_price_book_id_fkey"
+            columns: ["print_price_book_id"]
+            isOneToOne: false
+            referencedRelation: "print_price_books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quote_discounts: {
+        Row: {
+          amount: number | null
+          applies_to: string
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          discount_rule_id: string | null
+          discount_type: string
+          id: string
+          percent: number | null
+          reason: string
+          snapshot_id: string
+        }
+        Insert: {
+          amount?: number | null
+          applies_to: string
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          discount_rule_id?: string | null
+          discount_type: string
+          id?: string
+          percent?: number | null
+          reason: string
+          snapshot_id: string
+        }
+        Update: {
+          amount?: number | null
+          applies_to?: string
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          discount_rule_id?: string | null
+          discount_type?: string
+          id?: string
+          percent?: number | null
+          reason?: string
+          snapshot_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_discounts_discount_rule_id_fkey"
+            columns: ["discount_rule_id"]
+            isOneToOne: false
+            referencedRelation: "discount_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_discounts_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "quote_calculation_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quote_payment_terms: {
+        Row: {
+          approved_by: string | null
+          balance_amount: number | null
+          created_at: string
+          created_by: string | null
+          deposit_amount: number | null
+          deposit_percent: number | null
+          id: string
+          manual_override: boolean
+          override_reason: string | null
+          payment_due_stage: string | null
+          payment_term_rule_id: string | null
+          snapshot_id: string
+        }
+        Insert: {
+          approved_by?: string | null
+          balance_amount?: number | null
+          created_at?: string
+          created_by?: string | null
+          deposit_amount?: number | null
+          deposit_percent?: number | null
+          id?: string
+          manual_override?: boolean
+          override_reason?: string | null
+          payment_due_stage?: string | null
+          payment_term_rule_id?: string | null
+          snapshot_id: string
+        }
+        Update: {
+          approved_by?: string | null
+          balance_amount?: number | null
+          created_at?: string
+          created_by?: string | null
+          deposit_amount?: number | null
+          deposit_percent?: number | null
+          id?: string
+          manual_override?: boolean
+          override_reason?: string | null
+          payment_due_stage?: string | null
+          payment_term_rule_id?: string | null
+          snapshot_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_payment_terms_payment_term_rule_id_fkey"
+            columns: ["payment_term_rule_id"]
+            isOneToOne: false
+            referencedRelation: "payment_term_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_payment_terms_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "quote_calculation_snapshots"
             referencedColumns: ["id"]
           },
         ]

@@ -652,7 +652,11 @@ Deno.serve(async (req) => {
               }
               stock_found++;
               const cantidad = Number.isFinite(match.existencias) ? match.existencias : 0;
-              const disponibilidad = cantidad > 0 ? "available" : "out_of_stock";
+              const disponibilidad = cantidad <= 0
+                ? "agotado"
+                : cantidad < 50
+                ? "bajo"
+                : "disponible";
 
               // Estrategia segura: delete + insert (además cubre casos sin constraint)
               await supabase

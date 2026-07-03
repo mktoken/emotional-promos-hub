@@ -86,7 +86,22 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   const basePrice = Number(product?.precio_desde_mxn ?? 0);
   const productName = product?.datos_generales?.nombre ?? product?.id_interno ?? "";
   const productDesc = product?.datos_generales?.descripcion ?? "";
-  const publicModel = (product?.sku_base?.trim() || productName || product?.id_interno || "").trim();
+  const extractPublicSkuFromName = (name: string) => {
+    const quotedModel = name.match(/["“”'‘’]([^"“”'‘’]{2,40})["“”'‘’]/)?.[1]?.trim();
+    if (quotedModel) return quotedModel;
+
+    const trimmedName = name.trim();
+    const looksLikeModelCode =
+      /^[A-ZÁÉÍÓÚÑ0-9-]{3,}(?:\s+[A-ZÁÉÍÓÚÑ0-9-]{2,})?$/.test(trimmedName) && trimmedName.length <= 24;
+
+    return looksLikeModelCode ? trimmedName : "";
+  };
+  const publicSku = (
+    product?.sku_base?.trim() ||
+    extractPublicSkuFromName(productName) ||
+    product?.id_interno ||
+    ""
+  ).trim();
   const isHttpUrl = (v: unknown): v is string => typeof v === "string" && /^https?:\/\//i.test(v);
   const pickUrlFromItem = (item: unknown): string | null => {
     if (!item) return null;
@@ -165,7 +180,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
     const quoteItem = {
       productId: product.id,
       name: productName,
-      sku: publicModel,
+      sku: publicSku,
       color: currentColor,
       quantity,
       logoFormat,
@@ -253,7 +268,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
           {/* CONFIGURADOR */}
           <div className="lg:col-span-7 flex flex-col">
             <div className="mb-6 border-b border-border pb-6">
-              <p className="text-sm font-bold text-muted-foreground mb-1">Modelo: {publicModel}</p>
+              <p className="text-sm font-bold text-muted-foreground mb-1">SKU: {publicSku}</p>
               <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-4">{productName}</h1>
               <p className="text-muted-foreground mb-4">{productDesc}</p>
             </div>

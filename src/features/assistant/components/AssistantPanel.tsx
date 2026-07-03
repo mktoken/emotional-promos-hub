@@ -32,7 +32,7 @@ export default function AssistantPanel({ open, onClose }: Props) {
         {
           role: "assistant",
           message:
-            "¡Hola! Soy el asistente de Promocionales Emocionales 🎁. Te haré algunas preguntas rápidas para preparar tu cotización.",
+            "¡Hola! Soy el asistente de Promocionales Emocionales 🎁. Te haré algunas preguntas rápidas para preparar tu propuesta.",
         },
         { role: "assistant", message: STEPS[0].question },
       ]);
@@ -134,7 +134,7 @@ export default function AssistantPanel({ open, onClose }: Props) {
   const progress = useMemo(() => {
     if (phase === "success") return 100;
     if (phase === "summary") return 100;
-    return Math.round(((stepIdx) / STEPS.length) * 100);
+    return Math.round((stepIdx / STEPS.length) * 100);
   }, [stepIdx, phase]);
 
   if (!open) return null;
@@ -147,30 +147,18 @@ export default function AssistantPanel({ open, onClose }: Props) {
         <header className="bg-foreground text-background px-4 py-3 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2 min-w-0">
             {(phase === "chat" && stepIdx > 0) || phase === "summary" ? (
-              <button
-                onClick={handleBack}
-                className="p-1 -ml-1 hover:bg-background/10 rounded"
-                aria-label="Anterior"
-              >
+              <button onClick={handleBack} className="p-1 -ml-1 hover:bg-background/10 rounded" aria-label="Anterior">
                 <ChevronLeft className="w-5 h-5" />
               </button>
             ) : null}
             <div className="min-w-0">
               <h2 className="font-bold text-sm">Asesor en línea</h2>
               <p className="text-[10px] opacity-70 truncate">
-                {phase === "success"
-                  ? "Solicitud enviada"
-                  : phase === "summary"
-                    ? "Resumen"
-                    : step?.section}
+                {phase === "success" ? "Solicitud enviada" : phase === "summary" ? "Resumen" : step?.section}
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-background/10 rounded"
-            aria-label="Cerrar asistente"
-          >
+          <button onClick={onClose} className="p-1 hover:bg-background/10 rounded" aria-label="Cerrar asistente">
             <X className="w-5 h-5" />
           </button>
         </header>
@@ -185,10 +173,7 @@ export default function AssistantPanel({ open, onClose }: Props) {
         {/* Messages */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
           {messages.map((m, i) => (
-            <div
-              key={i}
-              className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
-            >
+            <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
               <div
                 className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap break-words ${
                   m.role === "user"
@@ -223,17 +208,21 @@ export default function AssistantPanel({ open, onClose }: Props) {
               <div className="space-y-1 min-w-0">
                 <p className="font-bold">No se pudo registrar la solicitud</p>
                 {error.stage && (
-                  <p><span className="font-semibold">Etapa:</span> {error.stage}</p>
+                  <p>
+                    <span className="font-semibold">Etapa:</span> {error.stage}
+                  </p>
                 )}
                 {error.error && (
-                  <p className="break-words"><span className="font-semibold">Error:</span> {error.error}</p>
+                  <p className="break-words">
+                    <span className="font-semibold">Error:</span> {error.error}
+                  </p>
                 )}
                 {error.details && (
-                  <p className="break-words opacity-80"><span className="font-semibold">Detalles:</span> {error.details}</p>
+                  <p className="break-words opacity-80">
+                    <span className="font-semibold">Detalles:</span> {error.details}
+                  </p>
                 )}
-                {!error.stage && !error.error && (
-                  <p className="break-words">{error.message}</p>
-                )}
+                {!error.stage && !error.error && <p className="break-words">{error.message}</p>}
               </div>
             </div>
           )}

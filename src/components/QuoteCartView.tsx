@@ -80,7 +80,7 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
       const resumen = cart
         .map(
           (item, index) =>
-            `${index + 1}. ${item.quantity} pz de ${item.name}${item.color?.name ? ` · Color: ${item.color.name}` : ""} · Subtotal preliminar: $${item.estimatedTotal.toLocaleString(
+            `${index + 1}. ${item.quantity} pz de ${item.name}${item.sku ? ` · Modelo: ${item.sku}` : ""}${item.color?.name ? ` · Color: ${item.color.name}` : ""} · Subtotal preliminar: $${item.estimatedTotal.toLocaleString(
               "es-MX",
               {
                 minimumFractionDigits: 2,

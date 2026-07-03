@@ -29,7 +29,7 @@ interface FeaturedProduct {
 
 const WHATSAPP_HREF =
   "https://wa.me/5215530311686?text=" +
-  encodeURIComponent("Hola, quiero cotizar artículos promocionales para mi empresa.");
+  encodeURIComponent("Hola, quiero solicitar una propuesta de artículos promocionales para mi empresa.");
 
 export default function LandingView({ onViewChange }: LandingViewProps) {
   const [featured, setFeatured] = useState<FeaturedProduct[]>([]);
@@ -124,17 +124,17 @@ export default function LandingView({ onViewChange }: LandingViewProps) {
               </h1>
               <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0">
                 Accede libremente a nuestro catálogo de +10,000 productos con inventario en tiempo real. Arma tu
-                proyecto, visualiza renders virtuales y cotiza al instante.
+                proyecto, visualiza renders virtuales y arma tu propuesta en minutos.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <a
                   href={WHATSAPP_HREF}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Cotizar por WhatsApp"
+                  aria-label="Solicitar propuesta por WhatsApp"
                   className="w-full sm:w-auto bg-[#25D366] hover:bg-[#1ebe57] text-white font-bold py-4 px-8 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-lg hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#25D366]"
                 >
-                  <MessageCircle size={20} /> Cotizar por WhatsApp
+                  <MessageCircle size={20} /> Solicitar propuesta por WhatsApp
                 </a>
                 <button
                   onClick={() => onViewChange("catalog")}
@@ -166,7 +166,7 @@ export default function LandingView({ onViewChange }: LandingViewProps) {
                 <div className="flex justify-between items-center mb-6">
                   <div>
                     <h3 className="text-xl font-bold text-foreground">Top Ventas Corporativas</h3>
-                    <p className="text-sm text-muted-foreground">Haz clic para ver detalles y cotizar</p>
+                    <p className="text-sm text-muted-foreground">Haz clic para ver detalles y agregar a tu propuesta</p>
                   </div>
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                     <ChevronRight size={20} />
@@ -180,7 +180,7 @@ export default function LandingView({ onViewChange }: LandingViewProps) {
                 ) : errorFeatured || featured.length === 0 ? (
                   <div className="min-h-[320px] bg-surface rounded-xl border border-border flex flex-col items-center justify-center text-center p-8">
                     <PackageX size={56} className="text-primary mb-4 opacity-80" />
-                    <p className="text-lg font-bold text-foreground mb-2">Catálogo listo para cotizar</p>
+                    <p className="text-lg font-bold text-foreground mb-2">Catálogo listo para tu propuesta</p>
                     <p className="text-sm text-muted-foreground max-w-sm">
                       Explora opciones para eventos, kits corporativos, campañas y regalos empresariales.
                     </p>
@@ -322,8 +322,8 @@ export default function LandingView({ onViewChange }: LandingViewProps) {
                 <span className="text-primary">Nosotros los armamos.</span>
               </h2>
               <p className="text-lg text-dark-section-foreground/70 mb-6">
-                Sube el nivel de tu empresa. En lugar de artículos sueltos, cotiza un "Kit Onboarding" completo. Agrega
-                múltiples productos a tu cotización y nosotros nos encargamos de integrarlos.
+                Sube el nivel de tu empresa. En lugar de artículos sueltos, arma una propuesta tipo "Kit Onboarding"
+                completa. Agrega múltiples productos a tu propuesta y nosotros nos encargamos de integrarlos.
               </p>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center gap-3 text-dark-section-foreground/90">
@@ -338,8 +338,8 @@ export default function LandingView({ onViewChange }: LandingViewProps) {
               <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center shadow-2xl">
                 <h3 className="text-2xl font-bold mb-2">Arma tu Kit Multi-Producto</h3>
                 <p className="text-dark-section-foreground/70 mb-6">
-                  Entra al catálogo, agrega los productos que te gusten a tu carrito y selecciona la opción
-                  "Kit/Paquete" al finalizar.
+                  Entra al catálogo, agrega los productos que te gusten a tu propuesta y selecciona la opción
+                  "Kit/Paquete" al finalizar tu propuesta.
                 </p>
                 <button
                   onClick={() => onViewChange("catalog")}
@@ -367,18 +367,18 @@ export default function LandingView({ onViewChange }: LandingViewProps) {
             {[
               {
                 step: "01",
-                title: "Explora y Cotiza",
-                desc: "Navega nuestro catálogo de +10k productos, agrégalos a tu cotización y sube tu logo para ver la muestra virtual.",
+                title: "Explora y arma tu propuesta",
+                desc: "Navega nuestro catálogo de +10k productos, agrégalos a tu propuesta y sube tu logo para ver la muestra virtual.",
               },
               {
                 step: "02",
                 title: "Asesoría y Anticipo",
-                desc: "Un experto afina los detalles contigo. Al aprobar la propuesta y realizar tu anticipo del 60%, ¡arrancamos!",
+                desc: "Un experto afina los detalles contigo. Al aprobar la propuesta y realizar el anticipo acordado, ¡arrancamos!",
               },
               {
                 step: "03",
                 title: "Producción y Envío",
-                desc: "Personalizamos con calidad premium y entregamos puntualmente en la fecha establecida en tu cotización oficial.",
+                desc: "Personalizamos con calidad premium y entregamos puntualmente en la fecha establecida en tu propuesta formal.",
               },
             ].map((item, idx) => (
               <div key={idx} className="relative z-10 flex flex-col items-center text-center">

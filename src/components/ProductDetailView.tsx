@@ -87,8 +87,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   const productName = product?.datos_generales?.nombre ?? product?.id_interno ?? "";
   const productDesc = product?.datos_generales?.descripcion ?? "";
   const productSku = product?.sku_base ?? "";
-  const isHttpUrl = (v: unknown): v is string =>
-    typeof v === "string" && /^https?:\/\//i.test(v);
+  const isHttpUrl = (v: unknown): v is string => typeof v === "string" && /^https?:\/\//i.test(v);
   const pickUrlFromItem = (item: unknown): string | null => {
     if (!item) return null;
     if (isHttpUrl(item)) return item;
@@ -317,13 +316,13 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                   <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs">
                     3
                   </span>{" "}
-                  Inversión Preliminar
+                  Estimación preliminar
                 </h3>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-6">
                 <div>
                   <label className="block text-sm text-dark-section-foreground/60 mb-2">
-                    Piezas a cotizar (Min. 1)
+                    Piezas estimadas (Min. 1)
                   </label>
                   <div className="bg-dark-section/80 rounded-xl p-2 flex items-center justify-between border border-dark-section-foreground/10 w-full">
                     <button
@@ -343,18 +342,21 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                 </div>
                 <div className="flex flex-col justify-center border-l border-dark-section-foreground/10 pl-6 relative">
                   <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-dark-section rotate-45 border-b border-l border-dark-section-foreground/10 hidden sm:block"></div>
-                  <p className="text-sm text-dark-section-foreground/60 mb-1">Precio Unitario Estimado</p>
+                  <p className="text-sm text-dark-section-foreground/60 mb-1">Precio desde estimado</p>
                   <div className="flex items-end gap-2">
                     <span className="text-4xl font-black text-success">${estimatedUnit.toFixed(2)}</span>
                     <span className="text-sm text-dark-section-foreground/60 mb-1.5">MXN</span>
                   </div>
+                  <p className="text-xs text-dark-section-foreground/50 mt-2">
+                    Precio antes de IVA e impresión. Sujeto a validación comercial.
+                  </p>
                 </div>
               </div>
               <button
                 onClick={handleAddToCart}
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 rounded-xl transition-all shadow-glow-primary flex justify-center items-center gap-2 text-lg hover:scale-[1.01]"
               >
-                Agregar a mi Cotización <ShoppingCart size={20} />
+                Agregar a propuesta <ShoppingCart size={20} />
               </button>
             </div>
           </div>

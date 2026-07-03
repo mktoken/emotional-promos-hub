@@ -42,13 +42,28 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
     setSubmitting(true);
     try {
       const payload = {
-        datos_cliente: JSON.parse(JSON.stringify({ nombre: leadData.name, empresa: leadData.company })),
+        datos_cliente: JSON.parse(
+          JSON.stringify({
+            nombre: leadData.name,
+            empresa: leadData.company,
+            email: leadData.email,
+            telefono: leadData.phone,
+            formato_propuesta: quoteFormat,
+          }),
+        ),
         articulos_cotizados: JSON.parse(
           JSON.stringify(
             cart.map((item) => ({
-              sku: item.sku,
+              producto_id: item.productId,
+              nombre: item.name,
+              sku: item.sku || "",
+              color: item.color?.name ?? "",
               cantidad: item.quantity,
+              precio_unitario_estimado: item.estimatedUnit,
               subtotal: item.estimatedTotal,
+              logo_format: item.logoFormat,
+              muestra_virtual: item.hasVirtualSample,
+              imagen_url: item.imageUrl ?? null,
             })),
           ),
         ),
@@ -62,8 +77,27 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
         return;
       }
       // Solo si el INSERT fue exitoso, abrir WhatsApp
-      const resumen = cart.map((i) => `${i.quantity}pz de ${i.name}`).join(", ");
-      const mensaje = `Hola, solicito una propuesta formal para mi selección. Resumen: ${resumen}. Estimación preliminar más IVA: $${grandTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })} MXN.`;
+      const resumen = cart
+        .map(
+          (item, index) =>
+            `${index + 1}. ${item.quantity} pz de ${item.name}${item.color?.name ? ` · Color: ${item.color.name}` : ""} · Subtotal preliminar: $${item.estimatedTotal.toLocaleString(
+              "es-MX",
+              {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              },
+            )} MXN`,
+        )
+        .join("\n");
+
+      const mensaje = `Hola, solicito una propuesta formal.\n\nDatos de contacto:\nNombre: ${leadData.name}\nEmpresa: ${leadData.company}\nWhatsApp/Teléfono: ${leadData.phone}\nCorreo: ${leadData.email}\n\nProductos:\n${resumen}\n\nEstimación preliminar antes de IVA e impresión: $${grandTotal.toLocaleString(
+        "es-MX",
+        {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        },
+      )} MXN.\n\nSujeto a validación comercial, stock, personalización y tiempos de entrega.`;
+
       window.open(`https://wa.me/5215530311686?text=${encodeURIComponent(mensaje)}`, "_blank");
     } catch (err) {
       console.error("Error de red:", err);
@@ -88,7 +122,9 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
             asesor te enviará la propuesta formal en breve.
           </p>
           <a
-            href={`https://wa.me/5215530311686?text=Hola,%20soy%20${leadData.name}.%20Acabo%20de%20enviar%20mi%20solicitud%20de%20propuesta.`}
+            href={`https://wa.me/5215530311686?text=${encodeURIComponent(
+              `Hola, soy ${leadData.name}. Acabo de enviar mi solicitud de propuesta formal para ${leadData.company}.`,
+            )}`}
             target="_blank"
             rel="noopener noreferrer"
             className="w-full bg-success hover:bg-success/90 text-success-foreground font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg"
@@ -163,7 +199,7 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                     <div className="flex-1">
                       <h4 className="font-bold text-foreground">{item.name}</h4>
                       <p className="text-xs text-muted-foreground mb-2">
-                        SKU: {item.sku} | Color: {item.color.name}
+                        {item.sku ? `SKU: ${item.sku} | ` : ""}Color: {item.color.name}
                       </p>
                       <div className="flex flex-wrap gap-2 text-xs">
                         <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded">
@@ -344,7 +380,7 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                     </span>
                   </div>
                   <p className="text-xs text-dark-section-foreground/60 -mt-4 mb-6">
-                    Precio desde + IVA · Sujeto a validación comercial.
+                    Precio antes de IVA e impresión · Sujeto a validación comercial.
                   </p>
                   {checkoutStep === "cart" ? (
                     <button

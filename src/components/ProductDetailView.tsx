@@ -126,6 +126,35 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
     setEstimatedUnit(quantity > 0 ? basePrice : 0);
   }, [quantity, basePrice]);
 
+  useEffect(() => {
+    if (currentColor.stock > 0 && quantity > currentColor.stock) {
+      setQuantity(currentColor.stock);
+    }
+  }, [currentColor.stock, quantity]);
+
+  const handleQuantityInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const nextValue = Number.parseInt(e.target.value, 10);
+
+    if (Number.isNaN(nextValue)) {
+      setQuantity(1);
+      return;
+    }
+
+    const maxStock = currentColor.stock > 0 ? currentColor.stock : Number.MAX_SAFE_INTEGER;
+    setQuantity(Math.max(1, Math.min(nextValue, maxStock)));
+  };
+
+  const increaseQuantity = () => {
+    setQuantity((currentQuantity) => {
+      const nextQuantity = currentQuantity + 1;
+      return currentColor.stock > 0 ? Math.min(nextQuantity, currentColor.stock) : nextQuantity;
+    });
+  };
+
+  const decreaseQuantity = () => {
+    setQuantity((currentQuantity) => Math.max(1, currentQuantity - 1));
+  };
+
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) setUploadedLogo(URL.createObjectURL(file));
@@ -326,14 +355,25 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                   </label>
                   <div className="bg-dark-section/80 rounded-xl p-2 flex items-center justify-between border border-dark-section-foreground/10 w-full">
                     <button
-                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                      type="button"
+                      onClick={decreaseQuantity}
                       className="p-3 hover:bg-dark-section-foreground/10 rounded-lg text-dark-section-foreground/60 hover:text-dark-section-foreground transition-colors"
                     >
                       <Minus size={18} />
                     </button>
-                    <span className="font-black text-2xl tracking-tight">{quantity}</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={currentColor.stock > 0 ? currentColor.stock : undefined}
+                      inputMode="numeric"
+                      value={quantity}
+                      onChange={handleQuantityInputChange}
+                      aria-label="Piezas estimadas"
+                      className="w-24 bg-transparent text-center font-black text-2xl tracking-tight text-dark-section-foreground outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
                     <button
-                      onClick={() => setQuantity((q) => q + 1)}
+                      type="button"
+                      onClick={increaseQuantity}
                       className="p-3 hover:bg-dark-section-foreground/10 rounded-lg text-dark-section-foreground/60 hover:text-dark-section-foreground transition-colors"
                     >
                       <Plus size={18} />
@@ -347,7 +387,18 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                     <span className="text-4xl font-black text-success">${estimatedUnit.toFixed(2)}</span>
                     <span className="text-sm text-dark-section-foreground/60 mb-1.5">MXN</span>
                   </div>
-                  <p className="text-xs text-dark-section-foreground/50 mt-2">
+                  <div className="mt-4 pt-4 border-t border-dark-section-foreground/10">
+                    <p className="text-xs text-dark-section-foreground/50 mb-1">Subtotal preliminar</p>
+                    <p className="text-xl font-black text-dark-section-foreground">
+                      $
+                      {estimatedTotal.toLocaleString("es-MX", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}{" "}
+                      MXN
+                    </p>
+                  </div>
+                  <p className="text-xs text-dark-section-foreground/50 mt-3">
                     Precio antes de IVA e impresión. Sujeto a validación comercial.
                   </p>
                 </div>

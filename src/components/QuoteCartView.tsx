@@ -57,6 +57,8 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
               producto_id: item.productId,
               nombre: item.name,
               sku: item.sku || "",
+              clave_producto: item.sku || "",
+              modelo_comercial: item.name,
               color: item.color?.name ?? "",
               cantidad: item.quantity,
               precio_unitario_estimado: item.estimatedUnit,
@@ -80,7 +82,7 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
       const resumen = cart
         .map(
           (item, index) =>
-            `${index + 1}. ${item.quantity} pz de ${item.name}${item.sku ? ` · SKU: ${item.sku}` : ""}${item.color?.name ? ` · Color: ${item.color.name}` : ""} · Subtotal preliminar: $${item.estimatedTotal.toLocaleString(
+            `${index + 1}. ${item.quantity} pz de ${item.name}${item.sku ? ` · Clave: ${item.sku}` : ""}${item.color?.name ? ` · Color: ${item.color.name}` : ""} · Subtotal preliminar: $${item.estimatedTotal.toLocaleString(
               "es-MX",
               {
                 minimumFractionDigits: 2,
@@ -199,7 +201,7 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                     <div className="flex-1">
                       <h4 className="font-bold text-foreground">{item.name}</h4>
                       <p className="text-xs text-muted-foreground mb-2">
-                        {item.sku ? `SKU: ${item.sku} | ` : ""}Color: {item.color.name}
+                        {item.sku ? `Clave: ${item.sku} | ` : ""}Color: {item.color.name}
                       </p>
                       <div className="flex flex-wrap gap-2 text-xs">
                         <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded">

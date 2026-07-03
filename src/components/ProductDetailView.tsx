@@ -26,7 +26,7 @@ interface ProductoB2B {
   id_interno: string;
   sku_base: string | null;
   categoria_principal: string | null;
-  datos_generales: { nombre?: string; descripcion?: string } | null;
+  datos_generales: { nombre?: string; descripcion?: string; clave_producto?: string; modelo_comercial?: string } | null;
   variantes: Array<{ sku_variante?: string; color_nombre?: string; color_hex?: string; stock_total?: number }> | null;
   imagenes: unknown[] | null;
   motor_de_personalizacion: {
@@ -84,24 +84,13 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
     imgAlt: "",
   };
   const basePrice = Number(product?.precio_desde_mxn ?? 0);
-  const productName = product?.datos_generales?.nombre ?? product?.id_interno ?? "";
-  const productDesc = product?.datos_generales?.descripcion ?? "";
-  const extractPublicSkuFromName = (name: string) => {
-    const quotedModel = name.match(/["“”'‘’]([^"“”'‘’]{2,40})["“”'‘’]/)?.[1]?.trim();
-    if (quotedModel) return quotedModel;
-
-    const trimmedName = name.trim();
-    const looksLikeModelCode =
-      /^[A-ZÁÉÍÓÚÑ0-9-]{3,}(?:\s+[A-ZÁÉÍÓÚÑ0-9-]{2,})?$/.test(trimmedName) && trimmedName.length <= 24;
-
-    return looksLikeModelCode ? trimmedName : "";
-  };
-  const publicSku = (
-    product?.sku_base?.trim() ||
-    extractPublicSkuFromName(productName) ||
+  const productName =
+    product?.datos_generales?.modelo_comercial?.trim() ||
+    product?.datos_generales?.nombre?.trim() ||
     product?.id_interno ||
-    ""
-  ).trim();
+    "";
+  const productDesc = product?.datos_generales?.descripcion ?? "";
+  const productClave = (product?.datos_generales?.clave_producto?.trim() || product?.sku_base?.trim() || "").trim();
   const isHttpUrl = (v: unknown): v is string => typeof v === "string" && /^https?:\/\//i.test(v);
   const pickUrlFromItem = (item: unknown): string | null => {
     if (!item) return null;
@@ -180,7 +169,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
     const quoteItem = {
       productId: product.id,
       name: productName,
-      sku: publicSku,
+      sku: productClave,
       color: currentColor,
       quantity,
       logoFormat,
@@ -268,7 +257,9 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
           {/* CONFIGURADOR */}
           <div className="lg:col-span-7 flex flex-col">
             <div className="mb-6 border-b border-border pb-6">
-              <p className="text-sm font-bold text-muted-foreground mb-1">SKU: {publicSku}</p>
+              {productClave ? (
+                <p className="text-sm font-bold text-muted-foreground mb-1">Clave: {productClave}</p>
+              ) : null}
               <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-4">{productName}</h1>
               <p className="text-muted-foreground mb-4">{productDesc}</p>
             </div>

@@ -9,18 +9,54 @@ import type { QuoteItem } from "@/data/mockData";
 
 type ViewType = "landing" | "catalog" | "pdp" | "cart";
 
+const createCartId = () => Date.now() + Math.floor(Math.random() * 1_000_000);
+
+const getQuoteLineKey = (item: Omit<QuoteItem, "cartId"> | QuoteItem) =>
+  [
+    item.productId,
+    item.claveProducto || item.sku || "",
+    item.color?.claveVariante || item.color?.id || item.color?.name || "",
+    item.logoFormat || "",
+  ].join("|");
+
 export default function Index() {
   const [currentView, setCurrentView] = useState<ViewType>("landing");
   const [quoteCart, setQuoteCart] = useState<QuoteItem[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
   const addToQuote = (item: Omit<QuoteItem, "cartId">) => {
-    setQuoteCart([...quoteCart, { ...item, cartId: Date.now() }]);
+    setQuoteCart((prev) => {
+      const newItem: QuoteItem = { ...item, cartId: createCartId() };
+      const newItemKey = getQuoteLineKey(newItem);
+      const existingIndex = prev.findIndex((existingItem) => getQuoteLineKey(existingItem) === newItemKey);
+
+      if (existingIndex === -1) {
+        return [...prev, newItem];
+      }
+
+      return prev.map((existingItem, index) => {
+        if (index !== existingIndex) return existingItem;
+
+        const combinedQuantity = existingItem.quantity + item.quantity;
+        const estimatedUnit = item.estimatedUnit || existingItem.estimatedUnit || 0;
+
+        return {
+          ...existingItem,
+          quantity: combinedQuantity,
+          estimatedUnit,
+          estimatedTotal: estimatedUnit * combinedQuantity,
+          imageUrl: item.imageUrl ?? existingItem.imageUrl,
+          entregaEstimada: item.entregaEstimada ?? existingItem.entregaEstimada,
+          personalizacionPublica: item.personalizacionPublica ?? existingItem.personalizacionPublica,
+          material: item.material ?? existingItem.material,
+        };
+      });
+    });
     setCurrentView("cart");
   };
 
   const removeFromQuote = (cartId: number) => {
-    setQuoteCart(quoteCart.filter((item) => item.cartId !== cartId));
+    setQuoteCart((prev) => prev.filter((item) => item.cartId !== cartId));
   };
 
   const openProduct = (productId: string) => {

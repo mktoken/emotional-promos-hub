@@ -1501,6 +1501,80 @@ export type Database = {
           },
         ]
       }
+      product_personalization_capabilities: {
+        Row: {
+          active: boolean
+          can_engrave: boolean
+          can_full_color: boolean
+          can_personalize: boolean
+          can_print_1_ink: boolean
+          can_print_2_ink: boolean
+          can_print_3_plus_ink: boolean
+          clave_producto: string | null
+          compatibility_rules: Json
+          created_at: string
+          economy_recommendation: string
+          id: string
+          internal_note: string | null
+          max_recommended_inks: number
+          producto_b2b_id: string
+          public_note: string | null
+          requires_manual_review: boolean
+          restriction_note: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          can_engrave?: boolean
+          can_full_color?: boolean
+          can_personalize?: boolean
+          can_print_1_ink?: boolean
+          can_print_2_ink?: boolean
+          can_print_3_plus_ink?: boolean
+          clave_producto?: string | null
+          compatibility_rules?: Json
+          created_at?: string
+          economy_recommendation?: string
+          id?: string
+          internal_note?: string | null
+          max_recommended_inks?: number
+          producto_b2b_id: string
+          public_note?: string | null
+          requires_manual_review?: boolean
+          restriction_note?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          can_engrave?: boolean
+          can_full_color?: boolean
+          can_personalize?: boolean
+          can_print_1_ink?: boolean
+          can_print_2_ink?: boolean
+          can_print_3_plus_ink?: boolean
+          clave_producto?: string | null
+          compatibility_rules?: Json
+          created_at?: string
+          economy_recommendation?: string
+          id?: string
+          internal_note?: string | null
+          max_recommended_inks?: number
+          producto_b2b_id?: string
+          public_note?: string | null
+          requires_manual_review?: boolean
+          restriction_note?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_personalization_capabilities_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: true
+            referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       producto_b2b_oferta_map: {
         Row: {
           created_at: string
@@ -1866,6 +1940,50 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      proposal_email_events: {
+        Row: {
+          cotizacion_lead_id: string | null
+          created_at: string
+          email_type: string
+          error_message: string | null
+          id: string
+          provider_message_id: string | null
+          recipient_email: string
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          cotizacion_lead_id?: string | null
+          created_at?: string
+          email_type: string
+          error_message?: string | null
+          id?: string
+          provider_message_id?: string | null
+          recipient_email: string
+          sent_at?: string | null
+          status: string
+        }
+        Update: {
+          cotizacion_lead_id?: string | null
+          created_at?: string
+          email_type?: string
+          error_message?: string | null
+          id?: string
+          provider_message_id?: string | null
+          recipient_email?: string
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposal_email_events_cotizacion_lead_id_fkey"
+            columns: ["cotizacion_lead_id"]
+            isOneToOne: false
+            referencedRelation: "cotizaciones_leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       proveedores: {
         Row: {

@@ -53,20 +53,28 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
         ),
         articulos_cotizados: JSON.parse(
           JSON.stringify(
-            cart.map((item) => ({
-              producto_id: item.productId,
-              nombre: item.name,
-              sku: item.sku || "",
-              clave_producto: item.sku || "",
-              modelo_comercial: item.name,
-              color: item.color?.name ?? "",
-              cantidad: item.quantity,
-              precio_unitario_estimado: item.estimatedUnit,
-              subtotal: item.estimatedTotal,
-              logo_format: item.logoFormat,
-              muestra_virtual: item.hasVirtualSample,
-              imagen_url: item.imageUrl ?? null,
-            })),
+            cart.map((item) => {
+              const claveProducto = item.claveProducto || item.sku || "";
+              const modeloComercial = item.modeloComercial || item.name;
+
+              return {
+                producto_id: item.productId,
+                nombre: item.name,
+                sku: claveProducto,
+                clave_producto: claveProducto,
+                modelo_comercial: modeloComercial,
+                color: item.color?.name ?? "",
+                cantidad: item.quantity,
+                precio_unitario_estimado: item.estimatedUnit,
+                subtotal: item.estimatedTotal,
+                personalizacion: item.personalizacionPublica ?? "Técnica por definir con asesor",
+                entrega_estimada: item.entregaEstimada ?? null,
+                material: item.material ?? item.color?.material ?? null,
+                logo_format: item.logoFormat,
+                muestra_virtual: item.hasVirtualSample,
+                imagen_url: item.imageUrl ?? null,
+              };
+            }),
           ),
         ),
         total_estimado: grandTotal,
@@ -80,16 +88,19 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
       }
       // Solo si el INSERT fue exitoso, abrir WhatsApp
       const resumen = cart
-        .map(
-          (item, index) =>
-            `${index + 1}. ${item.quantity} pz de ${item.name}${item.sku ? ` · Clave: ${item.sku}` : ""}${item.color?.name ? ` · Color: ${item.color.name}` : ""} · Subtotal preliminar: $${item.estimatedTotal.toLocaleString(
-              "es-MX",
-              {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              },
-            )} MXN`,
-        )
+        .map((item, index) => {
+          const claveProducto = item.claveProducto || item.sku || "";
+          const modeloComercial = item.modeloComercial || item.name;
+          const entrega = item.entregaEstimada ? ` · Entrega estimada: ${item.entregaEstimada}` : "";
+
+          return `${index + 1}. ${item.quantity} pz de ${modeloComercial}${claveProducto ? ` · Clave: ${claveProducto}` : ""}${item.color?.name ? ` · Color: ${item.color.name}` : ""}${entrega} · Subtotal preliminar: $${item.estimatedTotal.toLocaleString(
+            "es-MX",
+            {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            },
+          )} MXN`;
+        })
         .join("\n");
 
       const mensaje = `Hola, solicito una propuesta formal.\n\nDatos de contacto:\nNombre: ${leadData.name}\nEmpresa: ${leadData.company}\nWhatsApp/Teléfono: ${leadData.phone}\nCorreo: ${leadData.email}\n\nProductos:\n${resumen}\n\nEstimación preliminar antes de IVA e impresión: $${grandTotal.toLocaleString(
@@ -98,7 +109,7 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         },
-      )} MXN.\n\nSujeto a validación comercial, stock, personalización y tiempos de entrega.`;
+      )} MXN.\n\nPrecio antes de IVA e impresión. La técnica de personalización será definida por nuestro equipo según material, logo y cantidad. Sujeto a validación comercial, stock y tiempos de entrega.`;
 
       window.open(`https://wa.me/5215530311686?text=${encodeURIComponent(mensaje)}`, "_blank");
     } catch (err) {
@@ -201,20 +212,19 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                     <div className="flex-1">
                       <h4 className="font-bold text-foreground">{item.name}</h4>
                       <p className="text-xs text-muted-foreground mb-2">
-                        {item.sku ? `Clave: ${item.sku} | ` : ""}Color: {item.color.name}
+                        {item.claveProducto || item.sku ? `Clave: ${item.claveProducto || item.sku} | ` : ""}
+                        Color: {item.color.name}
                       </p>
                       <div className="flex flex-wrap gap-2 text-xs">
                         <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded">
                           Cant: <strong>{item.quantity}</strong>
                         </span>
-                        <span className="bg-primary/10 text-primary px-2 py-1 rounded">
-                          Logo:{" "}
-                          {item.logoFormat === "1_color"
-                            ? "1 Color"
-                            : item.logoFormat === "full_color"
-                              ? "Full Color"
-                              : "Solo Texto"}
-                        </span>
+                        <span className="bg-primary/10 text-primary px-2 py-1 rounded">Personalización por asesor</span>
+                        {item.entregaEstimada && (
+                          <span className="bg-success/10 text-success px-2 py-1 rounded">
+                            Entrega estimada: {item.entregaEstimada}
+                          </span>
+                        )}
                         {item.hasVirtualSample && (
                           <span className="bg-success/10 text-success px-2 py-1 rounded flex items-center gap-1">
                             <ImageIcon size={12} /> Muestra Virtual
@@ -363,7 +373,7 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                       {cart.map((item) => (
                         <li key={item.cartId} className="flex justify-between text-sm">
                           <span className="text-muted-foreground line-clamp-1 pr-4">
-                            {item.quantity}x {item.name}
+                            {item.quantity}x {item.modeloComercial || item.name}
                           </span>
                           <span className="font-medium text-foreground">
                             ${item.estimatedTotal.toLocaleString("es-MX")}

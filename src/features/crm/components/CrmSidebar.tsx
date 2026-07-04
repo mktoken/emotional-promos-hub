@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, Megaphone } from "lucide-react";
+import { LayoutDashboard, Users, Megaphone, FileText } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -14,6 +14,7 @@ import {
 
 const items = [
   { title: "Dashboard", url: "/crm", icon: LayoutDashboard, exact: true },
+  { title: "Cotizaciones", url: "/crm/cotizaciones", icon: FileText, exact: false },
   { title: "Prospectos", url: "/crm/prospectos", icon: Users, exact: false },
   { title: "Campañas", url: "/crm/campanas", icon: Megaphone, exact: false },
 ];

@@ -87,31 +87,107 @@ export type Database = {
           },
         ]
       }
+      cotizacion_lead_notes: {
+        Row: {
+          cotizacion_lead_id: string
+          created_at: string
+          id: string
+          note: string
+          user_id: string | null
+        }
+        Insert: {
+          cotizacion_lead_id: string
+          created_at?: string
+          id?: string
+          note: string
+          user_id?: string | null
+        }
+        Update: {
+          cotizacion_lead_id?: string
+          created_at?: string
+          id?: string
+          note?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cotizacion_lead_notes_cotizacion_lead_id_fkey"
+            columns: ["cotizacion_lead_id"]
+            isOneToOne: false
+            referencedRelation: "cotizaciones_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cotizacion_status_history: {
+        Row: {
+          changed_by: string | null
+          cotizacion_lead_id: string
+          created_at: string
+          id: string
+          new_status: string
+          old_status: string | null
+        }
+        Insert: {
+          changed_by?: string | null
+          cotizacion_lead_id: string
+          created_at?: string
+          id?: string
+          new_status: string
+          old_status?: string | null
+        }
+        Update: {
+          changed_by?: string | null
+          cotizacion_lead_id?: string
+          created_at?: string
+          id?: string
+          new_status?: string
+          old_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cotizacion_status_history_cotizacion_lead_id_fkey"
+            columns: ["cotizacion_lead_id"]
+            isOneToOne: false
+            referencedRelation: "cotizaciones_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cotizaciones_leads: {
         Row: {
           articulos_cotizados: Json
+          assigned_to: string | null
           created_at: string | null
           datos_cliente: Json
           estado_cotizacion: string | null
           id: string
+          last_contacted_at: string | null
+          lost_reason: string | null
           total_estimado: number | null
           updated_at: string | null
         }
         Insert: {
           articulos_cotizados?: Json
+          assigned_to?: string | null
           created_at?: string | null
           datos_cliente?: Json
           estado_cotizacion?: string | null
           id?: string
+          last_contacted_at?: string | null
+          lost_reason?: string | null
           total_estimado?: number | null
           updated_at?: string | null
         }
         Update: {
           articulos_cotizados?: Json
+          assigned_to?: string | null
           created_at?: string | null
           datos_cliente?: Json
           estado_cotizacion?: string | null
           id?: string
+          last_contacted_at?: string | null
+          lost_reason?: string | null
           total_estimado?: number | null
           updated_at?: string | null
         }
@@ -2476,6 +2552,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      staff_members: {
+        Row: {
+          active: boolean
+          created_at: string
+          display_name: string | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          display_name?: string | null
+          role: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          display_name?: string | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       tabuladores_impresion: {
         Row: {

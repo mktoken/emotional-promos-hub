@@ -60,7 +60,9 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
     e.preventDefault();
     setSubmitting(true);
     try {
+      const leadId = crypto.randomUUID();
       const payload = {
+        id: leadId,
         datos_cliente: JSON.parse(
           JSON.stringify({
             nombre: leadData.name,
@@ -111,11 +113,7 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
         total_estimado: grandTotal,
         estado_cotizacion: "NUEVA",
       };
-      const { data: inserted, error } = await supabase
-        .from("cotizaciones_leads")
-        .insert([payload])
-        .select("id")
-        .single();
+      const { error } = await supabase.from("cotizaciones_leads").insert([payload]);
       if (error) {
         console.error("Error al guardar cotización:", error);
         setSubmitting(false);
@@ -124,19 +122,16 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
       // Envío de "Resumen preliminar de solicitud de cotización".
       // Se intenta después de guardar la solicitud y antes de abrir WhatsApp para asegurar
       // que la Edge Function se dispare y registre eventos. Si falla, NO bloquea el flujo.
-      if (inserted?.id) {
-        try {
-          const { error: emailError } = await supabase.functions.invoke("send-proposal-summary-email", {
-            body: { cotizacion_lead_id: inserted.id },
-          });
-
-          if (emailError) {
-            console.warn("[proposal-email] falló sin bloquear el flujo:", emailError.message);
-          }
-        } catch (emailInvokeError) {
-          console.warn("[proposal-email] error no bloqueante:", emailInvokeError);
-        }
-      }
+      void supabase.functions
+        .invoke("send-proposal-summary-email", {
+          body: { cotizacion_lead_id: leadId },
+        })
+        .then(({ error }) => {
+          if (error) console.warn("Email summary invocation failed:", error);
+        })
+        .catch((error) => {
+          console.warn("Email summary invocation error:", error);
+        });
       // Solo si el INSERT fue exitoso, abrir WhatsApp
       const resumen = cart
         .map((item, index) => {

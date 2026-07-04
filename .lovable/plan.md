@@ -1,199 +1,290 @@
-# Plan Sprint 2.1 — Publicar piloto elegible sin tocar frontend
+# Plan Sprint 2.6 — Email automático "Resumen preliminar de solicitud de cotización"
 
-## 1. Definición actual de `productos_publicos`
+Solo análisis. No se implementa, no se hace Build, no se ejecutan migraciones, no se tocan `productos_publicos`, RLS ni Edge Functions existentes.
 
-Vista simple sobre `productos_b2b`:
+---
+
+## 0. Estado actual verificado
+
+- `QuoteCartView.tsx` línea 114: `INSERT` en `cotizaciones_leads` con `.insert([payload])` — hoy **no captura el `id` insertado** (no usa `.select().single()`).
+- Tras el insert exitoso abre WhatsApp (línea 150) y pasa a `checkoutStep="success"`.
+- `payload` ya contiene: `datos_cliente` (nombre, empresa, phone, email), `productos_solicitados` (array con clave_producto, modelo_comercial, color, cantidad, subtotal, personalización solicitada, alternativa económica sugerida, imagen_url), `total_estimado`, `estado_cotizacion`.
+- `proposal_email_events` ya existe en BD con FK a `cotizaciones_leads(id)`, columnas: `id`, `cotizacion_lead_id`, `email_type`, `recipient_email`, `status`, `provider_message_id`, `error_message`, `sent_at`, `created_at`.
+- Secrets ya configurados: `LOVABLE_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY`.
+- No hay dominio de email Lovable configurado (a validar en Build con `check_email_domain_status`).
+
+---
+
+## 1. Archivos exactos a tocar
+
+**Nuevos (2):**
+
+1. `supabase/functions/send-proposal-summary-email/index.ts` — Edge Function nueva, dedicada al envío del resumen preliminar y al registro en `proposal_email_events`. No modifica ninguna función existente.
+2. `supabase/functions/send-proposal-summary-email/deno.json` — solo si React Email requiere JSX config; probable no necesario porque el HTML se genera con template string (ver §5).
+
+**Modificados (1, mínimo):**
+
+3. `src/components/QuoteCartView.tsx` — dos cambios acotados:
+  - Cambiar `.insert([payload])` por `.insert([payload]).select("id").single()` para capturar el `id`/folio.
+  - Después del insert exitoso (y **antes o después de abrir WhatsApp**, ver §4), invocar la nueva Edge Function con `supabase.functions.invoke(...)` en modo **fire-and-forget** (no bloquear el flujo).
+
+**NO se toca:**
+
+- Ninguna Edge Function existente (`capture-assistant-lead`, `sync-*`, `promote-provider-products-to-catalog`).
+- `productos_publicos`, RLS, `cotizaciones_leads` schema, `proposal_email_events` schema.
+- Diseño ni layout de `QuoteCartView`.
+
+---
+
+## 2. Edge Function recomendada
+
+**Nombre:** `send-proposal-summary-email`
+**Ubicación:** `supabase/functions/send-proposal-summary-email/index.ts`
+`**verify_jwt`:** false (invocada desde cliente anónimo tras un insert público en `cotizaciones_leads`).
+
+### Contrato de entrada
+
+```ts
+POST { cotizacion_lead_id: string }
+```
+
+### Responsabilidades (en orden)
+
+1. Validar body con Zod (`cotizacion_lead_id` UUID).
+2. Con `SUPABASE_SERVICE_ROLE_KEY`, leer la fila completa de `cotizaciones_leads` por `id` (SELECT único, sin exponer service role al cliente).
+3. Extraer `datos_cliente`, `productos_solicitados`, `total_estimado`, `created_at`.
+4. Renderizar dos HTMLs (cliente + interno) con la misma plantilla, distinguidos por `email_type`.
+5. Enviar vía **Lovable Emails** (`supabase.functions.invoke('send-transactional-email', ...)`) si hay dominio configurado. Alternativa provisional: **Resend connector gateway** si el usuario elige esa ruta (§3).
+6. Insertar dos filas en `proposal_email_events` (una por destinatario), status `sent` o `failed`.
+7. Responder 200 siempre que el registro se haya intentado; devolver detalle no bloqueante al cliente.
+
+### Idempotencia
+
+`idempotencyKey = "proposal-summary-<lead_id>-<recipient_type>"` para evitar duplicados si el cliente reintenta.
+
+### CORS
+
+Manejar `OPTIONS` + headers estándar para permitir invocación desde el sitio público.
+
+---
+
+## 3. Secrets necesarios
+
+**Ya presentes:** `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `LOVABLE_API_KEY`.
+
+**Faltantes según la vía elegida (decisión pendiente en Build):**
+
+- **Vía A — Lovable Emails (recomendada):** requiere dominio de email verificado + `setup_email_infra` + `scaffold_transactional_email`. No requiere secrets adicionales (usa `LOVABLE_API_KEY`).
+- **Vía B — Resend por connector gateway:** requiere el connector `resend` conectado; el secret `RESEND_API_KEY` (clave de conexión al gateway) se inyecta automáticamente. Sin `add_secret` manual.
+- **Configuración de destinatarios internos:** nuevo secret `INTERNAL_SALES_EMAIL` (correo de ventas, string). Único secret manual a agregar en Build.
+- **Remitente visible:** constante en código (`FROM_EMAIL`, `FROM_NAME`) o secret opcional `PROPOSAL_FROM_EMAIL`. Decidir en Build; por defecto constante.
+
+---
+
+## 4. Cambios mínimos en `QuoteCartView.tsx`
+
+Solo lógica, sin tocar UI. Dos ediciones puntuales alrededor de la línea 114:
+
+### 4.1. Capturar el `id` del insert
+
+```ts
+const { data: inserted, error } = await supabase
+  .from("cotizaciones_leads")
+  .insert([payload])
+  .select("id")
+  .single();
+```
+
+### 4.2. Invocación fire-and-forget del email
+
+Justo después de confirmar `!error`, antes de `window.open(...)`:
+
+```ts
+if (inserted?.id) {
+  supabase.functions
+    .invoke("send-proposal-summary-email", { body: { cotizacion_lead_id: inserted.id } })
+    .catch((e) => console.warn("[email] no bloqueante:", e));
+}
+```
+
+- **Sin `await`.** El correo NO bloquea WhatsApp ni el `checkoutStep="success"`.
+- Si falla la invocación, se registra warning en consola y el flujo continúa (la solicitud ya quedó guardada).
+
+### 4.3. Nada más
+
+- No se cambian textos visibles.
+- No se agrega loading extra.
+- No se modifica el WhatsApp ni el estado de éxito.
+- No se agregan nuevos campos al formulario.
+
+---
+
+## 5. Estructura del HTML email
+
+Template único parametrizado por `recipientType: "cliente" | "interno"`. Renderizado como template string (sin React Email) para evitar dependencias JSX en la nueva función.
+
+### Asunto
+
+- Cliente: `Resumen preliminar de solicitud de cotización — Folio {shortId}`
+- Interno: `[Nueva solicitud] {empresa} — {nombre} — Folio {shortId}`
+
+### Estructura HTML (bloques)
+
+```
+┌ Header (blanco, logo texto, sin colores fuertes)
+│   "Promocionales Emocionales"
+│   "Resumen preliminar de solicitud de cotización"
+│
+├ Saludo
+│   "Hola {nombre}, gracias por tu interés."
+│   "Empresa: {empresa}"
+│   "Folio: {shortId}   Fecha: {fecha_local}"
+│
+├ Aviso destacado (banner amarillo suave)
+│   "Este documento NO es una cotización final.
+│    Es un resumen preliminar. Precios antes de IVA e impresión.
+│    Tu asesor validará técnica, disponibilidad y tiempos."
+│
+├ Tabla de productos (una fila por item)
+│   │ Imagen (60x60, object-contain, fondo blanco)
+│   │ Clave: {clave_producto}
+│   │ Modelo: {modelo_comercial}
+│   │ Color: {color} · Cantidad: {cantidad}
+│   │ Personalización solicitada: {personalizacion}
+│   │ Alternativa económica sugerida: {personalizacion_sugerida_economica.label} (si aplica)
+│   │ Subtotal preliminar: ${subtotal} MXN
+│
+├ Total preliminar
+│   "Estimación preliminar antes de IVA e impresión: ${total} MXN"
+│
+├ Próximos pasos
+│   "1. Tu asesor te contactará por WhatsApp/correo.
+│    2. Definiremos técnica de personalización óptima.
+│    3. Recibirás propuesta formal con precios finales."
+│
+├ Datos de contacto de la empresa (footer)
+│   WhatsApp, correo, sede
+│
+└ Nota legal
+    "Sujeto a validación comercial, stock y tiempos de entrega."
+```
+
+### Reglas de estilo
+
+- Body `background: #ffffff` (obligatorio incluso en tema oscuro).
+- Estilos **inline** en cada elemento, sin `<style>` ni CSS externo.
+- Ancho máximo 600px.
+- Sin `dangerouslySetInnerHTML`; todos los valores se escapan.
+- Imágenes: URL absoluta desde `imagen_url` del payload; fallback texto "Sin imagen" si falta.
+- Sin links de unsubscribe (el sistema Lovable los agrega si aplica).
+
+### Versión interna
+
+Misma plantilla + bloque adicional al inicio:
+
+```
+Nueva solicitud recibida
+Cliente: {nombre} <{email}>
+Empresa: {empresa}
+Teléfono/WhatsApp: {phone}
+```
+
+---
+
+## 6. Registro en `proposal_email_events`
+
+Después de cada intento de envío (cliente e interno), insertar una fila:
 
 ```sql
-SELECT id, id_interno, sku_base, categoria_principal, datos_generales,
-       variantes, imagenes, motor_de_personalizacion, activo, updated_at,
-       CASE WHEN (costeo->>'precio_neto_distribuidor') ~ '^[0-9]+(\.[0-9]+)?$'
-            THEN round((costeo->>'precio_neto_distribuidor')::numeric * 1.35, 2)
-       END AS precio_desde_mxn
-FROM productos_b2b p
-WHERE activo = true;
+INSERT INTO proposal_email_events
+  (cotizacion_lead_id, email_type, recipient_email, status, provider_message_id, error_message, sent_at)
+VALUES
+  ($1, $2, $3, $4, $5, $6, $7);
 ```
 
-- Filtro único: `activo = true`.
-- Precio derivado inline de `costeo->>'precio_neto_distribuidor' * 1.35`.
-- Hoy devuelve 48 productos legado. Los 50 piloto quedan fuera porque `activo=false`.
+- `email_type`: `"proposal_summary_client"` | `"proposal_summary_internal"`.
+- `recipient_email`: email destino.
+- `status`: `"sent"` cuando el proveedor devuelve 2xx; `"failed"` si hay error de envío; `"skipped"` si falta configuración (dominio, secret).
+- `provider_message_id`: `id` devuelto por Lovable Emails/Resend.
+- `error_message`: mensaje resumido (máx 500 chars, sanitizado, sin stack traces ni tokens).
+- `sent_at`: `now()` si `status='sent'`, `null` en otros casos.
 
-## 2. Contrato que consume el frontend (`CatalogView.tsx`)
+**Grants:** verificar en Build que `service_role` tiene `INSERT` sobre `proposal_email_events` (la Edge Function usa service role, no requiere policy para `anon`).
 
-Columnas leídas por `.select(...)`:
+**No se hace `.select()` de la tabla al cliente. Solo escribe la Edge Function.**
 
-```
-id, id_interno, sku_base, categoria_principal, datos_generales,
-variantes, imagenes, motor_de_personalizacion, activo, updated_at,
-precio_desde_mxn
-```
+---
 
-- `datos_generales.nombre`, `datos_generales.descripcion`
-- `variantes[].stock_total`
-- `imagenes` (array o string JSON)
-- `precio_desde_mxn` (number, MXN, se muestra tal cual — hoy sin IVA visible)
+## 7. Riesgos
 
-**El contrato debe conservarse 1:1.** Ningún campo nuevo, ninguno removido, mismos tipos.
+1. **Sin dominio verificado**: si Lovable Emails no está configurado, el envío falla. Mitigación: en Build, primero `check_email_domain_status`; si no hay dominio, mostrar diálogo de setup ANTES de escribir código de envío. Mientras tanto, `status="skipped"` no bloquea la solicitud.
+2. **Fallback silencioso**: si la Edge Function no responde (timeout), el cliente ya cerró la pestaña porque WhatsApp abre en `_blank` y luego navega a success. Aceptable — el registro queda en `cotizaciones_leads` y el email se puede reintentar manualmente desde CRM en futuro sprint.
+3. **PII en logs**: no loguear `datos_cliente` completo en la Edge Function. Solo `lead_id` y `status`.
+4. **Duplicados**: sin idempotencia se podría reenviar si el cliente hace doble submit. Mitigación: `idempotencyKey` en Lovable Emails o revisar `proposal_email_events` antes de reenviar.
+5. **Rate limit del proveedor**: no aplica al volumen actual (1 correo por solicitud).
+6. **CORS**: la función es invocada por origen público; asegurar headers `Access-Control-Allow-Origin: *` en respuesta.
+7. `**select().single()` puede fallar** si RLS oculta la fila recién insertada. Verificar en Build que la policy INSERT de `cotizaciones_leads` permita `RETURNING id` para `anon` — probablemente ya funciona porque `WITH CHECK (true)`, pero validar.
+8. **HTML mal formado en móvil**: usar tabla-based layout, no flexbox/grid.
+9. **Imagenes rotas**: URLs firmadas de Supabase pueden expirar; hoy `imagen_url` es pública de proveedor, riesgo bajo.
+10. `**INTERNAL_SALES_EMAIL` no configurado**: envío interno se marca `skipped`; solicitud del cliente sigue intacta.
 
-## 3. Estrategia — Redefinir la vista como UNION ALL
+---
 
-Dos ramas mutuamente excluyentes por `producto_b2b_id`:
+## 8. Checklist de aceptación
 
-**Rama A — Legado (comportamiento actual, intacto):**
+Funcional:
 
-- `productos_b2b.activo = true`
-- `precio_desde_mxn` calculado desde `costeo->>'precio_neto_distribuidor' * 1.35` (idéntico a hoy).
-- Excluye los pilotos (todos tienen `activo = false`).
+- Al enviar "Solicitar propuesta formal", `cotizaciones_leads` recibe un INSERT y devuelve `id`.
+- La Edge Function `send-proposal-summary-email` se invoca con ese `id`.
+- WhatsApp abre igual que hoy (no bloqueado por el email).
+- Pantalla de éxito aparece igual que hoy (no bloqueada por el email).
+- Si el email falla, la solicitud sigue guardada en BD (verificable con `SELECT * FROM cotizaciones_leads`).
 
-**Rama B — Piloto elegible (nuevo):**
+Correo cliente:
 
-- `productos_b2b.activo = false`
-- `EXISTS` en `producto_b2b_status` con **todas** estas condiciones:
-  - `public_visible = true`
-  - `stock_status = 'disponible'`
-  - `price_valid = true`
-  - `image_available = true`
-- `EXISTS` en `catalog_price_cache` con:
-  - `price_status = 'valid'`
-  - `tax_included = false`
-  - `currency = 'MXN'`
-  - `min_price_before_tax_mxn IS NOT NULL`
-- `precio_desde_mxn = catalog_price_cache.min_price_before_tax_mxn` (pre-IVA, mismo contrato numérico).
-- `activo` se **proyecta como `true**` en la salida de la vista (columna calculada), para que el frontend siga filtrando por `.eq('activo', true)` sin cambios. La fila subyacente en `productos_b2b` sigue en `activo=false`.
+- Recibe correo con asunto `Resumen preliminar de solicitud de cotización — Folio ...`.
+- Muestra nombre, empresa, folio corto, fecha.
+- Muestra tabla con imagen, clave, modelo, color, cantidad, personalización solicitada, alternativa económica (si aplica), subtotal por producto.
+- Muestra total preliminar.
+- Contiene banner "no es cotización final".
+- Renderiza correctamente en Gmail web + iOS Mail.
+- Ningún dato de proveedor, costo o margen aparece.
 
-Con esto, ~31 pilotos entrarían (los que tienen imagen + stock + precio válido), y los 9 agotados / 10 sin imagen quedan fuera automáticamente.
+Correo interno:
 
-### Boceto SQL (referencia, no ejecutar aún)
+- Ventas recibe copia con datos de contacto del cliente en el encabezado.
+- Mismo detalle de productos.
 
-```sql
-CREATE OR REPLACE VIEW public.productos_publicos AS
--- Rama A: legado
-SELECT
-  p.id, p.id_interno, p.sku_base, p.categoria_principal,
-  p.datos_generales, p.variantes, p.imagenes, p.motor_de_personalizacion,
-  true AS activo,  -- ya filtrado por activo=true
-  p.updated_at,
-  CASE WHEN (p.costeo->>'precio_neto_distribuidor') ~ '^[0-9]+(\.[0-9]+)?$'
-       THEN round((p.costeo->>'precio_neto_distribuidor')::numeric * 1.35, 2)
-  END AS precio_desde_mxn
-FROM public.productos_b2b p
-WHERE p.activo = true
+Registro:
 
-UNION ALL
+- `proposal_email_events` tiene 2 filas por solicitud (cliente + interno), o 1 fila `skipped` cuando falta configuración.
+- `status` refleja el resultado real (`sent` | `failed` | `skipped`).
+- `provider_message_id` presente cuando `sent`.
+- `error_message` presente y sanitizado cuando `failed`.
 
--- Rama B: piloto elegible
-SELECT
-  p.id, p.id_interno, p.sku_base, p.categoria_principal,
-  p.datos_generales, p.variantes, p.imagenes, p.motor_de_personalizacion,
-  true AS activo,  -- proyectado, no persistido
-  p.updated_at,
-  c.min_price_before_tax_mxn AS precio_desde_mxn
-FROM public.productos_b2b p
-JOIN public.producto_b2b_status s ON s.producto_b2b_id = p.id
-JOIN public.catalog_price_cache  c ON c.producto_b2b_id = p.id
-WHERE p.activo = false
-  AND s.public_visible = true
-  AND s.stock_status  = 'disponible'
-  AND s.price_valid   = true
-  AND s.image_available = true
-  AND c.price_status  = 'valid'
-  AND c.tax_included  = false
-  AND c.currency      = 'MXN'
-  AND c.min_price_before_tax_mxn IS NOT NULL;
-```
+No-regresión:
 
-## 4. Puntos 4–8 (respuestas directas)
+- `productos_publicos` intocable (mismo `pg_get_viewdef`).
+- RLS intocable.
+- Edge Functions existentes intactas (`capture-assistant-lead`, `sync-*`, `promote-provider-products-to-catalog`).
+- UI de `QuoteCartView` visualmente idéntica (mismos textos, mismas clases, mismo layout).
+- Catálogo, PDP, Landing intactos.
+- `productos_b2b.activo` piloto sigue en `false` para 50 registros.
 
-4. **Filtrar por `public_visible=true**` → JOIN con `producto_b2b_status` en Rama B, condiciones combinadas listadas arriba. No hay bandera única "publicable"; se exige la conjunción completa para que el gate sea explícito y auditable.
-5. `**precio_desde_mxn**` en Rama B viene directo de `catalog_price_cache.min_price_before_tax_mxn` (sin multiplicar, ya viene calculado por el pipeline de Sprint 2). Rama A conserva la fórmula histórica `*1.35`.
-6. **Precios "más IVA"**: se garantiza requiriendo `tax_included = false` en la Rama B. Rama A ya opera como "precio base" y no cambia. La vista **no** aplica IVA; comunicar "+ IVA" es responsabilidad del frontend (fuera de alcance de este sprint).
-7. **No exponer datos sensibles**: la vista **sólo proyecta** las 11 columnas del contrato. No se hace `SELECT *` de `catalog_price_cache` (que contiene `provider_code`, `source_oferta_id`, `pricing_warning`). El GRANT a `anon` sigue siendo únicamente sobre `productos_publicos`. `datos_generales` ya pasó por el whitelist del edge function (`nombre`, `descripcion`, `promoted_at`, `pilot`). Se debe reconfirmar con un `SELECT DISTINCT jsonb_object_keys(datos_generales)` sobre los 50 pilotos antes de publicar.
-8. **¿`activo` piloto debe seguir en `false`?** **Sí.** La fila persistida se queda `activo=false` (candado físico contra fugas si alguien usa `productos_b2b` directamente). La visibilidad pública se controla exclusivamente por `producto_b2b_status.public_visible` + condiciones de la Rama B. La vista **proyecta `activo=true**` solo para mantener el contrato con el frontend (`.eq('activo', true)`).
+---
 
-## 5. SQL de validación
+## Alcance exacto del futuro Build (cuando se apruebe)
 
-### Antes del cambio
+1. `check_email_domain_status`. Si no hay dominio: diálogo de setup. Si hay: continuar.
+2. Si aplica: `setup_email_infra` + `scaffold_transactional_email` (una sola vez, sin retries).
+3. Agregar template en `_shared/transactional-email-templates/` para "proposal-summary" (o generar HTML inline dentro de la nueva función; decisión final en Build).
+4. Crear `supabase/functions/send-proposal-summary-email/index.ts` (Edge Function nueva).
+5. `add_secret` para `INTERNAL_SALES_EMAIL` (único secret manual).
+6. Dos `code--line_replace` en `src/components/QuoteCartView.tsx` (capturar `id` + invocar función).
+7. `deploy_edge_functions` para la nueva función.
+8. Prueba con `curl_edge_functions` pasando un `cotizacion_lead_id` real de test.
 
-```sql
--- Snapshot
-SELECT count(*) FROM public.productos_publicos;                      -- esperado: 48
-SELECT pg_get_viewdef('public.productos_publicos'::regclass, true);  -- guardar
-SELECT count(*) FROM public.productos_b2b WHERE activo=false;        -- 50 piloto
-SELECT DISTINCT jsonb_object_keys(datos_generales)
-FROM public.productos_b2b
-WHERE id IN (SELECT producto_b2b_id FROM public.catalog_price_cache); -- confirmar whitelist
-```
-
-### Después del cambio
-
-```sql
--- Conteos
-SELECT count(*) FROM public.productos_publicos;   -- esperado ~48 + 31 = ~79
-SELECT count(*) FROM public.productos_publicos WHERE precio_desde_mxn IS NULL;  -- 0
-
--- Ningún agotado / sin imagen se cuela
-SELECT count(*) FROM public.productos_publicos pp
-JOIN public.producto_b2b_status s ON s.producto_b2b_id = pp.id
-WHERE s.stock_status <> 'disponible' OR s.image_available = false OR s.price_valid = false;  -- 0
-
--- Legado intacto
-SELECT count(*) FROM public.productos_publicos pp
-JOIN public.productos_b2b p ON p.id = pp.id
-WHERE p.activo = true;   -- esperado: 48
-
--- Piloto expuesto sólo si cumple TODO
-SELECT count(*) FROM public.productos_publicos pp
-JOIN public.productos_b2b p ON p.id = pp.id
-WHERE p.activo = false;  -- esperado: 31 (o el número real de elegibles)
-
--- No hay columnas nuevas / faltantes
-SELECT column_name FROM information_schema.columns
-WHERE table_schema='public' AND table_name='productos_publicos'
-ORDER BY ordinal_position;  -- debe coincidir 1:1 con el contrato
-
--- Anon RLS
-SET ROLE anon;
-SELECT count(*) FROM public.productos_publicos;   -- debe funcionar
-SELECT count(*) FROM public.catalog_price_cache;  -- debe fallar / 0
-SELECT count(*) FROM public.producto_b2b_status;  -- debe fallar / 0
-RESET ROLE;
-```
-
-## 6. Riesgos
-
-- **Cambio de conteo** en catálogo público (48 → ~79). Verificable, esperado, reversible con `CREATE OR REPLACE VIEW` a la definición previa.
-- **Fuga por `datos_generales**` si un piloto tiene campos fuera del whitelist. Mitigación: validación previa de keys (script SQL de arriba).
-- **Precio en Rama B sin IVA** vs Rama A cuya base histórica no explicita IVA. Riesgo comercial de comunicar precios mezclados; requiere confirmación de negocio antes del Build. Fuera de alcance modificar copy del frontend.
-- `**activo` proyectado ≠ persistido**: cualquier tool interno que haga JOIN a `productos_b2b.activo` verá `false` para pilotos. Aceptable y deseado (candado).
-- **Performance**: dos JOIN adicionales sobre 50 filas piloto es despreciable; a escala hay que agregar índices en `producto_b2b_status(producto_b2b_id)` y `catalog_price_cache(producto_b2b_id)` — no incluido en este sprint.
-- **RLS/GRANTS**: `catalog_price_cache` y `producto_b2b_status` tienen policies restrictivas; una vista sin `SECURITY INVOKER` en Postgres 15+ corre con permisos del creador. Debe confirmarse que la vista NO exponga datos por debajo (el proyecto sólo devuelve columnas seguras, así que aunque corra como owner sigue sin filtrar datos sensibles).
-- `**UNION ALL` con `activo=true` constante**: si algún día el frontend deja de filtrar por `activo`, el comportamiento no cambia (todas las filas de la vista ya son "publicables").
-
-## 7. Alcance exacto del futuro Build
-
-Un único `CREATE OR REPLACE VIEW public.productos_publicos AS ...` vía migración, más:
-
-- `GRANT SELECT ON public.productos_publicos TO anon, authenticated;` (reconfirmar, no ampliar).
-- **Nada más.** Sin cambios en:
-  - `productos_b2b` (los pilotos siguen `activo=false`)
-  - `producto_b2b_status`, `catalog_price_cache` (sólo lectura desde la vista)
-  - Edge functions
-  - Frontend (`CatalogView.tsx`, `types.ts`) — el shape de la vista es idéntico
-  - RLS de tablas subyacentes
-  - Rutas ni UI
-
-## 8. Criterios de aceptación
-
-- `pg_get_viewdef` posterior contiene las dos ramas (`UNION ALL`).
-- Columnas de la vista: exactamente 11, en el mismo orden y tipo que hoy.
-- `SELECT count(*) FROM productos_publicos` = 48 (legado) + N pilotos elegibles (esperado 31).
-- Ningún piloto con `stock_status ≠ 'disponible'`, `image_available=false`, `price_valid=false`, `tax_included=true`, o `price_status ≠ 'valid'` aparece.
-- `precio_desde_mxn` no NULL para todas las filas publicadas.
-- `SET ROLE anon; SELECT ... FROM catalog_price_cache/producto_b2b_status` sigue denegado.
-- Frontend no requiere cambios; catálogo carga y renderiza precios de pilotos como "Desde $X".
-- Rollback: guardar la definición anterior y validar `CREATE OR REPLACE VIEW` reversible.
-
-**No implementar hasta aprobación.**  
+Sin migraciones. Sin cambios en tablas. Sin cambios en RLS. Sin cambios en UI visible más allá del handler de envío.  
   
 BUILD.
 
@@ -201,248 +292,196 @@ INSTRUCCIÓN CRÍTICA DE ALCANCE:
 
 No cambies nada que no se te pida explícitamente.
 
-No modifiques frontend.
+No modifiques archivos no relacionados.
+
+No refactorices.
 
 No rediseñes UI.
 
-No refactorices archivos no relacionados.
-
-No cambies componentes React.
-
-No cambies rutas.
-
-No ejecutes sincronizaciones.
-
-No promociones más productos.
-
-No modifiques Edge Functions.
+No cambies productos_publicos.
 
 No cambies RLS.
 
-No cambies productos_b2b estructura.
+No ejecutes migraciones.
 
-No cambies producto_b2b_status estructura.
+No modifiques Edge Functions existentes.
 
-No cambies catalog_price_cache estructura.
+No cambies precios.
 
-No publiques.
+No cambies stock.
 
-No optimices ni limpies código fuera del alcance solicitado.
+No cambies catálogo.
 
-Alcance exacto:
+No cambies WhatsApp salvo lo mínimo necesario para no bloquear el email.
 
-Crear SOLO una migración SQL para redefinir la vista:
+No agregues PDF.
 
-public.productos_publicos
+No agregues pago online.
 
-Nada más.
+No agregues checkout.
 
-Contexto validado:
+Si detectas mejoras fuera de alcance, repórtalas como recomendación pero no las implementes.
 
-- productos_publicos actual tiene 48 productos.
+proposal_email_events ya fue validada y acepta:
 
-- Hay 50 productos piloto en productos_b2b con activo=false.
+email_type: customer_summary, internal_notification
 
-- Hay 31 pilotos elegibles para publicación.
-
-- datos_generales del piloto está limpio, pero la vista debe sanitizarlo de todos modos.
-
-- productos_b2b piloto NO debe activarse.
-
-- productos_b2b.activo debe seguir false para pilotos.
-
-Contrato obligatorio de productos_publicos:
-
-La vista debe conservar exactamente estas 11 columnas y en este orden:
-
-1. id
-
-2. id_interno
-
-3. sku_base
-
-4. categoria_principal
-
-5. datos_generales
-
-6. variantes
-
-7. imagenes
-
-8. motor_de_personalizacion
-
-9. activo
-
-10. updated_at
-
-11. precio_desde_mxn
+status: sent, failed, skipped
 
 Objetivo:
 
-Redefinir productos_publicos para mantener los 48 productos actuales y agregar los 31 productos piloto elegibles usando UNION ALL.
+Implementar Sprint 2.6: envío automático de correo “Resumen preliminar de solicitud de cotización” después de guardar una solicitud en cotizaciones_leads.
 
-Rama 1 — productos actuales legacy:
+Contexto:
 
-Mantener la lógica actual:
+- El proyecto NO es e-commerce.
 
-- FROM public.productos_b2b p
+- No hay pago online.
 
-- WHERE p.activo = true
+- El correo NO es cotización final.
 
-- precio_desde_mxn calculado como hasta ahora desde:
+- El correo debe ser un resumen preliminar editable por el equipo.
 
-  costeo->>'precio_neto_distribuidor' * 1.35
+- WhatsApp debe seguir funcionando aunque el email falle.
 
-No cambiar esta rama salvo lo mínimo necesario para el UNION ALL.
+- proposal_email_events ya existe.
 
-Rama 2 — productos piloto:
+- Usar email_type:
 
-Agregar productos piloto desde:
+  - customer_summary
 
-- productos_b2b p
+  - internal_notification
 
-- producto_b2b_status s
+- Usar status:
 
-- catalog_price_cache c mediante JOIN LATERAL
+  - sent
 
-Condiciones obligatorias:
+  - failed
 
-- p.datos_generales->>'pilot' = 'true'
+  - skipped
 
-- p.activo = false
+Configuración:
 
-- s.producto_b2b_id = [p.id](http://p.id)
+- INTERNAL_SALES_EMAIL = [promocionalesemocionales@gmail.com](mailto:promocionalesemocionales@gmail.com)
 
-- s.public_visible = true
+- FROM_NAME = Promocionales Emocionales
 
-- s.stock_status = 'disponible'
+- FROM_EMAIL = [promocionalesemocionales@gmail.com](mailto:promocionalesemocionales@gmail.com) si el proveedor lo permite.
 
-- s.price_valid = true
+- Si Resend requiere dominio verificado, usar fallback seguro configurable con env FROM_EMAIL y registrar skipped/failed si no está configurado.
 
-- s.image_available = true
+- Usar RESEND_API_KEY como secret.
 
-- s.quote_mode = 'cotizable'
+Implementar solo:
 
-- c.price_status = 'valid'
+1. Nueva Edge Function:
 
-- [c.tax](http://c.tax)_included = false
+   supabase/functions/send-proposal-summary-email/index.ts
 
-- c.currency = 'MXN'
+2. Modificar únicamente:
 
-- c.min_price_before_tax_mxn is not null
+   src/components/QuoteCartView.tsx
 
-Importante:
+Cambios en QuoteCartView:
 
-catalog_price_cache puede llegar a tener más de una fila por producto en el futuro.
+- Cambiar insert en cotizaciones_leads para capturar id:
 
-Usar JOIN LATERAL para tomar una sola fila válida por producto:
+  .insert([payload]).select("id").single()
 
-order by
+- Después del insert exitoso, invocar send-proposal-summary-email con:
 
-  c.calculated_at desc nulls last,
+  { cotizacion_lead_id: [inserted.id](http://inserted.id) }
 
-  c.updated_at desc nulls last,
+- La invocación debe ser no bloqueante.
 
-  c.created_at desc nulls last
+- Si falla el email, no debe impedir WhatsApp ni pantalla de éxito.
 
-limit 1
+Edge Function:
 
-precio_desde_mxn para pilotos:
+- Recibe cotizacion_lead_id.
 
-- debe venir de c.min_price_before_tax_mxn
+- Usa SUPABASE_SERVICE_ROLE_KEY.
 
-- es precio antes de IVA
+- Lee la fila completa de cotizaciones_leads.
 
-- NO calcular IVA en la vista
+- Extrae datos_cliente, articulos_cotizados, total_estimado, created_at.
 
-Seguridad:
+- Envía correo al cliente.
 
-La vista NO debe exponer:
+- Envía correo interno a INTERNAL_SALES_EMAIL.
 
-- proveedor
+- Registra cada intento en proposal_email_events.
 
-- provider_code
+- Si falta RESEND_API_KEY, FROM_EMAIL o INTERNAL_SALES_EMAIL, registrar skipped.
 
-- provider_sku
+- No loguear PII completa.
 
-- proveedor_id
+- No exponer service role.
 
-- costo
+- Manejar CORS.
 
-- unit_cost
+Contenido del correo:
 
-- factor
+Asunto cliente:
 
-- multiplier
+Resumen preliminar de solicitud de cotización — Folio {shortId}
 
-- margen
-
-- markup
-
-- raw_payload
-
-- pricing rules
-
-- source_oferta_id
-
-datos_generales para pilotos debe construirse con jsonb_build_object.
-
-NO usar p.datos_generales completo en la rama piloto.
-
-datos_generales permitido para pilotos:
+Debe incluir:
 
 - nombre
 
-- descripcion
+- empresa
 
-- pilot
+- folio
 
-- promoted_at
+- fecha
 
-Para pilotos:
+- productos con imagen
 
-- sku_base debe mantenerse como NULL si está NULL.
+- clave_producto
 
-- activo debe proyectarse como true en la vista, aunque p.activo siga false.
+- modelo_comercial
 
-- costeo no aparece porque no es columna de la vista.
+- color
 
-- proveedor_nombre no aparece porque no es columna de la vista.
+- cantidad
 
-Validaciones esperadas después de la migración:
+- personalización solicitada
 
-- productos_publicos total debe pasar de 48 a 79.
+- alternativa económica sugerida si aplica
 
-- productos_publicos con datos_generales->>'pilot'='true' debe ser 31.
+- subtotal preliminar
 
-- productos_b2b piloto debe seguir con activo=false en 50 registros.
+- total preliminar
 
-- No debe haber campos prohibidos en datos_generales del piloto.
+- leyenda clara:
 
-- No debe haber id_interno que contenga cdo_mx, forpromotional o g4_mx.
+  Este documento NO es una cotización final. Es un resumen preliminar. Precios antes de IVA e impresión. Tu asesor validará técnica, disponibilidad, logo, cantidades y tiempos.
 
-- precio_desde_mxn de pilotos debe ser not null.
+Correo interno:
 
-- productos_publicos debe conservar las mismas 11 columnas.
+- Mismo resumen
 
-Entrega:
+- Datos de contacto visibles: nombre, empresa, email, teléfono
 
-1. Crear solo una migración SQL.
+Reglas:
 
-2. No tocar frontend.
+- No tocar UI visible.
 
-3. No tocar Edge Functions.
+- No tocar diseño.
 
-4. No tocar RLS.
+- No tocar productos_publicos.
 
-5. No ejecutar funciones.
+- No tocar Supabase schema.
 
-6. Al terminar, resume:
+- No tocar RLS.
 
-   - archivo creado
+- No tocar Edge Functions existentes.
 
-   - SQL aplicado para CREATE OR REPLACE VIEW
+- No generar PDF.
 
-   - SQL de validación post-migración
+- No calcular impresión.
 
-   - rollback sugerido usando la definición anterior si fuera necesario
+- No cambiar precios.
+
+- No exponer proveedor, costos, márgenes, raw_payload ni provider_sku.

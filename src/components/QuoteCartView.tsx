@@ -111,11 +111,24 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
         total_estimado: grandTotal,
         estado_cotizacion: "NUEVA",
       };
-      const { error } = await supabase.from("cotizaciones_leads").insert([payload]);
+      const { data: inserted, error } = await supabase
+        .from("cotizaciones_leads")
+        .insert([payload])
+        .select("id")
+        .single();
       if (error) {
         console.error("Error al guardar cotización:", error);
         setSubmitting(false);
         return;
+      }
+      // Fire-and-forget: envío de "Resumen preliminar de solicitud de cotización".
+      // No bloquea WhatsApp ni la pantalla de éxito. Si falla, la solicitud queda guardada.
+      if (inserted?.id) {
+        supabase.functions
+          .invoke("send-proposal-summary-email", {
+            body: { cotizacion_lead_id: inserted.id },
+          })
+          .catch((e) => console.warn("[proposal-email] no bloqueante:", e));
       }
       // Solo si el INSERT fue exitoso, abrir WhatsApp
       const resumen = cart

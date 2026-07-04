@@ -1,19 +1,20 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   ChevronLeft,
   CheckCircle2,
   Package,
-  Activity,
-  PenTool,
-  Image as ImageIcon,
-  Upload,
   Minus,
   Plus,
   ShoppingCart,
   Loader2,
+  Clock,
+  MessageSquare,
+  ShieldCheck,
+  Info,
+  Palette,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import type { QuoteItem } from "@/data/mockData";
+import type { ProductColor, QuoteItem } from "@/data/mockData";
 
 interface ProductDetailViewProps {
   productId: string | null;
@@ -26,28 +27,46 @@ interface ProductoB2B {
   id_interno: string;
   sku_base: string | null;
   categoria_principal: string | null;
-  datos_generales: { nombre?: string; descripcion?: string; clave_producto?: string; modelo_comercial?: string } | null;
-  variantes: Array<{ sku_variante?: string; color_nombre?: string; color_hex?: string; stock_total?: number }> | null;
-  imagenes: unknown[] | null;
-  motor_de_personalizacion: {
-    tecnicas_disponibles?: string[];
-    area_impresion?: { top?: string; left?: string; width?: string; height?: string };
+  datos_generales: {
+    nombre?: string;
+    descripcion?: string;
+    clave_producto?: string;
+    modelo_comercial?: string;
+    entrega_estimada?: string;
+    entrega_nota?: string;
+    personalizacion_publica?: string;
+    precio_nota?: string;
+    agregable_a_propuesta?: boolean;
+    stock_status_publico?: string;
   } | null;
+  variantes: Array<{
+    sku_variante?: string;
+    clave_variante?: string;
+    color_nombre?: string;
+    color_hex?: string;
+    stock_total?: number;
+    agregable_a_propuesta?: boolean;
+    imagen_url?: string;
+    material?: string;
+    disponibilidad?: string;
+  }> | null;
+  imagenes: unknown[] | null;
+  motor_de_personalizacion: Record<string, unknown> | null;
   activo: boolean | null;
   updated_at: string | null;
   precio_desde_mxn: number | null;
 }
 
+const QUICK_QUANTITIES = [100, 250, 500, 1000];
+
 export default function ProductDetailView({ productId, onBack, onAddToQuote }: ProductDetailViewProps) {
   const [product, setProduct] = useState<ProductoB2B | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
-  const [quantity, setQuantity] = useState(1);
-  const [logoFormat, setLogoFormat] = useState("1_color");
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [quantity, setQuantity] = useState(100);
   const [estimatedTotal, setEstimatedTotal] = useState(0);
   const [estimatedUnit, setEstimatedUnit] = useState(0);
-  const [uploadedLogo, setUploadedLogo] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -60,69 +79,118 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
         )
         .eq("id", productId)
         .maybeSingle();
+
       if (!error && data) {
         setProduct(data as unknown as ProductoB2B);
+        setSelectedColorIndex(0);
+        setSelectedImageIndex(0);
+        setQuantity(100);
       }
+
       setLoading(false);
     }
+
     fetchProduct();
   }, [productId]);
 
-  const colors = (product?.variantes ?? []).map((v, i) => ({
-    id: `c${i}`,
-    name: v.color_nombre ?? "Default",
-    hex: v.color_hex ?? "#94a3b8",
-    stock: v.stock_total ?? 0,
-    imgAlt: v.color_nombre ?? "Color",
-  }));
+  const isHttpUrl = (v: unknown): v is string => typeof v === "string" && /^https?:\/\//i.test(v);
 
-  const currentColor = colors[selectedColorIndex] ?? {
-    id: "c0",
-    name: "Default",
-    hex: "#94a3b8",
-    stock: 0,
-    imgAlt: "",
+  const pickUrlFromItem = (item: unknown): string | null => {
+    if (!item) return null;
+    if (isHttpUrl(item)) return item;
+
+    if (typeof item === "object") {
+      const url = (item as { url?: unknown; imagen_url?: unknown; src?: unknown }).url;
+      const imagenUrl = (item as { url?: unknown; imagen_url?: unknown; src?: unknown }).imagen_url;
+      const src = (item as { url?: unknown; imagen_url?: unknown; src?: unknown }).src;
+      if (isHttpUrl(url)) return url;
+      if (isHttpUrl(imagenUrl)) return imagenUrl;
+      if (isHttpUrl(src)) return src;
+    }
+
+    return null;
   };
-  const basePrice = Number(product?.precio_desde_mxn ?? 0);
+
+  const getImageUrls = (imgData: unknown): string[] => {
+    if (!imgData) return [];
+
+    if (Array.isArray(imgData)) {
+      return imgData.map(pickUrlFromItem).filter((url): url is string => Boolean(url));
+    }
+
+    if (typeof imgData === "string") {
+      if (isHttpUrl(imgData)) return [imgData];
+      try {
+        return getImageUrls(JSON.parse(imgData));
+      } catch {
+        return [];
+      }
+    }
+
+    const url = pickUrlFromItem(imgData);
+    return url ? [url] : [];
+  };
+
+  const formatMoney = (value: number) =>
+    value.toLocaleString("es-MX", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
   const productName =
     product?.datos_generales?.modelo_comercial?.trim() ||
     product?.datos_generales?.nombre?.trim() ||
     product?.id_interno ||
     "";
-  const productDesc = product?.datos_generales?.descripcion ?? "";
+
+  const productDesc = product?.datos_generales?.descripcion?.trim() || "";
   const productClave = (product?.datos_generales?.clave_producto?.trim() || product?.sku_base?.trim() || "").trim();
-  const isHttpUrl = (v: unknown): v is string => typeof v === "string" && /^https?:\/\//i.test(v);
-  const pickUrlFromItem = (item: unknown): string | null => {
-    if (!item) return null;
-    if (isHttpUrl(item)) return item;
-    if (typeof item === "object") {
-      const url = (item as { url?: unknown }).url;
-      if (isHttpUrl(url)) return url;
-    }
-    return null;
+  const basePrice = Number(product?.precio_desde_mxn ?? 0);
+  const deliveryEstimate =
+    product?.datos_generales?.entrega_estimada || "10 a 15 días hábiles después de aprobación de arte";
+  const deliveryNote =
+    product?.datos_generales?.entrega_nota || "Puede variar por temporada, cantidad, disponibilidad y carga de taller.";
+  const personalizationText =
+    product?.datos_generales?.personalizacion_publica ||
+    "Nuestro equipo definirá la técnica adecuada según material, logo y cantidad.";
+  const priceNote =
+    product?.datos_generales?.precio_nota || "Precio antes de IVA e impresión. Sujeto a validación comercial.";
+
+  const colors: ProductColor[] = (product?.variantes ?? []).map((v, i) => ({
+    id: `c${i}`,
+    name: v.color_nombre ?? "Disponible",
+    hex: v.color_hex ?? "#94a3b8",
+    stock: Number(v.stock_total ?? 0),
+    imgAlt: `${productName} ${v.color_nombre ?? "Disponible"}`.trim(),
+    imageUrl: v.imagen_url,
+    agregableToProposal: Boolean(v.agregable_a_propuesta ?? Number(v.stock_total ?? 0) > 0),
+    disponibilidad: v.disponibilidad,
+    material: v.material,
+    claveVariante: v.clave_variante ?? v.sku_variante,
+  }));
+
+  const currentColor = colors[selectedColorIndex] ?? {
+    id: "c0",
+    name: "Disponible",
+    hex: "#94a3b8",
+    stock: 0,
+    imgAlt: productName,
+    agregableToProposal: false,
   };
-  const getSafeImageUrl = (imgData: unknown): string | null => {
-    if (!imgData) return null;
-    if (Array.isArray(imgData)) {
-      for (const item of imgData) {
-        const u = pickUrlFromItem(item);
-        if (u) return u;
-      }
-      return null;
-    }
-    if (typeof imgData === "string") {
-      if (isHttpUrl(imgData)) return imgData;
-      try {
-        return getSafeImageUrl(JSON.parse(imgData));
-      } catch {
-        return null;
-      }
-    }
-    if (typeof imgData === "object") return pickUrlFromItem(imgData);
-    return null;
-  };
-  const mainImage = getSafeImageUrl(product?.imagenes);
-  const printArea = product?.motor_de_personalizacion?.area_impresion;
+
+  const productImages = getImageUrls(product?.imagenes);
+  const variantImages = colors.map((color) => color.imageUrl).filter((url): url is string => Boolean(url));
+  const galleryImages = Array.from(
+    new Set([currentColor.imageUrl, ...productImages, ...variantImages].filter(Boolean)),
+  ) as string[];
+  const mainImage = galleryImages[selectedImageIndex] || currentColor.imageUrl || productImages[0] || null;
+  const material = currentColor.material?.trim() || "Por confirmar con asesor";
+  const availableStock = Number(currentColor.stock ?? 0);
+  const productAllowsProposal = Boolean(product?.datos_generales?.agregable_a_propuesta ?? true);
+  const canAddToProposal = productAllowsProposal && Boolean(currentColor.agregableToProposal) && availableStock > 0;
+  const stockLabel = canAddToProposal
+    ? `${availableStock.toLocaleString("es-MX")} piezas disponibles`
+    : "Consultar disponibilidad";
 
   useEffect(() => {
     const subtotal = basePrice * quantity;
@@ -131,54 +199,61 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   }, [quantity, basePrice]);
 
   useEffect(() => {
-    if (currentColor.stock > 0 && quantity > currentColor.stock) {
-      setQuantity(currentColor.stock);
+    if (availableStock > 0 && quantity > availableStock) {
+      setQuantity(availableStock);
     }
-  }, [currentColor.stock, quantity]);
+  }, [availableStock, quantity]);
+
+  useEffect(() => {
+    setSelectedImageIndex(0);
+  }, [selectedColorIndex]);
+
+  const setSafeQuantity = (value: number) => {
+    const maxStock = availableStock > 0 ? availableStock : Number.MAX_SAFE_INTEGER;
+    const normalizedValue = Number.isFinite(value) ? value : 1;
+    setQuantity(Math.max(1, Math.min(Math.trunc(normalizedValue), maxStock)));
+  };
 
   const handleQuantityInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const nextValue = Number.parseInt(e.target.value, 10);
-
-    if (Number.isNaN(nextValue)) {
-      setQuantity(1);
-      return;
-    }
-
-    const maxStock = currentColor.stock > 0 ? currentColor.stock : Number.MAX_SAFE_INTEGER;
-    setQuantity(Math.max(1, Math.min(nextValue, maxStock)));
+    setSafeQuantity(Number.isNaN(nextValue) ? 1 : nextValue);
   };
 
-  const increaseQuantity = () => {
-    setQuantity((currentQuantity) => {
-      const nextQuantity = currentQuantity + 1;
-      return currentColor.stock > 0 ? Math.min(nextQuantity, currentColor.stock) : nextQuantity;
-    });
-  };
+  const increaseQuantity = () => setSafeQuantity(quantity + 1);
+  const decreaseQuantity = () => setSafeQuantity(quantity - 1);
 
-  const decreaseQuantity = () => {
-    setQuantity((currentQuantity) => Math.max(1, currentQuantity - 1));
-  };
+  const handleAddToProposal = () => {
+    if (!product || !canAddToProposal) return;
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) setUploadedLogo(URL.createObjectURL(file));
-  };
-
-  const handleAddToCart = () => {
-    if (!product) return;
     const quoteItem = {
       productId: product.id,
       name: productName,
       sku: productClave,
+      claveProducto: productClave,
+      modeloComercial: productName,
       color: currentColor,
       quantity,
-      logoFormat,
+      logoFormat: "por_definir_asesor",
       estimatedTotal,
       estimatedUnit,
-      hasVirtualSample: !!uploadedLogo,
+      hasVirtualSample: false,
       imageUrl: mainImage ?? undefined,
+      entregaEstimada: deliveryEstimate,
+      personalizacionPublica: personalizationText,
+      material,
     };
+
     onAddToQuote(quoteItem);
+  };
+
+  const handleWhatsAppConsult = () => {
+    const message = `Hola, quiero consultar disponibilidad y propuesta para este producto:\n\nClave: ${
+      productClave || "Por confirmar"
+    }\nModelo: ${productName}\nColor: ${currentColor.name}\nCantidad estimada: ${quantity.toLocaleString(
+      "es-MX",
+    )} piezas\n\nPrecio desde: $${formatMoney(basePrice)} MXN + IVA, antes de impresión.\n\nQuedo atento a su asesoría.`;
+
+    window.open(`https://wa.me/5215530311686?text=${encodeURIComponent(message)}`, "_blank");
   };
 
   if (loading) {
@@ -202,9 +277,9 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   }
 
   return (
-    <div className="pb-20">
+    <div className="pb-20 bg-surface">
       <div className="bg-card border-b border-border py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <button
             onClick={onBack}
             className="flex items-center gap-2 text-muted-foreground hover:text-primary transition font-medium text-sm"
@@ -216,150 +291,175 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="lg:grid lg:grid-cols-12 lg:gap-12">
-          {/* GALERÍA */}
           <div className="lg:col-span-5 mb-10 lg:mb-0">
-            <div className="w-full aspect-square rounded-2xl border border-border flex items-center justify-center mb-4 transition-colors duration-500 relative overflow-hidden sticky top-28 bg-white">
-              <div className="absolute top-4 left-4 bg-card/90 backdrop-blur text-foreground px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm border border-border flex items-center gap-1.5 z-20">
-                <div className="w-2 h-2 rounded-full bg-success animate-pulse"></div>
-                {currentColor.stock.toLocaleString()} en Stock
-              </div>
-              {mainImage ? (
-                <img
-                  src={mainImage}
-                  alt={productName}
-                  className="max-w-[80%] max-h-[80%] object-contain z-0"
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                    (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove("hidden");
-                  }}
-                />
-              ) : null}
-              <Package
-                size={200}
-                className={`opacity-40 text-muted-foreground absolute z-0 ${mainImage ? "hidden" : ""}`}
-              />
-              {uploadedLogo && printArea && (
+            <div className="sticky top-28">
+              <div className="w-full aspect-square rounded-3xl border border-border flex items-center justify-center mb-4 relative overflow-hidden bg-white shadow-sm">
                 <div
-                  className="absolute border border-primary/30 border-dashed rounded flex items-center justify-center p-1 z-10 overflow-hidden"
-                  style={{ top: printArea.top, left: printArea.left, width: printArea.width, height: printArea.height }}
+                  className={`absolute top-4 left-4 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm border flex items-center gap-1.5 z-20 ${
+                    canAddToProposal
+                      ? "bg-success/10 text-success border-success/20"
+                      : "bg-destructive/10 text-destructive border-destructive/20"
+                  }`}
                 >
-                  <img
-                    src={uploadedLogo}
-                    alt="Logo Virtual"
-                    className="max-w-full max-h-full object-contain"
-                    style={{ mixBlendMode: "multiply", opacity: 0.85 }}
+                  <div
+                    className={`w-2 h-2 rounded-full ${canAddToProposal ? "bg-success animate-pulse" : "bg-destructive"}`}
                   />
+                  {stockLabel}
+                </div>
+
+                {mainImage ? (
+                  <img
+                    src={mainImage}
+                    alt={productName}
+                    className="max-w-[82%] max-h-[82%] object-contain z-0"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                      (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove("hidden");
+                    }}
+                  />
+                ) : null}
+
+                <Package
+                  size={180}
+                  className={`opacity-30 text-muted-foreground absolute z-0 ${mainImage ? "hidden" : ""}`}
+                />
+              </div>
+
+              {galleryImages.length > 1 && (
+                <div className="grid grid-cols-5 gap-3">
+                  {galleryImages.slice(0, 10).map((imageUrl, index) => (
+                    <button
+                      key={`${imageUrl}-${index}`}
+                      type="button"
+                      onClick={() => setSelectedImageIndex(index)}
+                      className={`aspect-square rounded-xl border overflow-hidden bg-white transition ${
+                        selectedImageIndex === index
+                          ? "border-primary ring-2 ring-primary/20"
+                          : "border-border hover:border-primary/40"
+                      }`}
+                    >
+                      <img
+                        src={imageUrl}
+                        alt={`${productName} ${index + 1}`}
+                        className="w-full h-full object-contain p-1"
+                      />
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
           </div>
 
-          {/* CONFIGURADOR */}
-          <div className="lg:col-span-7 flex flex-col">
-            <div className="mb-6 border-b border-border pb-6">
-              {productClave ? (
-                <p className="text-sm font-bold text-muted-foreground mb-1">Clave: {productClave}</p>
-              ) : null}
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-4">{productName}</h1>
-              <p className="text-muted-foreground mb-4">{productDesc}</p>
-            </div>
+          <div className="lg:col-span-7 flex flex-col gap-6">
+            <section className="bg-card rounded-3xl border border-border shadow-sm p-6 sm:p-8">
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                {productClave ? (
+                  <span className="bg-primary/10 text-primary px-3 py-1.5 rounded-full text-xs font-bold">
+                    Clave: {productClave}
+                  </span>
+                ) : null}
+                {product?.categoria_principal ? (
+                  <span className="bg-secondary text-secondary-foreground px-3 py-1.5 rounded-full text-xs font-bold">
+                    {product.categoria_principal}
+                  </span>
+                ) : null}
+              </div>
 
-            {/* Color */}
-            {colors.length > 0 && (
-              <div className="mb-6 p-6 bg-card rounded-2xl border border-border shadow-sm">
-                <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
-                  <span className="bg-foreground text-background w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                    1
-                  </span>{" "}
-                  Color
-                </h3>
-                <div className="flex flex-wrap gap-3">
-                  {colors.map((color, idx) => (
-                    <button
-                      key={color.id}
-                      onClick={() => setSelectedColorIndex(idx)}
-                      className={`w-12 h-12 rounded-full transition-all flex items-center justify-center shadow-sm ${selectedColorIndex === idx ? "ring-2 ring-offset-4 ring-primary scale-110" : "hover:scale-105 border border-border"}`}
-                      style={{ backgroundColor: color.hex }}
-                    >
-                      {selectedColorIndex === idx && (
-                        <CheckCircle2
-                          size={20}
-                          color={color.hex === "#f8fafc" || color.hex === "#cbd5e1" ? "#1e293b" : "#ffffff"}
-                        />
-                      )}
-                    </button>
-                  ))}
+              <h1 className="text-3xl sm:text-5xl font-extrabold text-foreground mb-4 tracking-tight">{productName}</h1>
+
+              {productDesc ? (
+                <p className="text-muted-foreground text-base sm:text-lg leading-relaxed mb-6">{productDesc}</p>
+              ) : null}
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-surface rounded-2xl p-4 border border-border">
+                  <p className="text-xs text-muted-foreground font-semibold mb-1">Precio desde</p>
+                  <p className="text-2xl font-black text-success">${formatMoney(basePrice)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">MXN + IVA</p>
+                </div>
+                <div className="bg-surface rounded-2xl p-4 border border-border">
+                  <p className="text-xs text-muted-foreground font-semibold mb-1">Disponibilidad</p>
+                  <p className="text-lg font-black text-foreground">{stockLabel}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Stock sujeto a confirmación</p>
+                </div>
+                <div className="bg-surface rounded-2xl p-4 border border-border">
+                  <p className="text-xs text-muted-foreground font-semibold mb-1">Entrega estimada</p>
+                  <p className="text-lg font-black text-foreground">10 a 15 días</p>
+                  <p className="text-xs text-muted-foreground mt-1">Después de aprobación de arte</p>
                 </div>
               </div>
+            </section>
+
+            {colors.length > 0 && (
+              <section className="bg-card rounded-3xl border border-border shadow-sm p-6">
+                <h2 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                  <Palette size={18} className="text-primary" /> Selecciona color / variante
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {colors.map((color, idx) => {
+                    const colorAvailable = Boolean(color.agregableToProposal) && color.stock > 0;
+                    return (
+                      <button
+                        key={color.id}
+                        type="button"
+                        onClick={() => setSelectedColorIndex(idx)}
+                        className={`text-left p-4 rounded-2xl border transition-all ${
+                          selectedColorIndex === idx
+                            ? "border-primary bg-primary/5 ring-2 ring-primary/10"
+                            : "border-border bg-surface hover:border-primary/40"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span
+                            className="w-8 h-8 rounded-full border border-border shrink-0"
+                            style={{ backgroundColor: color.hex }}
+                            aria-hidden="true"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="font-bold text-foreground truncate">{color.name}</p>
+                            <p className={`text-xs ${colorAvailable ? "text-success" : "text-destructive"}`}>
+                              {colorAvailable
+                                ? `${color.stock.toLocaleString("es-MX")} disponibles`
+                                : "Consultar disponibilidad"}
+                            </p>
+                          </div>
+                          {selectedColorIndex === idx && <CheckCircle2 size={20} className="text-primary shrink-0" />}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
             )}
 
-            {/* Diseño */}
-            <div className="mb-6 p-6 bg-primary/5 rounded-2xl border border-primary/20 shadow-sm">
-              <h3 className="font-bold text-foreground mb-6 flex items-center gap-2">
-                <span className="bg-foreground text-background w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                  2
-                </span>{" "}
-                Diseño a grabar
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                {[
-                  { key: "1_color", label: "Logo a 1 Color", icon: Package },
-                  { key: "full_color", label: "Varios Colores", icon: Activity },
-                  { key: "text_only", label: "Solo Texto", icon: PenTool },
-                ].map((opt) => {
-                  const OptIcon = opt.icon;
-                  return (
-                    <button
-                      key={opt.key}
-                      onClick={() => setLogoFormat(opt.key)}
-                      className={`p-4 rounded-xl border text-sm transition-all flex flex-col items-center text-center gap-3 ${logoFormat === opt.key ? "border-primary bg-card ring-2 ring-primary/20 shadow-md" : "border-border bg-card hover:border-primary/40"}`}
-                    >
-                      <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center ${logoFormat === opt.key ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"}`}
-                      >
-                        <OptIcon size={20} />
-                      </div>
-                      <p className="font-bold text-foreground">{opt.label}</p>
-                    </button>
-                  );
-                })}
+            <section className="bg-card rounded-3xl border border-border shadow-sm p-6">
+              <h2 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                <ShieldCheck size={18} className="text-primary" /> Personalización
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">{personalizationText}</p>
+              <div className="mt-4 bg-primary/5 border border-primary/20 rounded-2xl p-4 flex gap-3">
+                <Info size={18} className="text-primary shrink-0 mt-0.5" />
+                <p className="text-sm text-foreground">
+                  No necesitas elegir técnica ni subir logo en esta ficha. Compártenos tu logo después y nuestro equipo
+                  ajustará la propuesta según material, tamaño, colores y viabilidad de impresión.
+                </p>
               </div>
-              <div className="bg-card p-4 rounded-xl border border-primary/20">
-                <h4 className="font-bold text-sm text-foreground mb-3 flex items-center gap-2">
-                  <ImageIcon size={16} className="text-primary" /> Muestra Virtual (Opcional)
-                </h4>
-                <input
-                  type="file"
-                  accept="image/png, image/jpeg, image/svg+xml"
-                  className="hidden"
-                  ref={fileInputRef}
-                  onChange={handleLogoUpload}
-                />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="bg-secondary hover:bg-muted text-secondary-foreground font-semibold py-2 px-4 rounded-lg flex items-center gap-2 text-sm transition-colors border border-border"
-                >
-                  <Upload size={16} /> Subir Logo (PNG/JPG)
-                </button>
-              </div>
-            </div>
+            </section>
 
-            {/* Precio */}
-            <div className="mt-auto bg-dark-section p-6 rounded-2xl shadow-xl border border-dark-section text-dark-section-foreground">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="font-bold text-lg flex items-center gap-2">
-                  <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                    3
-                  </span>{" "}
-                  Estimación preliminar
-                </h3>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-6">
+            <section className="bg-card rounded-3xl border border-border shadow-sm p-6">
+              <h2 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                <Clock size={18} className="text-primary" /> Entrega estimada
+              </h2>
+              <p className="font-semibold text-foreground">{deliveryEstimate}</p>
+              <p className="text-sm text-muted-foreground mt-2">{deliveryNote}</p>
+            </section>
+
+            <section className="bg-dark-section p-6 rounded-3xl shadow-xl border border-dark-section text-dark-section-foreground">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label className="block text-sm text-dark-section-foreground/60 mb-2">
-                    Piezas estimadas (Min. 1)
-                  </label>
-                  <div className="bg-dark-section/80 rounded-xl p-2 flex items-center justify-between border border-dark-section-foreground/10 w-full">
+                  <label className="block text-sm text-dark-section-foreground/60 mb-2">Cantidad estimada</label>
+
+                  <div className="bg-dark-section/80 rounded-xl p-2 flex items-center justify-between border border-dark-section-foreground/10 w-full mb-3">
                     <button
                       type="button"
                       onClick={decreaseQuantity}
@@ -370,12 +470,12 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                     <input
                       type="number"
                       min={1}
-                      max={currentColor.stock > 0 ? currentColor.stock : undefined}
+                      max={availableStock > 0 ? availableStock : undefined}
                       inputMode="numeric"
                       value={quantity}
                       onChange={handleQuantityInputChange}
-                      aria-label="Piezas estimadas"
-                      className="w-24 bg-transparent text-center font-black text-2xl tracking-tight text-dark-section-foreground outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      aria-label="Cantidad estimada"
+                      className="w-28 bg-transparent text-center font-black text-2xl tracking-tight text-dark-section-foreground outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                     <button
                       type="button"
@@ -385,37 +485,90 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                       <Plus size={18} />
                     </button>
                   </div>
+
+                  <div className="grid grid-cols-4 gap-2">
+                    {QUICK_QUANTITIES.map((quickQty) => {
+                      const disabled = availableStock > 0 && quickQty > availableStock;
+                      return (
+                        <button
+                          key={quickQty}
+                          type="button"
+                          disabled={disabled}
+                          onClick={() => setSafeQuantity(quickQty)}
+                          className={`rounded-lg border px-2 py-2 text-xs font-bold transition ${
+                            quantity === quickQty
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "border-dark-section-foreground/10 text-dark-section-foreground/70 hover:bg-dark-section-foreground/10"
+                          } disabled:opacity-30 disabled:cursor-not-allowed`}
+                        >
+                          {quickQty.toLocaleString("es-MX")}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="flex flex-col justify-center border-l border-dark-section-foreground/10 pl-6 relative">
-                  <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-dark-section rotate-45 border-b border-l border-dark-section-foreground/10 hidden sm:block"></div>
+
+                <div className="lg:border-l lg:border-dark-section-foreground/10 lg:pl-6">
                   <p className="text-sm text-dark-section-foreground/60 mb-1">Precio desde estimado</p>
                   <div className="flex items-end gap-2">
-                    <span className="text-4xl font-black text-success">${estimatedUnit.toFixed(2)}</span>
-                    <span className="text-sm text-dark-section-foreground/60 mb-1.5">MXN</span>
+                    <span className="text-4xl font-black text-success">${formatMoney(estimatedUnit)}</span>
+                    <span className="text-sm text-dark-section-foreground/60 mb-1.5">MXN + IVA</span>
                   </div>
+
                   <div className="mt-4 pt-4 border-t border-dark-section-foreground/10">
                     <p className="text-xs text-dark-section-foreground/50 mb-1">Subtotal preliminar</p>
-                    <p className="text-xl font-black text-dark-section-foreground">
-                      $
-                      {estimatedTotal.toLocaleString("es-MX", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}{" "}
-                      MXN
+                    <p className="text-2xl font-black text-dark-section-foreground">
+                      ${formatMoney(estimatedTotal)} MXN
                     </p>
                   </div>
-                  <p className="text-xs text-dark-section-foreground/50 mt-3">
-                    Precio antes de IVA e impresión. Sujeto a validación comercial.
-                  </p>
+
+                  <p className="text-xs text-dark-section-foreground/50 mt-3">{priceNote}</p>
                 </div>
               </div>
-              <button
-                onClick={handleAddToCart}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 rounded-xl transition-all shadow-glow-primary flex justify-center items-center gap-2 text-lg hover:scale-[1.01]"
-              >
-                Agregar a propuesta <ShoppingCart size={20} />
-              </button>
-            </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  onClick={handleAddToProposal}
+                  disabled={!canAddToProposal}
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 rounded-xl transition-all shadow-glow-primary flex justify-center items-center gap-2 text-lg hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  {canAddToProposal ? (
+                    <>
+                      Agregar a propuesta <ShoppingCart size={20} />
+                    </>
+                  ) : (
+                    "Sin stock para propuesta"
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleWhatsAppConsult}
+                  className="w-full bg-success hover:bg-success/90 text-success-foreground font-bold py-4 rounded-xl transition-all flex justify-center items-center gap-2"
+                >
+                  Consultar por WhatsApp <MessageSquare size={20} />
+                </button>
+              </div>
+
+              <p className="text-xs text-dark-section-foreground/60 text-center mt-4">
+                Sin pago en línea. La propuesta formal será validada por nuestro equipo comercial.
+              </p>
+            </section>
+
+            <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+              <div className="bg-card border border-border rounded-2xl p-4">
+                <p className="font-bold text-foreground mb-1">Clave</p>
+                <p className="text-muted-foreground">{productClave || "Por confirmar"}</p>
+              </div>
+              <div className="bg-card border border-border rounded-2xl p-4">
+                <p className="font-bold text-foreground mb-1">Material</p>
+                <p className="text-muted-foreground">{material}</p>
+              </div>
+              <div className="bg-card border border-border rounded-2xl p-4">
+                <p className="font-bold text-foreground mb-1">Color seleccionado</p>
+                <p className="text-muted-foreground">{currentColor.name}</p>
+              </div>
+            </section>
           </div>
         </div>
       </div>

@@ -395,13 +395,22 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                     Precio antes de IVA e impresión · Sujeto a validación comercial.
                   </p>
                   {checkoutStep === "cart" ? (
-                    <button
-                      disabled={cart.length === 0}
-                      onClick={() => setCheckoutStep("form")}
-                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 rounded-xl transition-all shadow-lg flex justify-center items-center gap-2 disabled:opacity-60"
-                    >
-                      Continuar con mis datos <ArrowRight size={20} />
-                    </button>
+                    <div className="space-y-3">
+                      <button
+                        disabled={cart.length === 0}
+                        onClick={() => setCheckoutStep("form")}
+                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 rounded-xl transition-all shadow-lg flex justify-center items-center gap-2 disabled:opacity-60"
+                      >
+                        Continuar con mis datos <ArrowRight size={20} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={onBack}
+                        className="w-full bg-dark-section-foreground/10 hover:bg-dark-section-foreground/15 text-dark-section-foreground font-bold py-3 rounded-xl transition-all border border-dark-section-foreground/15"
+                      >
+                        Agregar otro producto
+                      </button>
+                    </div>
                   ) : (
                     <button
                       form="checkout-form"
@@ -418,7 +427,9 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                       )}
                     </button>
                   )}
-                  <p className="text-xs text-dark-section-foreground/60 text-center mt-4">Sin compromisos de pago.</p>
+                  <p className="text-xs text-dark-section-foreground/60 text-center mt-4">
+                    Puedes acumular varios productos en una sola propuesta. Sin compromisos de pago.
+                  </p>
                 </div>
               </div>
             </div>

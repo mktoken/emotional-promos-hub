@@ -201,8 +201,13 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
             ) : (
               <FileText className="text-primary" size={36} />
             )}
-            {checkoutStep === "form" ? "Datos de contacto" : "Resumen preliminar de propuesta"}
+            {checkoutStep === "form" ? "Datos de contacto" : "Mi Propuesta"}
           </h1>
+          <p className="mt-3 text-sm text-dark-section-foreground/70 max-w-2xl">
+            {checkoutStep === "form"
+              ? "Completa tus datos para que podamos validar personalización, disponibilidad y tiempos antes de emitir la propuesta final."
+              : "Revisa los productos seleccionados antes de crear tu solicitud de cotización."}
+          </p>
         </div>
       </div>
 
@@ -369,7 +374,7 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                 {checkoutStep === "cart" && (
                   <div className="bg-surface p-6 border-b border-border">
                     <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
-                      <Settings2 size={18} className="text-primary" /> Formato de Propuesta
+                      <Settings2 size={18} className="text-primary" /> ¿Cómo quieres cotizar estos productos?
                     </h3>
                     <div className="space-y-3">
                       <label
@@ -385,8 +390,10 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                             className="mt-1 accent-primary"
                           />
                           <div>
-                            <p className="font-bold text-sm text-foreground">Opciones Individuales</p>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">Para comparar opciones.</p>
+                            <p className="font-bold text-sm text-foreground">Cotizar por separado</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                              Cada producto se presentará como una opción independiente.
+                            </p>
                           </div>
                         </div>
                       </label>
@@ -403,8 +410,10 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                             className="mt-1 accent-primary"
                           />
                           <div>
-                            <p className="font-bold text-sm text-foreground">Kit / Paquete Integrado</p>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">Agrupado en una sola propuesta.</p>
+                            <p className="font-bold text-sm text-foreground">Armar kit o paquete</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                              Ideal para onboarding, eventos, campañas o regalos corporativos.
+                            </p>
                           </div>
                         </div>
                       </label>
@@ -447,14 +456,14 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                         onClick={() => setCheckoutStep("form")}
                         className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 rounded-xl transition-all shadow-lg flex justify-center items-center gap-2 disabled:opacity-60"
                       >
-                        Continuar con mis datos <ArrowRight size={20} />
+                        Crear solicitud de cotización <ArrowRight size={20} />
                       </button>
                       <button
                         type="button"
                         onClick={onBack}
                         className="w-full bg-dark-section-foreground/10 hover:bg-dark-section-foreground/15 text-dark-section-foreground font-bold py-3 rounded-xl transition-all border border-dark-section-foreground/15"
                       >
-                        Agregar otro producto
+                        Agregar más productos
                       </button>
                     </div>
                   ) : (
@@ -469,12 +478,12 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                           <Loader2 size={20} className="animate-spin" /> Enviando...
                         </>
                       ) : (
-                        "Solicitar propuesta formal"
+                        "Enviar solicitud formal"
                       )}
                     </button>
                   )}
                   <p className="text-xs text-dark-section-foreground/60 text-center mt-4">
-                    Puedes acumular varios productos en una sola propuesta. Sin compromisos de pago.
+                    Puedes agregar varios productos antes de enviar tu solicitud. No implica compromiso de pago.
                   </p>
                 </div>
               </div>

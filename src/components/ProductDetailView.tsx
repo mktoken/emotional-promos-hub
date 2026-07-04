@@ -14,7 +14,13 @@ import {
   Palette,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import type { ProductColor, QuoteItem } from "@/data/mockData";
+import type {
+  ProductColor,
+  QuoteItem,
+  PersonalizationCapabilities,
+  PersonalizationOptionKey,
+  PersonalizationOptionRule,
+} from "@/data/mockData";
 
 interface ProductDetailViewProps {
   productId: string | null;
@@ -38,6 +44,7 @@ interface ProductoB2B {
     precio_nota?: string;
     agregable_a_propuesta?: boolean;
     stock_status_publico?: string;
+    personalizacion_capacidades?: PersonalizationCapabilities;
   } | null;
   variantes: Array<{
     sku_variante?: string;
@@ -59,6 +66,77 @@ interface ProductoB2B {
 
 const QUICK_QUANTITIES = [100, 250, 500, 1000];
 
+const PERSONALIZATION_OPTIONS: Array<{ key: PersonalizationOptionKey; fallbackLabel: string }> = [
+  { key: "none", fallbackLabel: "Sin personalización" },
+  { key: "logo_1_ink", fallbackLabel: "Logo a 1 tinta" },
+  { key: "logo_2_ink", fallbackLabel: "Logo a 2 tintas" },
+  { key: "logo_3_plus_ink", fallbackLabel: "Logo a 3+ tintas" },
+  { key: "full_color", fallbackLabel: "Full color" },
+  { key: "engraving", fallbackLabel: "Grabado" },
+  { key: "advisor_review", fallbackLabel: "Por definir con asesor" },
+];
+
+const FALLBACK_PERSONALIZATION_RULES: Record<PersonalizationOptionKey, PersonalizationOptionRule> = {
+  none: {
+    label: "Sin personalización",
+    status: "allowed",
+    message: "Cotizaremos el producto sin impresión ni grabado.",
+  },
+  logo_1_ink: {
+    label: "Logo a 1 tinta",
+    status: "recommended_economy",
+    message: "Suele ser la opción más económica para propuestas promocionales.",
+  },
+  logo_2_ink: {
+    label: "Logo a 2 tintas",
+    status: "allowed_with_validation",
+    message: "Sujeto a validación de arte, área disponible y material.",
+  },
+  logo_3_plus_ink: {
+    label: "Logo a 3+ tintas",
+    status: "manual_review",
+    message: "Puede requerir técnica especial o alternativa económica.",
+  },
+  full_color: {
+    label: "Full color",
+    status: "manual_review",
+    message: "Requiere revisión técnica según material, logo y área disponible.",
+  },
+  engraving: {
+    label: "Grabado",
+    status: "manual_review",
+    message: "Sujeto a validación técnica.",
+  },
+  advisor_review: {
+    label: "Por definir con asesor",
+    status: "allowed",
+    message: "Nuestro equipo recomendará la opción adecuada.",
+  },
+};
+
+const PERSONALIZATION_STATUS_META: Record<string, { label: string; className: string }> = {
+  allowed: {
+    label: "Disponible",
+    className: "bg-success/10 text-success border-success/20",
+  },
+  recommended_economy: {
+    label: "Opción económica",
+    className: "bg-primary/10 text-primary border-primary/20",
+  },
+  allowed_with_validation: {
+    label: "Con validación",
+    className: "bg-primary/10 text-primary border-primary/20",
+  },
+  manual_review: {
+    label: "Revisión técnica",
+    className: "bg-amber-500/10 text-amber-700 border-amber-500/20",
+  },
+  not_recommended: {
+    label: "No recomendado",
+    className: "bg-destructive/10 text-destructive border-destructive/20",
+  },
+};
+
 export default function ProductDetailView({ productId, onBack, onAddToQuote }: ProductDetailViewProps) {
   const [product, setProduct] = useState<ProductoB2B | null>(null);
   const [loading, setLoading] = useState(true);
@@ -67,6 +145,8 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   const [quantity, setQuantity] = useState(100);
   const [estimatedTotal, setEstimatedTotal] = useState(0);
   const [estimatedUnit, setEstimatedUnit] = useState(0);
+  const [selectedPersonalization, setSelectedPersonalization] = useState<PersonalizationOptionKey>("logo_1_ink");
+  const [includeEconomyAlternative, setIncludeEconomyAlternative] = useState(true);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -137,6 +217,20 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
       maximumFractionDigits: 2,
     });
 
+  const getPersonalizationRule = (
+    key: PersonalizationOptionKey,
+    capabilities?: PersonalizationCapabilities,
+  ): PersonalizationOptionRule => ({
+    ...FALLBACK_PERSONALIZATION_RULES[key],
+    ...(capabilities?.options?.[key] ?? {}),
+  });
+
+  const getPersonalizationStatus = (status?: string) =>
+    PERSONALIZATION_STATUS_META[status || "allowed"] ?? {
+      label: "Revisión",
+      className: "bg-muted text-muted-foreground border-border",
+    };
+
   const productName =
     product?.datos_generales?.modelo_comercial?.trim() ||
     product?.datos_generales?.nombre?.trim() ||
@@ -155,6 +249,23 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
     "Nuestro equipo definirá la técnica adecuada según material, logo y cantidad.";
   const priceNote =
     product?.datos_generales?.precio_nota || "Precio antes de IVA e impresión. Sujeto a validación comercial.";
+
+  const personalizationCapabilities = product?.datos_generales?.personalizacion_capacidades;
+  const economyRecommendation =
+    personalizationCapabilities?.economy_recommendation &&
+    FALLBACK_PERSONALIZATION_RULES[personalizationCapabilities.economy_recommendation]
+      ? personalizationCapabilities.economy_recommendation
+      : "logo_1_ink";
+  const selectedPersonalizationRule = getPersonalizationRule(selectedPersonalization, personalizationCapabilities);
+  const selectedPersonalizationStatus = getPersonalizationStatus(selectedPersonalizationRule.status);
+  const economyPersonalizationRule = getPersonalizationRule(economyRecommendation, personalizationCapabilities);
+  const shouldShowEconomyAlternative =
+    selectedPersonalization !== "none" &&
+    economyRecommendation !== "none" &&
+    selectedPersonalization !== economyRecommendation;
+  const requiresTechnicalReview =
+    Boolean(personalizationCapabilities?.requires_manual_review) ||
+    ["allowed_with_validation", "manual_review", "not_recommended"].includes(selectedPersonalizationRule.status || "");
 
   const colors: ProductColor[] = (product?.variantes ?? []).map((v, i) => ({
     id: `c${i}`,
@@ -208,6 +319,14 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
     setSelectedImageIndex(0);
   }, [selectedColorIndex]);
 
+  useEffect(() => {
+    if (!product) return;
+
+    const nextDefault = product.datos_generales?.personalizacion_capacidades?.economy_recommendation || "logo_1_ink";
+    setSelectedPersonalization(FALLBACK_PERSONALIZATION_RULES[nextDefault] ? nextDefault : "logo_1_ink");
+    setIncludeEconomyAlternative(true);
+  }, [product?.id]);
+
   const setSafeQuantity = (value: number) => {
     const maxStock = availableStock > 0 ? availableStock : Number.MAX_SAFE_INTEGER;
     const normalizedValue = Number.isFinite(value) ? value : 1;
@@ -225,6 +344,16 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   const handleAddToProposal = () => {
     if (!product || !canAddToProposal) return;
 
+    const economySuggestion =
+      shouldShowEconomyAlternative && includeEconomyAlternative
+        ? {
+            tipo: economyRecommendation,
+            label: economyPersonalizationRule.label,
+            incluida: true,
+            motivo: "Suele ser la opción más económica para comparar en la propuesta.",
+          }
+        : null;
+
     const quoteItem = {
       productId: product.id,
       name: productName,
@@ -233,7 +362,17 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
       modeloComercial: productName,
       color: currentColor,
       quantity,
-      logoFormat: "por_definir_asesor",
+      logoFormat: selectedPersonalization,
+      personalizacionSolicitadaCliente: {
+        tipo: selectedPersonalization,
+        label: selectedPersonalizationRule.label,
+        status: selectedPersonalizationRule.status,
+        message: selectedPersonalizationRule.message,
+        requiereRevision: requiresTechnicalReview,
+      },
+      personalizacionSugeridaEconomica: economySuggestion,
+      requiereRevisionTecnica: requiresTechnicalReview,
+      personalizationCompatibilityNote: selectedPersonalizationRule.message,
       estimatedTotal,
       estimatedUnit,
       hasVirtualSample: false,
@@ -247,11 +386,16 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   };
 
   const handleWhatsAppConsult = () => {
+    const economyText =
+      shouldShowEconomyAlternative && includeEconomyAlternative
+        ? `\nTambién me interesa comparar la opción económica sugerida: ${economyPersonalizationRule.label}.`
+        : "";
+
     const message = `Hola, quiero consultar disponibilidad y propuesta para este producto:\n\nClave: ${
       productClave || "Por confirmar"
     }\nModelo: ${productName}\nColor: ${currentColor.name}\nCantidad estimada: ${quantity.toLocaleString(
       "es-MX",
-    )} piezas\n\nPrecio desde: $${formatMoney(basePrice)} MXN + IVA, antes de impresión.\n\nQuedo atento a su asesoría.`;
+    )} piezas\nPersonalización solicitada: ${selectedPersonalizationRule.label}${economyText}\n\nPrecio desde: $${formatMoney(basePrice)} MXN + IVA, antes de impresión.\n\nQuedo atento a su asesoría.`;
 
     window.open(`https://wa.me/5215530311686?text=${encodeURIComponent(message)}`, "_blank");
   };
@@ -433,17 +577,88 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
             )}
 
             <section className="bg-card rounded-3xl border border-border shadow-sm p-6">
-              <h2 className="font-bold text-foreground mb-4 flex items-center gap-2">
-                <ShieldCheck size={18} className="text-primary" /> Personalización
+              <h2 className="font-bold text-foreground mb-2 flex items-center gap-2">
+                <ShieldCheck size={18} className="text-primary" /> Personalización deseada
               </h2>
-              <p className="text-muted-foreground leading-relaxed">{personalizationText}</p>
+              <p className="text-muted-foreground leading-relaxed mb-5">{personalizationText}</p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {PERSONALIZATION_OPTIONS.map((option) => {
+                  const rule = getPersonalizationRule(option.key, personalizationCapabilities);
+                  const statusMeta = getPersonalizationStatus(rule.status);
+                  const selected = selectedPersonalization === option.key;
+
+                  return (
+                    <button
+                      key={option.key}
+                      type="button"
+                      onClick={() => setSelectedPersonalization(option.key)}
+                      className={`text-left rounded-2xl border p-4 transition-all ${
+                        selected
+                          ? "border-primary bg-primary/5 ring-2 ring-primary/10"
+                          : "border-border bg-surface hover:border-primary/40"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-bold text-foreground">{rule.label || option.fallbackLabel}</p>
+                          {rule.message ? (
+                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{rule.message}</p>
+                          ) : null}
+                        </div>
+                        {selected && <CheckCircle2 size={18} className="text-primary shrink-0 mt-0.5" />}
+                      </div>
+                      {rule.status ? (
+                        <span
+                          className={`inline-flex mt-3 rounded-full border px-2.5 py-1 text-[10px] font-bold ${statusMeta.className}`}
+                        >
+                          {statusMeta.label}
+                        </span>
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className={`mt-5 rounded-2xl border p-4 ${selectedPersonalizationStatus.className}`}>
+                <p className="text-sm font-bold">Selección actual: {selectedPersonalizationRule.label}</p>
+                <p className="text-sm mt-1">
+                  {selectedPersonalizationRule.message ||
+                    "Nuestro equipo validará técnica, área de impresión, material, cantidad y viabilidad del arte."}
+                </p>
+              </div>
+
+              {shouldShowEconomyAlternative && (
+                <label className="mt-4 flex items-start gap-3 rounded-2xl border border-success/20 bg-success/5 p-4 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={includeEconomyAlternative}
+                    onChange={(event) => setIncludeEconomyAlternative(event.target.checked)}
+                    className="mt-1 accent-primary"
+                  />
+                  <div>
+                    <p className="font-bold text-foreground">
+                      Incluir alternativa económica: {economyPersonalizationRule.label}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      La incluiremos como opción comparativa para que ventas pueda proponerte la alternativa más
+                      conveniente si tu solicitud original no es la más económica o requiere revisión.
+                    </p>
+                  </div>
+                </label>
+              )}
+
               <div className="mt-4 bg-primary/5 border border-primary/20 rounded-2xl p-4 flex gap-3">
                 <Info size={18} className="text-primary shrink-0 mt-0.5" />
                 <p className="text-sm text-foreground">
                   No necesitas elegir técnica ni subir logo en esta ficha. Compártenos tu logo después y nuestro equipo
-                  ajustará la propuesta según material, tamaño, colores y viabilidad de impresión.
+                  ajustará la propuesta según material, tamaño, colores, cantidad y viabilidad de impresión.
                 </p>
               </div>
+
+              {personalizationCapabilities?.restriction_note && (
+                <p className="text-xs text-muted-foreground mt-3">{personalizationCapabilities.restriction_note}</p>
+              )}
             </section>
 
             <section className="bg-card rounded-3xl border border-border shadow-sm p-6">

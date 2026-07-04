@@ -121,14 +121,21 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
         setSubmitting(false);
         return;
       }
-      // Fire-and-forget: envío de "Resumen preliminar de solicitud de cotización".
-      // No bloquea WhatsApp ni la pantalla de éxito. Si falla, la solicitud queda guardada.
+      // Envío de "Resumen preliminar de solicitud de cotización".
+      // Se intenta después de guardar la solicitud y antes de abrir WhatsApp para asegurar
+      // que la Edge Function se dispare y registre eventos. Si falla, NO bloquea el flujo.
       if (inserted?.id) {
-        supabase.functions
-          .invoke("send-proposal-summary-email", {
+        try {
+          const { error: emailError } = await supabase.functions.invoke("send-proposal-summary-email", {
             body: { cotizacion_lead_id: inserted.id },
-          })
-          .catch((e) => console.warn("[proposal-email] no bloqueante:", e));
+          });
+
+          if (emailError) {
+            console.warn("[proposal-email] falló sin bloquear el flujo:", emailError.message);
+          }
+        } catch (emailInvokeError) {
+          console.warn("[proposal-email] error no bloqueante:", emailInvokeError);
+        }
       }
       // Solo si el INSERT fue exitoso, abrir WhatsApp
       const resumen = cart

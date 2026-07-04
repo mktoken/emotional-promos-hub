@@ -17,6 +17,7 @@ const getQuoteLineKey = (item: Omit<QuoteItem, "cartId"> | QuoteItem) =>
     item.claveProducto || item.sku || "",
     item.color?.claveVariante || item.color?.id || item.color?.name || "",
     item.logoFormat || "",
+    item.personalizacionSugeridaEconomica?.incluida ? item.personalizacionSugeridaEconomica.tipo : "",
   ].join("|");
 
 export default function Index() {
@@ -48,6 +49,13 @@ export default function Index() {
           imageUrl: item.imageUrl ?? existingItem.imageUrl,
           entregaEstimada: item.entregaEstimada ?? existingItem.entregaEstimada,
           personalizacionPublica: item.personalizacionPublica ?? existingItem.personalizacionPublica,
+          personalizacionSolicitadaCliente:
+            item.personalizacionSolicitadaCliente ?? existingItem.personalizacionSolicitadaCliente,
+          personalizacionSugeridaEconomica:
+            item.personalizacionSugeridaEconomica ?? existingItem.personalizacionSugeridaEconomica,
+          requiereRevisionTecnica: item.requiereRevisionTecnica ?? existingItem.requiereRevisionTecnica,
+          personalizationCompatibilityNote:
+            item.personalizationCompatibilityNote ?? existingItem.personalizationCompatibilityNote,
           material: item.material ?? existingItem.material,
         };
       });

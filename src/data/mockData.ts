@@ -24,6 +24,51 @@ export interface ProductColor {
   claveVariante?: string;
 }
 
+export type PersonalizationOptionKey =
+  | "none"
+  | "logo_1_ink"
+  | "logo_2_ink"
+  | "logo_3_plus_ink"
+  | "full_color"
+  | "engraving"
+  | "advisor_review";
+
+export interface PersonalizationOptionRule {
+  label: string;
+  status?: "allowed" | "recommended_economy" | "allowed_with_validation" | "manual_review" | "not_recommended" | string;
+  message?: string;
+}
+
+export interface PersonalizationCapabilities {
+  can_personalize?: boolean;
+  can_print_1_ink?: boolean;
+  can_print_2_ink?: boolean;
+  can_print_3_plus_ink?: boolean;
+  can_full_color?: boolean;
+  can_engrave?: boolean;
+  max_recommended_inks?: number;
+  economy_recommendation?: PersonalizationOptionKey;
+  requires_manual_review?: boolean;
+  public_note?: string;
+  restriction_note?: string;
+  options?: Partial<Record<PersonalizationOptionKey, PersonalizationOptionRule>>;
+}
+
+export interface RequestedPersonalization {
+  tipo: PersonalizationOptionKey;
+  label: string;
+  status?: string;
+  message?: string;
+  requiereRevision?: boolean;
+}
+
+export interface EconomyPersonalizationSuggestion {
+  tipo: PersonalizationOptionKey;
+  label: string;
+  incluida: boolean;
+  motivo?: string;
+}
+
 export interface ProductDetail {
   id: string;
   name: string;
@@ -56,6 +101,10 @@ export interface QuoteItem {
   color: ProductColor;
   quantity: number;
   logoFormat: string;
+  personalizacionSolicitadaCliente?: RequestedPersonalization;
+  personalizacionSugeridaEconomica?: EconomyPersonalizationSuggestion | null;
+  requiereRevisionTecnica?: boolean;
+  personalizationCompatibilityNote?: string;
   estimatedTotal: number;
   estimatedUnit: number;
   hasVirtualSample: boolean;

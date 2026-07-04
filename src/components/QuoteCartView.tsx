@@ -34,6 +34,25 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
 
   const grandTotal = cart.reduce((sum, item) => sum + item.estimatedTotal, 0);
 
+  const getPersonalizationLabel = (item: QuoteItem) =>
+    item.personalizacionSolicitadaCliente?.label ||
+    (item.logoFormat === "none"
+      ? "Sin personalización"
+      : item.logoFormat === "logo_1_ink"
+        ? "Logo a 1 tinta"
+        : item.logoFormat === "logo_2_ink"
+          ? "Logo a 2 tintas"
+          : item.logoFormat === "logo_3_plus_ink"
+            ? "Logo a 3+ tintas"
+            : item.logoFormat === "full_color"
+              ? "Full color"
+              : item.logoFormat === "engraving"
+                ? "Grabado"
+                : "Por definir con asesor");
+
+  const getEconomySuggestionLabel = (item: QuoteItem) =>
+    item.personalizacionSugeridaEconomica?.incluida ? item.personalizacionSugeridaEconomica.label : "";
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setLeadData({ ...leadData, [e.target.name]: e.target.value });
 
@@ -67,7 +86,19 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                 cantidad: item.quantity,
                 precio_unitario_estimado: item.estimatedUnit,
                 subtotal: item.estimatedTotal,
-                personalizacion: item.personalizacionPublica ?? "Técnica por definir con asesor",
+                personalizacion: getPersonalizationLabel(item),
+                personalizacion_publica: item.personalizacionPublica ?? "Técnica y viabilidad por definir con asesor",
+                personalizacion_solicitada_cliente: item.personalizacionSolicitadaCliente ?? {
+                  tipo: item.logoFormat || "advisor_review",
+                  label: getPersonalizationLabel(item),
+                  requiereRevision: item.requiereRevisionTecnica ?? true,
+                },
+                personalizacion_sugerida_economica: item.personalizacionSugeridaEconomica ?? null,
+                requiere_revision_tecnica: item.requiereRevisionTecnica ?? true,
+                compatibilidad_personalizacion:
+                  item.personalizationCompatibilityNote ??
+                  item.personalizacionSolicitadaCliente?.message ??
+                  "Sujeto a validación técnica de arte, material, área y cantidad.",
                 entrega_estimada: item.entregaEstimada ?? null,
                 material: item.material ?? item.color?.material ?? null,
                 logo_format: item.logoFormat,
@@ -92,8 +123,13 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
           const claveProducto = item.claveProducto || item.sku || "";
           const modeloComercial = item.modeloComercial || item.name;
           const entrega = item.entregaEstimada ? ` · Entrega estimada: ${item.entregaEstimada}` : "";
+          const personalization = ` · Personalización solicitada: ${getPersonalizationLabel(item)}`;
+          const economySuggestion = getEconomySuggestionLabel(item)
+            ? ` · Alternativa económica sugerida: ${getEconomySuggestionLabel(item)}`
+            : "";
+          const review = item.requiereRevisionTecnica ? " · Requiere validación técnica" : "";
 
-          return `${index + 1}. ${item.quantity} pz de ${modeloComercial}${claveProducto ? ` · Clave: ${claveProducto}` : ""}${item.color?.name ? ` · Color: ${item.color.name}` : ""}${entrega} · Subtotal preliminar: $${item.estimatedTotal.toLocaleString(
+          return `${index + 1}. ${item.quantity} pz de ${modeloComercial}${claveProducto ? ` · Clave: ${claveProducto}` : ""}${item.color?.name ? ` · Color: ${item.color.name}` : ""}${personalization}${economySuggestion}${review}${entrega} · Subtotal preliminar: $${item.estimatedTotal.toLocaleString(
             "es-MX",
             {
               minimumFractionDigits: 2,
@@ -219,7 +255,17 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                         <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded">
                           Cant: <strong>{item.quantity}</strong>
                         </span>
-                        <span className="bg-primary/10 text-primary px-2 py-1 rounded">Personalización por asesor</span>
+                        <span className="bg-primary/10 text-primary px-2 py-1 rounded">
+                          Personalización: <strong>{getPersonalizationLabel(item)}</strong>
+                        </span>
+                        {getEconomySuggestionLabel(item) && (
+                          <span className="bg-success/10 text-success px-2 py-1 rounded">
+                            Alternativa económica: <strong>{getEconomySuggestionLabel(item)}</strong>
+                          </span>
+                        )}
+                        {item.requiereRevisionTecnica && (
+                          <span className="bg-amber-500/10 text-amber-700 px-2 py-1 rounded">Revisión técnica</span>
+                        )}
                         {item.entregaEstimada && (
                           <span className="bg-success/10 text-success px-2 py-1 rounded">
                             Entrega estimada: {item.entregaEstimada}

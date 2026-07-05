@@ -241,34 +241,22 @@ export default function FormalQuoteEditor() {
     if (typeof tipo === "string") return tipo;
     return "";
   })();
-  const peSuggestion = useMemo(() => {
-    if (!peSelectedItem) return null;
-    return suggestPrintMethod(
-      printRules.methods.data ?? [],
-      printRules.pricing.data ?? [],
-      printRules.compat.data ?? [],
-      {
-        qty: peQty,
-        colors: peColors,
-        positions: pePositions,
-        material: peMaterial || null,
-        product_category: peCategory || null,
-        shape_type: null,
-        personalization_label: pePersonalizationLabel || null,
-      },
-    );
-  }, [
-    peSelectedItem,
-    printRules.methods.data,
-    printRules.pricing.data,
-    printRules.compat.data,
-    peQty,
-    peColors,
-    pePositions,
-    peMaterial,
-    peCategory,
-    pePersonalizationLabel,
-  ]);
+  const peSuggestion = peSelectedItem
+    ? suggestPrintMethod(
+        printRules.methods.data ?? [],
+        printRules.pricing.data ?? [],
+        printRules.compat.data ?? [],
+        {
+          qty: peQty,
+          colors: peColors,
+          positions: pePositions,
+          material: peMaterial || null,
+          product_category: peCategory || null,
+          shape_type: null,
+          personalization_label: pePersonalizationLabel || null,
+        },
+      )
+    : null;
   const peSuggestionMismatch =
     !!peSuggestion?.primary &&
     !!peMethodId &&

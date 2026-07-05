@@ -519,7 +519,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                 <div className="bg-surface rounded-2xl p-4 border border-border">
                   <p className="text-xs text-muted-foreground font-semibold mb-1">Precio desde</p>
                   <p className="text-2xl font-black text-success">${formatMoney(basePrice)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">MXN + IVA</p>
+                  <p className="text-xs text-muted-foreground mt-1">MXN · antes de IVA e impresión</p>
                 </div>
                 <div className="bg-surface rounded-2xl p-4 border border-border">
                   <p className="text-xs text-muted-foreground font-semibold mb-1">Disponibilidad</p>

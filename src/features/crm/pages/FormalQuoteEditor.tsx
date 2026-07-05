@@ -230,6 +230,51 @@ export default function FormalQuoteEditor() {
     (items.data ?? []).find((it) => it.id === peItemId) ?? null;
   const peQty = Math.max(1, Math.floor(Number(peSelectedItem?.cantidad ?? 0)));
 
+  // ===== Sugerencia automática de técnica (INTERNO) =====
+  const pePersonalizationLabel = (() => {
+    const raw = peSelectedItem?.personalizacion as unknown;
+    if (!raw || typeof raw !== "object") return "";
+    const obj = raw as Record<string, unknown>;
+    const lbl = obj["label"];
+    if (typeof lbl === "string") return lbl;
+    const tipo = obj["tipo"];
+    if (typeof tipo === "string") return tipo;
+    return "";
+  })();
+  const peSuggestion = useMemo(() => {
+    if (!peSelectedItem) return null;
+    return suggestPrintMethod(
+      printRules.methods.data ?? [],
+      printRules.pricing.data ?? [],
+      printRules.compat.data ?? [],
+      {
+        qty: peQty,
+        colors: peColors,
+        positions: pePositions,
+        material: peMaterial || null,
+        product_category: peCategory || null,
+        shape_type: null,
+        personalization_label: pePersonalizationLabel || null,
+      },
+    );
+  }, [
+    peSelectedItem,
+    printRules.methods.data,
+    printRules.pricing.data,
+    printRules.compat.data,
+    peQty,
+    peColors,
+    pePositions,
+    peMaterial,
+    peCategory,
+    pePersonalizationLabel,
+  ]);
+  const peSuggestionMismatch =
+    !!peSuggestion?.primary &&
+    !!peMethodId &&
+    peMethodId !== peSuggestion.primary.method.id;
+
+
   const handleCalcPrint = () => {
     if (!printSettings.data) {
       toast.error("Configuración del motor no disponible.");

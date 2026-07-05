@@ -299,6 +299,18 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   const availableStock = Number(currentColor.stock ?? 0);
   const productAllowsProposal = Boolean(product?.datos_generales?.agregable_a_propuesta ?? true);
   const canAddToProposal = productAllowsProposal && Boolean(currentColor.agregableToProposal) && availableStock > 0;
+  const allVariantsOutOfStock =
+    colors.length === 0 || colors.every((c) => !c.agregableToProposal || Number(c.stock ?? 0) <= 0);
+  const currentVariantOutOfStock = availableStock <= 0 || !currentColor.agregableToProposal;
+  const ctaLabel: string = !productAllowsProposal
+    ? "Consultar por WhatsApp"
+    : allVariantsOutOfStock
+      ? "Sin stock disponible"
+      : currentVariantOutOfStock && !allVariantsOutOfStock
+        ? "Elige un color disponible"
+        : canAddToProposal
+          ? "Agregar a propuesta"
+          : "Consultar disponibilidad";
   const stockLabel = canAddToProposal
     ? `${availableStock.toLocaleString("es-MX")} piezas disponibles`
     : "Consultar disponibilidad";

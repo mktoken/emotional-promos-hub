@@ -2,7 +2,7 @@
 // Sólo pasa campos whitelisted. No expone proveedor, costos, margen,
 // raw_payload ni provider_sku.
 
-import type { Database } from "@/integrations/supabase/types";
+import type { Database, Json } from "@/integrations/supabase/types";
 
 type ItemInsert = Omit<
   Database["public"]["Tables"]["formal_quote_items"]["Insert"],
@@ -52,7 +52,7 @@ export function mapLeadArticulosToItems(raw: unknown): ItemInsert[] {
       precio_unitario: precio,
       descuento_pct: 0,
       subtotal: 0,
-      personalizacion,
+      personalizacion: personalizacion as unknown as Json,
       print_method: null,
       print_colors: null,
       setup_fee: 0,

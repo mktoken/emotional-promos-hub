@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 
 export type FormalQuoteRow = Database["public"]["Tables"]["formal_quotes"]["Row"];
@@ -155,7 +156,7 @@ export async function logFormalQuoteEvent(
   await supabase.from("formal_quote_events").insert({
     formal_quote_id,
     event_type,
-    payload,
+    payload: payload as unknown as Json,
     actor_id: userRes.user?.id ?? null,
   });
 }

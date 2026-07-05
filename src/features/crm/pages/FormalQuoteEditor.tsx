@@ -10,6 +10,9 @@ import {
   Save,
   Printer,
   Send,
+  ChevronDown,
+  Calculator,
+  ShieldAlert,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -25,6 +28,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { useCrmAuth } from "@/features/crm/hooks/useCrmAuth";
 import {
@@ -51,6 +59,13 @@ import {
   FORMAL_QUOTE_STATUSES,
   normalizeFormalStatus,
 } from "@/features/crm/lib/formal-quote-status";
+import { usePrintSettings } from "@/features/crm/hooks/usePrintSettings";
+import { usePrintRules } from "@/features/crm/hooks/usePrintRules";
+import {
+  calcPrintEngine,
+  type PrintEngineResult,
+} from "@/features/crm/lib/print-engine";
+import type { Json } from "@/integrations/supabase/types";
 
 const STAFF = new Set(["admin", "sales_manager", "sales_agent"]);
 

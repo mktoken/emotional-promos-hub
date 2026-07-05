@@ -167,7 +167,7 @@ function renderEmail(opts: {
 
             <tr>
               <td style="padding:16px 0;text-align:right;font-family:Arial,Helvetica,sans-serif;">
-                <div style="font-size:13px;color:#666;">Estimación preliminar antes de IVA e impresión:</div>
+                <div style="font-size:13px;color:#666;">Estimación preliminar de productos (antes de IVA y antes de impresión):</div>
                 <div style="font-size:22px;font-weight:bold;color:#111;margin-top:4px;">$${fmtMXN(total)} MXN</div>
               </td>
             </tr>

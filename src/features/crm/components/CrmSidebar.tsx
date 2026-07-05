@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, Megaphone, FileText, UserCog, Settings } from "lucide-react";
+import { LayoutDashboard, Users, Megaphone, FileText, FileCheck2, UserCog, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -18,6 +18,7 @@ const STAFF_ROLES = new Set(["admin", "sales_manager", "sales_agent"]);
 const items = [
   { title: "Dashboard", url: "/crm", icon: LayoutDashboard, exact: true },
   { title: "Cotizaciones", url: "/crm/cotizaciones", icon: FileText, exact: false },
+  { title: "Cotizaciones formales", url: "/crm/cotizaciones-formales", icon: FileCheck2, exact: false },
   { title: "Prospectos", url: "/crm/prospectos", icon: Users, exact: false },
   { title: "Campañas", url: "/crm/campanas", icon: Megaphone, exact: false },
 ];

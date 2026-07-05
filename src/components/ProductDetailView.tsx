@@ -727,13 +727,16 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                   <p className="text-sm text-dark-section-foreground/60 mb-1">Precio desde estimado</p>
                   <div className="flex items-end gap-2">
                     <span className="text-4xl font-black text-success">${formatMoney(estimatedUnit)}</span>
-                    <span className="text-sm text-dark-section-foreground/60 mb-1.5">MXN + IVA</span>
+                    <span className="text-sm text-dark-section-foreground/60 mb-1.5">MXN · antes de IVA e impresión</span>
                   </div>
 
                   <div className="mt-4 pt-4 border-t border-dark-section-foreground/10">
                     <p className="text-xs text-dark-section-foreground/50 mb-1">Subtotal preliminar</p>
                     <p className="text-2xl font-black text-dark-section-foreground">
                       ${formatMoney(estimatedTotal)} MXN
+                    </p>
+                    <p className="text-[11px] text-dark-section-foreground/50 mt-1">
+                      + IVA 16% · sin impresión/personalización
                     </p>
                   </div>
 

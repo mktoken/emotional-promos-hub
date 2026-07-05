@@ -119,9 +119,8 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
         setSubmitting(false);
         return;
       }
-      // Envío de "Resumen preliminar de solicitud de cotización".
-      // Se intenta después de guardar la solicitud y antes de abrir WhatsApp para asegurar
-      // que la Edge Function se dispare y registre eventos. Si falla, NO bloquea el flujo.
+      // Envío de "Resumen preliminar de solicitud de cotización" (fire-and-forget).
+      // No abrimos WhatsApp automáticamente: el CTA queda en la pantalla de éxito.
       void supabase.functions
         .invoke("send-proposal-summary-email", {
           body: { cotizacion_lead_id: leadId },
@@ -132,37 +131,6 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
         .catch((error) => {
           console.warn("Email summary invocation error:", error);
         });
-      // Solo si el INSERT fue exitoso, abrir WhatsApp
-      const resumen = cart
-        .map((item, index) => {
-          const claveProducto = item.claveProducto || item.sku || "";
-          const modeloComercial = item.modeloComercial || item.name;
-          const entrega = item.entregaEstimada ? ` · Entrega estimada: ${item.entregaEstimada}` : "";
-          const personalization = ` · Personalización solicitada: ${getPersonalizationLabel(item)}`;
-          const economySuggestion = getEconomySuggestionLabel(item)
-            ? ` · Alternativa económica sugerida: ${getEconomySuggestionLabel(item)}`
-            : "";
-          const review = item.requiereRevisionTecnica ? " · Requiere validación técnica" : "";
-
-          return `${index + 1}. ${item.quantity} pz de ${modeloComercial}${claveProducto ? ` · Clave: ${claveProducto}` : ""}${item.color?.name ? ` · Color: ${item.color.name}` : ""}${personalization}${economySuggestion}${review}${entrega} · Subtotal preliminar: $${item.estimatedTotal.toLocaleString(
-            "es-MX",
-            {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            },
-          )} MXN`;
-        })
-        .join("\n");
-
-      const mensaje = `Hola, solicito una propuesta formal.\n\nDatos de contacto:\nNombre: ${leadData.name}\nEmpresa: ${leadData.company}\nWhatsApp/Teléfono: ${leadData.phone}\nCorreo: ${leadData.email}\n\nProductos:\n${resumen}\n\nEstimación preliminar antes de IVA e impresión: $${grandTotal.toLocaleString(
-        "es-MX",
-        {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        },
-      )} MXN.\n\nPrecio antes de IVA e impresión. La técnica de personalización será definida por nuestro equipo según material, logo y cantidad. Sujeto a validación comercial, stock y tiempos de entrega.`;
-
-      window.open(`https://wa.me/5215530311686?text=${encodeURIComponent(mensaje)}`, "_blank");
     } catch (err) {
       console.error("Error de red:", err);
       setSubmitting(false);

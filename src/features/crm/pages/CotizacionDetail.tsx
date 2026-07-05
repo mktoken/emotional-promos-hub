@@ -41,6 +41,11 @@ import {
 } from "@/features/crm/hooks/useCotizaciones";
 import { useCompanySettings } from "@/features/crm/hooks/useCompanySettings";
 import {
+  useFormalQuoteByLead,
+  logFormalQuoteEvent,
+} from "@/features/crm/hooks/useFormalQuotes";
+import { mapLeadArticulosToItems } from "@/features/crm/lib/formal-quote-mapping";
+import {
   resolveContact,
   buildEmailBody,
   buildGmailUrl,
@@ -67,6 +72,7 @@ const MANAGER_ROLES = new Set(["admin", "sales_manager"]);
 
 export default function CotizacionDetail() {
   const { id } = useParams<{ id: string }>();
+  const nav = useNavigate();
   const auth = useCrmAuth();
   const isStaff = auth.roles.some((r) => STAFF_ROLES.has(r));
   const canReassign = auth.roles.some((r) => MANAGER_ROLES.has(r));
@@ -78,6 +84,7 @@ export default function CotizacionDetail() {
   const staff = useStaffProfiles();
   const asesor = useAsesorProfile(cot.data?.assigned_to);
   const company = useCompanySettings();
+  const formal = useFormalQuoteByLead(id);
   const qc = useQueryClient();
 
   const [savingEstado, setSavingEstado] = useState(false);
@@ -85,6 +92,7 @@ export default function CotizacionDetail() {
   const [note, setNote] = useState("");
   const [savingNote, setSavingNote] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [creatingFormal, setCreatingFormal] = useState(false);
 
   if (auth.loading || cot.isLoading) {
     return (

@@ -105,6 +105,23 @@ export default function FormalQuoteEditor() {
   const [notasInt, setNotasInt] = useState<string>("");
   const [taxRate, setTaxRate] = useState<number>(0.16);
 
+  // ===== Motor interno de impresión (Sprint 3.0C) — datos INTERNOS del CRM =====
+  const printSettings = usePrintSettings();
+  const printRules = usePrintRules();
+  const [peOpen, setPeOpen] = useState<boolean>(false);
+  const [peItemId, setPeItemId] = useState<string>("");
+  const [peMethodId, setPeMethodId] = useState<string>("");
+  const [peColors, setPeColors] = useState<number>(1);
+  const [pePositions, setPePositions] = useState<number>(1);
+  const [peMaterial, setPeMaterial] = useState<string>("");
+  const [peCategory, setPeCategory] = useState<string>("");
+  const [peLogisticsFee, setPeLogisticsFee] = useState<number>(350);
+  const [peLogisticsJobs, setPeLogisticsJobs] = useState<number>(1);
+  const [peResult, setPeResult] = useState<PrintEngineResult | null>(null);
+  const [peOverride, setPeOverride] = useState<string>("");
+  const [peOverrideReason, setPeOverrideReason] = useState<string>("");
+  const [peOverrideError, setPeOverrideError] = useState<string>("");
+
   useEffect(() => {
     if (!quote.data) return;
     setCliente((quote.data.cliente ?? {}) as ClienteShape);

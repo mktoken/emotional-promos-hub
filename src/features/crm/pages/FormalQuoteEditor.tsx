@@ -798,6 +798,11 @@ export default function FormalQuoteEditor() {
                         <span className="text-xs text-muted-foreground">Partida #{peSelectedItem.position}</span>
                       </div>
                       <p className="font-semibold text-sm leading-tight">{getItemDisplayName(peSelectedItem)}</p>
+                      {getItemCommercialDescription(peSelectedItem) && (
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {getItemCommercialDescription(peSelectedItem)}
+                        </p>
+                      )}
                       <p className="text-xs text-muted-foreground">
                         {[
                           getItemClave(peSelectedItem) ? `Clave: ${getItemClave(peSelectedItem)}` : null,
@@ -1262,11 +1267,23 @@ function cleanText(v: string | null | undefined): string | null {
 
 function getItemDisplayName(item: FormalQuoteItemRow): string {
   return (
-    cleanText(item.descripcion) ??
     cleanText(item.modelo_comercial) ??
     cleanText(item.clave_producto) ??
+    cleanText(item.descripcion) ??
     "Producto sin descripción"
   );
+}
+
+function getItemCommercialDescription(item: FormalQuoteItemRow): string | null {
+  const description = cleanText(item.descripcion);
+  const displayName = getItemDisplayName(item);
+
+  if (!description || description === displayName) return null;
+  return description;
+}
+
+function getItemDescriptionSuggestion(item: FormalQuoteItemRow): string | null {
+  return cleanText(item.descripcion) ?? cleanText(item.modelo_comercial) ?? cleanText(item.clave_producto) ?? null;
 }
 
 function getItemClave(item: FormalQuoteItemRow): string | null {
@@ -1332,6 +1349,9 @@ function ItemEditor({
   };
 
   const displayName = getItemDisplayName(local);
+  const commercialDescription = getItemCommercialDescription(local);
+  const descriptionSuggestion = getItemDescriptionSuggestion(local);
+  const hasDescription = Boolean(cleanText(local.descripcion));
   const clave = getItemClave(local);
   const personalizationLabel = getItemPersonalizationLabel(local);
 
@@ -1344,6 +1364,9 @@ function ItemEditor({
             <span className="text-xs font-medium text-muted-foreground">Partida #{item.position}</span>
           </div>
           <h3 className="text-base font-semibold leading-tight break-words">{displayName}</h3>
+          {commercialDescription && (
+            <p className="text-xs text-muted-foreground leading-relaxed">{commercialDescription}</p>
+          )}
           <p className="text-xs text-muted-foreground">
             {[
               clave ? `Clave: ${clave}` : null,
@@ -1394,6 +1417,29 @@ function ItemEditor({
             disabled={disabled}
             placeholder="Ej. descripción comercial del producto. Si se deja vacío, se usará el modelo comercial."
           />
+          {!hasDescription && descriptionSuggestion && (
+            <div className="mt-2 rounded-md border border-dashed border-border bg-muted/30 p-2 text-xs">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground">Descripción sugerida</p>
+                  <p className="text-muted-foreground break-words">{descriptionSuggestion}</p>
+                </div>
+                {!disabled && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setLocal({ ...local, descripcion: descriptionSuggestion });
+                      commit({ descripcion: descriptionSuggestion });
+                    }}
+                  >
+                    Usar
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
         <div className="sm:col-span-2">
           <Label>Imagen (URL)</Label>

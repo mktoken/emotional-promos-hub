@@ -92,6 +92,7 @@ export type Database = {
           account_holder: string
           account_number: string | null
           bank_name: string
+          branch: string | null
           clabe: string | null
           created_at: string
           currency: string
@@ -105,6 +106,7 @@ export type Database = {
           account_holder: string
           account_number?: string | null
           bank_name: string
+          branch?: string | null
           clabe?: string | null
           created_at?: string
           currency?: string
@@ -118,6 +120,7 @@ export type Database = {
           account_holder?: string
           account_number?: string | null
           bank_name?: string
+          branch?: string | null
           clabe?: string | null
           created_at?: string
           currency?: string
@@ -1148,6 +1151,276 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      formal_quote_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          event_type: string
+          formal_quote_id: string
+          id: string
+          payload: Json
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          event_type: string
+          formal_quote_id: string
+          id?: string
+          payload?: Json
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          event_type?: string
+          formal_quote_id?: string
+          id?: string
+          payload?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formal_quote_events_formal_quote_id_fkey"
+            columns: ["formal_quote_id"]
+            isOneToOne: false
+            referencedRelation: "formal_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      formal_quote_files: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          file_name: string
+          formal_quote_id: string
+          id: string
+          kind: string
+          mime_type: string | null
+          size_bytes: number | null
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          file_name: string
+          formal_quote_id: string
+          id?: string
+          kind: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          file_name?: string
+          formal_quote_id?: string
+          id?: string
+          kind?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formal_quote_files_formal_quote_id_fkey"
+            columns: ["formal_quote_id"]
+            isOneToOne: false
+            referencedRelation: "formal_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      formal_quote_items: {
+        Row: {
+          cantidad: number
+          clave_producto: string | null
+          color: string | null
+          created_at: string
+          descripcion: string | null
+          descuento_pct: number
+          formal_quote_id: string
+          id: string
+          imagen_url: string | null
+          is_kit_parent: boolean
+          modelo_comercial: string
+          notes: string | null
+          parent_item_id: string | null
+          personalizacion: Json
+          position: number
+          precio_unitario: number
+          print_colors: number | null
+          print_method: string | null
+          print_unit_price: number
+          setup_fee: number
+          source: string
+          subtotal: number
+          unidad: string
+          updated_at: string
+        }
+        Insert: {
+          cantidad: number
+          clave_producto?: string | null
+          color?: string | null
+          created_at?: string
+          descripcion?: string | null
+          descuento_pct?: number
+          formal_quote_id: string
+          id?: string
+          imagen_url?: string | null
+          is_kit_parent?: boolean
+          modelo_comercial: string
+          notes?: string | null
+          parent_item_id?: string | null
+          personalizacion?: Json
+          position?: number
+          precio_unitario?: number
+          print_colors?: number | null
+          print_method?: string | null
+          print_unit_price?: number
+          setup_fee?: number
+          source?: string
+          subtotal?: number
+          unidad?: string
+          updated_at?: string
+        }
+        Update: {
+          cantidad?: number
+          clave_producto?: string | null
+          color?: string | null
+          created_at?: string
+          descripcion?: string | null
+          descuento_pct?: number
+          formal_quote_id?: string
+          id?: string
+          imagen_url?: string | null
+          is_kit_parent?: boolean
+          modelo_comercial?: string
+          notes?: string | null
+          parent_item_id?: string | null
+          personalizacion?: Json
+          position?: number
+          precio_unitario?: number
+          print_colors?: number | null
+          print_method?: string | null
+          print_unit_price?: number
+          setup_fee?: number
+          source?: string
+          subtotal?: number
+          unidad?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formal_quote_items_formal_quote_id_fkey"
+            columns: ["formal_quote_id"]
+            isOneToOne: false
+            referencedRelation: "formal_quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "formal_quote_items_parent_item_id_fkey"
+            columns: ["parent_item_id"]
+            isOneToOne: false
+            referencedRelation: "formal_quote_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      formal_quotes: {
+        Row: {
+          accepted_at: string | null
+          advisor_snapshot: Json | null
+          assigned_to: string | null
+          bank_account_snapshot: Json | null
+          cliente: Json
+          company_snapshot: Json | null
+          condiciones_entrega: string | null
+          condiciones_pago: string | null
+          cotizacion_lead_id: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          folio: string
+          id: string
+          issued_at: string | null
+          notas_internas: string | null
+          notas_publicas: string | null
+          rejected_at: string | null
+          sent_at: string | null
+          status: string
+          subtotal: number
+          tax_amount: number
+          tax_rate: number
+          total: number
+          updated_at: string
+          valid_until: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          advisor_snapshot?: Json | null
+          assigned_to?: string | null
+          bank_account_snapshot?: Json | null
+          cliente?: Json
+          company_snapshot?: Json | null
+          condiciones_entrega?: string | null
+          condiciones_pago?: string | null
+          cotizacion_lead_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          folio?: string
+          id?: string
+          issued_at?: string | null
+          notas_internas?: string | null
+          notas_publicas?: string | null
+          rejected_at?: string | null
+          sent_at?: string | null
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          total?: number
+          updated_at?: string
+          valid_until?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          advisor_snapshot?: Json | null
+          assigned_to?: string | null
+          bank_account_snapshot?: Json | null
+          cliente?: Json
+          company_snapshot?: Json | null
+          condiciones_entrega?: string | null
+          condiciones_pago?: string | null
+          cotizacion_lead_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          folio?: string
+          id?: string
+          issued_at?: string | null
+          notas_internas?: string | null
+          notas_publicas?: string | null
+          rejected_at?: string | null
+          sent_at?: string | null
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          total?: number
+          updated_at?: string
+          valid_until?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formal_quotes_cotizacion_lead_id_fkey"
+            columns: ["cotizacion_lead_id"]
+            isOneToOne: false
+            referencedRelation: "cotizaciones_leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       margin_tiers: {
         Row: {
@@ -2763,6 +3036,7 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _uid: string }; Returns: boolean }
+      next_formal_quote_folio: { Args: never; Returns: string }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
     }

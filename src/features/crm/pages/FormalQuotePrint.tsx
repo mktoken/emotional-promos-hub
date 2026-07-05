@@ -27,6 +27,9 @@ interface ClienteShape {
   telefono?: string | null;
   whatsapp?: string | null;
   rfc?: string | null;
+  modalidad_cotizacion?: string | null;
+  modalidad_cotizacion_label?: string | null;
+  formato_propuesta?: string | null;
 }
 
 interface CompanySnap {

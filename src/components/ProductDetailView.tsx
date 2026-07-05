@@ -299,6 +299,18 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   const availableStock = Number(currentColor.stock ?? 0);
   const productAllowsProposal = Boolean(product?.datos_generales?.agregable_a_propuesta ?? true);
   const canAddToProposal = productAllowsProposal && Boolean(currentColor.agregableToProposal) && availableStock > 0;
+  const allVariantsOutOfStock =
+    colors.length === 0 || colors.every((c) => !c.agregableToProposal || Number(c.stock ?? 0) <= 0);
+  const currentVariantOutOfStock = availableStock <= 0 || !currentColor.agregableToProposal;
+  const ctaLabel: string = !productAllowsProposal
+    ? "Consultar por WhatsApp"
+    : allVariantsOutOfStock
+      ? "Sin stock disponible"
+      : currentVariantOutOfStock && !allVariantsOutOfStock
+        ? "Elige un color disponible"
+        : canAddToProposal
+          ? "Agregar a propuesta"
+          : "Consultar disponibilidad";
   const stockLabel = canAddToProposal
     ? `${availableStock.toLocaleString("es-MX")} piezas disponibles`
     : "Consultar disponibilidad";
@@ -519,7 +531,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                 <div className="bg-surface rounded-2xl p-4 border border-border">
                   <p className="text-xs text-muted-foreground font-semibold mb-1">Precio desde</p>
                   <p className="text-2xl font-black text-success">${formatMoney(basePrice)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">MXN + IVA</p>
+                  <p className="text-xs text-muted-foreground mt-1">MXN · antes de IVA e impresión</p>
                 </div>
                 <div className="bg-surface rounded-2xl p-4 border border-border">
                   <p className="text-xs text-muted-foreground font-semibold mb-1">Disponibilidad</p>
@@ -629,37 +641,33 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
               </div>
 
               {shouldShowEconomyAlternative && (
-                <label className="mt-4 flex items-start gap-3 rounded-2xl border border-success/20 bg-success/5 p-4 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={includeEconomyAlternative}
-                    onChange={(event) => setIncludeEconomyAlternative(event.target.checked)}
-                    className="mt-1 accent-primary"
-                  />
-                  <div>
-                    <p className="font-bold text-foreground">
-                      Incluir alternativa económica: {economyPersonalizationRule.label}
+                <details className="mt-4 rounded-2xl border border-success/20 bg-success/5 p-4">
+                  <summary className="cursor-pointer font-bold text-foreground text-sm">
+                    Ver alternativa económica: {economyPersonalizationRule.label}
+                  </summary>
+                  <label className="mt-3 flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={includeEconomyAlternative}
+                      onChange={(event) => setIncludeEconomyAlternative(event.target.checked)}
+                      className="mt-1 accent-primary"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Incluirla como comparativa para que ventas pueda proponerte la opción más conveniente.
                     </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      La incluiremos como opción comparativa para que ventas pueda proponerte la alternativa más
-                      conveniente si tu solicitud original no es la más económica o requiere revisión.
-                    </p>
-                  </div>
-                </label>
+                  </label>
+                </details>
               )}
 
               <div className="mt-4 bg-primary/5 border border-primary/20 rounded-2xl p-4 flex gap-3">
                 <Info size={18} className="text-primary shrink-0 mt-0.5" />
                 <p className="text-sm text-foreground">
-                  No necesitas elegir técnica ni subir logo en esta ficha. Compártenos tu logo después y nuestro equipo
-                  ajustará la propuesta según material, tamaño, colores, cantidad y viabilidad de impresión.
+                  No necesitas subir logo aquí. Tu asesor validará arte, material, área, colores, cantidad y viabilidad.
+                  {personalizationCapabilities?.restriction_note ? ` ${personalizationCapabilities.restriction_note}` : ""}
                 </p>
               </div>
-
-              {personalizationCapabilities?.restriction_note && (
-                <p className="text-xs text-muted-foreground mt-3">{personalizationCapabilities.restriction_note}</p>
-              )}
             </section>
+
 
             <section className="bg-card rounded-3xl border border-border shadow-sm p-6">
               <h2 className="font-bold text-foreground mb-4 flex items-center gap-2">
@@ -727,13 +735,16 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                   <p className="text-sm text-dark-section-foreground/60 mb-1">Precio desde estimado</p>
                   <div className="flex items-end gap-2">
                     <span className="text-4xl font-black text-success">${formatMoney(estimatedUnit)}</span>
-                    <span className="text-sm text-dark-section-foreground/60 mb-1.5">MXN + IVA</span>
+                    <span className="text-sm text-dark-section-foreground/60 mb-1.5">MXN · antes de IVA e impresión</span>
                   </div>
 
                   <div className="mt-4 pt-4 border-t border-dark-section-foreground/10">
                     <p className="text-xs text-dark-section-foreground/50 mb-1">Subtotal preliminar</p>
                     <p className="text-2xl font-black text-dark-section-foreground">
                       ${formatMoney(estimatedTotal)} MXN
+                    </p>
+                    <p className="text-[11px] text-dark-section-foreground/50 mt-1">
+                      + IVA 16% · sin impresión/personalización
                     </p>
                   </div>
 
@@ -743,16 +754,16 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
-                  onClick={handleAddToProposal}
-                  disabled={!canAddToProposal}
+                  onClick={!productAllowsProposal ? handleWhatsAppConsult : handleAddToProposal}
+                  disabled={productAllowsProposal && !canAddToProposal}
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 rounded-xl transition-all shadow-glow-primary flex justify-center items-center gap-2 text-lg hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   {canAddToProposal ? (
                     <>
-                      Agregar a propuesta <ShoppingCart size={20} />
+                      {ctaLabel} <ShoppingCart size={20} />
                     </>
                   ) : (
-                    "Sin stock para propuesta"
+                    ctaLabel
                   )}
                 </button>
 

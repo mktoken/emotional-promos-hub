@@ -732,6 +732,331 @@ export default function FormalQuoteEditor() {
         </CardContent>
       </Card>
 
+      {/* Motor de impresión (INTERNO — Sprint 3.0C) */}
+      <Card className="border-primary/30">
+        <Collapsible open={peOpen} onOpenChange={setPeOpen}>
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="w-full flex items-center justify-between p-4 text-left"
+              aria-expanded={peOpen}
+            >
+              <div className="flex items-center gap-2">
+                <Calculator className="w-4 h-4 text-primary" />
+                <span className="font-semibold text-sm">
+                  Motor de impresión (interno)
+                </span>
+                <Badge variant="outline" className="text-[10px]">
+                  Sólo CRM · no se muestra al cliente
+                </Badge>
+                {q.price_override_mxn != null && (
+                  <Badge variant="destructive" className="text-[10px]">
+                    Override manual activo
+                  </Badge>
+                )}
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${peOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="space-y-4 pt-0">
+              {(printSettings.isLoading || printRules.isLoading) && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Cargando reglas
+                  internas…
+                </div>
+              )}
+              {(printSettings.error || printRules.error) && (
+                <div className="rounded-md border border-destructive/50 bg-destructive/10 p-2 text-xs text-destructive">
+                  No se pudieron cargar las reglas internas.
+                </div>
+              )}
+              {!printSettings.isLoading && !printSettings.data && (
+                <div className="rounded-md border border-amber-500/50 bg-amber-50 p-2 text-xs text-amber-900">
+                  No hay configuración de motor cargada.
+                </div>
+              )}
+
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <Label>Partida con impresión</Label>
+                  <Select value={peItemId} onValueChange={setPeItemId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona partida" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(items.data ?? []).map((it) => (
+                        <SelectItem key={it.id} value={it.id}>
+                          #{it.position} · {it.modelo_comercial ?? "Sin nombre"}
+                          {" · "}
+                          {it.cantidad ?? 0} pzs
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Técnica</Label>
+                  <Select value={peMethodId} onValueChange={setPeMethodId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona técnica" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(printRules.methods.data ?? []).map((m) => (
+                        <SelectItem key={m.id} value={m.id}>
+                          {m.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div>
+                  <Label>Cantidad</Label>
+                  <Input
+                    type="number"
+                    value={peQty}
+                    disabled
+                    aria-readonly="true"
+                  />
+                </div>
+                <div>
+                  <Label>Tintas / colores</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={peColors}
+                    onChange={(e) => setPeColors(Math.max(1, Number(e.target.value)))}
+                  />
+                </div>
+                <div>
+                  <Label>Posiciones</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={pePositions}
+                    onChange={(e) =>
+                      setPePositions(Math.max(1, Number(e.target.value)))
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>Material (opcional)</Label>
+                  <Input
+                    value={peMaterial}
+                    placeholder="p.ej. plastico, PET, metal"
+                    onChange={(e) => setPeMaterial(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label>Categoría producto (opcional)</Label>
+                  <Input
+                    value={peCategory}
+                    placeholder="p.ej. termo, pluma, textil"
+                    onChange={(e) => setPeCategory(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label>Logística MXN por trabajo</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={peLogisticsFee}
+                    onChange={(e) =>
+                      setPeLogisticsFee(Math.max(0, Number(e.target.value)))
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>Cantidad de trabajos</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    step="1"
+                    value={peLogisticsJobs}
+                    onChange={(e) =>
+                      setPeLogisticsJobs(Math.max(0, Math.floor(Number(e.target.value))))
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleCalcPrint}
+                  disabled={
+                    isLocked ||
+                    !peMethodId ||
+                    !peItemId ||
+                    printSettings.isLoading ||
+                    printRules.isLoading
+                  }
+                >
+                  <Calculator className="w-4 h-4 mr-2" /> Calcular impresión
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleApplySuggested}
+                  disabled={!peResult || isLocked || updateItem.isPending}
+                >
+                  Aplicar precio sugerido
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleSaveSnapshotClick}
+                  disabled={!peResult || isLocked || updateQuote.isPending}
+                >
+                  Guardar snapshot
+                </Button>
+              </div>
+
+              {peResult && (
+                <div className="rounded-md border border-border/60 bg-muted/30 p-3 space-y-2 text-xs">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {peResult.compatibility_status === "recommended" && (
+                      <Badge className="bg-emerald-600 hover:bg-emerald-600">
+                        Recomendada
+                      </Badge>
+                    )}
+                    {peResult.compatibility_status === "allowed" && (
+                      <Badge variant="secondary">Permitida</Badge>
+                    )}
+                    {peResult.compatibility_status === "validation_required" && (
+                      <Badge variant="outline" className="border-amber-500 text-amber-700">
+                        Validación requerida
+                      </Badge>
+                    )}
+                    {peResult.compatibility_status === "not_recommended" && (
+                      <Badge variant="destructive">No recomendada</Badge>
+                    )}
+                    {peResult.compatibility_status == null && (
+                      <Badge variant="outline">Sin compatibilidad</Badge>
+                    )}
+                    {peResult.applied_min_profit && (
+                      <Badge variant="outline">Utilidad mínima aplicada</Badge>
+                    )}
+                  </div>
+
+                  {peResult.warnings.length > 0 && (
+                    <div className="space-y-1">
+                      {peResult.warnings.map((w) => (
+                        <div
+                          key={w.code}
+                          className={`flex items-start gap-2 rounded p-2 ${
+                            w.severity === "error"
+                              ? "bg-destructive/10 text-destructive"
+                              : w.severity === "warning"
+                                ? "bg-amber-50 text-amber-900"
+                                : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          <ShieldAlert className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                          <span>
+                            <span className="font-mono mr-1">{w.code}</span>
+                            {w.message}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-1 pt-2 border-t border-border/50">
+                    <PeRow k="Costo base impresión" v={peResult.base_print_cost} />
+                    <PeRow
+                      k="Costos adicionales internos"
+                      v={peResult.additional_internal_costs}
+                    />
+                    <PeRow k="Logística interna" v={peResult.logistics} />
+                    <PeRow k="Buffer operativo" v={peResult.buffer} />
+                    <PeRow k="Costo interno completo" v={peResult.internal_total} />
+                    <PeRow k="Precio por margen 40%" v={peResult.price_by_margin} />
+                    <PeRow k="Precio por utilidad mín." v={peResult.price_by_min_profit} />
+                    <PeRow
+                      k="Precio sugerido cliente"
+                      v={peResult.suggested_customer_price}
+                      strong
+                    />
+                    <PeRow
+                      k="Precio unitario cliente"
+                      v={peResult.suggested_unit_price}
+                      strong
+                    />
+                    <PeRow k="Utilidad estimada" v={peResult.estimated_profit} />
+                    <PeRow k="Piezas facturables" v={peResult.billable_qty} raw />
+                  </div>
+                </div>
+              )}
+
+              <div className="rounded-md border border-amber-500/40 bg-amber-50/40 p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4 text-amber-700" />
+                  <span className="text-sm font-medium text-amber-900">
+                    Override manual del precio de impresión
+                  </span>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-2">
+                  <div>
+                    <Label>Precio impresión MXN (override)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      value={peOverride}
+                      onChange={(e) => setPeOverride(e.target.value)}
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div>
+                    <Label>Motivo (mín. 10 caracteres)</Label>
+                    <Textarea
+                      rows={2}
+                      value={peOverrideReason}
+                      onChange={(e) => setPeOverrideReason(e.target.value)}
+                    />
+                  </div>
+                </div>
+                {peOverrideError && (
+                  <p className="text-xs text-destructive">{peOverrideError}</p>
+                )}
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleSaveOverride}
+                    disabled={isLocked || updateQuote.isPending}
+                  >
+                    Guardar override
+                  </Button>
+                  {q.price_override_mxn != null && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleClearOverride}
+                      disabled={isLocked || updateQuote.isPending}
+                    >
+                      Quitar override
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              <p className="text-[10px] text-muted-foreground italic">
+                Motor interno. Los costos, márgenes, logística, buffer, snapshot y
+                override NO se muestran en PDF ni email al cliente.
+              </p>
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+
       {/* Totales */}
       <Card>
         <CardHeader>

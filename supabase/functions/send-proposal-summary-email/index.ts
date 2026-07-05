@@ -86,7 +86,8 @@ function renderProductRow(item: Articulo): string {
       <div style="margin-bottom:4px;">Color: ${color} &middot; Cantidad: <strong>${cantidad}</strong></div>
       <div style="margin-bottom:4px;">Personalización solicitada: ${personalizacion}</div>
       ${ecoLabel ? `<div style="margin-bottom:4px;color:#7a5a00;">Alternativa económica sugerida: ${ecoLabel}</div>` : ""}
-      <div style="margin-top:8px;font-weight:bold;color:#111;">Subtotal preliminar: $${subtotal} MXN</div>
+      <div style="margin-top:8px;font-weight:bold;color:#111;">Subtotal preliminar (antes de IVA): $${subtotal} MXN</div>
+      <div style="margin-top:4px;color:#7a5a00;font-size:12px;">Impresión/personalización: sujeta a validación técnica de arte, material, área, colores y cantidad. No incluida en este subtotal.</div>
     </td>
   </tr>`;
 }

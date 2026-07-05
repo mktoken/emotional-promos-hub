@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Calculator,
   ShieldAlert,
+  Lightbulb,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

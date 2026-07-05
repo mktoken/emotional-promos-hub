@@ -223,6 +223,182 @@ export default function FormalQuoteEditor() {
   const status = normalizeFormalStatus(q.status);
   const isLocked = status === "ACEPTADA" || status === "CANCELADA";
 
+  // ===== Handlers Motor de impresión (INTERNO) =====
+  const peSelectedItem =
+    (items.data ?? []).find((it) => it.id === peItemId) ?? null;
+  const peQty = Math.max(1, Math.floor(Number(peSelectedItem?.cantidad ?? 0)));
+
+  const handleCalcPrint = () => {
+    if (!printSettings.data) {
+      toast.error("Configuración del motor no disponible.");
+      return;
+    }
+    if (!peMethodId) {
+      toast.error("Selecciona una técnica.");
+      return;
+    }
+    if (!peSelectedItem) {
+      toast.error("Selecciona una partida.");
+      return;
+    }
+    const result = calcPrintEngine(
+      {
+        print_method_id: peMethodId,
+        qty: peQty,
+        colors: peColors,
+        positions: pePositions,
+        logistics_fee_mxn: peLogisticsFee,
+        logistics_job_count: peLogisticsJobs,
+        material: peMaterial || null,
+        product_category: peCategory || null,
+      },
+      printSettings.data,
+      printRules.pricing.data ?? [],
+      printRules.compat.data ?? [],
+    );
+    setPeResult(result);
+  };
+
+  const handleApplySuggested = async () => {
+    if (!peResult || !peSelectedItem) return;
+    try {
+      const newUnit = peResult.suggested_unit_price;
+      const newSetup = peResult.suggested_setup_fee;
+      const merged = {
+        ...peSelectedItem,
+        print_unit_price: newUnit,
+        setup_fee: newSetup,
+        print_method: peMethodId
+          ? (printRules.methods.data ?? []).find((m) => m.id === peMethodId)?.name ??
+            peSelectedItem.print_method ??
+            null
+          : peSelectedItem.print_method,
+        print_colors: peColors,
+      };
+      const newSubtotal = calcItemSubtotal(merged);
+      await updateItem.mutateAsync({
+        id: peSelectedItem.id,
+        values: {
+          print_unit_price: newUnit,
+          setup_fee: newSetup,
+          print_method: merged.print_method,
+          print_colors: peColors,
+          subtotal: newSubtotal,
+        },
+      });
+      await handleSaveSnapshot(peResult, false);
+      toast.success("Precio sugerido aplicado a la partida.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al aplicar precio");
+    }
+  };
+
+  const handleSaveSnapshot = async (
+    result: PrintEngineResult,
+    withOverride: boolean,
+  ) => {
+    const snapshot = {
+      version: "3.0C",
+      generated_at: new Date().toISOString(),
+      input: {
+        item_id: peSelectedItem?.id ?? null,
+        print_method_id: peMethodId,
+        qty: peQty,
+        colors: peColors,
+        positions: pePositions,
+        material: peMaterial || null,
+        product_category: peCategory || null,
+      },
+      settings: {
+        default_margin_pct: printSettings.data?.default_margin_pct ?? null,
+        minimum_profit_mxn: printSettings.data?.minimum_profit_mxn ?? null,
+        operational_buffer_pct: printSettings.data?.operational_buffer_pct ?? null,
+      },
+      result,
+      override: withOverride
+        ? {
+            price_override_mxn: Number(peOverride),
+            reason: peOverrideReason,
+            at: new Date().toISOString(),
+          }
+        : null,
+    };
+    const patch: {
+      logistics_fee_mxn: number;
+      logistics_job_count: number;
+      print_engine_snapshot: Json;
+      price_override_mxn?: number | null;
+      price_override_reason?: string | null;
+    } = {
+      logistics_fee_mxn: peLogisticsFee,
+      logistics_job_count: peLogisticsJobs,
+      print_engine_snapshot: snapshot as unknown as Json,
+    };
+    if (withOverride) {
+      patch.price_override_mxn = Number(peOverride);
+      patch.price_override_reason = peOverrideReason;
+    }
+    await updateQuote.mutateAsync(patch as never);
+    await logFormalQuoteEvent(q.id, "PRINT_ENGINE_SNAPSHOT", {
+      override: withOverride,
+    });
+  };
+
+  const handleSaveSnapshotClick = async () => {
+    if (!peResult) {
+      toast.error("Primero calcula el motor.");
+      return;
+    }
+    try {
+      await handleSaveSnapshot(peResult, false);
+      toast.success("Snapshot guardado.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al guardar snapshot");
+    }
+  };
+
+  const handleSaveOverride = async () => {
+    setPeOverrideError("");
+    const val = Number(peOverride);
+    if (!peOverride || !Number.isFinite(val) || val <= 0) {
+      setPeOverrideError("Ingresa un monto de override válido.");
+      return;
+    }
+    if (!peOverrideReason || peOverrideReason.trim().length < 10) {
+      setPeOverrideError("El motivo debe tener al menos 10 caracteres.");
+      return;
+    }
+    try {
+      if (peResult) {
+        await handleSaveSnapshot(peResult, true);
+      } else {
+        await updateQuote.mutateAsync({
+          price_override_mxn: val,
+          price_override_reason: peOverrideReason,
+        } as never);
+      }
+      toast.success("Override manual guardado.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al guardar override");
+    }
+  };
+
+  const handleClearOverride = async () => {
+    try {
+      await updateQuote.mutateAsync({
+        price_override_mxn: null,
+        price_override_reason: null,
+      } as never);
+      setPeOverride("");
+      setPeOverrideReason("");
+      setPeOverrideError("");
+      toast.success("Override removido.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error");
+    }
+  };
+
+
   const handleSaveHeader = async () => {
     try {
       await updateQuote.mutateAsync({

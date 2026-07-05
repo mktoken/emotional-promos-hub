@@ -1344,8 +1344,13 @@ export type Database = {
           folio: string
           id: string
           issued_at: string | null
+          logistics_fee_mxn: number | null
+          logistics_job_count: number | null
           notas_internas: string | null
           notas_publicas: string | null
+          price_override_mxn: number | null
+          price_override_reason: string | null
+          print_engine_snapshot: Json | null
           rejected_at: string | null
           sent_at: string | null
           status: string
@@ -1372,8 +1377,13 @@ export type Database = {
           folio?: string
           id?: string
           issued_at?: string | null
+          logistics_fee_mxn?: number | null
+          logistics_job_count?: number | null
           notas_internas?: string | null
           notas_publicas?: string | null
+          price_override_mxn?: number | null
+          price_override_reason?: string | null
+          print_engine_snapshot?: Json | null
           rejected_at?: string | null
           sent_at?: string | null
           status?: string
@@ -1400,8 +1410,13 @@ export type Database = {
           folio?: string
           id?: string
           issued_at?: string | null
+          logistics_fee_mxn?: number | null
+          logistics_job_count?: number | null
           notas_internas?: string | null
           notas_publicas?: string | null
+          price_override_mxn?: number | null
+          price_override_reason?: string | null
+          print_engine_snapshot?: Json | null
           rejected_at?: string | null
           sent_at?: string | null
           status?: string
@@ -1635,6 +1650,233 @@ export type Database = {
           },
         ]
       }
+      print_import_batches: {
+        Row: {
+          created_at: string
+          id: string
+          imported_by: string | null
+          notes: string | null
+          provider_code: string | null
+          source_file: string | null
+          source_name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          imported_by?: string | null
+          notes?: string | null
+          provider_code?: string | null
+          source_file?: string | null
+          source_name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          imported_by?: string | null
+          notes?: string | null
+          provider_code?: string | null
+          source_file?: string | null
+          source_name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      print_import_raw_rules: {
+        Row: {
+          additional_color_fixed_cost: number | null
+          additional_color_unit_cost: number | null
+          batch_id: string
+          colors_max: number | null
+          colors_min: number | null
+          compatibility_status: string | null
+          cost_model: string | null
+          created_at: string
+          extra_fixed_cost: number | null
+          extra_unit_cost: number | null
+          first_color_fixed_cost: number | null
+          first_color_unit_cost: number | null
+          fixed_cost: number | null
+          id: string
+          material: string | null
+          max_qty: number | null
+          method_code: string | null
+          method_name: string | null
+          min_qty: number | null
+          minimum_billable_qty: number | null
+          minimum_charge: number | null
+          mold_cost: number | null
+          negative_positive_cost: number | null
+          negative_positive_cost_scope: string | null
+          normalization_status: string
+          notes_internal: string | null
+          plate_cost: number | null
+          plate_cost_scope: string | null
+          positions_max: number | null
+          positions_min: number | null
+          print_area_max_cm2: number | null
+          print_area_min_cm2: number | null
+          product_category: string | null
+          provider_code: string | null
+          repack_unit_cost: number | null
+          requires_manual_validation: boolean | null
+          requires_negative_positive: boolean | null
+          requires_plate: boolean | null
+          requires_repack: boolean | null
+          requires_setup: boolean | null
+          setup_cost: number | null
+          setup_cost_scope: string | null
+          shape_type: string | null
+          source_row: string | null
+          source_section: string | null
+          unit_cost: number | null
+          validation_notes: string | null
+        }
+        Insert: {
+          additional_color_fixed_cost?: number | null
+          additional_color_unit_cost?: number | null
+          batch_id: string
+          colors_max?: number | null
+          colors_min?: number | null
+          compatibility_status?: string | null
+          cost_model?: string | null
+          created_at?: string
+          extra_fixed_cost?: number | null
+          extra_unit_cost?: number | null
+          first_color_fixed_cost?: number | null
+          first_color_unit_cost?: number | null
+          fixed_cost?: number | null
+          id?: string
+          material?: string | null
+          max_qty?: number | null
+          method_code?: string | null
+          method_name?: string | null
+          min_qty?: number | null
+          minimum_billable_qty?: number | null
+          minimum_charge?: number | null
+          mold_cost?: number | null
+          negative_positive_cost?: number | null
+          negative_positive_cost_scope?: string | null
+          normalization_status?: string
+          notes_internal?: string | null
+          plate_cost?: number | null
+          plate_cost_scope?: string | null
+          positions_max?: number | null
+          positions_min?: number | null
+          print_area_max_cm2?: number | null
+          print_area_min_cm2?: number | null
+          product_category?: string | null
+          provider_code?: string | null
+          repack_unit_cost?: number | null
+          requires_manual_validation?: boolean | null
+          requires_negative_positive?: boolean | null
+          requires_plate?: boolean | null
+          requires_repack?: boolean | null
+          requires_setup?: boolean | null
+          setup_cost?: number | null
+          setup_cost_scope?: string | null
+          shape_type?: string | null
+          source_row?: string | null
+          source_section?: string | null
+          unit_cost?: number | null
+          validation_notes?: string | null
+        }
+        Update: {
+          additional_color_fixed_cost?: number | null
+          additional_color_unit_cost?: number | null
+          batch_id?: string
+          colors_max?: number | null
+          colors_min?: number | null
+          compatibility_status?: string | null
+          cost_model?: string | null
+          created_at?: string
+          extra_fixed_cost?: number | null
+          extra_unit_cost?: number | null
+          first_color_fixed_cost?: number | null
+          first_color_unit_cost?: number | null
+          fixed_cost?: number | null
+          id?: string
+          material?: string | null
+          max_qty?: number | null
+          method_code?: string | null
+          method_name?: string | null
+          min_qty?: number | null
+          minimum_billable_qty?: number | null
+          minimum_charge?: number | null
+          mold_cost?: number | null
+          negative_positive_cost?: number | null
+          negative_positive_cost_scope?: string | null
+          normalization_status?: string
+          notes_internal?: string | null
+          plate_cost?: number | null
+          plate_cost_scope?: string | null
+          positions_max?: number | null
+          positions_min?: number | null
+          print_area_max_cm2?: number | null
+          print_area_min_cm2?: number | null
+          product_category?: string | null
+          provider_code?: string | null
+          repack_unit_cost?: number | null
+          requires_manual_validation?: boolean | null
+          requires_negative_positive?: boolean | null
+          requires_plate?: boolean | null
+          requires_repack?: boolean | null
+          requires_setup?: boolean | null
+          setup_cost?: number | null
+          setup_cost_scope?: string | null
+          shape_type?: string | null
+          source_row?: string | null
+          source_section?: string | null
+          unit_cost?: number | null
+          validation_notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_import_raw_rules_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "print_import_batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      print_methods: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       print_operational_rules: {
         Row: {
           change_ink_same_logo_cost: number | null
@@ -1737,6 +1979,263 @@ export type Database = {
         }
         Relationships: []
       }
+      print_pricing_rules: {
+        Row: {
+          active: boolean
+          additional_color_fixed_cost: number
+          additional_color_unit_cost: number | null
+          colors_max: number | null
+          colors_min: number
+          cost_model: string
+          created_at: string
+          currency: string
+          extra_fixed_cost: number
+          extra_unit_cost: number
+          first_color_fixed_cost: number
+          first_color_unit_cost: number | null
+          fixed_cost: number
+          id: string
+          includes_negative_positive: boolean
+          includes_plate: boolean
+          includes_setup: boolean
+          material: string | null
+          max_qty: number | null
+          min_qty: number
+          minimum_billable_qty: number | null
+          minimum_charge: number
+          mold_cost: number
+          negative_positive_cost: number
+          negative_positive_cost_scope: string
+          notes_internal: string | null
+          plate_cost: number
+          plate_cost_scope: string
+          positions_max: number | null
+          positions_min: number
+          print_method_id: string
+          product_category: string | null
+          provider_id: string
+          repack_unit_cost: number
+          rule_name: string | null
+          setup_cost: number
+          setup_cost_scope: string
+          source_name: string | null
+          unit_cost: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          additional_color_fixed_cost?: number
+          additional_color_unit_cost?: number | null
+          colors_max?: number | null
+          colors_min?: number
+          cost_model?: string
+          created_at?: string
+          currency?: string
+          extra_fixed_cost?: number
+          extra_unit_cost?: number
+          first_color_fixed_cost?: number
+          first_color_unit_cost?: number | null
+          fixed_cost?: number
+          id?: string
+          includes_negative_positive?: boolean
+          includes_plate?: boolean
+          includes_setup?: boolean
+          material?: string | null
+          max_qty?: number | null
+          min_qty?: number
+          minimum_billable_qty?: number | null
+          minimum_charge?: number
+          mold_cost?: number
+          negative_positive_cost?: number
+          negative_positive_cost_scope?: string
+          notes_internal?: string | null
+          plate_cost?: number
+          plate_cost_scope?: string
+          positions_max?: number | null
+          positions_min?: number
+          print_method_id: string
+          product_category?: string | null
+          provider_id: string
+          repack_unit_cost?: number
+          rule_name?: string | null
+          setup_cost?: number
+          setup_cost_scope?: string
+          source_name?: string | null
+          unit_cost?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          additional_color_fixed_cost?: number
+          additional_color_unit_cost?: number | null
+          colors_max?: number | null
+          colors_min?: number
+          cost_model?: string
+          created_at?: string
+          currency?: string
+          extra_fixed_cost?: number
+          extra_unit_cost?: number
+          first_color_fixed_cost?: number
+          first_color_unit_cost?: number | null
+          fixed_cost?: number
+          id?: string
+          includes_negative_positive?: boolean
+          includes_plate?: boolean
+          includes_setup?: boolean
+          material?: string | null
+          max_qty?: number | null
+          min_qty?: number
+          minimum_billable_qty?: number | null
+          minimum_charge?: number
+          mold_cost?: number
+          negative_positive_cost?: number
+          negative_positive_cost_scope?: string
+          notes_internal?: string | null
+          plate_cost?: number
+          plate_cost_scope?: string
+          positions_max?: number | null
+          positions_min?: number
+          print_method_id?: string
+          product_category?: string | null
+          provider_id?: string
+          repack_unit_cost?: number
+          rule_name?: string | null
+          setup_cost?: number
+          setup_cost_scope?: string
+          source_name?: string | null
+          unit_cost?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_pricing_rules_print_method_id_fkey"
+            columns: ["print_method_id"]
+            isOneToOne: false
+            referencedRelation: "print_methods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "print_pricing_rules_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "print_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      print_product_compatibility_rules: {
+        Row: {
+          active: boolean
+          colors_max: number | null
+          compatibility_status: string
+          created_at: string
+          extra_fixed_cost: number
+          extra_unit_cost: number
+          id: string
+          material: string | null
+          notes_internal: string | null
+          positions_max: number | null
+          print_area_max_cm2: number | null
+          print_area_min_cm2: number | null
+          print_method_id: string
+          product_category: string | null
+          requires_manual_validation: boolean
+          requires_negative_positive: boolean
+          requires_plate: boolean
+          requires_repack: boolean
+          requires_setup: boolean
+          shape_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          colors_max?: number | null
+          compatibility_status?: string
+          created_at?: string
+          extra_fixed_cost?: number
+          extra_unit_cost?: number
+          id?: string
+          material?: string | null
+          notes_internal?: string | null
+          positions_max?: number | null
+          print_area_max_cm2?: number | null
+          print_area_min_cm2?: number | null
+          print_method_id: string
+          product_category?: string | null
+          requires_manual_validation?: boolean
+          requires_negative_positive?: boolean
+          requires_plate?: boolean
+          requires_repack?: boolean
+          requires_setup?: boolean
+          shape_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          colors_max?: number | null
+          compatibility_status?: string
+          created_at?: string
+          extra_fixed_cost?: number
+          extra_unit_cost?: number
+          id?: string
+          material?: string | null
+          notes_internal?: string | null
+          positions_max?: number | null
+          print_area_max_cm2?: number | null
+          print_area_min_cm2?: number | null
+          print_method_id?: string
+          product_category?: string | null
+          requires_manual_validation?: boolean
+          requires_negative_positive?: boolean
+          requires_plate?: boolean
+          requires_repack?: boolean
+          requires_setup?: boolean
+          shape_type?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_product_compatibility_rules_print_method_id_fkey"
+            columns: ["print_method_id"]
+            isOneToOne: false
+            referencedRelation: "print_methods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      print_providers: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       print_required_inputs: {
         Row: {
           created_at: string
@@ -1774,6 +2273,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      print_settings: {
+        Row: {
+          created_at: string
+          default_logistics_fee_mxn: number
+          default_logistics_job_count: number
+          default_margin_pct: number
+          default_sample_fee_mxn: number
+          default_urgency_pct: number
+          id: string
+          minimum_profit_mxn: number
+          notes: string | null
+          operational_buffer_pct: number
+          singleton: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          default_logistics_fee_mxn?: number
+          default_logistics_job_count?: number
+          default_margin_pct?: number
+          default_sample_fee_mxn?: number
+          default_urgency_pct?: number
+          id?: string
+          minimum_profit_mxn?: number
+          notes?: string | null
+          operational_buffer_pct?: number
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          default_logistics_fee_mxn?: number
+          default_logistics_job_count?: number
+          default_margin_pct?: number
+          default_sample_fee_mxn?: number
+          default_urgency_pct?: number
+          id?: string
+          minimum_profit_mxn?: number
+          notes?: string | null
+          operational_buffer_pct?: number
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       print_setup_charges: {
         Row: {
@@ -2007,6 +2554,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      product_print_profiles: {
+        Row: {
+          active: boolean
+          blocked_method_codes: string[]
+          created_at: string
+          default_positions: number
+          id: string
+          material_normalized: string | null
+          notes_internal: string | null
+          print_area_cm2: number | null
+          print_area_height_cm: number | null
+          print_area_width_cm: number | null
+          product_category_normalized: string | null
+          product_key: string | null
+          product_name: string | null
+          producto_b2b_id: string | null
+          producto_publico_id: string | null
+          recommended_method_codes: string[]
+          requires_manual_validation: boolean
+          shape_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          blocked_method_codes?: string[]
+          created_at?: string
+          default_positions?: number
+          id?: string
+          material_normalized?: string | null
+          notes_internal?: string | null
+          print_area_cm2?: number | null
+          print_area_height_cm?: number | null
+          print_area_width_cm?: number | null
+          product_category_normalized?: string | null
+          product_key?: string | null
+          product_name?: string | null
+          producto_b2b_id?: string | null
+          producto_publico_id?: string | null
+          recommended_method_codes?: string[]
+          requires_manual_validation?: boolean
+          shape_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          blocked_method_codes?: string[]
+          created_at?: string
+          default_positions?: number
+          id?: string
+          material_normalized?: string | null
+          notes_internal?: string | null
+          print_area_cm2?: number | null
+          print_area_height_cm?: number | null
+          print_area_width_cm?: number | null
+          product_category_normalized?: string | null
+          product_key?: string | null
+          product_name?: string | null
+          producto_b2b_id?: string | null
+          producto_publico_id?: string | null
+          recommended_method_codes?: string[]
+          requires_manual_validation?: boolean
+          shape_type?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       producto_b2b_oferta_map: {
         Row: {

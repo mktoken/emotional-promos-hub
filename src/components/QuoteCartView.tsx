@@ -26,9 +26,21 @@ interface QuoteCartViewProps {
   onBack: () => void;
 }
 
+type QuoteFormat = "individual" | "kit";
+
+const quoteFormatLabels: Record<QuoteFormat, string> = {
+  individual: "Cotizar por separado",
+  kit: "Armar kit o paquete",
+};
+
+const quoteFormatPayload: Record<QuoteFormat, string> = {
+  individual: "INDIVIDUAL",
+  kit: "KIT",
+};
+
 export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewProps) {
   const [checkoutStep, setCheckoutStep] = useState<"cart" | "form" | "success">("cart");
-  const [quoteFormat, setQuoteFormat] = useState("individual");
+  const [quoteFormat, setQuoteFormat] = useState<QuoteFormat | null>(null);
   const [leadData, setLeadData] = useState({ name: "", company: "", email: "", phone: "" });
   const [submitting, setSubmitting] = useState(false);
 
@@ -58,6 +70,13 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
 
   const submitQuote = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!quoteFormat) {
+      alert("Elige si quieres cotizar por separado o como kit/paquete.");
+      setCheckoutStep("cart");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const leadId = crypto.randomUUID();
@@ -70,6 +89,8 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
             email: leadData.email,
             telefono: leadData.phone,
             formato_propuesta: quoteFormat,
+            modalidad_cotizacion: quoteFormat ? quoteFormatPayload[quoteFormat] : null,
+            modalidad_cotizacion_label: quoteFormat ? quoteFormatLabels[quoteFormat] : null,
           }),
         ),
         articulos_cotizados: JSON.parse(
@@ -359,54 +380,76 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                     <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
                       <Settings2 size={18} className="text-primary" /> ¿Cómo quieres cotizar estos productos?
                     </h3>
-                    <div className="space-y-3">
-                      <label
-                        className={`block p-4 border rounded-xl cursor-pointer transition-all ${quoteFormat === "individual" ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:border-primary/40 bg-card"}`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <input
-                            type="radio"
-                            name="format"
-                            value="individual"
-                            checked={quoteFormat === "individual"}
-                            onChange={() => setQuoteFormat("individual")}
-                            className="mt-1 accent-primary"
-                          />
-                          <div>
-                            <p className="font-bold text-sm text-foreground">Cotizar por separado</p>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">
-                              Cada producto se presentará como una opción independiente.
-                            </p>
+                    {quoteFormat ? (
+                      <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+                        <p className="text-xs font-medium text-primary">Modalidad seleccionada</p>
+                        <p className="mt-1 font-bold text-foreground">{quoteFormatLabels[quoteFormat]}</p>
+                        <p className="mt-1 text-[10px] text-muted-foreground">
+                          Esta solicitud se enviará con una sola modalidad.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setQuoteFormat(null)}
+                          className="mt-3 text-xs font-bold text-primary underline underline-offset-4"
+                        >
+                          Cambiar modalidad
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <button
+                          type="button"
+                          onClick={() => setQuoteFormat("individual")}
+                          className="block w-full p-4 border rounded-xl cursor-pointer transition-all text-left border-border hover:border-primary/40 bg-card"
+                        >
+                          <div className="flex items-start gap-3">
+                            <FileText size={18} className="mt-0.5 text-primary shrink-0" />
+                            <div>
+                              <p className="font-bold text-sm text-foreground">Cotizar por separado</p>
+                              <p className="text-[10px] text-muted-foreground mt-0.5">
+                                Cada producto se presentará como una opción independiente.
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </label>
-                      <label
-                        className={`block p-4 border rounded-xl cursor-pointer transition-all ${quoteFormat === "kit" ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:border-primary/40 bg-card"}`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <input
-                            type="radio"
-                            name="format"
-                            value="kit"
-                            checked={quoteFormat === "kit"}
-                            onChange={() => setQuoteFormat("kit")}
-                            className="mt-1 accent-primary"
-                          />
-                          <div>
-                            <p className="font-bold text-sm text-foreground">Armar kit o paquete</p>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">
-                              Ideal para onboarding, eventos, campañas o regalos corporativos.
-                            </p>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setQuoteFormat("kit")}
+                          className="block w-full p-4 border rounded-xl cursor-pointer transition-all text-left border-border hover:border-primary/40 bg-card"
+                        >
+                          <div className="flex items-start gap-3">
+                            <Package size={18} className="mt-0.5 text-primary shrink-0" />
+                            <div>
+                              <p className="font-bold text-sm text-foreground">Armar kit o paquete</p>
+                              <p className="text-[10px] text-muted-foreground mt-0.5">
+                                Ideal para onboarding, eventos, campañas o regalos corporativos.
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </label>
-                    </div>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 
                 {checkoutStep === "form" && (
                   <div className="bg-surface p-6 border-b border-border">
                     <h3 className="font-bold text-foreground mb-4">Resumen preliminar</h3>
+                    <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-3">
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Modalidad</p>
+                      <div className="mt-1 flex items-center justify-between gap-3">
+                        <p className="text-sm font-bold text-foreground">
+                          {quoteFormat ? quoteFormatLabels[quoteFormat] : "No seleccionada"}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setCheckoutStep("cart")}
+                          className="text-xs font-bold text-primary underline underline-offset-4"
+                        >
+                          Cambiar
+                        </button>
+                      </div>
+                    </div>
                     <ul className="space-y-3 mb-4">
                       {cart.map((item) => (
                         <li key={item.cartId} className="flex justify-between text-sm">
@@ -436,7 +479,14 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                     <div className="space-y-3">
                       <button
                         disabled={cart.length === 0}
-                        onClick={() => setCheckoutStep("form")}
+                        onClick={() => {
+                          if (!quoteFormat) {
+                            alert("Elige si quieres cotizar por separado o como kit/paquete.");
+                            return;
+                          }
+
+                          setCheckoutStep("form");
+                        }}
                         className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 rounded-xl transition-all shadow-lg flex justify-center items-center gap-2 disabled:opacity-60"
                       >
                         Crear solicitud de cotización <ArrowRight size={20} />

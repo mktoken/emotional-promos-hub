@@ -247,7 +247,7 @@ export default function CotizacionDetail() {
           className="bg-[#25D366]/10 hover:bg-[#25D366]/20 border-[#25D366]/30"
         >
           <a
-            href={wa ? `https://wa.me/${wa}?text=${waMessage}` : "#"}
+            href={waHref}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Abrir WhatsApp"

@@ -1,0 +1,839 @@
+import { useEffect, useMemo, useState } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  ArrowLeft,
+  Loader2,
+  AlertCircle,
+  Plus,
+  Trash2,
+  Save,
+  Printer,
+  Send,
+} from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { useCrmAuth } from "@/features/crm/hooks/useCrmAuth";
+import {
+  useFormalQuote,
+  useFormalQuoteItems,
+  useUpdateFormalQuote,
+  useInsertFormalQuoteItem,
+  useUpdateFormalQuoteItem,
+  useDeleteFormalQuoteItem,
+  logFormalQuoteEvent,
+  type FormalQuoteItemRow,
+} from "@/features/crm/hooks/useFormalQuotes";
+import { useCompanyFull } from "@/features/crm/hooks/useCompanyFull";
+import { useBankAccounts } from "@/features/crm/hooks/useBankAccounts";
+import { useAsesorProfile } from "@/features/crm/hooks/useCotizaciones";
+import {
+  calcItemSubtotal,
+  calcQuoteTotals,
+  formatMoney,
+} from "@/features/crm/lib/formal-quote-calc";
+import {
+  FORMAL_QUOTE_STATUS_LABEL,
+  FORMAL_QUOTE_STATUS_BADGE,
+  FORMAL_QUOTE_STATUSES,
+  normalizeFormalStatus,
+} from "@/features/crm/lib/formal-quote-status";
+
+const STAFF = new Set(["admin", "sales_manager", "sales_agent"]);
+
+interface ClienteShape {
+  nombre?: string | null;
+  empresa?: string | null;
+  email?: string | null;
+  telefono?: string | null;
+  whatsapp?: string | null;
+  rfc?: string | null;
+}
+
+export default function FormalQuoteEditor() {
+  const { quoteId } = useParams<{ quoteId: string }>();
+  const nav = useNavigate();
+  const auth = useCrmAuth();
+  const isStaff = auth.roles.some((r) => STAFF.has(r));
+  const qc = useQueryClient();
+
+  const quote = useFormalQuote(quoteId);
+  const items = useFormalQuoteItems(quoteId);
+  const company = useCompanyFull();
+  const banks = useBankAccounts();
+  const asesor = useAsesorProfile(quote.data?.assigned_to);
+
+  const updateQuote = useUpdateFormalQuote(quoteId);
+  const insertItem = useInsertFormalQuoteItem(quoteId);
+  const updateItem = useUpdateFormalQuoteItem();
+  const deleteItem = useDeleteFormalQuoteItem(quoteId);
+
+  const [selectedBankId, setSelectedBankId] = useState<string>("");
+  const [cliente, setCliente] = useState<ClienteShape>({});
+  const [validUntil, setValidUntil] = useState<string>("");
+  const [condPago, setCondPago] = useState<string>("");
+  const [condEntrega, setCondEntrega] = useState<string>("");
+  const [notasPub, setNotasPub] = useState<string>("");
+  const [notasInt, setNotasInt] = useState<string>("");
+  const [taxRate, setTaxRate] = useState<number>(0.16);
+
+  useEffect(() => {
+    if (!quote.data) return;
+    setCliente((quote.data.cliente ?? {}) as ClienteShape);
+    setValidUntil(quote.data.valid_until ?? "");
+    setCondPago(quote.data.condiciones_pago ?? "");
+    setCondEntrega(quote.data.condiciones_entrega ?? "");
+    setNotasPub(quote.data.notas_publicas ?? "");
+    setNotasInt(quote.data.notas_internas ?? "");
+    setTaxRate(Number(quote.data.tax_rate ?? 0.16));
+  }, [quote.data]);
+
+  useEffect(() => {
+    if (selectedBankId) return;
+    const snap = (quote.data?.bank_account_snapshot ?? null) as {
+      id?: string;
+    } | null;
+    if (snap?.id) {
+      setSelectedBankId(snap.id);
+      return;
+    }
+    const def = (banks.data ?? []).find((b) => b.is_default) ?? (banks.data ?? [])[0];
+    if (def) setSelectedBankId(def.id);
+  }, [banks.data, quote.data, selectedBankId]);
+
+  const totals = useMemo(() => {
+    const list = items.data ?? [];
+    return calcQuoteTotals(list, taxRate);
+  }, [items.data, taxRate]);
+
+  if (auth.loading || quote.isLoading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isStaff) {
+    return (
+      <Card className="p-6 border-destructive/30 bg-destructive/5">
+        <p className="font-medium">Acceso denegado</p>
+      </Card>
+    );
+  }
+
+  if (quote.error || !quote.data) {
+    return (
+      <Card className="p-6 border-destructive/30 bg-destructive/5">
+        <div className="flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium">No pudimos cargar esta cotización</p>
+            <Button asChild variant="outline" size="sm" className="mt-3">
+              <Link to="/crm/cotizaciones-formales">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Volver
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  const q = quote.data;
+  const status = normalizeFormalStatus(q.status);
+  const isLocked = status === "ACEPTADA" || status === "CANCELADA";
+
+  const handleSaveHeader = async () => {
+    try {
+      await updateQuote.mutateAsync({
+        cliente: cliente as unknown as never,
+        valid_until: validUntil || undefined,
+        condiciones_pago: condPago || null,
+        condiciones_entrega: condEntrega || null,
+        notas_publicas: notasPub || null,
+        notas_internas: notasInt || null,
+        tax_rate: taxRate,
+        subtotal: totals.subtotal,
+        tax_amount: totals.tax_amount,
+        total: totals.total,
+      });
+      await logFormalQuoteEvent(q.id, "UPDATED", { section: "header" });
+      toast.success("Guardado");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al guardar");
+    }
+  };
+
+  const handleAddManual = async () => {
+    try {
+      const nextPos = (items.data ?? []).reduce((m, it) => Math.max(m, it.position), 0) + 1;
+      await insertItem.mutateAsync({
+        position: nextPos,
+        source: "MANUAL",
+        modelo_comercial: "Nuevo producto",
+        cantidad: 1,
+        precio_unitario: 0,
+        descuento_pct: 0,
+        subtotal: 0,
+        unidad: "PZA",
+        setup_fee: 0,
+        print_unit_price: 0,
+      });
+      toast.success("Partida agregada");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error");
+    }
+  };
+
+  const patchItem = async (
+    it: FormalQuoteItemRow,
+    values: Partial<FormalQuoteItemRow>,
+  ) => {
+    const merged: FormalQuoteItemRow = { ...it, ...values };
+    const newSubtotal = calcItemSubtotal(merged);
+    await updateItem.mutateAsync({
+      id: it.id,
+      values: {
+        ...values,
+        subtotal: newSubtotal,
+      },
+    });
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("¿Eliminar esta partida?")) return;
+    await deleteItem.mutateAsync(id);
+    toast.success("Eliminada");
+  };
+
+  const handlePersistTotals = async () => {
+    await updateQuote.mutateAsync({
+      subtotal: totals.subtotal,
+      tax_amount: totals.tax_amount,
+      total: totals.total,
+      tax_rate: taxRate,
+    });
+  };
+
+  const handleEmitir = async () => {
+    try {
+      await handlePersistTotals();
+      const selectedBank = (banks.data ?? []).find((b) => b.id === selectedBankId);
+      const bank_account_snapshot = selectedBank
+        ? {
+            id: selectedBank.id,
+            bank_name: selectedBank.bank_name,
+            account_holder: selectedBank.account_holder,
+            account_number: selectedBank.account_number,
+            clabe: selectedBank.clabe,
+            currency: selectedBank.currency,
+            reference_instructions: selectedBank.reference_instructions,
+            branch: selectedBank.branch,
+          }
+        : null;
+      const company_snapshot = company.data
+        ? {
+            nombre_empresa: company.data.nombre_empresa,
+            email_general: company.data.email_general,
+            whatsapp_general: company.data.whatsapp_general,
+            telefono: company.data.telefono,
+            direccion: company.data.direccion,
+            logo_url: company.data.logo_url,
+          }
+        : null;
+      const advisor_snapshot = asesor.data
+        ? {
+            id: asesor.data.id,
+            full_name: asesor.data.full_name,
+            cargo: asesor.data.cargo,
+            email_comercial: asesor.data.email_comercial,
+            whatsapp: asesor.data.whatsapp,
+            firma: asesor.data.firma,
+          }
+        : null;
+
+      await updateQuote.mutateAsync({
+        status: "EMITIDA",
+        issued_at: new Date().toISOString(),
+        company_snapshot: company_snapshot as unknown as never,
+        advisor_snapshot: advisor_snapshot as unknown as never,
+        bank_account_snapshot: bank_account_snapshot as unknown as never,
+      });
+      await logFormalQuoteEvent(q.id, "ISSUED", {});
+      toast.success("Cotización emitida");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al emitir");
+    }
+  };
+
+  const handleStatusChange = async (next: string) => {
+    if (next === status) return;
+    const { error } = await supabase
+      .from("formal_quotes")
+      .update({ status: next })
+      .eq("id", q.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    qc.invalidateQueries({ queryKey: ["formal_quotes"] });
+    toast.success("Estado actualizado");
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2 min-w-0">
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/crm/cotizaciones-formales" aria-label="Volver">
+              <ArrowLeft className="w-4 h-4" />
+            </Link>
+          </Button>
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold font-mono">{q.folio}</h1>
+            <div className="flex items-center gap-2 mt-0.5">
+              <Badge variant={FORMAL_QUOTE_STATUS_BADGE[status]}>
+                {FORMAL_QUOTE_STATUS_LABEL[status]}
+              </Badge>
+              <span className="text-xs text-muted-foreground">
+                Total: {formatMoney(totals.total)}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              void logFormalQuoteEvent(q.id, "PDF_GENERATED", {});
+              nav(`/crm/cotizaciones-formales/${q.id}/imprimir`);
+            }}
+          >
+            <Printer className="w-4 h-4 mr-2" /> Imprimir / PDF
+          </Button>
+          {status === "BORRADOR" && (
+            <Button size="sm" onClick={handleEmitir} disabled={updateQuote.isPending}>
+              <Send className="w-4 h-4 mr-2" /> Marcar como emitida
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Status + valid_until */}
+      <div className="grid sm:grid-cols-3 gap-3">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Estado</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Select value={status} onValueChange={handleStatusChange}>
+              <SelectTrigger aria-label="Cambiar estado">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {FORMAL_QUOTE_STATUSES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {FORMAL_QUOTE_STATUS_LABEL[s]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Vigencia</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Input
+              type="date"
+              value={validUntil ?? ""}
+              onChange={(e) => setValidUntil(e.target.value)}
+              disabled={isLocked}
+              aria-label="Vigencia"
+            />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">IVA</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                max="1"
+                value={taxRate}
+                onChange={(e) => setTaxRate(Number(e.target.value))}
+                disabled={isLocked}
+                aria-label="Tasa de IVA"
+              />
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                ({(taxRate * 100).toFixed(0)}%)
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Cliente */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Cliente</CardTitle>
+        </CardHeader>
+        <CardContent className="grid sm:grid-cols-2 gap-3">
+          <Field
+            label="Nombre"
+            value={cliente.nombre ?? ""}
+            onChange={(v) => setCliente({ ...cliente, nombre: v })}
+            disabled={isLocked}
+          />
+          <Field
+            label="Empresa"
+            value={cliente.empresa ?? ""}
+            onChange={(v) => setCliente({ ...cliente, empresa: v })}
+            disabled={isLocked}
+          />
+          <Field
+            label="Email"
+            value={cliente.email ?? ""}
+            onChange={(v) => setCliente({ ...cliente, email: v })}
+            disabled={isLocked}
+          />
+          <Field
+            label="Teléfono"
+            value={cliente.telefono ?? ""}
+            onChange={(v) => setCliente({ ...cliente, telefono: v })}
+            disabled={isLocked}
+          />
+          <Field
+            label="WhatsApp"
+            value={cliente.whatsapp ?? ""}
+            onChange={(v) => setCliente({ ...cliente, whatsapp: v })}
+            disabled={isLocked}
+          />
+          <Field
+            label="RFC (opcional)"
+            value={cliente.rfc ?? ""}
+            onChange={(v) => setCliente({ ...cliente, rfc: v })}
+            disabled={isLocked}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Items */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base">
+            Partidas ({items.data?.length ?? 0})
+          </CardTitle>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleAddManual}
+            disabled={isLocked || insertItem.isPending}
+          >
+            <Plus className="w-4 h-4 mr-2" /> Agregar manual
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {items.isLoading && (
+            <div className="flex justify-center py-4">
+              <Loader2 className="w-5 h-5 animate-spin text-primary" />
+            </div>
+          )}
+          {!items.isLoading && (items.data ?? []).length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              Sin partidas. Agrega una manualmente.
+            </p>
+          )}
+          {(items.data ?? []).map((it) => (
+            <ItemEditor
+              key={it.id}
+              item={it}
+              disabled={isLocked}
+              onPatch={(v) => patchItem(it, v)}
+              onDelete={() => handleDelete(it.id)}
+            />
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* Totales */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Totales</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-1.5 text-sm">
+          <TotalRow k="Subtotal" v={formatMoney(totals.subtotal)} />
+          <TotalRow
+            k={`IVA (${(taxRate * 100).toFixed(0)}%)`}
+            v={formatMoney(totals.tax_amount)}
+          />
+          <div className="flex justify-between font-semibold text-base pt-2 border-t border-border/50">
+            <span>Total</span>
+            <span>{formatMoney(totals.total)}</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Condiciones */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Condiciones y notas</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <Label htmlFor="condp">Condiciones de pago</Label>
+            <Textarea
+              id="condp"
+              rows={2}
+              value={condPago}
+              onChange={(e) => setCondPago(e.target.value)}
+              disabled={isLocked}
+            />
+          </div>
+          <div>
+            <Label htmlFor="conde">Condiciones de entrega</Label>
+            <Textarea
+              id="conde"
+              rows={2}
+              value={condEntrega}
+              onChange={(e) => setCondEntrega(e.target.value)}
+              disabled={isLocked}
+            />
+          </div>
+          <div>
+            <Label htmlFor="notaspub">Notas públicas (aparecen en la cotización)</Label>
+            <Textarea
+              id="notaspub"
+              rows={2}
+              value={notasPub}
+              onChange={(e) => setNotasPub(e.target.value)}
+              disabled={isLocked}
+            />
+          </div>
+          <div>
+            <Label htmlFor="notasint">Notas internas (no se imprimen)</Label>
+            <Textarea
+              id="notasint"
+              rows={2}
+              value={notasInt}
+              onChange={(e) => setNotasInt(e.target.value)}
+              disabled={isLocked}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Banco */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Datos bancarios</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {banks.isLoading && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
+          {!banks.isLoading && (banks.data ?? []).length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              No hay cuentas bancarias activas.
+            </p>
+          )}
+          {(banks.data ?? []).length > 0 && (
+            <Select
+              value={selectedBankId}
+              onValueChange={setSelectedBankId}
+              disabled={isLocked}
+            >
+              <SelectTrigger aria-label="Cuenta bancaria">
+                <SelectValue placeholder="Selecciona cuenta" />
+              </SelectTrigger>
+              <SelectContent>
+                {(banks.data ?? []).map((b) => (
+                  <SelectItem key={b.id} value={b.id}>
+                    {b.bank_name} · {b.account_holder}
+                    {b.is_default ? " (default)" : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <p className="text-xs text-muted-foreground">
+            Al emitir se guarda un snapshot con los datos exactos del banco.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Guardar */}
+      <div className="flex justify-end sticky bottom-2 z-10">
+        <Button
+          onClick={handleSaveHeader}
+          disabled={updateQuote.isPending || isLocked}
+          className="shadow-lg"
+        >
+          {updateQuote.isPending ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Save className="w-4 h-4 mr-2" />
+          )}
+          Guardar cambios
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  value,
+  onChange,
+  disabled,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  disabled?: boolean;
+}) {
+  const id = "f_" + label.replace(/\W+/g, "_");
+  return (
+    <div>
+      <Label htmlFor={id}>{label}</Label>
+      <Input
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+      />
+    </div>
+  );
+}
+
+function TotalRow({ k, v }: { k: string; v: string }) {
+  return (
+    <div className="flex justify-between">
+      <span className="text-muted-foreground">{k}</span>
+      <span className="font-medium">{v}</span>
+    </div>
+  );
+}
+
+function ItemEditor({
+  item,
+  disabled,
+  onPatch,
+  onDelete,
+}: {
+  item: FormalQuoteItemRow;
+  disabled?: boolean;
+  onPatch: (values: Partial<FormalQuoteItemRow>) => Promise<void>;
+  onDelete: () => void;
+}) {
+  const [local, setLocal] = useState<FormalQuoteItemRow>(item);
+  useEffect(() => setLocal(item), [item]);
+
+  const subtotal = calcItemSubtotal(local);
+
+  const commit = (values: Partial<FormalQuoteItemRow>) => {
+    void onPatch(values);
+  };
+
+  return (
+    <div className="border border-border/60 rounded-md p-3 space-y-2 bg-muted/20">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
+          <Badge variant={item.source === "MANUAL" ? "secondary" : "outline"}>
+            {item.source}
+          </Badge>
+          <span className="text-xs text-muted-foreground">#{item.position}</span>
+        </div>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={onDelete}
+          disabled={disabled}
+          aria-label="Eliminar partida"
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-2">
+        <div>
+          <Label>Modelo comercial</Label>
+          <Input
+            value={local.modelo_comercial ?? ""}
+            onChange={(e) => setLocal({ ...local, modelo_comercial: e.target.value })}
+            onBlur={() => commit({ modelo_comercial: local.modelo_comercial })}
+            disabled={disabled}
+          />
+        </div>
+        <div>
+          <Label>Color</Label>
+          <Input
+            value={local.color ?? ""}
+            onChange={(e) => setLocal({ ...local, color: e.target.value })}
+            onBlur={() => commit({ color: local.color })}
+            disabled={disabled}
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <Label>Descripción</Label>
+          <Textarea
+            rows={2}
+            value={local.descripcion ?? ""}
+            onChange={(e) => setLocal({ ...local, descripcion: e.target.value })}
+            onBlur={() => commit({ descripcion: local.descripcion })}
+            disabled={disabled}
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <Label>Imagen (URL)</Label>
+          <Input
+            value={local.imagen_url ?? ""}
+            onChange={(e) => setLocal({ ...local, imagen_url: e.target.value })}
+            onBlur={() => commit({ imagen_url: local.imagen_url })}
+            disabled={disabled}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <NumField
+          label="Cantidad"
+          value={local.cantidad}
+          step={1}
+          onChange={(n) => setLocal({ ...local, cantidad: n })}
+          onCommit={(n) => commit({ cantidad: n })}
+          disabled={disabled}
+        />
+        <NumField
+          label="Precio unit."
+          value={local.precio_unitario}
+          step={0.01}
+          onChange={(n) => setLocal({ ...local, precio_unitario: n })}
+          onCommit={(n) => commit({ precio_unitario: n })}
+          disabled={disabled}
+        />
+        <NumField
+          label="Descuento (0-1)"
+          value={local.descuento_pct}
+          step={0.01}
+          onChange={(n) => setLocal({ ...local, descuento_pct: n })}
+          onCommit={(n) => commit({ descuento_pct: n })}
+          disabled={disabled}
+        />
+        <div>
+          <Label>Unidad</Label>
+          <Input
+            value={local.unidad ?? "PZA"}
+            onChange={(e) => setLocal({ ...local, unidad: e.target.value })}
+            onBlur={() => commit({ unidad: local.unidad })}
+            disabled={disabled}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-border/50">
+        <div>
+          <Label>Técnica impresión</Label>
+          <Input
+            value={local.print_method ?? ""}
+            onChange={(e) => setLocal({ ...local, print_method: e.target.value })}
+            onBlur={() => commit({ print_method: local.print_method })}
+            disabled={disabled}
+            placeholder="Serigrafía / Sublimación..."
+          />
+        </div>
+        <NumField
+          label="Tintas"
+          value={local.print_colors}
+          step={1}
+          onChange={(n) => setLocal({ ...local, print_colors: n })}
+          onCommit={(n) => commit({ print_colors: n })}
+          disabled={disabled}
+        />
+        <NumField
+          label="Setup fee"
+          value={local.setup_fee}
+          step={0.01}
+          onChange={(n) => setLocal({ ...local, setup_fee: n })}
+          onCommit={(n) => commit({ setup_fee: n })}
+          disabled={disabled}
+        />
+        <NumField
+          label="Precio impresión/u"
+          value={local.print_unit_price}
+          step={0.01}
+          onChange={(n) => setLocal({ ...local, print_unit_price: n })}
+          onCommit={(n) => commit({ print_unit_price: n })}
+          disabled={disabled}
+        />
+      </div>
+
+      <div>
+        <Label>Notas de partida</Label>
+        <Textarea
+          rows={2}
+          value={local.notes ?? ""}
+          onChange={(e) => setLocal({ ...local, notes: e.target.value })}
+          onBlur={() => commit({ notes: local.notes })}
+          disabled={disabled}
+        />
+      </div>
+
+      <div className="flex justify-end pt-1 border-t border-border/50">
+        <span className="text-sm">
+          Subtotal partida:{" "}
+          <span className="font-semibold">{formatMoney(subtotal)}</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function NumField({
+  label,
+  value,
+  step,
+  onChange,
+  onCommit,
+  disabled,
+}: {
+  label: string;
+  value: number | null;
+  step: number;
+  onChange: (n: number) => void;
+  onCommit: (n: number) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div>
+      <Label>{label}</Label>
+      <Input
+        type="number"
+        step={step}
+        value={value ?? 0}
+        onChange={(e) => onChange(Number(e.target.value))}
+        onBlur={(e) => onCommit(Number(e.target.value))}
+        disabled={disabled}
+      />
+    </div>
+  );
+}

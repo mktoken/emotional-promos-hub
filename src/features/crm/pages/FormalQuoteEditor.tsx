@@ -841,6 +841,23 @@ function ItemEditor({
         />
       </div>
 
+      {(priceDiffs || subtotalDiffs) && (
+        <div className="rounded-md border border-amber-500/50 bg-amber-50 text-amber-900 p-2 text-xs space-y-1">
+          {priceDiffs && precioRef !== null && (
+            <p>
+              ⚠ El precio unitario ({formatMoney(precioActual)}) difiere del precio de referencia
+              mostrado al cliente ({formatMoney(precioRef)}). Confirma antes de emitir.
+            </p>
+          )}
+          {subtotalDiffs && subtotalRef !== null && (
+            <p>
+              ⚠ El subtotal fue recalculado. Referencia del cliente: {formatMoney(subtotalRef)}. Subtotal
+              actual: {formatMoney(subtotal)}.
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="flex justify-end pt-1 border-t border-border/50">
         <span className="text-sm">
           Subtotal partida:{" "}

@@ -1,487 +1,295 @@
-# Plan Sprint 2.6 — Email automático "Resumen preliminar de solicitud de cotización"
+# Sprint 2.9A — Plan (diagnóstico y build futuro, no aplicar aún)
 
-Solo análisis. No se implementa, no se hace Build, no se ejecutan migraciones, no se tocan `productos_publicos`, RLS ni Edge Functions existentes.
+## 1. Diagnóstico
 
----
+### 1.1 ¿Quién abre WhatsApp automáticamente?
 
-## 0. Estado actual verificado
-
-- `QuoteCartView.tsx` línea 114: `INSERT` en `cotizaciones_leads` con `.insert([payload])` — hoy **no captura el `id` insertado** (no usa `.select().single()`).
-- Tras el insert exitoso abre WhatsApp (línea 150) y pasa a `checkoutStep="success"`.
-- `payload` ya contiene: `datos_cliente` (nombre, empresa, phone, email), `productos_solicitados` (array con clave_producto, modelo_comercial, color, cantidad, subtotal, personalización solicitada, alternativa económica sugerida, imagen_url), `total_estimado`, `estado_cotizacion`.
-- `proposal_email_events` ya existe en BD con FK a `cotizaciones_leads(id)`, columnas: `id`, `cotizacion_lead_id`, `email_type`, `recipient_email`, `status`, `provider_message_id`, `error_message`, `sent_at`, `created_at`.
-- Secrets ya configurados: `LOVABLE_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY`.
-- No hay dominio de email Lovable configurado (a validar en Build con `check_email_domain_status`).
-
----
-
-## 1. Archivos exactos a tocar
-
-**Nuevos (2):**
-
-1. `supabase/functions/send-proposal-summary-email/index.ts` — Edge Function nueva, dedicada al envío del resumen preliminar y al registro en `proposal_email_events`. No modifica ninguna función existente.
-2. `supabase/functions/send-proposal-summary-email/deno.json` — solo si React Email requiere JSX config; probable no necesario porque el HTML se genera con template string (ver §5).
-
-**Modificados (1, mínimo):**
-
-3. `src/components/QuoteCartView.tsx` — dos cambios acotados:
-  - Cambiar `.insert([payload])` por `.insert([payload]).select("id").single()` para capturar el `id`/folio.
-  - Después del insert exitoso (y **antes o después de abrir WhatsApp**, ver §4), invocar la nueva Edge Function con `supabase.functions.invoke(...)` en modo **fire-and-forget** (no bloquear el flujo).
-
-**NO se toca:**
-
-- Ninguna Edge Function existente (`capture-assistant-lead`, `sync-*`, `promote-provider-products-to-catalog`).
-- `productos_publicos`, RLS, `cotizaciones_leads` schema, `proposal_email_events` schema.
-- Diseño ni layout de `QuoteCartView`.
-
----
-
-## 2. Edge Function recomendada
-
-**Nombre:** `send-proposal-summary-email`
-**Ubicación:** `supabase/functions/send-proposal-summary-email/index.ts`
-`**verify_jwt`:** false (invocada desde cliente anónimo tras un insert público en `cotizaciones_leads`).
-
-### Contrato de entrada
-
-```ts
-POST { cotizacion_lead_id: string }
-```
-
-### Responsabilidades (en orden)
-
-1. Validar body con Zod (`cotizacion_lead_id` UUID).
-2. Con `SUPABASE_SERVICE_ROLE_KEY`, leer la fila completa de `cotizaciones_leads` por `id` (SELECT único, sin exponer service role al cliente).
-3. Extraer `datos_cliente`, `productos_solicitados`, `total_estimado`, `created_at`.
-4. Renderizar dos HTMLs (cliente + interno) con la misma plantilla, distinguidos por `email_type`.
-5. Enviar vía **Lovable Emails** (`supabase.functions.invoke('send-transactional-email', ...)`) si hay dominio configurado. Alternativa provisional: **Resend connector gateway** si el usuario elige esa ruta (§3).
-6. Insertar dos filas en `proposal_email_events` (una por destinatario), status `sent` o `failed`.
-7. Responder 200 siempre que el registro se haya intentado; devolver detalle no bloqueante al cliente.
-
-### Idempotencia
-
-`idempotencyKey = "proposal-summary-<lead_id>-<recipient_type>"` para evitar duplicados si el cliente reintenta.
-
-### CORS
-
-Manejar `OPTIONS` + headers estándar para permitir invocación desde el sitio público.
-
----
-
-## 3. Secrets necesarios
-
-**Ya presentes:** `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `LOVABLE_API_KEY`.
-
-**Faltantes según la vía elegida (decisión pendiente en Build):**
-
-- **Vía A — Lovable Emails (recomendada):** requiere dominio de email verificado + `setup_email_infra` + `scaffold_transactional_email`. No requiere secrets adicionales (usa `LOVABLE_API_KEY`).
-- **Vía B — Resend por connector gateway:** requiere el connector `resend` conectado; el secret `RESEND_API_KEY` (clave de conexión al gateway) se inyecta automáticamente. Sin `add_secret` manual.
-- **Configuración de destinatarios internos:** nuevo secret `INTERNAL_SALES_EMAIL` (correo de ventas, string). Único secret manual a agregar en Build.
-- **Remitente visible:** constante en código (`FROM_EMAIL`, `FROM_NAME`) o secret opcional `PROPOSAL_FROM_EMAIL`. Decidir en Build; por defecto constante.
-
----
-
-## 4. Cambios mínimos en `QuoteCartView.tsx`
-
-Solo lógica, sin tocar UI. Dos ediciones puntuales alrededor de la línea 114:
-
-### 4.1. Capturar el `id` del insert
-
-```ts
-const { data: inserted, error } = await supabase
-  .from("cotizaciones_leads")
-  .insert([payload])
-  .select("id")
-  .single();
-```
-
-### 4.2. Invocación fire-and-forget del email
-
-Justo después de confirmar `!error`, antes de `window.open(...)`:
-
-```ts
-if (inserted?.id) {
-  supabase.functions
-    .invoke("send-proposal-summary-email", { body: { cotizacion_lead_id: inserted.id } })
-    .catch((e) => console.warn("[email] no bloqueante:", e));
-}
-```
-
-- **Sin `await`.** El correo NO bloquea WhatsApp ni el `checkoutStep="success"`.
-- Si falla la invocación, se registra warning en consola y el flujo continúa (la solicitud ya quedó guardada).
-
-### 4.3. Nada más
-
-- No se cambian textos visibles.
-- No se agrega loading extra.
-- No se modifica el WhatsApp ni el estado de éxito.
-- No se agregan nuevos campos al formulario.
-
----
-
-## 5. Estructura del HTML email
-
-Template único parametrizado por `recipientType: "cliente" | "interno"`. Renderizado como template string (sin React Email) para evitar dependencias JSX en la nueva función.
-
-### Asunto
-
-- Cliente: `Resumen preliminar de solicitud de cotización — Folio {shortId}`
-- Interno: `[Nueva solicitud] {empresa} — {nombre} — Folio {shortId}`
-
-### Estructura HTML (bloques)
+Archivo: `src/components/QuoteCartView.tsx`, función `submitQuote`, línea ~165:
 
 ```
-┌ Header (blanco, logo texto, sin colores fuertes)
-│   "Promocionales Emocionales"
-│   "Resumen preliminar de solicitud de cotización"
-│
-├ Saludo
-│   "Hola {nombre}, gracias por tu interés."
-│   "Empresa: {empresa}"
-│   "Folio: {shortId}   Fecha: {fecha_local}"
-│
-├ Aviso destacado (banner amarillo suave)
-│   "Este documento NO es una cotización final.
-│    Es un resumen preliminar. Precios antes de IVA e impresión.
-│    Tu asesor validará técnica, disponibilidad y tiempos."
-│
-├ Tabla de productos (una fila por item)
-│   │ Imagen (60x60, object-contain, fondo blanco)
-│   │ Clave: {clave_producto}
-│   │ Modelo: {modelo_comercial}
-│   │ Color: {color} · Cantidad: {cantidad}
-│   │ Personalización solicitada: {personalizacion}
-│   │ Alternativa económica sugerida: {personalizacion_sugerida_economica.label} (si aplica)
-│   │ Subtotal preliminar: ${subtotal} MXN
-│
-├ Total preliminar
-│   "Estimación preliminar antes de IVA e impresión: ${total} MXN"
-│
-├ Próximos pasos
-│   "1. Tu asesor te contactará por WhatsApp/correo.
-│    2. Definiremos técnica de personalización óptima.
-│    3. Recibirás propuesta formal con precios finales."
-│
-├ Datos de contacto de la empresa (footer)
-│   WhatsApp, correo, sede
-│
-└ Nota legal
-    "Sujeto a validación comercial, stock y tiempos de entrega."
+window.open(`https://wa.me/5215530311686?text=${encodeURIComponent(mensaje)}`, "_blank");
 ```
 
-### Reglas de estilo
+Se ejecuta después del INSERT en `cotizaciones_leads` y antes de pasar a `checkoutStep = "success"`. Es lo que dispara la apertura automática.
 
-- Body `background: #ffffff` (obligatorio incluso en tema oscuro).
-- Estilos **inline** en cada elemento, sin `<style>` ni CSS externo.
-- Ancho máximo 600px.
-- Sin `dangerouslySetInnerHTML`; todos los valores se escapan.
-- Imágenes: URL absoluta desde `imagen_url` del payload; fallback texto "Sin imagen" si falta.
-- Sin links de unsubscribe (el sistema Lovable los agrega si aplica).
+En la vista `success` (líneas ~188-197) ya existe un botón "Acelerar por WhatsApp" que es el CTA opcional correcto — ese se conserva tal cual.
 
-### Versión interna
+### 1.2 ¿Cómo se está creando la `formal_quote` desde `cotizaciones_leads`?
 
-Misma plantilla + bloque adicional al inicio:
+En `src/features/crm/pages/CotizacionDetail.tsx` (líneas ~262-315). El botón "Crear cotización formal":
 
-```
-Nueva solicitud recibida
-Cliente: {nombre} <{email}>
-Empresa: {empresa}
-Teléfono/WhatsApp: {phone}
-```
+1. `INSERT` en `formal_quotes` con `cotizacion_lead_id`, `cliente` (raw `datos_cliente`), `assigned_to`, `created_by`.
+2. Llama a `mapLeadArticulosToItems(row.articulos_cotizados)` (`src/features/crm/lib/formal-quote-mapping.ts`).
+3. `INSERT` masivo en `formal_quote_items`.
+4. Loguea evento `CREATED`.
 
----
+El botón usa `useFormalQuoteByLead(id)` (`useFormalQuotes.ts`) para saber si ya existe una formal; si existe, muestra "Ver cotización formal ({folio})". Es decir, la UI ya evita mostrar dos veces el botón de crear, pero **no hay guard en DB ni en la mutación** — un doble-click o dos pestañas pueden crear duplicados.
 
-## 6. Registro en `proposal_email_events`
+### 1.3 Campos que se copian actualmente (via `mapLeadArticulosToItems`)
 
-Después de cada intento de envío (cliente e interno), insertar una fila:
+Por cada artículo del lead se inserta en `formal_quote_items`:
 
-```sql
-INSERT INTO proposal_email_events
-  (cotizacion_lead_id, email_type, recipient_email, status, provider_message_id, error_message, sent_at)
-VALUES
-  ($1, $2, $3, $4, $5, $6, $7);
-```
+- `position` (idx+1)
+- `source` = `"CATALOG"`
+- `clave_producto` (desde `clave_producto` / `clave`)
+- `modelo_comercial` (desde `modelo_comercial` / `nombre` / `name` / `titulo` / `title`)
+- `descripcion` = `null`
+- `color`
+- `imagen_url`
+- `cantidad` (min 1, redondeado)
+- `unidad` = `"PZA"`
+- `precio_unitario` (desde `precio_unitario` / `unit_price` / `price` / `precio`)
+- `descuento_pct` = 0
+- `subtotal` = 0  ← **incorrecto: no se recalcula al insertar**
+- `personalizacion` (objeto JSONB si viene, si no `{}`)
+- `print_method`, `print_colors` = null
+- `setup_fee`, `print_unit_price` = 0
+- `notes` = null
 
-- `email_type`: `"proposal_summary_client"` | `"proposal_summary_internal"`.
-- `recipient_email`: email destino.
-- `status`: `"sent"` cuando el proveedor devuelve 2xx; `"failed"` si hay error de envío; `"skipped"` si falta configuración (dominio, secret).
-- `provider_message_id`: `id` devuelto por Lovable Emails/Resend.
-- `error_message`: mensaje resumido (máx 500 chars, sanitizado, sin stack traces ni tokens).
-- `sent_at`: `now()` si `status='sent'`, `null` en otros casos.
+### 1.4 Campos que hay que copiar y que hoy no se están usando
 
-**Grants:** verificar en Build que `service_role` tiene `INSERT` sobre `proposal_email_events` (la Edge Function usa service role, no requiere policy para `anon`).
+Datos que **sí** existen en `articulos_cotizados` (ver `QuoteCartView.tsx` líneas 82-108) y que actualmente no llegan a `formal_quote_items`:
 
-**No se hace `.select()` de la tabla al cliente. Solo escribe la Edge Function.**
+- `precio_unitario_estimado` → hoy sólo se lee `precio_unitario` / `unit_price` / `price`. Debe considerarse como fuente prioritaria.
+- `subtotal` (calculado por front) → debería servir como *referencia* para comparar contra `cantidad × precio_unitario` recalculado.
+- `personalizacion` (string legible tipo "Logo a 1 tinta") → hoy sólo se acepta si es objeto; si viene string, se pierde. Debe guardarse en un campo texto (posibles: `notes`, o dentro del JSON de `personalizacion` bajo `label`).
+- `personalizacion_solicitada_cliente` (objeto `{ tipo, label, requiereRevision, message }`) → debería guardarse dentro de `personalizacion` JSONB.
+- `personalizacion_publica`, `personalizacion_sugerida_economica`, `compatibilidad_personalizacion`, `requiere_revision_tecnica` → mismo destino JSONB, sin exponer costos ni proveedor.
+- `material`, `logo_format`, `entrega_estimada`, `muestra_virtual` → guardarlos también dentro de `personalizacion` JSONB (o `notes` para entrega). Nada de esto expone datos sensibles.
+- `producto_id` del catálogo → útil para futura validación de precio de referencia; guardarlo dentro de `personalizacion.producto_id` o en `clave_producto` como fallback.
 
----
+### 1.5 `subtotal` mal calculado
 
-## 7. Riesgos
+Al insertar items se manda `subtotal: 0`. `formal-quote-calc.ts` sí sabe calcular (`calcItemSubtotal`), pero solamente se usa en el editor. Necesitamos calcular el subtotal por partida antes del INSERT.
 
-1. **Sin dominio verificado**: si Lovable Emails no está configurado, el envío falla. Mitigación: en Build, primero `check_email_domain_status`; si no hay dominio, mostrar diálogo de setup ANTES de escribir código de envío. Mientras tanto, `status="skipped"` no bloquea la solicitud.
-2. **Fallback silencioso**: si la Edge Function no responde (timeout), el cliente ya cerró la pestaña porque WhatsApp abre en `_blank` y luego navega a success. Aceptable — el registro queda en `cotizaciones_leads` y el email se puede reintentar manualmente desde CRM en futuro sprint.
-3. **PII en logs**: no loguear `datos_cliente` completo en la Edge Function. Solo `lead_id` y `status`.
-4. **Duplicados**: sin idempotencia se podría reenviar si el cliente hace doble submit. Mitigación: `idempotencyKey` en Lovable Emails o revisar `proposal_email_events` antes de reenviar.
-5. **Rate limit del proveedor**: no aplica al volumen actual (1 correo por solicitud).
-6. **CORS**: la función es invocada por origen público; asegurar headers `Access-Control-Allow-Origin: *` en respuesta.
-7. `**select().single()` puede fallar** si RLS oculta la fila recién insertada. Verificar en Build que la policy INSERT de `cotizaciones_leads` permita `RETURNING id` para `anon` — probablemente ya funciona porque `WITH CHECK (true)`, pero validar.
-8. **HTML mal formado en móvil**: usar tabla-based layout, no flexbox/grid.
-9. **Imagenes rotas**: URLs firmadas de Supabase pueden expirar; hoy `imagen_url` es pública de proveedor, riesgo bajo.
-10. `**INTERNAL_SALES_EMAIL` no configurado**: envío interno se marca `skipped`; solicitud del cliente sigue intacta.
+## 2. Cambios propuestos (no aplicar aún)
 
----
+### 2.1 WhatsApp público — sólo opcional
 
-## 8. Checklist de aceptación
+`src/components/QuoteCartView.tsx`, en `submitQuote`:
 
-Funcional:
+- **Eliminar** el bloque que construye `resumen`/`mensaje` y la llamada `window.open("https://wa.me/...", "_blank")` (líneas ~136-165).
+- Dejar sólo:
+  - INSERT en `cotizaciones_leads`
+  - invocación fire-and-forget a `send-proposal-summary-email`
+  - `setCheckoutStep("success")`
+- El botón "Acelerar por WhatsApp" en la pantalla success (líneas ~188-197) queda igual.
 
-- Al enviar "Solicitar propuesta formal", `cotizaciones_leads` recibe un INSERT y devuelve `id`.
-- La Edge Function `send-proposal-summary-email` se invoca con ese `id`.
-- WhatsApp abre igual que hoy (no bloqueado por el email).
-- Pantalla de éxito aparece igual que hoy (no bloqueada por el email).
-- Si el email falla, la solicitud sigue guardada en BD (verificable con `SELECT * FROM cotizaciones_leads`).
+### 2.2 Mapping enriquecido de lead → formal_quote_items
 
-Correo cliente:
+`src/features/crm/lib/formal-quote-mapping.ts`:
 
-- Recibe correo con asunto `Resumen preliminar de solicitud de cotización — Folio ...`.
-- Muestra nombre, empresa, folio corto, fecha.
-- Muestra tabla con imagen, clave, modelo, color, cantidad, personalización solicitada, alternativa económica (si aplica), subtotal por producto.
-- Muestra total preliminar.
-- Contiene banner "no es cotización final".
-- Renderiza correctamente en Gmail web + iOS Mail.
-- Ningún dato de proveedor, costo o margen aparece.
+- Añadir lectura de `precio_unitario_estimado` como fuente prioritaria de `precio_unitario`.
+- Calcular `subtotal` con `calcItemSubtotal({ cantidad, precio_unitario, descuento_pct: 0, setup_fee: 0, print_unit_price: 0 })`.
+- Extender el JSONB `personalizacion` con un shape estable:
+  ```
+  {
+    label: string | null,             // texto legible
+    tipo: string | null,              // logo_1_ink, engraving, etc.
+    requiere_revision_tecnica: bool,
+    publica: string | null,
+    sugerida_economica: { label, incluida } | null,
+    compatibilidad: string | null,
+    material: string | null,
+    logo_format: string | null,
+    entrega_estimada: string | null,
+    muestra_virtual: bool | null,
+    producto_id: number | string | null,
+    subtotal_referencia_cliente: number | null,   // el subtotal que vio el cliente
+    precio_referencia_cliente: number | null      // el precio unitario que vio el cliente
+  }
+  ```
+- Seguir sin copiar `proveedor`, `costos`, `margen`, `raw_payload`, `provider_sku`.
 
-Correo interno:
+### 2.3 Anti-duplicados de `formal_quotes`
 
-- Ventas recibe copia con datos de contacto del cliente en el encabezado.
-- Mismo detalle de productos.
+Dos capas:
 
-Registro:
+1. **UI ya cubre** el caso feliz vía `useFormalQuoteByLead`. Reforzar en `CotizacionDetail.tsx`:
+  - Antes del INSERT, hacer un `select id` en `formal_quotes` por `cotizacion_lead_id = row.id`. Si existe, navegar directo a `/crm/cotizaciones-formales/{id}` y no insertar.
+  - Deshabilitar el botón mientras `creatingFormal || formal.isLoading || !!formal.data`.
+2. **DB (opcional, no aplicar en este sprint según instrucción "no migraciones"):** dejar documentado que a futuro convendría un índice único parcial `unique (cotizacion_lead_id) where cotizacion_lead_id is not null`. **No se hace en 2.9A.**
 
-- `proposal_email_events` tiene 2 filas por solicitud (cliente + interno), o 1 fila `skipped` cuando falta configuración.
-- `status` refleja el resultado real (`sent` | `failed` | `skipped`).
-- `provider_message_id` presente cuando `sent`.
-- `error_message` presente y sanitizado cuando `failed`.
+### 2.4 Advertencia de precio contra referencia
 
-No-regresión:
+En `FormalQuoteEditor.tsx`, cuando existan `personalizacion.precio_referencia_cliente` y `personalizacion.subtotal_referencia_cliente` en un item:
 
-- `productos_publicos` intocable (mismo `pg_get_viewdef`).
-- RLS intocable.
-- Edge Functions existentes intactas (`capture-assistant-lead`, `sync-*`, `promote-provider-products-to-catalog`).
-- UI de `QuoteCartView` visualmente idéntica (mismos textos, mismas clases, mismo layout).
-- Catálogo, PDP, Landing intactos.
-- `productos_b2b.activo` piloto sigue en `false` para 50 registros.
+- Comparar contra `precio_unitario` y `calcItemSubtotal(item)` actuales.
+- Si `abs(precio_unitario - precio_referencia_cliente) / precio_referencia_cliente > 0.01` (1%), mostrar `<Alert variant="destructive">` inline con el mensaje: "El precio unitario difiere del precio de referencia mostrado al cliente ($X). Confirma antes de emitir."
+- Si `abs(subtotal - subtotal_referencia_cliente) > 0.01`, mostrar aviso "Subtotal recalculado (Y). Referencia del cliente: (X)."
+- El aviso es sólo visual, no bloquea guardar.
+- Botón "Recalcular subtotales" que corre `calcItemSubtotal` sobre cada item y hace `UPDATE` masivo (opcional en fase 1, puede ir a fase 2).
 
----
+Al montar el editor, correr una vez `calcItemSubtotal` sobre cada partida cuyo `subtotal = 0` y persistir el valor calculado (evita el bug actual de `subtotal: 0`).
 
-## Alcance exacto del futuro Build (cuando se apruebe)
+### 2.5 Texto del email inicial
 
-1. `check_email_domain_status`. Si no hay dominio: diálogo de setup. Si hay: continuar.
-2. Si aplica: `setup_email_infra` + `scaffold_transactional_email` (una sola vez, sin retries).
-3. Agregar template en `_shared/transactional-email-templates/` para "proposal-summary" (o generar HTML inline dentro de la nueva función; decisión final en Build).
-4. Crear `supabase/functions/send-proposal-summary-email/index.ts` (Edge Function nueva).
-5. `add_secret` para `INTERNAL_SALES_EMAIL` (único secret manual).
-6. Dos `code--line_replace` en `src/components/QuoteCartView.tsx` (capturar `id` + invocar función).
-7. `deploy_edge_functions` para la nueva función.
-8. Prueba con `curl_edge_functions` pasando un `cotizacion_lead_id` real de test.
+`supabase/functions/send-proposal-summary-email/index.ts`, en `renderProductRow` y `renderEmail`:
 
-Sin migraciones. Sin cambios en tablas. Sin cambios en RLS. Sin cambios en UI visible más allá del handler de envío.  
+- Cambiar el título de la línea del subtotal por partida (línea 89):
+  - Actual: `Subtotal preliminar: $${subtotal} MXN`
+  - Nuevo: `Subtotal preliminar (antes de IVA): $${subtotal} MXN`
+- Agregar una línea inmediatamente debajo del subtotal por partida:
+  - `Impresión: sujeta a validación técnica de arte, material, área y cantidad. No incluida en este subtotal.`
+- En el bloque de advertencia (líneas 152-155), reemplazar el texto por:
+  - "**Este documento NO es una cotización final.** Es un resumen preliminar. Los precios mostrados son **antes de IVA (16%)** y **no incluyen impresión/personalización**. Tu asesor validará técnica, área, colores, cantidades y tiempos antes de emitir la propuesta formal."
+- Total (líneas 168-171): cambiar la etiqueta a `Estimación preliminar de productos (antes de IVA y antes de impresión):`
+- No agregar `+ IVA` como número calculado — sólo texto aclaratorio.
+
+## 3. Archivos que se tocarían en el Build
+
+- `src/components/QuoteCartView.tsx` — quitar `window.open` de WhatsApp automático dentro de `submitQuote`. Nada más.
+- `src/features/crm/lib/formal-quote-mapping.ts` — enriquecer mapping y calcular `subtotal` con `formal-quote-calc.ts`.
+- `src/features/crm/pages/CotizacionDetail.tsx` — guard anti-duplicado antes del INSERT.
+- `src/features/crm/pages/FormalQuoteEditor.tsx` — mostrar advertencias de precio/subtotal, autocálculo al montar de items con `subtotal = 0`.
+- `supabase/functions/send-proposal-summary-email/index.ts` — ajustes de texto ("+ IVA (16%)", impresión sujeta a validación técnica).
+
+## 4. Archivos prohibidos (no tocar)
+
+- `src/components/CatalogView.tsx`
+- `src/components/ProductDetailView.tsx`
+- `src/components/LandingView.tsx`
+- `productos_publicos`, RLS, migraciones, secrets, otras Edge Functions
+- Cotizador inteligente, kits, motor de precios de impresión
+
+## 5. Plan de Build mínimo (orden)
+
+1. `formal-quote-mapping.ts`: extender mapping (usar `precio_unitario_estimado`, calcular `subtotal`, poblar JSONB `personalizacion` extendido).
+2. `CotizacionDetail.tsx`: `select` previo por `cotizacion_lead_id` y short-circuit si ya existe. Deshabilitar botón durante carga.
+3. `FormalQuoteEditor.tsx`: leer `personalizacion.precio_referencia_cliente` y `subtotal_referencia_cliente`, mostrar `<Alert>` de discrepancia; auto-persistir subtotal recalculado si viene en 0.
+4. `QuoteCartView.tsx`: eliminar `window.open` automático; mantener vista `success` con CTA opcional.
+5. `send-proposal-summary-email/index.ts`: ajustar copies ("antes de IVA (16%)", "impresión sujeta a validación técnica", nada de "precio final"). Redeploy de la función.
+6. `tsgo --noEmit` + `npm run build`.
+
+## 6. Riesgos
+
+- Cambiar `mapLeadArticulosToItems` puede afectar cotizaciones formales ya creadas si se re-ejecuta; el mapping sólo se corre al **crear**, así que no hay riesgo retroactivo.
+- Guardar más datos en `personalizacion` JSONB — cuidar que no incluya nada del proveedor (`raw_payload`, `provider_sku`, costos). El whitelist se mantiene.
+- Al quitar `window.open` de WhatsApp automático, algunos usuarios pueden extrañar la redirección: mitigado por el botón "Acelerar por WhatsApp" ya presente en pantalla success.
+- El aviso de discrepancia depende de que futuras cotizaciones traigan `precio_referencia_cliente`. Cotizaciones formales creadas antes del cambio no tendrán ese dato → el aviso simplemente no aparece (comportamiento aceptable).  
   
-BUILD.
-
-INSTRUCCIÓN CRÍTICA DE ALCANCE:
-
-No cambies nada que no se te pida explícitamente.
-
-No modifiques archivos no relacionados.
-
-No refactorices.
-
-No rediseñes UI.
-
-No cambies productos_publicos.
-
-No cambies RLS.
-
-No ejecutes migraciones.
-
-No modifiques Edge Functions existentes.
-
-No cambies precios.
-
-No cambies stock.
-
-No cambies catálogo.
-
-No cambies WhatsApp salvo lo mínimo necesario para no bloquear el email.
-
-No agregues PDF.
-
-No agregues pago online.
-
-No agregues checkout.
-
-Si detectas mejoras fuera de alcance, repórtalas como recomendación pero no las implementes.
-
-proposal_email_events ya fue validada y acepta:
-
-email_type: customer_summary, internal_notification
-
-status: sent, failed, skipped
-
-Objetivo:
-
-Implementar Sprint 2.6: envío automático de correo “Resumen preliminar de solicitud de cotización” después de guardar una solicitud en cotizaciones_leads.
-
-Contexto:
-
-- El proyecto NO es e-commerce.
-
-- No hay pago online.
-
-- El correo NO es cotización final.
-
-- El correo debe ser un resumen preliminar editable por el equipo.
-
-- WhatsApp debe seguir funcionando aunque el email falle.
-
-- proposal_email_events ya existe.
-
-- Usar email_type:
-
-  - customer_summary
-
-  - internal_notification
-
-- Usar status:
-
-  - sent
-
-  - failed
-
-  - skipped
-
-Configuración:
-
-- INTERNAL_SALES_EMAIL = [promocionalesemocionales@gmail.com](mailto:promocionalesemocionales@gmail.com)
-
-- FROM_NAME = Promocionales Emocionales
-
-- FROM_EMAIL = [promocionalesemocionales@gmail.com](mailto:promocionalesemocionales@gmail.com) si el proveedor lo permite.
-
-- Si Resend requiere dominio verificado, usar fallback seguro configurable con env FROM_EMAIL y registrar skipped/failed si no está configurado.
-
-- Usar RESEND_API_KEY como secret.
-
-Implementar solo:
-
-1. Nueva Edge Function:
-
-   supabase/functions/send-proposal-summary-email/index.ts
-
-2. Modificar únicamente:
-
-   src/components/QuoteCartView.tsx
-
-Cambios en QuoteCartView:
-
-- Cambiar insert en cotizaciones_leads para capturar id:
-
-  .insert([payload]).select("id").single()
-
-- Después del insert exitoso, invocar send-proposal-summary-email con:
-
-  { cotizacion_lead_id: [inserted.id](http://inserted.id) }
-
-- La invocación debe ser no bloqueante.
-
-- Si falla el email, no debe impedir WhatsApp ni pantalla de éxito.
-
-Edge Function:
-
-- Recibe cotizacion_lead_id.
-
-- Usa SUPABASE_SERVICE_ROLE_KEY.
-
-- Lee la fila completa de cotizaciones_leads.
-
-- Extrae datos_cliente, articulos_cotizados, total_estimado, created_at.
-
-- Envía correo al cliente.
-
-- Envía correo interno a INTERNAL_SALES_EMAIL.
-
-- Registra cada intento en proposal_email_events.
-
-- Si falta RESEND_API_KEY, FROM_EMAIL o INTERNAL_SALES_EMAIL, registrar skipped.
-
-- No loguear PII completa.
-
-- No exponer service role.
-
-- Manejar CORS.
-
-Contenido del correo:
-
-Asunto cliente:
-
-Resumen preliminar de solicitud de cotización — Folio {shortId}
-
-Debe incluir:
-
-- nombre
-
-- empresa
-
-- folio
-
-- fecha
-
-- productos con imagen
-
-- clave_producto
-
-- modelo_comercial
-
-- color
-
-- cantidad
-
-- personalización solicitada
-
-- alternativa económica sugerida si aplica
-
-- subtotal preliminar
-
-- total preliminar
-
-- leyenda clara:
-
-  Este documento NO es una cotización final. Es un resumen preliminar. Precios antes de IVA e impresión. Tu asesor validará técnica, disponibilidad, logo, cantidades y tiempos.
-
-Correo interno:
-
-- Mismo resumen
-
-- Datos de contacto visibles: nombre, empresa, email, teléfono
-
-Reglas:
-
-- No tocar UI visible.
-
-- No tocar diseño.
-
-- No tocar productos_publicos.
-
-- No tocar Supabase schema.
-
-- No tocar RLS.
-
-- No tocar Edge Functions existentes.
-
-- No generar PDF.
-
-- No calcular impresión.
-
-- No cambiar precios.
-
-- No exponer proveedor, costos, márgenes, raw_payload ni provider_sku.
+BUILD / SPRINT 2.9A HOTFIX COTIZACIÓN FORMAL + FLUJO PÚBLICO.
+  INSTRUCCIÓN CRÍTICA DE ALCANCE:
+  No cambies nada que no se te pida explícitamente.
+  No modifiques archivos no relacionados.
+  No refactorices.
+  No rediseñes UI pública.
+  No cambies Catálogo.
+  No cambies ProductDetailView.
+  No cambies LandingView.
+  No cambies productos_publicos.
+  No cambies RLS.
+  No ejecutes migraciones.
+  No cambies secrets.
+  No agregues checkout ni pagos.
+  No implementes kits.
+  No implementes cotizador inteligente.
+  No implementes motor de precios de impresión todavía.
+  No expongas proveedor, costos, márgenes, raw_payload, provider_sku ni provider_code.
+  Si detectas algo adicional, repórtalo como recomendación pero NO lo cambies.
+  Objetivo:
+  Aplicar Sprint 2.9A para:
+  1. Quitar apertura automática de WhatsApp al enviar solicitud pública.
+  2. Mejorar prellenado de cotización formal desde la solicitud.
+  3. Evitar duplicados de formal_quote por cotizacion_lead_id.
+  4. Calcular subtotal inicial de partidas al crear formal_quote_items.
+  5. Mostrar advertencias si el precio de la cotización formal difiere del precio preliminar visto por el cliente.
+  6. Ajustar el email inicial para aclarar “antes de IVA” y “antes de impresión/personalización validada”.
+  Archivos permitidos:
+  - src/components/QuoteCartView.tsx
+  - src/features/crm/lib/formal-quote-mapping.ts
+  - src/features/crm/lib/formal-quote-calc.ts solo si es estrictamente necesario
+  - src/features/crm/pages/CotizacionDetail.tsx
+  - src/features/crm/pages/FormalQuoteEditor.tsx
+  - supabase/functions/send-proposal-summary-email/index.ts
+  Archivos prohibidos:
+  - src/components/CatalogView.tsx
+  - src/components/ProductDetailView.tsx
+  - src/components/LandingView.tsx
+  - src/components/QuoteCartView.tsx fuera del cambio específico de WhatsApp automático
+  - productos_publicos
+  - otras Edge Functions
+  - RLS
+  - migraciones
+  - secrets
+  - rutas públicas no relacionadas
+  - cotizador inteligente
+  - kits
+  CAMBIO 1 — WhatsApp público opcional:
+  En src/components/QuoteCartView.tsx:
+  - Eliminar la apertura automática de WhatsApp dentro de submitQuote.
+  - Quitar o desactivar el [window.open](http://window.open) automático hacia wa.me/api.whatsapp.com.
+  - Mantener el botón “Acelerar por WhatsApp” en la pantalla de éxito.
+  - El flujo debe ser:
+    INSERT cotizaciones_leads
+    invoke fire-and-forget de send-proposal-summary-email
+    setCheckoutStep("success")
+  - El cliente debe quedarse en la pantalla “Solicitud Exitosa”.
+  CAMBIO 2 — Mapping enriquecido lead → formal_quote_items:
+  En src/features/crm/lib/formal-quote-mapping.ts:
+  - Usar precio_unitario_estimado como fuente prioritaria de precio_unitario.
+  - Si no existe, usar precio_unitario / unit_price / price / precio.
+  - Copiar campos seguros:
+    clave_producto
+    modelo_comercial
+    color
+    imagen_url
+    cantidad
+    precio_unitario
+    personalizacion solicitada
+  - Calcular subtotal inicial usando:
+    cantidad  *precio_unitario*  (1 - descuento_pct) + setup_fee + cantidad * print_unit_price
+  - No insertar subtotal = 0 si se puede calcular.
+  - Guardar dentro de personalizacion JSONB, solo datos seguros:
+    label
+    tipo
+    requiere_revision_tecnica
+    publica
+    sugerida_economica
+    compatibilidad
+    material
+    logo_format
+    entrega_estimada
+    muestra_virtual
+    producto_id
+    subtotal_referencia_cliente
+    precio_referencia_cliente
+  - No guardar proveedor, costos, márgenes, raw_payload, provider_sku ni provider_code.
+  CAMBIO 3 — Anti-duplicados:
+  En src/features/crm/pages/CotizacionDetail.tsx:
+  - Antes de crear una formal_quote, consultar si ya existe una con cotizacion_lead_id = [row.id](http://row.id).
+  - Si existe, navegar a /crm/cotizaciones-formales/{id}.
+  - Si no existe, crearla.
+  - Deshabilitar el botón mientras se crea o mientras carga la formal_quote existente.
+  - Si ya existe, mostrar “Ver cotización formal” en lugar de “Crear cotización formal”.
+  CAMBIO 4 — Advertencias de precio:
+  En src/features/crm/pages/FormalQuoteEditor.tsx:
+  - Si personalizacion.precio_referencia_cliente existe, comparar contra precio_unitario actual.
+  - Si difiere más de 1%, mostrar alerta visual:
+    “El precio unitario difiere del precio de referencia mostrado al cliente. Confirma antes de emitir.”
+  - Si personalizacion.subtotal_referencia_cliente existe, comparar contra subtotal calculado.
+  - Si difiere, mostrar alerta:
+    “El subtotal fue recalculado. Referencia del cliente: $X. Subtotal actual: $Y.”
+  - No bloquear guardar.
+  - Si una partida carga con subtotal = 0, recalcularlo automáticamente usando formal-quote-calc y persistirlo.
+  CAMBIO 5 — Email inicial:
+  En supabase/functions/send-proposal-summary-email/index.ts:
+  - Cambiar texto por partida:
+    “Subtotal preliminar (antes de IVA): $X MXN”
+  - Agregar línea por partida:
+    “Impresión/personalización: sujeta a validación técnica de arte, material, área, colores y cantidad. No incluida en este subtotal.”
+  - Cambiar advertencia principal a:
+    “Este documento NO es una cotización final. Es un resumen preliminar. Los precios mostrados son antes de IVA (16%) y no incluyen impresión/personalización validada. Tu asesor validará técnica, área, colores, cantidades, stock y tiempos antes de emitir la propuesta formal.”
+  - Cambiar total a:
+    “Estimación preliminar de productos (antes de IVA y antes de impresión):”
+  - No calcular IVA numérico en este email inicial.
+  - No presentar el email inicial como cotización formal.
+  Después:
+  Ejecuta tsgo --noEmit y npm run build.
+  Si modificas la Edge Function, confirma que queda lista/deployada según flujo de Lovable.
+  Reporta:
+  1. Archivos modificados.
+  2. Confirmación de build/typecheck exitoso.
+  3. Confirmación de que no tocaste DB/RLS/migraciones/secrets.
+  4. Confirmación de que no tocaste Catálogo/ProductDetail/Landing/productos_publicos.
+  5. Confirmación de que no expusiste proveedor/costos/márgenes/raw_payload/provider_sku/provider_code.

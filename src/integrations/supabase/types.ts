@@ -87,6 +87,48 @@ export type Database = {
           },
         ]
       }
+      company_bank_accounts: {
+        Row: {
+          account_holder: string
+          account_number: string | null
+          bank_name: string
+          clabe: string | null
+          created_at: string
+          currency: string
+          id: string
+          is_active: boolean
+          is_default: boolean
+          reference_instructions: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_holder: string
+          account_number?: string | null
+          bank_name: string
+          clabe?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          reference_instructions?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_holder?: string
+          account_number?: string | null
+          bank_name?: string
+          clabe?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          reference_instructions?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       company_settings: {
         Row: {
           created_at: string
@@ -95,6 +137,7 @@ export type Database = {
           firma_default: string | null
           id: string
           is_default: boolean
+          logo_url: string | null
           nombre_empresa: string | null
           telefono: string | null
           updated_at: string
@@ -107,6 +150,7 @@ export type Database = {
           firma_default?: string | null
           id?: string
           is_default?: boolean
+          logo_url?: string | null
           nombre_empresa?: string | null
           telefono?: string | null
           updated_at?: string
@@ -119,6 +163,7 @@ export type Database = {
           firma_default?: string | null
           id?: string
           is_default?: boolean
+          logo_url?: string | null
           nombre_empresa?: string | null
           telefono?: string | null
           updated_at?: string

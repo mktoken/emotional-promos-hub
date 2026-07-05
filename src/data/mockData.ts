@@ -98,6 +98,7 @@ export interface QuoteItem {
   sku: string;
   claveProducto?: string;
   modeloComercial?: string;
+  descripcionComercial?: string;
   color: ProductColor;
   quantity: number;
   logoFormat: string;

@@ -266,12 +266,11 @@ export default function CotizacionDetail() {
           onClick={() => {
             if (!c.email) return;
             const subject = "Seguimiento a tu solicitud de cotización";
-            const body = `Hola ${c.nombre || ""},\n\nGracias por tu solicitud. Te contactamos para dar seguimiento a tu propuesta de promocionales.\n\nSaludos,\n\nPromocionales Emocionales`;
-            const url =
-              "https://mail.google.com/mail/?view=cm&fs=1" +
-              `&to=${encodeURIComponent(c.email)}` +
-              `&su=${encodeURIComponent(subject)}` +
-              `&body=${encodeURIComponent(body)}`;
+            const body = buildEmailBody(
+              { nombre: c.nombre, email: c.email },
+              resolved,
+            );
+            const url = buildGmailUrl(c.email, subject, body);
             window.open(url, "_blank", "noopener,noreferrer");
           }}
           aria-label="Abrir Gmail"

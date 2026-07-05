@@ -758,16 +758,16 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
-                  onClick={handleAddToProposal}
-                  disabled={!canAddToProposal}
+                  onClick={!productAllowsProposal ? handleWhatsAppConsult : handleAddToProposal}
+                  disabled={productAllowsProposal && !canAddToProposal}
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 rounded-xl transition-all shadow-glow-primary flex justify-center items-center gap-2 text-lg hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   {canAddToProposal ? (
                     <>
-                      Agregar a propuesta <ShoppingCart size={20} />
+                      {ctaLabel} <ShoppingCart size={20} />
                     </>
                   ) : (
-                    "Sin stock para propuesta"
+                    ctaLabel
                   )}
                 </button>
 

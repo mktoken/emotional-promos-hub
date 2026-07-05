@@ -86,7 +86,8 @@ function renderProductRow(item: Articulo): string {
       <div style="margin-bottom:4px;">Color: ${color} &middot; Cantidad: <strong>${cantidad}</strong></div>
       <div style="margin-bottom:4px;">Personalización solicitada: ${personalizacion}</div>
       ${ecoLabel ? `<div style="margin-bottom:4px;color:#7a5a00;">Alternativa económica sugerida: ${ecoLabel}</div>` : ""}
-      <div style="margin-top:8px;font-weight:bold;color:#111;">Subtotal preliminar: $${subtotal} MXN</div>
+      <div style="margin-top:8px;font-weight:bold;color:#111;">Subtotal preliminar (antes de IVA): $${subtotal} MXN</div>
+      <div style="margin-top:4px;color:#7a5a00;font-size:12px;">Impresión/personalización: sujeta a validación técnica de arte, material, área, colores y cantidad. No incluida en este subtotal.</div>
     </td>
   </tr>`;
 }
@@ -151,7 +152,7 @@ function renderEmail(opts: {
               <td style="padding:12px 0;">
                 <div style="background:#fff8e1;border:1px solid #f4d67a;color:#5a4200;padding:14px 16px;border-radius:10px;font-size:13px;line-height:1.5;">
                   <strong>Este documento NO es una cotización final.</strong><br />
-                  Es un resumen preliminar. Precios antes de IVA e impresión. Tu asesor validará técnica, disponibilidad, logo, cantidades y tiempos.
+                  Es un resumen preliminar. Los precios mostrados son <strong>antes de IVA (16%)</strong> y <strong>no incluyen impresión/personalización validada</strong>. Tu asesor validará técnica, área, colores, cantidades, stock y tiempos antes de emitir la propuesta formal.
                 </div>
               </td>
             </tr>
@@ -166,7 +167,7 @@ function renderEmail(opts: {
 
             <tr>
               <td style="padding:16px 0;text-align:right;font-family:Arial,Helvetica,sans-serif;">
-                <div style="font-size:13px;color:#666;">Estimación preliminar antes de IVA e impresión:</div>
+                <div style="font-size:13px;color:#666;">Estimación preliminar de productos (antes de IVA y antes de impresión):</div>
                 <div style="font-size:22px;font-weight:bold;color:#111;margin-top:4px;">$${fmtMXN(total)} MXN</div>
               </td>
             </tr>

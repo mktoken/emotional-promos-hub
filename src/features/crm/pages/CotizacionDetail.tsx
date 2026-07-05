@@ -266,6 +266,22 @@ export default function CotizacionDetail() {
               if (!row.id || !auth.user) return;
               setCreatingFormal(true);
               try {
+                // Guard anti-duplicado: si ya existe una formal para este lead, ir a ella
+                const { data: existing, error: exErr } = await supabase
+                  .from("formal_quotes")
+                  .select("id")
+                  .eq("cotizacion_lead_id", row.id)
+                  .order("created_at", { ascending: false })
+                  .limit(1)
+                  .maybeSingle();
+                if (exErr) throw exErr;
+                if (existing?.id) {
+                  qc.invalidateQueries({ queryKey: ["formal_quotes"] });
+                  toast.info("Ya existe una cotización formal para esta solicitud");
+                  nav(`/crm/cotizaciones-formales/${existing.id}`);
+                  return;
+                }
+
                 const { data: created, error } = await supabase
                   .from("formal_quotes")
                   .insert({
@@ -302,7 +318,7 @@ export default function CotizacionDetail() {
                 setCreatingFormal(false);
               }
             }}
-            disabled={creatingFormal}
+            disabled={creatingFormal || formal.isLoading || !!formal.data}
           >
             {creatingFormal ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />

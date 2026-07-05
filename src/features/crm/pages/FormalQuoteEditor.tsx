@@ -1451,3 +1451,29 @@ function NumField({
     </div>
   );
 }
+
+function PeRow({
+  k,
+  v,
+  strong,
+  raw,
+}: {
+  k: string;
+  v: number;
+  strong?: boolean;
+  raw?: boolean;
+}) {
+  return (
+    <div className="flex justify-between gap-2">
+      <span className="text-muted-foreground">{k}</span>
+      <span className={strong ? "font-semibold" : ""}>
+        {raw
+          ? Number(v).toLocaleString("es-MX")
+          : Number(v).toLocaleString("es-MX", {
+              style: "currency",
+              currency: "MXN",
+            })}
+      </span>
+    </div>
+  );
+}

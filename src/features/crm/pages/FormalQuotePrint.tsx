@@ -1,3 +1,7 @@
+// PROHIBIDO exponer campos internos del motor de impresión en PDF/cliente.
+// NUNCA renderizar: logistics_fee_mxn, logistics_job_count, price_override_mxn,
+// price_override_reason, print_engine_snapshot, costos internos, márgenes,
+// logística, buffer, proveedor ni reglas internas.
 import { useEffect } from "react";
 import { Link, Navigate, useLocation, useParams } from "react-router-dom";
 import { Loader2, Printer, ArrowLeft } from "lucide-react";

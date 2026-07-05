@@ -641,37 +641,33 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
               </div>
 
               {shouldShowEconomyAlternative && (
-                <label className="mt-4 flex items-start gap-3 rounded-2xl border border-success/20 bg-success/5 p-4 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={includeEconomyAlternative}
-                    onChange={(event) => setIncludeEconomyAlternative(event.target.checked)}
-                    className="mt-1 accent-primary"
-                  />
-                  <div>
-                    <p className="font-bold text-foreground">
-                      Incluir alternativa económica: {economyPersonalizationRule.label}
+                <details className="mt-4 rounded-2xl border border-success/20 bg-success/5 p-4">
+                  <summary className="cursor-pointer font-bold text-foreground text-sm">
+                    Ver alternativa económica: {economyPersonalizationRule.label}
+                  </summary>
+                  <label className="mt-3 flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={includeEconomyAlternative}
+                      onChange={(event) => setIncludeEconomyAlternative(event.target.checked)}
+                      className="mt-1 accent-primary"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Incluirla como comparativa para que ventas pueda proponerte la opción más conveniente.
                     </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      La incluiremos como opción comparativa para que ventas pueda proponerte la alternativa más
-                      conveniente si tu solicitud original no es la más económica o requiere revisión.
-                    </p>
-                  </div>
-                </label>
+                  </label>
+                </details>
               )}
 
               <div className="mt-4 bg-primary/5 border border-primary/20 rounded-2xl p-4 flex gap-3">
                 <Info size={18} className="text-primary shrink-0 mt-0.5" />
                 <p className="text-sm text-foreground">
-                  No necesitas elegir técnica ni subir logo en esta ficha. Compártenos tu logo después y nuestro equipo
-                  ajustará la propuesta según material, tamaño, colores, cantidad y viabilidad de impresión.
+                  No necesitas subir logo aquí. Tu asesor validará arte, material, área, colores, cantidad y viabilidad.
+                  {personalizationCapabilities?.restriction_note ? ` ${personalizationCapabilities.restriction_note}` : ""}
                 </p>
               </div>
-
-              {personalizationCapabilities?.restriction_note && (
-                <p className="text-xs text-muted-foreground mt-3">{personalizationCapabilities.restriction_note}</p>
-              )}
             </section>
+
 
             <section className="bg-card rounded-3xl border border-border shadow-sm p-6">
               <h2 className="font-bold text-foreground mb-4 flex items-center gap-2">

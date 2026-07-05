@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -14,6 +14,7 @@ import {
   Send,
   History,
   Package,
+  FileCheck2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,11 @@ import {
   useAsesorProfile,
 } from "@/features/crm/hooks/useCotizaciones";
 import { useCompanySettings } from "@/features/crm/hooks/useCompanySettings";
+import {
+  useFormalQuoteByLead,
+  logFormalQuoteEvent,
+} from "@/features/crm/hooks/useFormalQuotes";
+import { mapLeadArticulosToItems } from "@/features/crm/lib/formal-quote-mapping";
 import {
   resolveContact,
   buildEmailBody,
@@ -66,6 +72,7 @@ const MANAGER_ROLES = new Set(["admin", "sales_manager"]);
 
 export default function CotizacionDetail() {
   const { id } = useParams<{ id: string }>();
+  const nav = useNavigate();
   const auth = useCrmAuth();
   const isStaff = auth.roles.some((r) => STAFF_ROLES.has(r));
   const canReassign = auth.roles.some((r) => MANAGER_ROLES.has(r));
@@ -77,6 +84,7 @@ export default function CotizacionDetail() {
   const staff = useStaffProfiles();
   const asesor = useAsesorProfile(cot.data?.assigned_to);
   const company = useCompanySettings();
+  const formal = useFormalQuoteByLead(id);
   const qc = useQueryClient();
 
   const [savingEstado, setSavingEstado] = useState(false);
@@ -84,6 +92,7 @@ export default function CotizacionDetail() {
   const [note, setNote] = useState("");
   const [savingNote, setSavingNote] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [creatingFormal, setCreatingFormal] = useState(false);
 
   if (auth.loading || cot.isLoading) {
     return (
@@ -236,6 +245,73 @@ export default function CotizacionDetail() {
           </div>
         </div>
         <Badge variant={ESTADO_BADGE[est]}>{ESTADO_LABEL[est]}</Badge>
+      </div>
+
+      {/* Cotización formal */}
+      <div className="flex justify-end">
+        {formal.isLoading ? (
+          <Button variant="outline" size="sm" disabled>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Cargando…
+          </Button>
+        ) : formal.data ? (
+          <Button asChild size="sm">
+            <Link to={`/crm/cotizaciones-formales/${formal.data.id}`}>
+              <FileCheck2 className="w-4 h-4 mr-2" /> Ver cotización formal ({formal.data.folio})
+            </Link>
+          </Button>
+        ) : (
+          <Button
+            size="sm"
+            onClick={async () => {
+              if (!row.id || !auth.user) return;
+              setCreatingFormal(true);
+              try {
+                const { data: created, error } = await supabase
+                  .from("formal_quotes")
+                  .insert({
+                    cotizacion_lead_id: row.id,
+                    cliente: row.datos_cliente as unknown as never,
+                    assigned_to: row.assigned_to ?? auth.user.id,
+                    created_by: auth.user.id,
+                  })
+                  .select("id")
+                  .single();
+                if (error) throw error;
+                const itemsToInsert = mapLeadArticulosToItems(row.articulos_cotizados);
+                if (itemsToInsert.length > 0) {
+                  const { error: itErr } = await supabase
+                    .from("formal_quote_items")
+                    .insert(
+                      itemsToInsert.map((it) => ({
+                        ...it,
+                        formal_quote_id: created.id,
+                      })),
+                    );
+                  if (itErr) throw itErr;
+                }
+                await logFormalQuoteEvent(created.id, "CREATED", {
+                  from_lead: row.id,
+                  items: itemsToInsert.length,
+                });
+                toast.success("Cotización formal creada");
+                qc.invalidateQueries({ queryKey: ["formal_quotes"] });
+                nav(`/crm/cotizaciones-formales/${created.id}`);
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "Error al crear");
+              } finally {
+                setCreatingFormal(false);
+              }
+            }}
+            disabled={creatingFormal}
+          >
+            {creatingFormal ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <FileCheck2 className="w-4 h-4 mr-2" />
+            )}
+            Crear cotización formal
+          </Button>
+        )}
       </div>
 
       {/* CTAs */}

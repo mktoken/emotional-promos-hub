@@ -209,9 +209,12 @@ export default function CotizacionDetail() {
     }
   };
 
-  const waMessage = encodeURIComponent(
-    `Hola ${c.nombre ?? ""}, te contacto de Promocionales Emocionales sobre tu cotización.`,
+  const resolved = resolveContact(asesor.data, company.data);
+  const waMessageText = buildWaMessage(
+    { nombre: c.nombre, email: c.email, telefono: c.telefono, whatsapp: c.whatsapp },
+    resolved,
   );
+  const waHref = wa ? buildWaUrl(wa, waMessageText) : "#";
 
   return (
     <div className="space-y-4">

@@ -676,6 +676,23 @@ function ItemEditor({
 
   const subtotal = calcItemSubtotal(local);
 
+  const pz = (local.personalizacion ?? null) as Record<string, unknown> | null;
+  const precioRef =
+    pz && typeof pz === "object" && typeof pz["precio_referencia_cliente"] === "number"
+      ? (pz["precio_referencia_cliente"] as number)
+      : null;
+  const subtotalRef =
+    pz && typeof pz === "object" && typeof pz["subtotal_referencia_cliente"] === "number"
+      ? (pz["subtotal_referencia_cliente"] as number)
+      : null;
+  const precioActual = Number(local.precio_unitario ?? 0);
+  const priceDiffs =
+    precioRef !== null &&
+    precioRef > 0 &&
+    Math.abs(precioActual - precioRef) / precioRef > 0.01;
+  const subtotalDiffs =
+    subtotalRef !== null && Math.abs(subtotal - subtotalRef) > 0.01;
+
   const commit = (values: Partial<FormalQuoteItemRow>) => {
     void onPatch(values);
   };

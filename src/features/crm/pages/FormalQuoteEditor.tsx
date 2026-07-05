@@ -114,6 +114,32 @@ export default function FormalQuoteEditor() {
     if (def) setSelectedBankId(def.id);
   }, [banks.data, quote.data, selectedBankId]);
 
+  // Auto-recalcular subtotales de partidas que vengan en 0 (bug legacy)
+  useEffect(() => {
+    const list = items.data;
+    if (!list || list.length === 0) return;
+    if (isStaff !== true) return;
+    const toFix = list.filter((it) => {
+      const calc = calcItemSubtotal(it);
+      return Number(it.subtotal ?? 0) === 0 && calc > 0;
+    });
+    if (toFix.length === 0) return;
+    void (async () => {
+      for (const it of toFix) {
+        const calc = calcItemSubtotal(it);
+        const { error } = await supabase
+          .from("formal_quote_items")
+          .update({ subtotal: calc })
+          .eq("id", it.id);
+        if (error) {
+          console.warn("[formal-quote] recalc subtotal failed", error.message);
+        }
+      }
+      qc.invalidateQueries({ queryKey: ["formal_quote_items", quoteId] });
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items.data]);
+
   const totals = useMemo(() => {
     const list = items.data ?? [];
     return calcQuoteTotals(list, taxRate);

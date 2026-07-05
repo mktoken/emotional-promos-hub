@@ -217,6 +217,20 @@ export default function FormalQuotePrint() {
               {cliente.email && <p>{cliente.email}</p>}
               {cliente.telefono && <p>Tel: {cliente.telefono}</p>}
               {cliente.whatsapp && <p>WhatsApp: {cliente.whatsapp}</p>}
+              {(() => {
+                const label =
+                  cliente.modalidad_cotizacion_label ||
+                  (cliente.modalidad_cotizacion === "KIT"
+                    ? "Armar kit o paquete"
+                    : cliente.modalidad_cotizacion === "INDIVIDUAL"
+                      ? "Cotizar por separado"
+                      : cliente.formato_propuesta === "kit"
+                        ? "Armar kit o paquete"
+                        : cliente.formato_propuesta === "individual"
+                          ? "Cotizar por separado"
+                          : null);
+                return label ? <p>Modalidad solicitada: <strong>{label}</strong></p> : null;
+              })()}
             </div>
           </div>
           <div>

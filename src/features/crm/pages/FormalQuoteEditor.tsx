@@ -849,6 +849,119 @@ export default function FormalQuoteEditor() {
                 </div>
               </div>
 
+              {/* Sugerencia automática de técnica (INTERNO) */}
+              {peSelectedItem && peSuggestion && (
+                <div className="rounded-md border border-primary/40 bg-primary/5 p-3 space-y-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Lightbulb className="w-4 h-4 text-primary shrink-0" />
+                    <span className="text-sm font-semibold">
+                      Técnica sugerida por análisis
+                    </span>
+                    {peSuggestion.primary ? (
+                      <>
+                        <Badge variant="outline" className="text-[10px]">
+                          {peSuggestion.primary.method.name}
+                        </Badge>
+                        {peSuggestion.primary.status === "recommended" && (
+                          <Badge className="bg-emerald-600 hover:bg-emerald-600 text-[10px]">
+                            Recomendada
+                          </Badge>
+                        )}
+                        {peSuggestion.primary.status === "allowed" && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            Permitida
+                          </Badge>
+                        )}
+                        {peSuggestion.primary.status === "validation_required" && (
+                          <Badge
+                            variant="outline"
+                            className="border-amber-500 text-amber-700 text-[10px]"
+                          >
+                            Requiere validación
+                          </Badge>
+                        )}
+                        {peSuggestion.primary.status === "not_recommended" && (
+                          <Badge variant="destructive" className="text-[10px]">
+                            No recomendada
+                          </Badge>
+                        )}
+                        {peSuggestion.primary.status === "unknown" && (
+                          <Badge variant="outline" className="text-[10px]">
+                            Sin regla específica
+                          </Badge>
+                        )}
+                      </>
+                    ) : (
+                      <Badge variant="outline" className="text-[10px]">
+                        Sin sugerencia confiable
+                      </Badge>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-muted-foreground">
+                    {peSuggestion.reason}
+                  </p>
+
+                  {peSuggestion.primary?.status === "not_recommended" && (
+                    <div className="flex items-start gap-2 rounded bg-destructive/10 text-destructive p-2 text-xs">
+                      <ShieldAlert className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                      <span>
+                        La única opción disponible NO es recomendada. Validar
+                        manualmente antes de ofrecer al cliente.
+                      </span>
+                    </div>
+                  )}
+
+                  {peSuggestion.primary && peSuggestion.primary.reasons.length > 0 && (
+                    <ul className="text-[11px] text-muted-foreground list-disc pl-5 space-y-0.5">
+                      {peSuggestion.primary.reasons.slice(0, 4).map((r, i) => (
+                        <li key={i}>{r}</li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {peSuggestion.primary && (
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          setPeMethodId(peSuggestion.primary!.method.id)
+                        }
+                        disabled={
+                          isLocked ||
+                          peMethodId === peSuggestion.primary.method.id
+                        }
+                      >
+                        <Lightbulb className="w-4 h-4 mr-2" />
+                        Usar técnica sugerida
+                      </Button>
+                      {peSuggestion.alternates.length > 0 && (
+                        <span className="text-[11px] text-muted-foreground self-center">
+                          Alternativas:{" "}
+                          {peSuggestion.alternates
+                            .map((a) => a.method.name)
+                            .join(" · ")}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {peSuggestionMismatch && (
+                <div className="flex items-start gap-2 rounded-md border border-amber-500/50 bg-amber-50 p-2 text-xs text-amber-900">
+                  <ShieldAlert className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                  <span>
+                    La técnica seleccionada difiere de la sugerida. Validar antes
+                    de enviar al cliente.
+                  </span>
+                </div>
+              )}
+
+
+
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
                   <Label>Cantidad</Label>

@@ -152,7 +152,7 @@ function renderEmail(opts: {
               <td style="padding:12px 0;">
                 <div style="background:#fff8e1;border:1px solid #f4d67a;color:#5a4200;padding:14px 16px;border-radius:10px;font-size:13px;line-height:1.5;">
                   <strong>Este documento NO es una cotización final.</strong><br />
-                  Es un resumen preliminar. Precios antes de IVA e impresión. Tu asesor validará técnica, disponibilidad, logo, cantidades y tiempos.
+                  Es un resumen preliminar. Los precios mostrados son <strong>antes de IVA (16%)</strong> y <strong>no incluyen impresión/personalización validada</strong>. Tu asesor validará técnica, área, colores, cantidades, stock y tiempos antes de emitir la propuesta formal.
                 </div>
               </td>
             </tr>

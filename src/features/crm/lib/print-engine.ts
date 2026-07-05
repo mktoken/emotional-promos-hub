@@ -2,6 +2,7 @@
 // PROHIBIDO exponer costos, márgenes, logística, buffer, proveedor,
 // reglas internas ni snapshot en PDF, email o frontend público.
 import type {
+  PrintMethodRow,
   PrintPricingRuleRow,
   PrintCompatRuleRow,
 } from "@/features/crm/hooks/usePrintRules";

@@ -36,7 +36,16 @@ import {
   useCotizacionStatusHistory,
   useCotizacionEmailEvents,
   useStaffProfiles,
+  useAsesorProfile,
 } from "@/features/crm/hooks/useCotizaciones";
+import { useCompanySettings } from "@/features/crm/hooks/useCompanySettings";
+import {
+  resolveContact,
+  buildEmailBody,
+  buildGmailUrl,
+  buildWaMessage,
+  buildWaUrl,
+} from "@/features/crm/lib/contact-defaults";
 import {
   parseCliente,
   parseArticulos,
@@ -66,6 +75,8 @@ export default function CotizacionDetail() {
   const history = useCotizacionStatusHistory(id);
   const emails = useCotizacionEmailEvents(id);
   const staff = useStaffProfiles();
+  const asesor = useAsesorProfile(cot.data?.assigned_to);
+  const company = useCompanySettings();
   const qc = useQueryClient();
 
   const [savingEstado, setSavingEstado] = useState(false);
@@ -198,9 +209,12 @@ export default function CotizacionDetail() {
     }
   };
 
-  const waMessage = encodeURIComponent(
-    `Hola ${c.nombre ?? ""}, te contacto de Promocionales Emocionales sobre tu cotización.`,
+  const resolved = resolveContact(asesor.data, company.data);
+  const waMessageText = buildWaMessage(
+    { nombre: c.nombre, email: c.email, telefono: c.telefono, whatsapp: c.whatsapp },
+    resolved,
   );
+  const waHref = wa ? buildWaUrl(wa, waMessageText) : "#";
 
   return (
     <div className="space-y-4">
@@ -233,7 +247,7 @@ export default function CotizacionDetail() {
           className="bg-[#25D366]/10 hover:bg-[#25D366]/20 border-[#25D366]/30"
         >
           <a
-            href={wa ? `https://wa.me/${wa}?text=${waMessage}` : "#"}
+            href={waHref}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Abrir WhatsApp"
@@ -252,12 +266,11 @@ export default function CotizacionDetail() {
           onClick={() => {
             if (!c.email) return;
             const subject = "Seguimiento a tu solicitud de cotización";
-            const body = `Hola ${c.nombre || ""},\n\nGracias por tu solicitud. Te contactamos para dar seguimiento a tu propuesta de promocionales.\n\nSaludos,\n\nPromocionales Emocionales`;
-            const url =
-              "https://mail.google.com/mail/?view=cm&fs=1" +
-              `&to=${encodeURIComponent(c.email)}` +
-              `&su=${encodeURIComponent(subject)}` +
-              `&body=${encodeURIComponent(body)}`;
+            const body = buildEmailBody(
+              { nombre: c.nombre, email: c.email },
+              resolved,
+            );
+            const url = buildGmailUrl(c.email, subject, body);
             window.open(url, "_blank", "noopener,noreferrer");
           }}
           aria-label="Abrir Gmail"

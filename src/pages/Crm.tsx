@@ -6,6 +6,8 @@ import ProspectDetail from "@/features/crm/pages/ProspectDetail";
 import CampaignList from "@/features/crm/pages/CampaignList";
 import CotizacionesList from "@/features/crm/pages/CotizacionesList";
 import CotizacionDetail from "@/features/crm/pages/CotizacionDetail";
+import MiPerfil from "@/features/crm/pages/MiPerfil";
+import ConfiguracionEmpresa from "@/features/crm/pages/ConfiguracionEmpresa";
 
 export default function Crm() {
   return (
@@ -17,6 +19,8 @@ export default function Crm() {
         <Route path="cotizaciones" element={<CotizacionesList />} />
         <Route path="cotizaciones/:id" element={<CotizacionDetail />} />
         <Route path="campanas" element={<CampaignList />} />
+        <Route path="mi-perfil" element={<MiPerfil />} />
+        <Route path="configuracion" element={<ConfiguracionEmpresa />} />
       </Route>
     </Routes>
   );

@@ -87,6 +87,45 @@ export type Database = {
           },
         ]
       }
+      company_settings: {
+        Row: {
+          created_at: string
+          direccion: string | null
+          email_general: string | null
+          firma_default: string | null
+          id: string
+          is_default: boolean
+          nombre_empresa: string | null
+          telefono: string | null
+          updated_at: string
+          whatsapp_general: string | null
+        }
+        Insert: {
+          created_at?: string
+          direccion?: string | null
+          email_general?: string | null
+          firma_default?: string | null
+          id?: string
+          is_default?: boolean
+          nombre_empresa?: string | null
+          telefono?: string | null
+          updated_at?: string
+          whatsapp_general?: string | null
+        }
+        Update: {
+          created_at?: string
+          direccion?: string | null
+          email_general?: string | null
+          firma_default?: string | null
+          id?: string
+          is_default?: boolean
+          nombre_empresa?: string | null
+          telefono?: string | null
+          updated_at?: string
+          whatsapp_general?: string | null
+        }
+        Relationships: []
+      }
       cotizacion_lead_notes: {
         Row: {
           cotizacion_lead_id: string
@@ -1990,30 +2029,42 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          cargo: string | null
           created_at: string
+          email_comercial: string | null
+          firma: string | null
           full_name: string | null
           id: string
           is_active: boolean
           phone: string | null
           updated_at: string
+          whatsapp: string | null
         }
         Insert: {
           avatar_url?: string | null
+          cargo?: string | null
           created_at?: string
+          email_comercial?: string | null
+          firma?: string | null
           full_name?: string | null
           id: string
           is_active?: boolean
           phone?: string | null
           updated_at?: string
+          whatsapp?: string | null
         }
         Update: {
           avatar_url?: string | null
+          cargo?: string | null
           created_at?: string
+          email_comercial?: string | null
+          firma?: string | null
           full_name?: string | null
           id?: string
           is_active?: boolean
           phone?: string | null
           updated_at?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }

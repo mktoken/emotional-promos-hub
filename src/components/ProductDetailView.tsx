@@ -372,6 +372,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
       sku: productClave,
       claveProducto: productClave,
       modeloComercial: productName,
+      descripcionComercial: productDesc || undefined,
       color: currentColor,
       quantity,
       logoFormat: selectedPersonalization,
@@ -663,11 +664,12 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                 <Info size={18} className="text-primary shrink-0 mt-0.5" />
                 <p className="text-sm text-foreground">
                   No necesitas subir logo aquí. Tu asesor validará arte, material, área, colores, cantidad y viabilidad.
-                  {personalizationCapabilities?.restriction_note ? ` ${personalizationCapabilities.restriction_note}` : ""}
+                  {personalizationCapabilities?.restriction_note
+                    ? ` ${personalizationCapabilities.restriction_note}`
+                    : ""}
                 </p>
               </div>
             </section>
-
 
             <section className="bg-card rounded-3xl border border-border shadow-sm p-6">
               <h2 className="font-bold text-foreground mb-4 flex items-center gap-2">
@@ -735,7 +737,9 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                   <p className="text-sm text-dark-section-foreground/60 mb-1">Precio desde estimado</p>
                   <div className="flex items-end gap-2">
                     <span className="text-4xl font-black text-success">${formatMoney(estimatedUnit)}</span>
-                    <span className="text-sm text-dark-section-foreground/60 mb-1.5">MXN · antes de IVA e impresión</span>
+                    <span className="text-sm text-dark-section-foreground/60 mb-1.5">
+                      MXN · antes de IVA e impresión
+                    </span>
                   </div>
 
                   <div className="mt-4 pt-4 border-t border-dark-section-foreground/10">

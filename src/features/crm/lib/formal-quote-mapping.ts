@@ -5,10 +5,7 @@
 import type { Database, Json } from "@/integrations/supabase/types";
 import { calcItemSubtotal } from "@/features/crm/lib/formal-quote-calc";
 
-type ItemInsert = Omit<
-  Database["public"]["Tables"]["formal_quote_items"]["Insert"],
-  "formal_quote_id"
->;
+type ItemInsert = Omit<Database["public"]["Tables"]["formal_quote_items"]["Insert"], "formal_quote_id">;
 
 function toStr(v: unknown): string | null {
   if (v === null || v === undefined) return null;
@@ -44,26 +41,30 @@ export function mapLeadArticulosToItems(raw: unknown): ItemInsert[] {
 
     // precio_unitario_estimado tiene prioridad (viene del catálogo público)
     const precio = toNum(
-      o["precio_unitario_estimado"] ??
-        o["precio_unitario"] ??
-        o["unit_price"] ??
-        o["price"] ??
-        o["precio"],
+      o["precio_unitario_estimado"] ?? o["precio_unitario"] ?? o["unit_price"] ?? o["price"] ?? o["precio"],
       0,
     );
 
-    const modelo =
-      toStr(o["modelo_comercial"] ?? o["nombre"] ?? o["name"] ?? o["titulo"] ?? o["title"]) ??
-      "Producto";
+    const modelo = toStr(o["modelo_comercial"] ?? o["nombre"] ?? o["name"] ?? o["titulo"] ?? o["title"]) ?? "Producto";
+
+    const descripcion =
+      toStr(
+        o["descripcion_comercial"] ??
+          o["descripcion"] ??
+          o["description_comercial"] ??
+          o["description"] ??
+          o["nombre"] ??
+          o["name"] ??
+          o["modelo_comercial"],
+      ) ?? modelo;
 
     // Personalización solicitada: puede venir como string legible u objeto
     const personalizacionRaw = o["personalizacion"];
-    const personalizacionSolicitada = (o["personalizacion_solicitada_cliente"] ?? null) as
-      | Record<string, unknown>
-      | null;
-    const sugeridaEconomica = (o["personalizacion_sugerida_economica"] ?? null) as
-      | Record<string, unknown>
-      | null;
+    const personalizacionSolicitada = (o["personalizacion_solicitada_cliente"] ?? null) as Record<
+      string,
+      unknown
+    > | null;
+    const sugeridaEconomica = (o["personalizacion_sugerida_economica"] ?? null) as Record<string, unknown> | null;
 
     const personalizacionLabel =
       typeof personalizacionRaw === "string"
@@ -75,8 +76,7 @@ export function mapLeadArticulosToItems(raw: unknown): ItemInsert[] {
           );
 
     const personalizacionTipo = toStr(
-      (personalizacionSolicitada && (personalizacionSolicitada["tipo"] as unknown)) ??
-        o["logo_format"],
+      (personalizacionSolicitada && (personalizacionSolicitada["tipo"] as unknown)) ?? o["logo_format"],
     );
 
     // Precio y subtotal de referencia que vio el cliente (para comparar en CRM)
@@ -124,7 +124,7 @@ export function mapLeadArticulosToItems(raw: unknown): ItemInsert[] {
       source: "CATALOG",
       clave_producto: toStr(o["clave_producto"] ?? o["clave"] ?? o["sku"]),
       modelo_comercial: modelo,
-      descripcion: null,
+      descripcion,
       color: toStr(o["color"]),
       imagen_url: toStr(o["imagen_url"] ?? o["image"] ?? o["image_url"] ?? o["imagen"]),
       cantidad,

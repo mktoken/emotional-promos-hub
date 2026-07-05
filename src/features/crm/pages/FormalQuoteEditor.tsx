@@ -131,6 +131,14 @@ export default function FormalQuoteEditor() {
     setNotasPub(quote.data.notas_publicas ?? "");
     setNotasInt(quote.data.notas_internas ?? "");
     setTaxRate(Number(quote.data.tax_rate ?? 0.16));
+    setPeLogisticsFee(Number(quote.data.logistics_fee_mxn ?? 350));
+    setPeLogisticsJobs(Number(quote.data.logistics_job_count ?? 1));
+    setPeOverride(
+      quote.data.price_override_mxn != null
+        ? String(quote.data.price_override_mxn)
+        : "",
+    );
+    setPeOverrideReason(quote.data.price_override_reason ?? "");
   }, [quote.data]);
 
   useEffect(() => {

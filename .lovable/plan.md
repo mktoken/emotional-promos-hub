@@ -1,295 +1,286 @@
-# Sprint 2.9A — Plan (diagnóstico y build futuro, no aplicar aún)
+# Sprint 2.9B — Claridad comercial del flujo de cotización
 
-## 1. Diagnóstico
+Diagnóstico enfocado en 6 archivos. Sin migraciones, sin RLS, sin secrets, sin publicar, sin refactor. Cambios visuales mínimos y de texto.
 
-### 1.1 ¿Quién abre WhatsApp automáticamente?
+---
 
-Archivo: `src/components/QuoteCartView.tsx`, función `submitQuote`, línea ~165:
+## 1. Diagnóstico por problema
+
+### P1 — No queda claro si el precio incluye impresión
+
+- `ProductDetailView.tsx` línea 730: badge dice `MXN + IVA`. No dice "sin impresión".
+- Línea 522 (bloque precio inicial): igual, sólo dice `MXN + IVA`.
+- Línea 740 `priceNote`: viene de `datos_generales.precio_nota`, fallback dice `"Precio antes de IVA e impresión..."`. Bien, pero está pequeño y separado del número.
+- `QuoteCartView.tsx` línea 476: ya dice "Precio antes de IVA e impresión". Correcto.
+- Email (línea 89, 155, 170): ya menciona "antes de IVA" y "no incluyen impresión". Correcto pero repetitivo (3 veces).
+
+### P2 — Personalización pública cargada/confusa
+
+- `ProductDetailView.tsx` líneas 590–660: se muestra:
+  1. Grid de 6 opciones (`FALLBACK_PERSONALIZATION_RULES`)
+  2. Caja "Selección actual" (línea 623)
+  3. Checkbox de alternativa económica (línea 631)
+  4. Aviso "No necesitas elegir técnica" (línea 651)
+  5. Nota de restricción (línea 659)
+- Es demasiado. El usuario ve 5 bloques informativos verticales.
+
+### P3 — Kit vs separado no se diferencia visualmente después
+
+- `QuoteCartView.tsx`: se guarda `formato_propuesta` + `modalidad_cotizacion` + `modalidad_cotizacion_label` en `datos_cliente` (líneas 91–93). ✅
+- `CotizacionDetail.tsx` línea 415: muestra "Modalidad". ✅
+- `FormalQuoteEditor.tsx`: **no lee modalidad** del `cliente` JSON.
+- `FormalQuotePrint.tsx`: **no muestra modalidad**.
+- `formal-quote-mapping.ts`: no propaga modalidad al `formal_quote` (pero `cliente` = `datos_cliente` completo se copia en `CotizacionDetail.tsx:273`, así que el dato ya vive en `formal_quotes.cliente`).
+
+### P4 — "Sin stock para propuesta" con stock disponible
+
+- `ProductDetailView.tsx` líneas 299–304 y 747–756:
+  ```
+  canAddToProposal = productAllowsProposal && currentColor.agregableToProposal && availableStock > 0
+  ```
+- `agregableToProposal` (línea 277) = `v.agregable_a_propuesta ?? stock_total > 0`.
+- El bug ocurre cuando la variante activa (`currentColor`) tiene `stock_total = 0` aunque otras variantes sí tengan stock, o cuando `agregable_a_propuesta` es `false` explícito. El botón entonces dice literal "Sin stock para propuesta" aunque el producto SÍ tiene stock en otras variantes.
+- Además, si `agregable_a_propuesta` está en `false` pero stock > 0, el mensaje es engañoso: no es un problema de stock sino de política del producto.
+
+### P5 — Email inicial repetitivo
+
+- El disclaimer "antes de IVA / no incluye impresión" aparece 3 veces (línea 89 por producto, 155 banner amarillo, 170 total). Suficiente con 2: banner arriba + total.
+
+### P6 — Cotización formal debe mostrar modalidad
+
+- `FormalQuoteEditor.tsx` y `FormalQuotePrint.tsx` no muestran modalidad. El dato está en `formal_quote.cliente.modalidad_cotizacion_label`.
+
+---
+
+## 2. Cambios mínimos propuestos por archivo
+
+### `src/components/ProductDetailView.tsx`
+
+1. **P1** — En los dos bloques de precio (línea ~522 y ~730), cambiar la etiqueta `MXN + IVA` por `MXN · antes de IVA e impresión`. Y en el subtotal (línea 734), añadir sublínea corta `+ IVA 16% · sin impresión`.
+2. **P2** — Colapsar la sección personalización:
+  - Mantener el grid de opciones y la caja "Selección actual".
+  - Quitar/fusionar el aviso azul (línea 651–657) con el `restriction_note` en un solo texto compacto abajo del grid.
+  - Mover el checkbox de alternativa económica a un `<details>` "Ver alternativa económica" cerrado por defecto (solo cambio de wrapper visual, sin tocar la lógica de `includeEconomyAlternative`).
+3. **P4** — Corregir el botón (línea 750–756):
+  - Si `!productAllowsProposal`: texto `Consulta por WhatsApp` (no "sin stock").
+  - Si `productAllowsProposal && availableStock === 0` para la variante actual pero otras variantes con `stock > 0`: texto `Elige un color disponible` y no deshabilitar completamente (o mantener deshabilitado con ese texto).
+  - Si `availableStock === 0` en todas: `Sin stock disponible` (no "para propuesta").
+  - Regla: cambiar el string estático "Sin stock para propuesta" por una función `getCtaLabel()` con esos 3 casos.
+
+### `src/components/QuoteCartView.tsx`
+
+- Sin cambios funcionales. Sólo (opcional) reforzar en línea 476 el texto: `Precios antes de IVA (16%) y antes de impresión/personalización.` — no requerido si ya se ve bien.
+
+### `src/features/crm/pages/CotizacionDetail.tsx`
+
+- Sin cambios. Ya muestra Modalidad.
+
+### `src/features/crm/pages/FormalQuoteEditor.tsx`
+
+- **P6** — Añadir un `<Badge>` de modalidad en el header del editor:
+  - Leer `quote.cliente?.modalidad_cotizacion_label` (o derivar de `modalidad_cotizacion`).
+  - Renderizar `KIT` o `INDIVIDUAL` como Badge junto al folio. Read-only.
+
+### `src/features/crm/pages/FormalQuotePrint.tsx`
+
+- **P6** — En el bloque "Cliente" (~línea 210), añadir línea:
+  ```
+  Modalidad solicitada: {label}
+  ```
+  Sólo si existe. Sin cambiar estructura ni PDF layout.
+
+### `supabase/functions/send-proposal-summary-email/index.ts`
+
+- **P5** — Reducir repetición:
+  - Quitar la línea 90 (`Impresión/personalización: sujeta a validación técnica...`) de cada `renderProductRow`.
+  - Mantener el banner amarillo (línea 153–156) como único disclaimer largo.
+  - Mantener la línea 170 corta antes del total.
+- **P6** (opcional) — Aceptar `modalidad_label` en el payload y mostrarlo debajo del folio (línea 147). No requerido; puede quedar para 2.9C.
+
+---
+
+## 3. Cómo simplificar personalización pública (P2)
+
+Estructura propuesta en `ProductDetailView.tsx`:
 
 ```
-window.open(`https://wa.me/5215530311686?text=${encodeURIComponent(mensaje)}`, "_blank");
+[ Grid de opciones ]
+[ Caja "Selección actual" con mensaje contextual ]
+[ <details> Alternativa económica sugerida (si aplica) ]
+[ Nota unificada: "No necesitas subir logo aquí. + restriction_note" ]
 ```
 
-Se ejecuta después del INSERT en `cotizaciones_leads` y antes de pasar a `checkoutStep = "success"`. Es lo que dispara la apertura automática.
+De 5 bloques a 4, con el más ruidoso (el checkbox verde) plegado.
 
-En la vista `success` (líneas ~188-197) ya existe un botón "Acelerar por WhatsApp" que es el CTA opcional correcto — ese se conserva tal cual.
+---
 
-### 1.2 ¿Cómo se está creando la `formal_quote` desde `cotizaciones_leads`?
+## 4. Cómo aclarar precio sin IVA ni impresión (P1)
 
-En `src/features/crm/pages/CotizacionDetail.tsx` (líneas ~262-315). El botón "Crear cotización formal":
+- Etiquetas junto al precio: `MXN · antes de IVA e impresión`.
+- Debajo del subtotal preliminar, línea muted: `+ IVA 16% · sin impresión/personalización`.
+- No tocar `priceNote` (ya correcto).
+- No repetir 3 veces en la misma vista; una sola frase compacta bajo el número grande.
 
-1. `INSERT` en `formal_quotes` con `cotizacion_lead_id`, `cliente` (raw `datos_cliente`), `assigned_to`, `created_by`.
-2. Llama a `mapLeadArticulosToItems(row.articulos_cotizados)` (`src/features/crm/lib/formal-quote-mapping.ts`).
-3. `INSERT` masivo en `formal_quote_items`.
-4. Loguea evento `CREATED`.
+---
 
-El botón usa `useFormalQuoteByLead(id)` (`useFormalQuotes.ts`) para saber si ya existe una formal; si existe, muestra "Ver cotización formal ({folio})". Es decir, la UI ya evita mostrar dos veces el botón de crear, pero **no hay guard en DB ni en la mutación** — un doble-click o dos pestañas pueden crear duplicados.
+## 5. Cómo corregir botón de stock (P4)
 
-### 1.3 Campos que se copian actualmente (via `mapLeadArticulosToItems`)
+`getCtaLabel()` en `ProductDetailView.tsx`:
 
-Por cada artículo del lead se inserta en `formal_quote_items`:
+```text
+if (!productAllowsProposal)                → "Consultar por WhatsApp"  (redirige a WA)
+if (allVariantsOutOfStock)                 → "Sin stock disponible"    (disabled)
+if (currentVariantOutOfStock, other OK)    → "Elige un color disponible" (disabled)
+else                                       → "Agregar a propuesta"
+```
 
-- `position` (idx+1)
-- `source` = `"CATALOG"`
-- `clave_producto` (desde `clave_producto` / `clave`)
-- `modelo_comercial` (desde `modelo_comercial` / `nombre` / `name` / `titulo` / `title`)
-- `descripcion` = `null`
-- `color`
-- `imagen_url`
-- `cantidad` (min 1, redondeado)
-- `unidad` = `"PZA"`
-- `precio_unitario` (desde `precio_unitario` / `unit_price` / `price` / `precio`)
-- `descuento_pct` = 0
-- `subtotal` = 0  ← **incorrecto: no se recalcula al insertar**
-- `personalizacion` (objeto JSONB si viene, si no `{}`)
-- `print_method`, `print_colors` = null
-- `setup_fee`, `print_unit_price` = 0
-- `notes` = null
+Requiere calcular `allVariantsOutOfStock = colors.every(c => !c.agregableToProposal || c.stock === 0)`.
 
-### 1.4 Campos que hay que copiar y que hoy no se están usando
+---
 
-Datos que **sí** existen en `articulos_cotizados` (ver `QuoteCartView.tsx` líneas 82-108) y que actualmente no llegan a `formal_quote_items`:
+## 6. Cómo mostrar modalidad KIT/INDIVIDUAL en CRM y cotización formal (P6)
 
-- `precio_unitario_estimado` → hoy sólo se lee `precio_unitario` / `unit_price` / `price`. Debe considerarse como fuente prioritaria.
-- `subtotal` (calculado por front) → debería servir como *referencia* para comparar contra `cantidad × precio_unitario` recalculado.
-- `personalizacion` (string legible tipo "Logo a 1 tinta") → hoy sólo se acepta si es objeto; si viene string, se pierde. Debe guardarse en un campo texto (posibles: `notes`, o dentro del JSON de `personalizacion` bajo `label`).
-- `personalizacion_solicitada_cliente` (objeto `{ tipo, label, requiereRevision, message }`) → debería guardarse dentro de `personalizacion` JSONB.
-- `personalizacion_publica`, `personalizacion_sugerida_economica`, `compatibilidad_personalizacion`, `requiere_revision_tecnica` → mismo destino JSONB, sin exponer costos ni proveedor.
-- `material`, `logo_format`, `entrega_estimada`, `muestra_virtual` → guardarlos también dentro de `personalizacion` JSONB (o `notes` para entrega). Nada de esto expone datos sensibles.
-- `producto_id` del catálogo → útil para futura validación de precio de referencia; guardarlo dentro de `personalizacion.producto_id` o en `clave_producto` como fallback.
+- Dato ya vive en `cotizaciones_leads.datos_cliente.modalidad_cotizacion_label` y, tras crear la formal, en `formal_quotes.cliente.modalidad_cotizacion_label` (se copia entero en `CotizacionDetail.tsx:273`).
+- **Editor**: `<Badge variant="outline">Modalidad: {label}</Badge>` al lado del folio.
+- **Print**: línea `Modalidad solicitada: {label}` en el bloque cliente.
+- Sin migraciones. Sin tocar `formal-quote-mapping.ts`.
 
-### 1.5 `subtotal` mal calculado
+---
 
-Al insertar items se manda `subtotal: 0`. `formal-quote-calc.ts` sí sabe calcular (`calcItemSubtotal`), pero solamente se usa en el editor. Necesitamos calcular el subtotal por partida antes del INSERT.
-
-## 2. Cambios propuestos (no aplicar aún)
-
-### 2.1 WhatsApp público — sólo opcional
-
-`src/components/QuoteCartView.tsx`, en `submitQuote`:
-
-- **Eliminar** el bloque que construye `resumen`/`mensaje` y la llamada `window.open("https://wa.me/...", "_blank")` (líneas ~136-165).
-- Dejar sólo:
-  - INSERT en `cotizaciones_leads`
-  - invocación fire-and-forget a `send-proposal-summary-email`
-  - `setCheckoutStep("success")`
-- El botón "Acelerar por WhatsApp" en la pantalla success (líneas ~188-197) queda igual.
-
-### 2.2 Mapping enriquecido de lead → formal_quote_items
-
-`src/features/crm/lib/formal-quote-mapping.ts`:
-
-- Añadir lectura de `precio_unitario_estimado` como fuente prioritaria de `precio_unitario`.
-- Calcular `subtotal` con `calcItemSubtotal({ cantidad, precio_unitario, descuento_pct: 0, setup_fee: 0, print_unit_price: 0 })`.
-- Extender el JSONB `personalizacion` con un shape estable:
-  ```
-  {
-    label: string | null,             // texto legible
-    tipo: string | null,              // logo_1_ink, engraving, etc.
-    requiere_revision_tecnica: bool,
-    publica: string | null,
-    sugerida_economica: { label, incluida } | null,
-    compatibilidad: string | null,
-    material: string | null,
-    logo_format: string | null,
-    entrega_estimada: string | null,
-    muestra_virtual: bool | null,
-    producto_id: number | string | null,
-    subtotal_referencia_cliente: number | null,   // el subtotal que vio el cliente
-    precio_referencia_cliente: number | null      // el precio unitario que vio el cliente
-  }
-  ```
-- Seguir sin copiar `proveedor`, `costos`, `margen`, `raw_payload`, `provider_sku`.
-
-### 2.3 Anti-duplicados de `formal_quotes`
-
-Dos capas:
-
-1. **UI ya cubre** el caso feliz vía `useFormalQuoteByLead`. Reforzar en `CotizacionDetail.tsx`:
-  - Antes del INSERT, hacer un `select id` en `formal_quotes` por `cotizacion_lead_id = row.id`. Si existe, navegar directo a `/crm/cotizaciones-formales/{id}` y no insertar.
-  - Deshabilitar el botón mientras `creatingFormal || formal.isLoading || !!formal.data`.
-2. **DB (opcional, no aplicar en este sprint según instrucción "no migraciones"):** dejar documentado que a futuro convendría un índice único parcial `unique (cotizacion_lead_id) where cotizacion_lead_id is not null`. **No se hace en 2.9A.**
-
-### 2.4 Advertencia de precio contra referencia
-
-En `FormalQuoteEditor.tsx`, cuando existan `personalizacion.precio_referencia_cliente` y `personalizacion.subtotal_referencia_cliente` en un item:
-
-- Comparar contra `precio_unitario` y `calcItemSubtotal(item)` actuales.
-- Si `abs(precio_unitario - precio_referencia_cliente) / precio_referencia_cliente > 0.01` (1%), mostrar `<Alert variant="destructive">` inline con el mensaje: "El precio unitario difiere del precio de referencia mostrado al cliente ($X). Confirma antes de emitir."
-- Si `abs(subtotal - subtotal_referencia_cliente) > 0.01`, mostrar aviso "Subtotal recalculado (Y). Referencia del cliente: (X)."
-- El aviso es sólo visual, no bloquea guardar.
-- Botón "Recalcular subtotales" que corre `calcItemSubtotal` sobre cada item y hace `UPDATE` masivo (opcional en fase 1, puede ir a fase 2).
-
-Al montar el editor, correr una vez `calcItemSubtotal` sobre cada partida cuyo `subtotal = 0` y persistir el valor calculado (evita el bug actual de `subtotal: 0`).
-
-### 2.5 Texto del email inicial
-
-`supabase/functions/send-proposal-summary-email/index.ts`, en `renderProductRow` y `renderEmail`:
-
-- Cambiar el título de la línea del subtotal por partida (línea 89):
-  - Actual: `Subtotal preliminar: $${subtotal} MXN`
-  - Nuevo: `Subtotal preliminar (antes de IVA): $${subtotal} MXN`
-- Agregar una línea inmediatamente debajo del subtotal por partida:
-  - `Impresión: sujeta a validación técnica de arte, material, área y cantidad. No incluida en este subtotal.`
-- En el bloque de advertencia (líneas 152-155), reemplazar el texto por:
-  - "**Este documento NO es una cotización final.** Es un resumen preliminar. Los precios mostrados son **antes de IVA (16%)** y **no incluyen impresión/personalización**. Tu asesor validará técnica, área, colores, cantidades y tiempos antes de emitir la propuesta formal."
-- Total (líneas 168-171): cambiar la etiqueta a `Estimación preliminar de productos (antes de IVA y antes de impresión):`
-- No agregar `+ IVA` como número calculado — sólo texto aclaratorio.
-
-## 3. Archivos que se tocarían en el Build
-
-- `src/components/QuoteCartView.tsx` — quitar `window.open` de WhatsApp automático dentro de `submitQuote`. Nada más.
-- `src/features/crm/lib/formal-quote-mapping.ts` — enriquecer mapping y calcular `subtotal` con `formal-quote-calc.ts`.
-- `src/features/crm/pages/CotizacionDetail.tsx` — guard anti-duplicado antes del INSERT.
-- `src/features/crm/pages/FormalQuoteEditor.tsx` — mostrar advertencias de precio/subtotal, autocálculo al montar de items con `subtotal = 0`.
-- `supabase/functions/send-proposal-summary-email/index.ts` — ajustes de texto ("+ IVA (16%)", impresión sujeta a validación técnica).
-
-## 4. Archivos prohibidos (no tocar)
+## 7. Archivos que NO se tocan
 
 - `src/components/CatalogView.tsx`
-- `src/components/ProductDetailView.tsx`
 - `src/components/LandingView.tsx`
-- `productos_publicos`, RLS, migraciones, secrets, otras Edge Functions
-- Cotizador inteligente, kits, motor de precios de impresión
+- `src/features/crm/pages/FormalQuotesList.tsx`
+- `src/features/crm/lib/formal-quote-mapping.ts`
+- `src/features/crm/lib/formal-quote-calc.ts`
+- `src/features/crm/hooks/useFormalQuotes.ts`
+- `src/integrations/supabase/types.ts`
+- `supabase/config.toml` y cualquier otra Edge Function
+- RLS, migraciones, `productos_publicos`, secrets, `.env`
 
-## 5. Plan de Build mínimo (orden)
+---
 
-1. `formal-quote-mapping.ts`: extender mapping (usar `precio_unitario_estimado`, calcular `subtotal`, poblar JSONB `personalizacion` extendido).
-2. `CotizacionDetail.tsx`: `select` previo por `cotizacion_lead_id` y short-circuit si ya existe. Deshabilitar botón durante carga.
-3. `FormalQuoteEditor.tsx`: leer `personalizacion.precio_referencia_cliente` y `subtotal_referencia_cliente`, mostrar `<Alert>` de discrepancia; auto-persistir subtotal recalculado si viene en 0.
-4. `QuoteCartView.tsx`: eliminar `window.open` automático; mantener vista `success` con CTA opcional.
-5. `send-proposal-summary-email/index.ts`: ajustar copies ("antes de IVA (16%)", "impresión sujeta a validación técnica", nada de "precio final"). Redeploy de la función.
-6. `tsgo --noEmit` + `npm run build`.
+## 8. Riesgos
 
-## 6. Riesgos
+- Bajo. Todos los cambios son de texto, orden visual y lectura de campos existentes.
+- El botón (P4) es la única lógica nueva; se limita a strings + un `every()` sobre `colors`. No cambia el disabled real cuando corresponde.
+- Email: quitar una línea repetida no cambia contrato.
+- Modalidad en editor/print: sólo lectura de un campo que ya existe.
 
-- Cambiar `mapLeadArticulosToItems` puede afectar cotizaciones formales ya creadas si se re-ejecuta; el mapping sólo se corre al **crear**, así que no hay riesgo retroactivo.
-- Guardar más datos en `personalizacion` JSONB — cuidar que no incluya nada del proveedor (`raw_payload`, `provider_sku`, costos). El whitelist se mantiene.
-- Al quitar `window.open` de WhatsApp automático, algunos usuarios pueden extrañar la redirección: mitigado por el botón "Acelerar por WhatsApp" ya presente en pantalla success.
-- El aviso de discrepancia depende de que futuras cotizaciones traigan `precio_referencia_cliente`. Cotizaciones formales creadas antes del cambio no tendrán ese dato → el aviso simplemente no aparece (comportamiento aceptable).  
+## 9. Plan de Build posterior
+
+1. Aplicar cambios en los 6 archivos listados.
+2. `tsgo --noEmit` + `npm run build`.
+3. Verificar: (a) botón muestra 4 estados correctos, (b) modalidad visible en editor y print, (c) email sin repetición.  
   
-BUILD / SPRINT 2.9A HOTFIX COTIZACIÓN FORMAL + FLUJO PÚBLICO.
+BUILD / SPRINT 2.9B CLARIDAD COMERCIAL DEL FLUJO DE COTIZACIÓN.
   INSTRUCCIÓN CRÍTICA DE ALCANCE:
   No cambies nada que no se te pida explícitamente.
   No modifiques archivos no relacionados.
   No refactorices.
-  No rediseñes UI pública.
-  No cambies Catálogo.
-  No cambies ProductDetailView.
-  No cambies LandingView.
-  No cambies productos_publicos.
+  No rediseñes UI completa.
+  No cambies Supabase.
   No cambies RLS.
   No ejecutes migraciones.
   No cambies secrets.
-  No agregues checkout ni pagos.
-  No implementes kits.
-  No implementes cotizador inteligente.
-  No implementes motor de precios de impresión todavía.
+  No publiques.
+  No uses Try to fix.
+  No hagas cambios automáticos fuera del alcance.
   No expongas proveedor, costos, márgenes, raw_payload, provider_sku ni provider_code.
-  Si detectas algo adicional, repórtalo como recomendación pero NO lo cambies.
   Objetivo:
-  Aplicar Sprint 2.9A para:
-  1. Quitar apertura automática de WhatsApp al enviar solicitud pública.
-  2. Mejorar prellenado de cotización formal desde la solicitud.
-  3. Evitar duplicados de formal_quote por cotizacion_lead_id.
-  4. Calcular subtotal inicial de partidas al crear formal_quote_items.
-  5. Mostrar advertencias si el precio de la cotización formal difiere del precio preliminar visto por el cliente.
-  6. Ajustar el email inicial para aclarar “antes de IVA” y “antes de impresión/personalización validada”.
+  Mejorar claridad comercial del flujo de cotización sin tocar DB/RLS ni flujo de catálogo general.
+  Problemas a resolver:
+  1. No queda suficientemente claro que el precio NO incluye impresión/personalización.
+  2. La sección de personalización pública está cargada.
+  3. La modalidad KIT/INDIVIDUAL debe verse en cotización formal editor y print.
+  4. El botón muestra "Sin stock para propuesta" aunque puede haber stock en otras variantes o sólo requerir asesor.
+  5. El email inicial repite demasiado el disclaimer de impresión.
   Archivos permitidos:
-  - src/components/QuoteCartView.tsx
-  - src/features/crm/lib/formal-quote-mapping.ts
-  - src/features/crm/lib/formal-quote-calc.ts solo si es estrictamente necesario
-  - src/features/crm/pages/CotizacionDetail.tsx
+  - src/components/ProductDetailView.tsx
   - src/features/crm/pages/FormalQuoteEditor.tsx
+  - src/features/crm/pages/FormalQuotePrint.tsx
   - supabase/functions/send-proposal-summary-email/index.ts
+  - src/components/QuoteCartView.tsx SOLO si es estrictamente necesario para reforzar texto de precios
   Archivos prohibidos:
   - src/components/CatalogView.tsx
-  - src/components/ProductDetailView.tsx
   - src/components/LandingView.tsx
-  - src/components/QuoteCartView.tsx fuera del cambio específico de WhatsApp automático
-  - productos_publicos
+  - src/features/crm/pages/FormalQuotesList.tsx
+  - src/features/crm/lib/formal-quote-mapping.ts
+  - src/features/crm/lib/formal-quote-calc.ts
+  - src/features/crm/hooks/useFormalQuotes.ts
+  - src/integrations/supabase/types.ts
+  - supabase/config.toml
   - otras Edge Functions
   - RLS
   - migraciones
+  - productos_publicos
   - secrets
-  - rutas públicas no relacionadas
-  - cotizador inteligente
-  - kits
-  CAMBIO 1 — WhatsApp público opcional:
-  En src/components/QuoteCartView.tsx:
-  - Eliminar la apertura automática de WhatsApp dentro de submitQuote.
-  - Quitar o desactivar el [window.open](http://window.open) automático hacia wa.me/api.whatsapp.com.
-  - Mantener el botón “Acelerar por WhatsApp” en la pantalla de éxito.
-  - El flujo debe ser:
-    INSERT cotizaciones_leads
-    invoke fire-and-forget de send-proposal-summary-email
-    setCheckoutStep("success")
-  - El cliente debe quedarse en la pantalla “Solicitud Exitosa”.
-  CAMBIO 2 — Mapping enriquecido lead → formal_quote_items:
-  En src/features/crm/lib/formal-quote-mapping.ts:
-  - Usar precio_unitario_estimado como fuente prioritaria de precio_unitario.
-  - Si no existe, usar precio_unitario / unit_price / price / precio.
-  - Copiar campos seguros:
-    clave_producto
-    modelo_comercial
-    color
-    imagen_url
-    cantidad
-    precio_unitario
-    personalizacion solicitada
-  - Calcular subtotal inicial usando:
-    cantidad  *precio_unitario*  (1 - descuento_pct) + setup_fee + cantidad * print_unit_price
-  - No insertar subtotal = 0 si se puede calcular.
-  - Guardar dentro de personalizacion JSONB, solo datos seguros:
-    label
-    tipo
-    requiere_revision_tecnica
-    publica
-    sugerida_economica
-    compatibilidad
-    material
-    logo_format
-    entrega_estimada
-    muestra_virtual
-    producto_id
-    subtotal_referencia_cliente
-    precio_referencia_cliente
-  - No guardar proveedor, costos, márgenes, raw_payload, provider_sku ni provider_code.
-  CAMBIO 3 — Anti-duplicados:
-  En src/features/crm/pages/CotizacionDetail.tsx:
-  - Antes de crear una formal_quote, consultar si ya existe una con cotizacion_lead_id = [row.id](http://row.id).
-  - Si existe, navegar a /crm/cotizaciones-formales/{id}.
-  - Si no existe, crearla.
-  - Deshabilitar el botón mientras se crea o mientras carga la formal_quote existente.
-  - Si ya existe, mostrar “Ver cotización formal” en lugar de “Crear cotización formal”.
-  CAMBIO 4 — Advertencias de precio:
-  En src/features/crm/pages/FormalQuoteEditor.tsx:
-  - Si personalizacion.precio_referencia_cliente existe, comparar contra precio_unitario actual.
-  - Si difiere más de 1%, mostrar alerta visual:
-    “El precio unitario difiere del precio de referencia mostrado al cliente. Confirma antes de emitir.”
-  - Si personalizacion.subtotal_referencia_cliente existe, comparar contra subtotal calculado.
-  - Si difiere, mostrar alerta:
-    “El subtotal fue recalculado. Referencia del cliente: $X. Subtotal actual: $Y.”
-  - No bloquear guardar.
-  - Si una partida carga con subtotal = 0, recalcularlo automáticamente usando formal-quote-calc y persistirlo.
-  CAMBIO 5 — Email inicial:
+  - .env
+  CAMBIO 1 — ProductDetailView: precio claro
+  En ProductDetailView.tsx:
+  - Cambiar etiquetas junto al precio de "MXN + IVA" a:
+    "MXN · antes de IVA e impresión"
+  - En subtotal preliminar agregar sublínea:
+    "+ IVA 16% · sin impresión/personalización"
+  - No eliminar priceNote existente.
+  - No cambiar cálculo de precios.
+  CAMBIO 2 — ProductDetailView: personalización más compacta
+  En ProductDetailView.tsx:
+  - Mantener grid de opciones.
+  - Mantener caja "Selección actual".
+  - Mover la alternativa económica a un bloque plegado/compacto tipo "Ver alternativa económica" si ya existe includeEconomyAlternative.
+  - Unificar los avisos de personalización en una sola nota compacta:
+    "No necesitas subir logo aquí. Tu asesor validará arte, material, área, colores, cantidad y viabilidad."
+  - Si existe restriction_note, agregarlo en esa misma nota compacta.
+  - No cambiar la lógica de personalización, sólo presentación/copy.
+  CAMBIO 3 — ProductDetailView: botón stock/disponibilidad
+  Reemplazar el string estático "Sin stock para propuesta" por una función de label.
+  Reglas:
+  - Si !productAllowsProposal:
+    label = "Consultar por WhatsApp"
+  - Si todas las variantes tienen stock <= 0:
+    label = "Sin stock disponible"
+  - Si variante actual tiene stock <= 0 pero existe otra variante con stock > 0:
+    label = "Elige un color disponible"
+  - Si variante actual tiene stock > 0 pero no es agregable:
+    label = "Consultar disponibilidad"
+  - Si variante actual es agregable y stock > 0:
+    label = "Agregar a propuesta"
+  No cambiar productos_publicos ni fuente de datos.
+  CAMBIO 4 — FormalQuoteEditor: mostrar modalidad
+  En FormalQuoteEditor.tsx:
+  - Leer:
+    quote.cliente?.modalidad_cotizacion_label
+    o quote.cliente?.modalidad_cotizacion
+  - Mostrar Badge read-only junto al folio:
+    "Modalidad: Cotizar por separado"
+    o
+    "Modalidad: Armar kit o paquete"
+  - Si no existe modalidad, no mostrar badge.
+  - No cambiar DB ni mapping.
+  CAMBIO 5 — FormalQuotePrint: mostrar modalidad
+  En FormalQuotePrint.tsx:
+  - En el bloque de datos del cliente, agregar:
+    "Modalidad solicitada: {label}"
+  - Sólo si existe en quote.cliente.
+  - No alterar layout general de impresión.
+  CAMBIO 6 — Email inicial menos repetitivo
   En supabase/functions/send-proposal-summary-email/index.ts:
-  - Cambiar texto por partida:
-    “Subtotal preliminar (antes de IVA): $X MXN”
-  - Agregar línea por partida:
-    “Impresión/personalización: sujeta a validación técnica de arte, material, área, colores y cantidad. No incluida en este subtotal.”
-  - Cambiar advertencia principal a:
-    “Este documento NO es una cotización final. Es un resumen preliminar. Los precios mostrados son antes de IVA (16%) y no incluyen impresión/personalización validada. Tu asesor validará técnica, área, colores, cantidades, stock y tiempos antes de emitir la propuesta formal.”
-  - Cambiar total a:
-    “Estimación preliminar de productos (antes de IVA y antes de impresión):”
-  - No calcular IVA numérico en este email inicial.
-  - No presentar el email inicial como cotización formal.
+  - Quitar la línea repetida por producto:
+    "Impresión/personalización: sujeta a validación técnica..."
+  - Mantener el banner principal que aclara:
+    no es cotización final, antes de IVA, no incluye impresión/personalización validada.
+  - Mantener el texto corto del total:
+    "Estimación preliminar de productos (antes de IVA y antes de impresión)"
+  - No calcular IVA numérico.
+  - No presentar el email como cotización formal.
   Después:
   Ejecuta tsgo --noEmit y npm run build.
-  Si modificas la Edge Function, confirma que queda lista/deployada según flujo de Lovable.
+  Si modificas la Edge Function, redeploy según flujo de Lovable.
   Reporta:
   1. Archivos modificados.
-  2. Confirmación de build/typecheck exitoso.
+  2. Confirmación de typecheck/build exitoso.
   3. Confirmación de que no tocaste DB/RLS/migraciones/secrets.
-  4. Confirmación de que no tocaste Catálogo/ProductDetail/Landing/productos_publicos.
+  4. Confirmación de que no tocaste CatalogView/Landing/productos_publicos.
   5. Confirmación de que no expusiste proveedor/costos/márgenes/raw_payload/provider_sku/provider_code.

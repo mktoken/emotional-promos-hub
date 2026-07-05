@@ -36,7 +36,16 @@ import {
   useCotizacionStatusHistory,
   useCotizacionEmailEvents,
   useStaffProfiles,
+  useAsesorProfile,
 } from "@/features/crm/hooks/useCotizaciones";
+import { useCompanySettings } from "@/features/crm/hooks/useCompanySettings";
+import {
+  resolveContact,
+  buildEmailBody,
+  buildGmailUrl,
+  buildWaMessage,
+  buildWaUrl,
+} from "@/features/crm/lib/contact-defaults";
 import {
   parseCliente,
   parseArticulos,

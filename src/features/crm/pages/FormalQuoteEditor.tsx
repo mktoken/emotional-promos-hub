@@ -332,10 +332,23 @@ export default function FormalQuoteEditor() {
           </Button>
           <div className="min-w-0">
             <h1 className="text-xl sm:text-2xl font-bold font-mono">{q.folio}</h1>
-            <div className="flex items-center gap-2 mt-0.5">
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
               <Badge variant={FORMAL_QUOTE_STATUS_BADGE[status]}>
                 {FORMAL_QUOTE_STATUS_LABEL[status]}
               </Badge>
+              {(() => {
+                const cli = (q.cliente ?? {}) as Record<string, unknown>;
+                const label =
+                  (typeof cli.modalidad_cotizacion_label === "string" && cli.modalidad_cotizacion_label) ||
+                  (cli.modalidad_cotizacion === "KIT"
+                    ? "Armar kit o paquete"
+                    : cli.modalidad_cotizacion === "INDIVIDUAL"
+                      ? "Cotizar por separado"
+                      : null);
+                return label ? (
+                  <Badge variant="outline">Modalidad: {label}</Badge>
+                ) : null;
+              })()}
               <span className="text-xs text-muted-foreground">
                 Total: {formatMoney(totals.total)}
               </span>

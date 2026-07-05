@@ -93,6 +93,11 @@ export function useCotizacionEmailEvents(id: string | undefined) {
 export interface StaffProfile {
   id: string;
   full_name: string | null;
+  phone: string | null;
+  cargo: string | null;
+  whatsapp: string | null;
+  email_comercial: string | null;
+  firma: string | null;
 }
 
 export function useStaffProfiles() {
@@ -109,12 +114,45 @@ export function useStaffProfiles() {
       if (ids.length === 0) return [];
       const { data: profiles, error: profErr } = await supabase
         .from("profiles")
-        .select("id, full_name, is_active")
+        .select("id, full_name, phone, cargo, whatsapp, email_comercial, firma, is_active")
         .in("id", ids);
       if (profErr) throw profErr;
       return (profiles ?? [])
         .filter((p) => p.is_active !== false)
-        .map((p) => ({ id: p.id, full_name: p.full_name }));
+        .map((p) => ({
+          id: p.id,
+          full_name: p.full_name,
+          phone: p.phone ?? null,
+          cargo: p.cargo ?? null,
+          whatsapp: p.whatsapp ?? null,
+          email_comercial: p.email_comercial ?? null,
+          firma: p.firma ?? null,
+        }));
+    },
+  });
+}
+
+export function useAsesorProfile(userId: string | null | undefined) {
+  return useQuery({
+    queryKey: ["asesor_profile", userId],
+    enabled: !!userId,
+    queryFn: async (): Promise<StaffProfile | null> => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name, phone, cargo, whatsapp, email_comercial, firma")
+        .eq("id", userId!)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) return null;
+      return {
+        id: data.id,
+        full_name: data.full_name,
+        phone: data.phone ?? null,
+        cargo: data.cargo ?? null,
+        whatsapp: data.whatsapp ?? null,
+        email_comercial: data.email_comercial ?? null,
+        firma: data.firma ?? null,
+      };
     },
   });
 }

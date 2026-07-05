@@ -105,6 +105,8 @@ export default function QuoteCartView({ cart, onRemove, onBack }: QuoteCartViewP
                 sku: claveProducto,
                 clave_producto: claveProducto,
                 modelo_comercial: modeloComercial,
+                descripcion: item.descripcionComercial || item.name || modeloComercial,
+                descripcion_comercial: item.descripcionComercial || null,
                 color: item.color?.name ?? "",
                 cantidad: item.quantity,
                 precio_unitario_estimado: item.estimatedUnit,

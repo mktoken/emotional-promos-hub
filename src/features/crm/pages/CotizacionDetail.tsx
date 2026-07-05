@@ -75,6 +75,8 @@ export default function CotizacionDetail() {
   const history = useCotizacionStatusHistory(id);
   const emails = useCotizacionEmailEvents(id);
   const staff = useStaffProfiles();
+  const asesor = useAsesorProfile(cot.data?.assigned_to);
+  const company = useCompanySettings();
   const qc = useQueryClient();
 
   const [savingEstado, setSavingEstado] = useState(false);

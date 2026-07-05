@@ -2,6 +2,7 @@
 // PROHIBIDO exponer costos, márgenes, logística, buffer, proveedor,
 // reglas internas ni snapshot en PDF, email o frontend público.
 import type {
+  PrintMethodRow,
   PrintPricingRuleRow,
   PrintCompatRuleRow,
 } from "@/features/crm/hooks/usePrintRules";
@@ -349,3 +350,284 @@ export function calcPrintEngine(
     warnings,
   };
 }
+
+// ================================================================
+// Sugerencia automática de técnica (uso interno CRM)
+// ================================================================
+
+export interface PrintSuggestionInput {
+  qty: number;
+  colors: number;
+  positions: number;
+  material?: string | null;
+  product_category?: string | null;
+  shape_type?: string | null;
+  personalization_label?: string | null;
+  print_area_cm2?: number | null;
+}
+
+export interface PrintSuggestionCandidate {
+  method: PrintMethodRow;
+  compat: PrintCompatRuleRow | null;
+  pricing: PrintPricingRuleRow | null;
+  status: "recommended" | "allowed" | "validation_required" | "not_recommended" | "unknown";
+  estimatedInternalCost: number | null;
+  personalizationMatch: boolean;
+  reasons: string[];
+}
+
+export interface PrintSuggestionResult {
+  primary: PrintSuggestionCandidate | null;
+  alternates: PrintSuggestionCandidate[];
+  reason: string;
+  confidence: "high" | "medium" | "low" | "none";
+}
+
+const STATUS_RANK: Record<PrintSuggestionCandidate["status"], number> = {
+  recommended: 0,
+  allowed: 1,
+  unknown: 2,
+  validation_required: 3,
+  not_recommended: 4,
+};
+
+function normalizeStatus(v: string | null | undefined): PrintSuggestionCandidate["status"] {
+  const s = (v ?? "").toLowerCase();
+  if (s === "recommended") return "recommended";
+  if (s === "allowed") return "allowed";
+  if (s === "validation_required") return "validation_required";
+  if (s === "not_recommended") return "not_recommended";
+  return "unknown";
+}
+
+// Mapa de personalización solicitada -> códigos de técnica preferidos
+function personalizationPreference(label: string | null | undefined): string[] {
+  const l = (label ?? "").toLowerCase();
+  if (!l) return [];
+  if (l.includes("grabado")) return ["grabado_laser", "laser", "grabado"];
+  if (l.includes("full color") || l.includes("full-color") || l.includes("policromo")) {
+    return ["uv_digital", "sublimacion", "dtf", "transfer", "impresion_digital"];
+  }
+  if (l.includes("2 tintas") || l.includes("dos tintas")) {
+    return ["serigrafia", "tampografia"];
+  }
+  if (l.includes("1 tinta") || l.includes("una tinta") || l.includes("logo a 1")) {
+    return ["serigrafia", "tampografia"];
+  }
+  if (l.includes("bordado")) return ["bordado"];
+  if (l.includes("sublima")) return ["sublimacion"];
+  if (l.includes("tampograf")) return ["tampografia"];
+  if (l.includes("serigraf")) return ["serigrafia"];
+  return [];
+}
+
+function estimateInternalCost(
+  rule: PrintPricingRuleRow | null,
+  input: PrintSuggestionInput,
+): number | null {
+  if (!rule) return null;
+  const qty = Math.max(1, Math.floor(n(input.qty)));
+  const colors = Math.max(1, Math.floor(n(input.colors)));
+  const positions = Math.max(1, Math.floor(n(input.positions)));
+  const billable = Math.max(qty, n(rule.minimum_billable_qty));
+  const unit_cost = n(rule.unit_cost);
+  const first_color_fixed = n(rule.first_color_fixed_cost);
+  const additional_color_fixed = n(rule.additional_color_fixed_cost);
+  const model = (rule.cost_model ?? "").toUpperCase();
+  let raw = 0;
+  if (model === "FLAT") {
+    raw = first_color_fixed + Math.max(0, colors - 1) * additional_color_fixed;
+  } else if (model === "PER_PIECE_COLOR") {
+    raw = billable * unit_cost * colors * positions;
+  } else {
+    raw = billable * unit_cost;
+  }
+  const base = Math.max(raw, n(rule.minimum_charge));
+  const extras =
+    n(rule.setup_cost) +
+    n(rule.plate_cost) +
+    n(rule.negative_positive_cost) +
+    n(rule.mold_cost) +
+    n(rule.repack_unit_cost) * billable +
+    n(rule.extra_fixed_cost) +
+    n(rule.extra_unit_cost) * billable;
+  return base + extras;
+}
+
+function pickPricingRule(
+  rules: PrintPricingRuleRow[],
+  methodId: string,
+  input: PrintSuggestionInput,
+): PrintPricingRuleRow | null {
+  const qty = Math.max(1, Math.floor(n(input.qty)));
+  const colors = Math.max(1, Math.floor(n(input.colors)));
+  const positions = Math.max(1, Math.floor(n(input.positions)));
+  const candidates = rules.filter((r) => {
+    if (r.print_method_id !== methodId) return false;
+    if (r.active === false) return false;
+    if (qty < n(r.min_qty)) return false;
+    if (r.max_qty != null && qty > n(r.max_qty)) return false;
+    if (colors < n(r.colors_min)) return false;
+    if (r.colors_max != null && colors > n(r.colors_max)) return false;
+    if (positions < n(r.positions_min)) return false;
+    if (r.positions_max != null && positions > n(r.positions_max)) return false;
+    if (r.material && input.material && r.material !== input.material) return false;
+    if (
+      r.product_category &&
+      input.product_category &&
+      r.product_category !== input.product_category
+    )
+      return false;
+    return true;
+  });
+  candidates.sort((a, b) => {
+    const specA =
+      (a.material ? 1 : 0) + (a.product_category ? 1 : 0);
+    const specB =
+      (b.material ? 1 : 0) + (b.product_category ? 1 : 0);
+    if (specB !== specA) return specB - specA;
+    const widthA = (a.max_qty ?? Number.MAX_SAFE_INTEGER) - n(a.min_qty);
+    const widthB = (b.max_qty ?? Number.MAX_SAFE_INTEGER) - n(b.min_qty);
+    return widthA - widthB;
+  });
+  return candidates[0] ?? null;
+}
+
+function pickCompatRule(
+  rules: PrintCompatRuleRow[],
+  methodId: string,
+  input: PrintSuggestionInput,
+): PrintCompatRuleRow | null {
+  const candidates = rules.filter((r) => {
+    if (r.print_method_id !== methodId) return false;
+    if (r.active === false) return false;
+    if (r.material && input.material && r.material !== input.material) return false;
+    if (
+      r.product_category &&
+      input.product_category &&
+      r.product_category !== input.product_category
+    )
+      return false;
+    if (r.shape_type && input.shape_type && r.shape_type !== input.shape_type) return false;
+    return true;
+  });
+  candidates.sort((a, b) => {
+    const specA =
+      (a.material ? 1 : 0) + (a.product_category ? 1 : 0) + (a.shape_type ? 1 : 0);
+    const specB =
+      (b.material ? 1 : 0) + (b.product_category ? 1 : 0) + (b.shape_type ? 1 : 0);
+    return specB - specA;
+  });
+  return candidates[0] ?? null;
+}
+
+export function suggestPrintMethod(
+  methods: PrintMethodRow[],
+  pricingRules: PrintPricingRuleRow[],
+  compatRules: PrintCompatRuleRow[],
+  input: PrintSuggestionInput,
+): PrintSuggestionResult {
+  const activeMethods = (methods ?? []).filter((m) => m.active !== false);
+  if (activeMethods.length === 0) {
+    return {
+      primary: null,
+      alternates: [],
+      reason:
+        "No hay perfil técnico suficiente para este producto. Validar manualmente.",
+      confidence: "none",
+    };
+  }
+  const prefCodes = personalizationPreference(input.personalization_label);
+  const candidates: PrintSuggestionCandidate[] = activeMethods.map((m) => {
+    const compat = pickCompatRule(compatRules, m.id, input);
+    const pricing = pickPricingRule(pricingRules, m.id, input);
+    const status: PrintSuggestionCandidate["status"] = compat
+      ? normalizeStatus(compat.compatibility_status)
+      : "unknown";
+    const reasons: string[] = [];
+    if (compat?.material && input.material) {
+      reasons.push(`Compatible con material "${input.material}"`);
+    }
+    if (compat?.product_category && input.product_category) {
+      reasons.push(`Compatible con categoría "${input.product_category}"`);
+    }
+    if (compat?.shape_type && input.shape_type) {
+      reasons.push(`Forma compatible (${input.shape_type})`);
+    }
+    if (pricing) reasons.push("Regla de precio aplicable para cantidad/tintas/posiciones");
+    const code = (m.code ?? "").toLowerCase();
+    const personalizationMatch =
+      prefCodes.length > 0 && prefCodes.some((c) => code.includes(c));
+    if (personalizationMatch && input.personalization_label) {
+      reasons.push(`Coincide con personalización solicitada: "${input.personalization_label}"`);
+    }
+    return {
+      method: m,
+      compat,
+      pricing,
+      status,
+      estimatedInternalCost: estimateInternalCost(pricing, input),
+      personalizationMatch,
+      reasons,
+    };
+  });
+
+  candidates.sort((a, b) => {
+    // 1. status rank
+    const sr = STATUS_RANK[a.status] - STATUS_RANK[b.status];
+    if (sr !== 0) return sr;
+    // 2. personalization match wins
+    if (a.personalizationMatch !== b.personalizationMatch) {
+      return a.personalizationMatch ? -1 : 1;
+    }
+    // 3. has pricing wins
+    const ap = a.pricing ? 1 : 0;
+    const bp = b.pricing ? 1 : 0;
+    if (ap !== bp) return bp - ap;
+    // 4. lower estimated cost wins (only if both have)
+    if (a.estimatedInternalCost != null && b.estimatedInternalCost != null) {
+      const d = a.estimatedInternalCost - b.estimatedInternalCost;
+      if (d !== 0) return d;
+    }
+    // 5. sort_order asc
+    const sa = n(a.method.sort_order);
+    const sb = n(b.method.sort_order);
+    if (sa !== sb) return sa - sb;
+    return (a.method.name ?? "").localeCompare(b.method.name ?? "");
+  });
+
+  const primary = candidates[0] ?? null;
+  const alternates = candidates.slice(1, 4);
+
+  let confidence: PrintSuggestionResult["confidence"] = "none";
+  let reason = "Sin sugerencia confiable";
+  if (primary) {
+    if (primary.status === "recommended" && primary.pricing) {
+      confidence = "high";
+      reason = "Recomendada por reglas de compatibilidad y con precio calculable.";
+    } else if (primary.status === "recommended") {
+      confidence = "medium";
+      reason = "Recomendada por reglas de compatibilidad. Falta regla de precio.";
+    } else if (primary.status === "allowed") {
+      confidence = "medium";
+      reason = "Permitida por reglas de compatibilidad.";
+    } else if (primary.status === "validation_required") {
+      confidence = "low";
+      reason = "Requiere validación manual antes de enviar al cliente.";
+    } else if (primary.status === "not_recommended") {
+      confidence = "low";
+      reason =
+        "Única opción disponible pero NO recomendada por reglas. Validar manualmente antes de ofrecer.";
+    } else {
+      confidence = "low";
+      reason =
+        "Sin regla de compatibilidad específica. Validar manualmente antes de enviar al cliente.";
+    }
+    if (primary.personalizationMatch) {
+      reason += ` Coincide con personalización solicitada.`;
+    }
+  }
+
+  return { primary, alternates, reason, confidence };
+}
+

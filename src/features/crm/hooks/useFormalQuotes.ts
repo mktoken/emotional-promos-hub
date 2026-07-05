@@ -12,9 +12,11 @@ export type FormalQuoteItemInsert =
 export type FormalQuoteItemUpdate =
   Database["public"]["Tables"]["formal_quote_items"]["Update"];
 
-// Columnas seguras (nunca proveedor/costos/margen/raw_payload/provider_sku)
+// Columnas seguras (nunca proveedor/costos/margen/raw_payload/provider_sku).
+// logistics_*, price_override_*, print_engine_snapshot son INTERNOS del CRM.
+// No exponer nunca en catálogo público, PDF cliente ni email cliente.
 const QUOTE_COLS =
-  "id, folio, cotizacion_lead_id, status, cliente, assigned_to, created_by, currency, subtotal, tax_rate, tax_amount, total, condiciones_pago, condiciones_entrega, notas_publicas, notas_internas, valid_until, issued_at, sent_at, accepted_at, rejected_at, company_snapshot, advisor_snapshot, bank_account_snapshot, created_at, updated_at";
+  "id, folio, cotizacion_lead_id, status, cliente, assigned_to, created_by, currency, subtotal, tax_rate, tax_amount, total, condiciones_pago, condiciones_entrega, notas_publicas, notas_internas, valid_until, issued_at, sent_at, accepted_at, rejected_at, company_snapshot, advisor_snapshot, bank_account_snapshot, logistics_fee_mxn, logistics_job_count, price_override_mxn, price_override_reason, print_engine_snapshot, created_at, updated_at";
 
 const ITEM_COLS =
   "id, formal_quote_id, position, source, clave_producto, modelo_comercial, descripcion, color, imagen_url, cantidad, unidad, precio_unitario, descuento_pct, subtotal, personalizacion, print_method, print_colors, setup_fee, print_unit_price, notes, is_kit_parent, parent_item_id, created_at, updated_at";

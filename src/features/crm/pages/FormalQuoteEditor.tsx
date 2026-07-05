@@ -63,6 +63,7 @@ import { usePrintSettings } from "@/features/crm/hooks/usePrintSettings";
 import { usePrintRules } from "@/features/crm/hooks/usePrintRules";
 import {
   calcPrintEngine,
+  suggestPrintMethod,
   type PrintEngineResult,
 } from "@/features/crm/lib/print-engine";
 import type { Json } from "@/integrations/supabase/types";

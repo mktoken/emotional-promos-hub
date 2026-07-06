@@ -832,10 +832,30 @@ export default function FormalQuoteEditor() {
               )}
 
               {/* Sugerencia automática de técnica (INTERNO) */}
-              {peSelectedItem && peSuggestion && (
-                <div className="rounded-md border border-primary/40 bg-primary/5 p-3 space-y-2">
+              {peSelectedItem && peSuggestion && (() => {
+                const status = peSuggestion.primary?.status ?? null;
+                const suggestionWrapperClass =
+                  status === "recommended"
+                    ? "rounded-md border border-emerald-500/40 bg-emerald-50/60 p-3 space-y-2"
+                    : status === "allowed"
+                      ? "rounded-md border border-sky-500/40 bg-sky-50/60 p-3 space-y-2"
+                      : status === "not_recommended"
+                        ? "rounded-md border border-destructive/50 bg-destructive/10 p-3 space-y-2"
+                        : "rounded-md border border-amber-500/40 bg-amber-50/60 p-3 space-y-2";
+                const suggestionIconClass =
+                  status === "recommended"
+                    ? "w-4 h-4 text-emerald-600 shrink-0"
+                    : status === "allowed"
+                      ? "w-4 h-4 text-sky-600 shrink-0"
+                      : status === "not_recommended"
+                        ? "w-4 h-4 text-destructive shrink-0"
+                        : "w-4 h-4 text-amber-600 shrink-0";
+                const isSuggestedSelected =
+                  !!peSuggestion.primary && peMethodId === peSuggestion.primary.method.id;
+                return (
+                <div className={suggestionWrapperClass}>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Lightbulb className="w-4 h-4 text-primary shrink-0" />
+                    <Lightbulb className={suggestionIconClass} />
                     <span className="text-sm font-semibold">Técnica sugerida por análisis</span>
                     {peSuggestion.primary ? (
                       <>
@@ -894,16 +914,23 @@ export default function FormalQuoteEditor() {
 
                   {peSuggestion.primary && (
                     <div className="flex flex-wrap gap-2 pt-1">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setPeMethodId(peSuggestion.primary!.method.id)}
-                        disabled={isLocked || peMethodId === peSuggestion.primary.method.id}
-                      >
-                        <Lightbulb className="w-4 h-4 mr-2" />
-                        Usar técnica sugerida
-                      </Button>
+                      {isSuggestedSelected ? (
+                        <Button type="button" size="sm" variant="outline" disabled>
+                          <Lightbulb className="w-4 h-4 mr-2" />
+                          Técnica aplicada
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setPeMethodId(peSuggestion.primary!.method.id)}
+                          disabled={isLocked}
+                        >
+                          <Lightbulb className="w-4 h-4 mr-2" />
+                          Usar técnica sugerida
+                        </Button>
+                      )}
                       {peSuggestion.alternates.length > 0 && (
                         <span className="text-[11px] text-muted-foreground self-center">
                           Alternativas: {peSuggestion.alternates.map((a) => a.method.name).join(" · ")}
@@ -912,7 +939,8 @@ export default function FormalQuoteEditor() {
                     </div>
                   )}
                 </div>
-              )}
+                );
+              })()}
 
               {peSuggestionMismatch && (
                 <div className="flex items-start gap-2 rounded-md border border-amber-500/50 bg-amber-50 p-2 text-xs text-amber-900">

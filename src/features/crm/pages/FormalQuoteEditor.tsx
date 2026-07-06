@@ -832,10 +832,30 @@ export default function FormalQuoteEditor() {
               )}
 
               {/* Sugerencia automática de técnica (INTERNO) */}
-              {peSelectedItem && peSuggestion && (
-                <div className="rounded-md border border-primary/40 bg-primary/5 p-3 space-y-2">
+              {peSelectedItem && peSuggestion && (() => {
+                const status = peSuggestion.primary?.status ?? null;
+                const suggestionWrapperClass =
+                  status === "recommended"
+                    ? "rounded-md border border-emerald-500/40 bg-emerald-50/60 p-3 space-y-2"
+                    : status === "allowed"
+                      ? "rounded-md border border-sky-500/40 bg-sky-50/60 p-3 space-y-2"
+                      : status === "not_recommended"
+                        ? "rounded-md border border-destructive/50 bg-destructive/10 p-3 space-y-2"
+                        : "rounded-md border border-amber-500/40 bg-amber-50/60 p-3 space-y-2";
+                const suggestionIconClass =
+                  status === "recommended"
+                    ? "w-4 h-4 text-emerald-600 shrink-0"
+                    : status === "allowed"
+                      ? "w-4 h-4 text-sky-600 shrink-0"
+                      : status === "not_recommended"
+                        ? "w-4 h-4 text-destructive shrink-0"
+                        : "w-4 h-4 text-amber-600 shrink-0";
+                const isSuggestedSelected =
+                  !!peSuggestion.primary && peMethodId === peSuggestion.primary.method.id;
+                return (
+                <div className={suggestionWrapperClass}>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Lightbulb className="w-4 h-4 text-primary shrink-0" />
+                    <Lightbulb className={suggestionIconClass} />
                     <span className="text-sm font-semibold">Técnica sugerida por análisis</span>
                     {peSuggestion.primary ? (
                       <>
@@ -894,16 +914,23 @@ export default function FormalQuoteEditor() {
 
                   {peSuggestion.primary && (
                     <div className="flex flex-wrap gap-2 pt-1">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setPeMethodId(peSuggestion.primary!.method.id)}
-                        disabled={isLocked || peMethodId === peSuggestion.primary.method.id}
-                      >
-                        <Lightbulb className="w-4 h-4 mr-2" />
-                        Usar técnica sugerida
-                      </Button>
+                      {isSuggestedSelected ? (
+                        <Button type="button" size="sm" variant="outline" disabled>
+                          <Lightbulb className="w-4 h-4 mr-2" />
+                          Técnica aplicada
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setPeMethodId(peSuggestion.primary!.method.id)}
+                          disabled={isLocked}
+                        >
+                          <Lightbulb className="w-4 h-4 mr-2" />
+                          Usar técnica sugerida
+                        </Button>
+                      )}
                       {peSuggestion.alternates.length > 0 && (
                         <span className="text-[11px] text-muted-foreground self-center">
                           Alternativas: {peSuggestion.alternates.map((a) => a.method.name).join(" · ")}
@@ -912,7 +939,8 @@ export default function FormalQuoteEditor() {
                     </div>
                   )}
                 </div>
-              )}
+                );
+              })()}
 
               {peSuggestionMismatch && (
                 <div className="flex items-start gap-2 rounded-md border border-amber-500/50 bg-amber-50 p-2 text-xs text-amber-900">
@@ -982,6 +1010,10 @@ export default function FormalQuoteEditor() {
                 </div>
               </div>
 
+              {(() => {
+                const pricingMissing = !!peResult?.warnings.some((w) => w.code === "PRICING_MISSING");
+                return (
+                  <>
               <div className="flex flex-wrap gap-2">
                 <Button
                   size="sm"
@@ -994,7 +1026,7 @@ export default function FormalQuoteEditor() {
                   size="sm"
                   variant="outline"
                   onClick={handleApplySuggested}
-                  disabled={!peResult || isLocked || updateItem.isPending}
+                  disabled={!peResult || isLocked || updateItem.isPending || pricingMissing}
                 >
                   Aplicar precio sugerido
                 </Button>
@@ -1007,6 +1039,20 @@ export default function FormalQuoteEditor() {
                   Guardar snapshot
                 </Button>
               </div>
+
+              {peResult && pricingMissing && (
+                <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-xs space-y-1">
+                  <div className="flex items-start gap-2 text-destructive">
+                    <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span className="font-semibold">
+                      No hay regla de precio para esta combinación. No se puede aplicar precio sugerido.
+                    </span>
+                  </div>
+                  <p className="text-muted-foreground pl-6">
+                    Selecciona otra técnica/categoría o usa override manual validado.
+                  </p>
+                </div>
+              )}
 
               {peResult && (
                 <div className="rounded-md border border-border/60 bg-muted/30 p-3 space-y-2 text-xs">
@@ -1025,6 +1071,9 @@ export default function FormalQuoteEditor() {
                     )}
                     {peResult.compatibility_status == null && <Badge variant="outline">Sin compatibilidad</Badge>}
                     {peResult.applied_min_profit && <Badge variant="outline">Utilidad mínima aplicada</Badge>}
+                    {pricingMissing && (
+                      <Badge variant="destructive">Diagnóstico no aplicable como precio final</Badge>
+                    )}
                   </div>
 
                   {peResult.warnings.length > 0 && (
@@ -1058,13 +1107,24 @@ export default function FormalQuoteEditor() {
                     <PeRow k="Costo interno completo" v={peResult.internal_total} />
                     <PeRow k="Precio por margen 40%" v={peResult.price_by_margin} />
                     <PeRow k="Precio por utilidad mín." v={peResult.price_by_min_profit} />
-                    <PeRow k="Precio sugerido cliente" v={peResult.suggested_customer_price} strong />
-                    <PeRow k="Precio unitario cliente" v={peResult.suggested_unit_price} strong />
+                    <PeRow
+                      k={pricingMissing ? "Precio sugerido (diagnóstico, no aplicable)" : "Precio sugerido cliente"}
+                      v={peResult.suggested_customer_price}
+                      strong
+                    />
+                    <PeRow
+                      k={pricingMissing ? "Precio unitario (diagnóstico, no aplicable)" : "Precio unitario cliente"}
+                      v={peResult.suggested_unit_price}
+                      strong
+                    />
                     <PeRow k="Utilidad estimada" v={peResult.estimated_profit} />
                     <PeRow k="Piezas facturables" v={peResult.billable_qty} raw />
                   </div>
                 </div>
               )}
+                  </>
+                );
+              })()}
 
               <div className="rounded-md border border-amber-500/40 bg-amber-50/40 p-3 space-y-2">
                 <div className="flex items-center gap-2">

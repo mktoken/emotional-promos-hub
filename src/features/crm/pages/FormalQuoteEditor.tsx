@@ -51,6 +51,7 @@ import { usePrintRules } from "@/features/crm/hooks/usePrintRules";
 import { calcPrintEngine, suggestPrintMethod, type PrintEngineResult } from "@/features/crm/lib/print-engine";
 import type { Json } from "@/integrations/supabase/types";
 import { FormalQuotePrintJobsSection } from "@/features/crm/components/FormalQuotePrintJobsSection";
+import { QuoteItemPrintConfigurator } from "@/features/crm/components/QuoteItemPrintConfigurator";
 
 const STAFF = new Set(["admin", "sales_manager", "sales_agent"]);
 
@@ -697,6 +698,7 @@ export default function FormalQuoteEditor() {
           {(items.data ?? []).map((it) => (
             <ItemEditor
               key={it.id}
+              formalQuoteId={quoteId}
               item={it}
               disabled={isLocked}
               onPatch={(v) => patchItem(it, v)}
@@ -706,11 +708,8 @@ export default function FormalQuoteEditor() {
         </CardContent>
       </Card>
 
-
       {/* Trabajos de impresión — nuevo modelo (interno, operativo) */}
-      {quoteId && (
-        <FormalQuotePrintJobsSection formalQuoteId={quoteId} disabled={isLocked} />
-      )}
+      {quoteId && <FormalQuotePrintJobsSection formalQuoteId={quoteId} disabled={isLocked} />}
 
       {/* Totales */}
       <Card>
@@ -776,7 +775,6 @@ export default function FormalQuoteEditor() {
         </CardContent>
       </Card>
 
-
       {/* Banco */}
       <Card>
         <CardHeader>
@@ -832,9 +830,7 @@ export default function FormalQuoteEditor() {
                 <Calculator className="w-4 h-4 text-amber-600 mt-0.5" />
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-sm">
-                      Debug interno — motor anterior
-                    </span>
+                    <span className="font-semibold text-sm">Debug interno — motor anterior</span>
                     <Badge variant="outline" className="text-[10px] border-amber-500/60 text-amber-700">
                       Referencia interna
                     </Badge>
@@ -955,115 +951,117 @@ export default function FormalQuoteEditor() {
               )}
 
               {/* Sugerencia automática de técnica (INTERNO) */}
-              {peSelectedItem && peSuggestion && (() => {
-                const status = peSuggestion.primary?.status ?? null;
-                const suggestionWrapperClass =
-                  status === "recommended"
-                    ? "rounded-md border border-emerald-500/40 bg-emerald-50/60 p-3 space-y-2"
-                    : status === "allowed"
-                      ? "rounded-md border border-sky-500/40 bg-sky-50/60 p-3 space-y-2"
-                      : status === "not_recommended"
-                        ? "rounded-md border border-destructive/50 bg-destructive/10 p-3 space-y-2"
-                        : "rounded-md border border-amber-500/40 bg-amber-50/60 p-3 space-y-2";
-                const suggestionIconClass =
-                  status === "recommended"
-                    ? "w-4 h-4 text-emerald-600 shrink-0"
-                    : status === "allowed"
-                      ? "w-4 h-4 text-sky-600 shrink-0"
-                      : status === "not_recommended"
-                        ? "w-4 h-4 text-destructive shrink-0"
-                        : "w-4 h-4 text-amber-600 shrink-0";
-                const isSuggestedSelected =
-                  !!peSuggestion.primary && peMethodId === peSuggestion.primary.method.id;
-                return (
-                <div className={suggestionWrapperClass}>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Lightbulb className={suggestionIconClass} />
-                    <span className="text-sm font-semibold">Técnica sugerida por análisis</span>
-                    {peSuggestion.primary ? (
-                      <>
-                        <Badge variant="outline" className="text-[10px]">
-                          {peSuggestion.primary.method.name}
-                        </Badge>
-                        {peSuggestion.primary.status === "recommended" && (
-                          <Badge className="bg-emerald-600 hover:bg-emerald-600 text-[10px]">Recomendada</Badge>
-                        )}
-                        {peSuggestion.primary.status === "allowed" && (
-                          <Badge variant="secondary" className="text-[10px]">
-                            Permitida
-                          </Badge>
-                        )}
-                        {peSuggestion.primary.status === "validation_required" && (
-                          <Badge variant="outline" className="border-amber-500 text-amber-700 text-[10px]">
-                            Requiere validación
-                          </Badge>
-                        )}
-                        {peSuggestion.primary.status === "not_recommended" && (
-                          <Badge variant="destructive" className="text-[10px]">
-                            No recomendada
-                          </Badge>
-                        )}
-                        {peSuggestion.primary.status === "unknown" && (
+              {peSelectedItem &&
+                peSuggestion &&
+                (() => {
+                  const status = peSuggestion.primary?.status ?? null;
+                  const suggestionWrapperClass =
+                    status === "recommended"
+                      ? "rounded-md border border-emerald-500/40 bg-emerald-50/60 p-3 space-y-2"
+                      : status === "allowed"
+                        ? "rounded-md border border-sky-500/40 bg-sky-50/60 p-3 space-y-2"
+                        : status === "not_recommended"
+                          ? "rounded-md border border-destructive/50 bg-destructive/10 p-3 space-y-2"
+                          : "rounded-md border border-amber-500/40 bg-amber-50/60 p-3 space-y-2";
+                  const suggestionIconClass =
+                    status === "recommended"
+                      ? "w-4 h-4 text-emerald-600 shrink-0"
+                      : status === "allowed"
+                        ? "w-4 h-4 text-sky-600 shrink-0"
+                        : status === "not_recommended"
+                          ? "w-4 h-4 text-destructive shrink-0"
+                          : "w-4 h-4 text-amber-600 shrink-0";
+                  const isSuggestedSelected = !!peSuggestion.primary && peMethodId === peSuggestion.primary.method.id;
+                  return (
+                    <div className={suggestionWrapperClass}>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Lightbulb className={suggestionIconClass} />
+                        <span className="text-sm font-semibold">Técnica sugerida por análisis</span>
+                        {peSuggestion.primary ? (
+                          <>
+                            <Badge variant="outline" className="text-[10px]">
+                              {peSuggestion.primary.method.name}
+                            </Badge>
+                            {peSuggestion.primary.status === "recommended" && (
+                              <Badge className="bg-emerald-600 hover:bg-emerald-600 text-[10px]">Recomendada</Badge>
+                            )}
+                            {peSuggestion.primary.status === "allowed" && (
+                              <Badge variant="secondary" className="text-[10px]">
+                                Permitida
+                              </Badge>
+                            )}
+                            {peSuggestion.primary.status === "validation_required" && (
+                              <Badge variant="outline" className="border-amber-500 text-amber-700 text-[10px]">
+                                Requiere validación
+                              </Badge>
+                            )}
+                            {peSuggestion.primary.status === "not_recommended" && (
+                              <Badge variant="destructive" className="text-[10px]">
+                                No recomendada
+                              </Badge>
+                            )}
+                            {peSuggestion.primary.status === "unknown" && (
+                              <Badge variant="outline" className="text-[10px]">
+                                Sin regla específica
+                              </Badge>
+                            )}
+                          </>
+                        ) : (
                           <Badge variant="outline" className="text-[10px]">
-                            Sin regla específica
+                            Sin sugerencia confiable
                           </Badge>
                         )}
-                      </>
-                    ) : (
-                      <Badge variant="outline" className="text-[10px]">
-                        Sin sugerencia confiable
-                      </Badge>
-                    )}
-                  </div>
+                      </div>
 
-                  <p className="text-xs text-muted-foreground">{peSuggestion.reason}</p>
+                      <p className="text-xs text-muted-foreground">{peSuggestion.reason}</p>
 
-                  {peSuggestion.primary?.status === "not_recommended" && (
-                    <div className="flex items-start gap-2 rounded bg-destructive/10 text-destructive p-2 text-xs">
-                      <ShieldAlert className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                      <span>
-                        La única opción disponible NO es recomendada. Validar manualmente antes de ofrecer al cliente.
-                      </span>
-                    </div>
-                  )}
-
-                  {peSuggestion.primary && peSuggestion.primary.reasons.length > 0 && (
-                    <ul className="text-[11px] text-muted-foreground list-disc pl-5 space-y-0.5">
-                      {peSuggestion.primary.reasons.slice(0, 4).map((r, i) => (
-                        <li key={i}>{r}</li>
-                      ))}
-                    </ul>
-                  )}
-
-                  {peSuggestion.primary && (
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      {isSuggestedSelected ? (
-                        <Button type="button" size="sm" variant="outline" disabled>
-                          <Lightbulb className="w-4 h-4 mr-2" />
-                          Técnica aplicada
-                        </Button>
-                      ) : (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setPeMethodId(peSuggestion.primary!.method.id)}
-                          disabled={isLocked}
-                        >
-                          <Lightbulb className="w-4 h-4 mr-2" />
-                          Usar técnica sugerida
-                        </Button>
+                      {peSuggestion.primary?.status === "not_recommended" && (
+                        <div className="flex items-start gap-2 rounded bg-destructive/10 text-destructive p-2 text-xs">
+                          <ShieldAlert className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                          <span>
+                            La única opción disponible NO es recomendada. Validar manualmente antes de ofrecer al
+                            cliente.
+                          </span>
+                        </div>
                       )}
-                      {peSuggestion.alternates.length > 0 && (
-                        <span className="text-[11px] text-muted-foreground self-center">
-                          Alternativas: {peSuggestion.alternates.map((a) => a.method.name).join(" · ")}
-                        </span>
+
+                      {peSuggestion.primary && peSuggestion.primary.reasons.length > 0 && (
+                        <ul className="text-[11px] text-muted-foreground list-disc pl-5 space-y-0.5">
+                          {peSuggestion.primary.reasons.slice(0, 4).map((r, i) => (
+                            <li key={i}>{r}</li>
+                          ))}
+                        </ul>
+                      )}
+
+                      {peSuggestion.primary && (
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          {isSuggestedSelected ? (
+                            <Button type="button" size="sm" variant="outline" disabled>
+                              <Lightbulb className="w-4 h-4 mr-2" />
+                              Técnica aplicada
+                            </Button>
+                          ) : (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setPeMethodId(peSuggestion.primary!.method.id)}
+                              disabled={isLocked}
+                            >
+                              <Lightbulb className="w-4 h-4 mr-2" />
+                              Usar técnica sugerida
+                            </Button>
+                          )}
+                          {peSuggestion.alternates.length > 0 && (
+                            <span className="text-[11px] text-muted-foreground self-center">
+                              Alternativas: {peSuggestion.alternates.map((a) => a.method.name).join(" · ")}
+                            </span>
+                          )}
+                        </div>
                       )}
                     </div>
-                  )}
-                </div>
-                );
-              })()}
+                  );
+                })()}
 
               {peSuggestionMismatch && (
                 <div className="flex items-start gap-2 rounded-md border border-amber-500/50 bg-amber-50 p-2 text-xs text-amber-900">
@@ -1137,114 +1135,120 @@ export default function FormalQuoteEditor() {
                 const pricingMissing = !!peResult?.warnings.some((w) => w.code === "PRICING_MISSING");
                 return (
                   <>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  size="sm"
-                  onClick={handleCalcPrint}
-                  disabled={isLocked || !peMethodId || !peItemId || printSettings.isLoading || printRules.isLoading}
-                >
-                  <Calculator className="w-4 h-4 mr-2" /> Calcular impresión
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleApplySuggested}
-                  disabled={!peResult || isLocked || updateItem.isPending || pricingMissing}
-                >
-                  Aplicar precio sugerido
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleSaveSnapshotClick}
-                  disabled={!peResult || isLocked || updateQuote.isPending}
-                >
-                  Guardar snapshot
-                </Button>
-              </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        onClick={handleCalcPrint}
+                        disabled={
+                          isLocked || !peMethodId || !peItemId || printSettings.isLoading || printRules.isLoading
+                        }
+                      >
+                        <Calculator className="w-4 h-4 mr-2" /> Calcular impresión
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleApplySuggested}
+                        disabled={!peResult || isLocked || updateItem.isPending || pricingMissing}
+                      >
+                        Aplicar precio sugerido
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleSaveSnapshotClick}
+                        disabled={!peResult || isLocked || updateQuote.isPending}
+                      >
+                        Guardar snapshot
+                      </Button>
+                    </div>
 
-              {peResult && pricingMissing && (
-                <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-xs space-y-1">
-                  <div className="flex items-start gap-2 text-destructive">
-                    <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
-                    <span className="font-semibold">
-                      No hay regla de precio para esta combinación. No se puede aplicar precio sugerido.
-                    </span>
-                  </div>
-                  <p className="text-muted-foreground pl-6">
-                    Selecciona otra técnica/categoría o usa override manual validado.
-                  </p>
-                </div>
-              )}
-
-              {peResult && (
-                <div className="rounded-md border border-border/60 bg-muted/30 p-3 space-y-2 text-xs">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {peResult.compatibility_status === "recommended" && (
-                      <Badge className="bg-emerald-600 hover:bg-emerald-600">Recomendada</Badge>
-                    )}
-                    {peResult.compatibility_status === "allowed" && <Badge variant="secondary">Permitida</Badge>}
-                    {peResult.compatibility_status === "validation_required" && (
-                      <Badge variant="outline" className="border-amber-500 text-amber-700">
-                        Validación requerida
-                      </Badge>
-                    )}
-                    {peResult.compatibility_status === "not_recommended" && (
-                      <Badge variant="destructive">No recomendada</Badge>
-                    )}
-                    {peResult.compatibility_status == null && <Badge variant="outline">Sin compatibilidad</Badge>}
-                    {peResult.applied_min_profit && <Badge variant="outline">Utilidad mínima aplicada</Badge>}
-                    {pricingMissing && (
-                      <Badge variant="destructive">Diagnóstico no aplicable como precio final</Badge>
-                    )}
-                  </div>
-
-                  {peResult.warnings.length > 0 && (
-                    <div className="space-y-1">
-                      {peResult.warnings.map((w) => (
-                        <div
-                          key={w.code}
-                          className={`flex items-start gap-2 rounded p-2 ${
-                            w.severity === "error"
-                              ? "bg-destructive/10 text-destructive"
-                              : w.severity === "warning"
-                                ? "bg-amber-50 text-amber-900"
-                                : "bg-muted text-muted-foreground"
-                          }`}
-                        >
-                          <ShieldAlert className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                          <span>
-                            <span className="font-mono mr-1">{w.code}</span>
-                            {w.message}
+                    {peResult && pricingMissing && (
+                      <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-xs space-y-1">
+                        <div className="flex items-start gap-2 text-destructive">
+                          <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
+                          <span className="font-semibold">
+                            No hay regla de precio para esta combinación. No se puede aplicar precio sugerido.
                           </span>
                         </div>
-                      ))}
-                    </div>
-                  )}
+                        <p className="text-muted-foreground pl-6">
+                          Selecciona otra técnica/categoría o usa override manual validado.
+                        </p>
+                      </div>
+                    )}
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-1 pt-2 border-t border-border/50">
-                    <PeRow k="Costo base impresión" v={peResult.base_print_cost} />
-                    <PeRow k="Costos adicionales internos" v={peResult.additional_internal_costs} />
-                    <PeRow k="Logística interna" v={peResult.logistics} />
-                    <PeRow k="Buffer operativo" v={peResult.buffer} />
-                    <PeRow k="Costo interno completo" v={peResult.internal_total} />
-                    <PeRow k="Precio por margen 40%" v={peResult.price_by_margin} />
-                    <PeRow k="Precio por utilidad mín." v={peResult.price_by_min_profit} />
-                    <PeRow
-                      k={pricingMissing ? "Precio sugerido (diagnóstico, no aplicable)" : "Precio sugerido cliente"}
-                      v={peResult.suggested_customer_price}
-                      strong
-                    />
-                    <PeRow
-                      k={pricingMissing ? "Precio unitario (diagnóstico, no aplicable)" : "Precio unitario cliente"}
-                      v={peResult.suggested_unit_price}
-                      strong
-                    />
-                    <PeRow k="Utilidad estimada" v={peResult.estimated_profit} />
-                    <PeRow k="Piezas facturables" v={peResult.billable_qty} raw />
-                  </div>
-                </div>
-              )}
+                    {peResult && (
+                      <div className="rounded-md border border-border/60 bg-muted/30 p-3 space-y-2 text-xs">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {peResult.compatibility_status === "recommended" && (
+                            <Badge className="bg-emerald-600 hover:bg-emerald-600">Recomendada</Badge>
+                          )}
+                          {peResult.compatibility_status === "allowed" && <Badge variant="secondary">Permitida</Badge>}
+                          {peResult.compatibility_status === "validation_required" && (
+                            <Badge variant="outline" className="border-amber-500 text-amber-700">
+                              Validación requerida
+                            </Badge>
+                          )}
+                          {peResult.compatibility_status === "not_recommended" && (
+                            <Badge variant="destructive">No recomendada</Badge>
+                          )}
+                          {peResult.compatibility_status == null && <Badge variant="outline">Sin compatibilidad</Badge>}
+                          {peResult.applied_min_profit && <Badge variant="outline">Utilidad mínima aplicada</Badge>}
+                          {pricingMissing && (
+                            <Badge variant="destructive">Diagnóstico no aplicable como precio final</Badge>
+                          )}
+                        </div>
+
+                        {peResult.warnings.length > 0 && (
+                          <div className="space-y-1">
+                            {peResult.warnings.map((w) => (
+                              <div
+                                key={w.code}
+                                className={`flex items-start gap-2 rounded p-2 ${
+                                  w.severity === "error"
+                                    ? "bg-destructive/10 text-destructive"
+                                    : w.severity === "warning"
+                                      ? "bg-amber-50 text-amber-900"
+                                      : "bg-muted text-muted-foreground"
+                                }`}
+                              >
+                                <ShieldAlert className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                                <span>
+                                  <span className="font-mono mr-1">{w.code}</span>
+                                  {w.message}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-1 pt-2 border-t border-border/50">
+                          <PeRow k="Costo base impresión" v={peResult.base_print_cost} />
+                          <PeRow k="Costos adicionales internos" v={peResult.additional_internal_costs} />
+                          <PeRow k="Logística interna" v={peResult.logistics} />
+                          <PeRow k="Buffer operativo" v={peResult.buffer} />
+                          <PeRow k="Costo interno completo" v={peResult.internal_total} />
+                          <PeRow k="Precio por margen 40%" v={peResult.price_by_margin} />
+                          <PeRow k="Precio por utilidad mín." v={peResult.price_by_min_profit} />
+                          <PeRow
+                            k={
+                              pricingMissing ? "Precio sugerido (diagnóstico, no aplicable)" : "Precio sugerido cliente"
+                            }
+                            v={peResult.suggested_customer_price}
+                            strong
+                          />
+                          <PeRow
+                            k={
+                              pricingMissing ? "Precio unitario (diagnóstico, no aplicable)" : "Precio unitario cliente"
+                            }
+                            v={peResult.suggested_unit_price}
+                            strong
+                          />
+                          <PeRow k="Utilidad estimada" v={peResult.estimated_profit} />
+                          <PeRow k="Piezas facturables" v={peResult.billable_qty} raw />
+                        </div>
+                      </div>
+                    )}
                   </>
                 );
               })()}
@@ -1392,17 +1396,20 @@ function getItemSummaryLabel(item: FormalQuoteItemRow): string {
 }
 
 function ItemEditor({
+  formalQuoteId,
   item,
   disabled,
   onPatch,
   onDelete,
 }: {
+  formalQuoteId?: string;
   item: FormalQuoteItemRow;
   disabled?: boolean;
   onPatch: (values: Partial<FormalQuoteItemRow>) => Promise<void>;
   onDelete: () => void;
 }) {
   const [local, setLocal] = useState<FormalQuoteItemRow>(item);
+  const [legacyPrintOpen, setLegacyPrintOpen] = useState(false);
   useEffect(() => setLocal(item), [item]);
 
   const subtotal = calcItemSubtotal(local);
@@ -1564,42 +1571,57 @@ function ItemEditor({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-border/50">
-        <div>
-          <Label>Técnica impresión</Label>
-          <Input
-            value={local.print_method ?? ""}
-            onChange={(e) => setLocal({ ...local, print_method: e.target.value })}
-            onBlur={() => commit({ print_method: local.print_method })}
-            disabled={disabled}
-            placeholder="Serigrafía / Sublimación..."
-          />
-        </div>
-        <NumField
-          label="Tintas"
-          value={local.print_colors}
-          step={1}
-          onChange={(n) => setLocal({ ...local, print_colors: n })}
-          onCommit={(n) => commit({ print_colors: n })}
-          disabled={disabled}
-        />
-        <NumField
-          label="Setup fee"
-          value={local.setup_fee}
-          step={0.01}
-          onChange={(n) => setLocal({ ...local, setup_fee: n })}
-          onCommit={(n) => commit({ setup_fee: n })}
-          disabled={disabled}
-        />
-        <NumField
-          label="Precio impresión/u"
-          value={local.print_unit_price}
-          step={0.01}
-          onChange={(n) => setLocal({ ...local, print_unit_price: n })}
-          onCommit={(n) => commit({ print_unit_price: n })}
-          disabled={disabled}
-        />
-      </div>
+      {formalQuoteId && <QuoteItemPrintConfigurator formalQuoteId={formalQuoteId} item={local} disabled={disabled} />}
+
+      <Collapsible open={legacyPrintOpen} onOpenChange={setLegacyPrintOpen}>
+        <CollapsibleTrigger asChild>
+          <button
+            type="button"
+            className="w-full flex items-center justify-between rounded-md border border-dashed border-border px-3 py-2 text-left text-xs text-muted-foreground hover:bg-muted/40"
+          >
+            <span>Campos legacy de impresión / compatibilidad PDF</span>
+            <ChevronDown className={`w-4 h-4 transition-transform ${legacyPrintOpen ? "rotate-180" : ""}`} />
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div>
+              <Label>Técnica impresión</Label>
+              <Input
+                value={local.print_method ?? ""}
+                onChange={(e) => setLocal({ ...local, print_method: e.target.value })}
+                onBlur={() => commit({ print_method: local.print_method })}
+                disabled={disabled}
+                placeholder="Serigrafía / Sublimación..."
+              />
+            </div>
+            <NumField
+              label="Tintas"
+              value={local.print_colors}
+              step={1}
+              onChange={(n) => setLocal({ ...local, print_colors: n })}
+              onCommit={(n) => commit({ print_colors: n })}
+              disabled={disabled}
+            />
+            <NumField
+              label="Setup fee"
+              value={local.setup_fee}
+              step={0.01}
+              onChange={(n) => setLocal({ ...local, setup_fee: n })}
+              onCommit={(n) => commit({ setup_fee: n })}
+              disabled={disabled}
+            />
+            <NumField
+              label="Precio impresión/u"
+              value={local.print_unit_price}
+              step={0.01}
+              onChange={(n) => setLocal({ ...local, print_unit_price: n })}
+              onCommit={(n) => commit({ print_unit_price: n })}
+              disabled={disabled}
+            />
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
 
       <div>
         <Label>Notas de partida</Label>

@@ -261,7 +261,7 @@ export function PrintJobItemDialog({
         positions,
         material: null,
         product_category: null,
-        personalization_label: quoteItem?.personalizacion ?? null,
+        personalization_label: personalizacionText || null,
       },
     );
     setSuggestion(res);

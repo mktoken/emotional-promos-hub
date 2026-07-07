@@ -648,6 +648,99 @@ function PrintJobCard({
         </Button>
       </div>
 
+      {/* Partidas asignadas al trabajo (captura manual por partida) */}
+      <div className="pt-2 border-t space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs font-medium">
+            Partidas asignadas ({jobItems.length})
+          </p>
+          <Badge variant="outline" className="text-[10px]">
+            Modo manual usa allocation_mode=&quot;fijo&quot;
+          </Badge>
+        </div>
+
+        {jobItems.length === 0 && (
+          <p className="text-xs text-muted-foreground">
+            Aún no hay partidas asignadas a este trabajo.
+          </p>
+        )}
+
+        {jobItems.map((ji) => {
+          const qi = quoteItems.find((x) => x.id === ji.formal_quote_item_id) ?? null;
+          return (
+            <PrintJobItemRow
+              key={ji.id}
+              jobItem={ji}
+              quoteItem={qi}
+              initialReason={perItemReasons[ji.id] ?? ""}
+              disabled={disabled}
+              onSave={(price, reason, qty) =>
+                handleSaveManualItem(ji, price, reason, qty)
+              }
+              onRemove={() => handleRemoveAssignment(ji.id)}
+            />
+          );
+        })}
+
+        {availableQuoteItems.length > 0 && (
+          <div className="flex flex-wrap gap-2 items-end">
+            <div className="flex-1 min-w-[220px]">
+              <Label className="text-xs">Agregar partida al trabajo</Label>
+              <Select value={addItemId} onValueChange={setAddItemId} disabled={disabled}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona una partida de la cotización" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableQuoteItems.map((qi) => (
+                    <SelectItem key={qi.id} value={qi.id}>
+                      #{qi.position} · {qi.modelo_comercial ?? qi.descripcion ?? "Partida"} ·{" "}
+                      {Number(qi.cantidad ?? 0).toLocaleString("es-MX")} pzas
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleAssignItem}
+              disabled={disabled || !addItemId || api.assignItem.isPending}
+            >
+              <Plus className="w-4 h-4 mr-1" /> Asignar
+            </Button>
+          </div>
+        )}
+
+        {jobItems.length > 0 && (
+          <div className="rounded-md border bg-background p-2 text-xs space-y-1">
+            <ResRow
+              k={`Total impresión manual (${manualJobItems.length}/${jobItems.length} con precio)`}
+              v={formatMoney(manualTotal)}
+              bold
+            />
+            <ResRow
+              k={`Unitario ponderado (${manualQty} pzas)`}
+              v={formatMoney(manualQty > 0 ? manualTotal / manualQty : 0)}
+            />
+            <div className="flex justify-end pt-1">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={handleApplyManualPerItem}
+                disabled={disabled || !canApplyManual || api.updateJob.isPending}
+                title={
+                  !canApplyManual
+                    ? "Todas las partidas deben tener precio manual y motivo del trabajo (≥ 10 caracteres)"
+                    : "Aplicar precio manual por partida al trabajo"
+                }
+              >
+                Aplicar precio manual por partida
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Resultado del motor */}
       {result && (
         <div className="rounded-md border bg-background p-3 text-xs space-y-1">

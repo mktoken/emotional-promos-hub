@@ -43,8 +43,11 @@ export function FormalQuotePrintJobsSection({ formalQuoteId, disabled }: Props) 
   const api = useFormalQuotePrintJobs(formalQuoteId);
   const rules = usePrintRules();
   const settings = usePrintSettings();
+  const quoteItemsQuery = useFormalQuoteItems(formalQuoteId);
   const jobs = api.jobs.data ?? [];
   const components = api.components.data ?? [];
+  const jobItems = api.items.data ?? [];
+  const quoteItems = quoteItemsQuery.data ?? [];
 
   const handleCreate = async () => {
     try {

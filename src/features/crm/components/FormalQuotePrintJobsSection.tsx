@@ -143,6 +143,8 @@ type Settings = ReturnType<typeof usePrintSettings>;
 function PrintJobCard({
   job,
   components,
+  jobItems,
+  quoteItems,
   api,
   rules,
   settings,
@@ -150,6 +152,8 @@ function PrintJobCard({
 }: {
   job: FormalQuotePrintJob;
   components: NonNullable<Api["components"]["data"]>;
+  jobItems: FormalQuotePrintJobItem[];
+  quoteItems: FormalQuoteItemRow[];
   api: Api;
   rules: Rules;
   settings: Settings;

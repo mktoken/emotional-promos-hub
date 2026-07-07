@@ -362,11 +362,11 @@ export function PrintJobItemDialog({
                 disabled={disabled}
               />
             </div>
-            {quoteItem?.personalizacion && (
+            {personalizacionText && (
               <div className="space-y-1 md:col-span-2">
                 <Label className="text-xs">Personalización solicitada</Label>
                 <p className="text-xs text-muted-foreground border rounded px-2 py-2 bg-muted/30">
-                  {quoteItem.personalizacion}
+                  {personalizacionText}
                 </p>
               </div>
             )}

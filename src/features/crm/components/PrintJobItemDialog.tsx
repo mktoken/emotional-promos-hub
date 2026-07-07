@@ -54,6 +54,16 @@ interface Props {
   rules: Rules;
   settings: Settings;
   disabled?: boolean;
+  onSavedManual?: (info: {
+    totalMxn: number;
+    unitMxn: number;
+    qty: number;
+    methodId: string | null;
+    methodName: string | null;
+    colors: number;
+    positions: number;
+    reason: string;
+  }) => Promise<void> | void;
 }
 
 export function PrintJobItemDialog({
@@ -68,6 +78,7 @@ export function PrintJobItemDialog({
   rules,
   settings,
   disabled,
+  onSavedManual,
 }: Props) {
   const methods = rules.methods.data ?? [];
 
@@ -186,6 +197,8 @@ export function PrintJobItemDialog({
         calculation_snapshot: nextSnap as unknown as never,
         customer_print_price_mxn: Math.round(total * 100) / 100,
         customer_unit_price_mxn: unit,
+        pricing_status: "manual",
+        override_reason: savedReason,
       },
     });
   };
@@ -211,6 +224,27 @@ export function PrintJobItemDialog({
         },
       });
       await recomputeJobTotals(updated, reason.trim());
+      const totalMxn = Math.round(total * 100) / 100;
+      const unitMxn = qtyN > 0 ? Math.round((totalMxn / qtyN) * 100) / 100 : 0;
+      const methodName = methodId
+        ? (methods.find((m) => m.id === methodId)?.name ?? null)
+        : null;
+      if (onSavedManual) {
+        try {
+          await onSavedManual({
+            totalMxn,
+            unitMxn,
+            qty: qtyN,
+            methodId: methodId || null,
+            methodName,
+            colors,
+            positions,
+            reason: reason.trim(),
+          });
+        } catch (err) {
+          console.warn("[print-job-item-dialog] onSavedManual failed", err);
+        }
+      }
       toast.success("Precio manual guardado y trabajo recalculado");
       onOpenChange(false);
     } catch (e) {

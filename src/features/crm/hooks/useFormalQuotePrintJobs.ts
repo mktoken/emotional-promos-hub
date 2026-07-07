@@ -147,6 +147,7 @@ export function useFormalQuotePrintJobs(formalQuoteId: string | undefined) {
     deleteJob,
     assignItem,
     removeItem,
+    updateItem,
     createComponent,
     updateComponent,
     deleteComponent,

@@ -9,27 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useFormalQuotePrintJobs } from "@/features/crm/hooks/useFormalQuotePrintJobs";
 import { useFormalQuoteItems, type FormalQuoteItemRow } from "@/features/crm/hooks/useFormalQuotes";
 import { usePrintRules } from "@/features/crm/hooks/usePrintRules";
 import { usePrintSettings } from "@/features/crm/hooks/usePrintSettings";
 import { calcPrintEngine, type PrintEngineResult } from "@/features/crm/lib/print-engine";
-import {
-  validatePrintJob,
-  type PrintJobPricingStatus,
-} from "@/features/crm/lib/formal-quote-validation";
+import { validatePrintJob, type PrintJobPricingStatus } from "@/features/crm/lib/formal-quote-validation";
 import type { FormalQuotePrintJob, FormalQuotePrintJobItem } from "@/features/crm/lib/formal-quote-print-jobs";
 import { formatMoney } from "@/features/crm/lib/formal-quote-calc";
 
@@ -39,7 +26,7 @@ interface Props {
 }
 
 export function FormalQuotePrintJobsSection({ formalQuoteId, disabled }: Props) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const api = useFormalQuotePrintJobs(formalQuoteId);
   const rules = usePrintRules();
   const settings = usePrintSettings();
@@ -68,15 +55,13 @@ export function FormalQuotePrintJobsSection({ formalQuoteId, disabled }: Props) 
           <CardHeader className="cursor-pointer">
             <CardTitle className="text-base flex items-center justify-between">
               <span className="flex items-center gap-2 flex-wrap">
-                Trabajos de impresión
+                Resumen avanzado de trabajos de impresión
                 <Badge variant="secondary">{jobs.length}</Badge>
                 <Badge variant="outline" className="text-[10px]">
                   Sólo CRM · no visible al cliente
                 </Badge>
               </span>
-              <ChevronDown
-                className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`}
-              />
+              <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} />
             </CardTitle>
           </CardHeader>
         </CollapsibleTrigger>
@@ -84,8 +69,8 @@ export function FormalQuotePrintJobsSection({ formalQuoteId, disabled }: Props) 
         <CollapsibleContent>
           <CardContent className="space-y-4">
             <p className="text-xs text-muted-foreground">
-              Operativo. Los componentes internos, buffer, logística y overrides
-              nunca se muestran en PDF ni en email al cliente.
+              Resumen avanzado. La operación principal debe hacerse desde “Configurar impresión” en cada partida. Los
+              componentes internos, buffer, logística y overrides nunca se muestran en PDF ni en email al cliente.
             </p>
 
             {api.jobs.isLoading && (
@@ -97,8 +82,7 @@ export function FormalQuotePrintJobsSection({ formalQuoteId, disabled }: Props) 
 
             {!api.jobs.isLoading && jobs.length === 0 && (
               <p className="text-sm text-muted-foreground">
-                Aún no hay trabajos de impresión. Crea el primero para
-                cotizar impresión operativamente.
+                Aún no hay trabajos de impresión. Crea el primero para cotizar impresión operativamente.
               </p>
             )}
 
@@ -116,12 +100,7 @@ export function FormalQuotePrintJobsSection({ formalQuoteId, disabled }: Props) 
               />
             ))}
 
-            <Button
-              onClick={handleCreate}
-              disabled={disabled || api.createJob.isPending}
-              variant="secondary"
-              size="sm"
-            >
+            <Button onClick={handleCreate} disabled={disabled || api.createJob.isPending} variant="secondary" size="sm">
               {api.createJob.isPending ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (
@@ -165,14 +144,10 @@ function PrintJobCard({
   const [positions, setPositions] = useState<number>(job.print_positions ?? 1);
   const [qty, setQty] = useState<number>(100);
   const [logistics, setLogistics] = useState(String(job.logistics_fee_mxn ?? 350));
-  const [logisticsReason, setLogisticsReason] = useState(
-    job.logistics_override_reason ?? "",
-  );
+  const [logisticsReason, setLogisticsReason] = useState(job.logistics_override_reason ?? "");
 
   const [overrideAmount, setOverrideAmount] = useState<string>("");
-  const [overrideReason, setOverrideReason] = useState<string>(
-    job.override_reason ?? "",
-  );
+  const [overrideReason, setOverrideReason] = useState<string>(job.override_reason ?? "");
 
   const [result, setResult] = useState<PrintEngineResult | null>(null);
   const [pricingStatus, setPricingStatus] = useState<PrintJobPricingStatus>(
@@ -195,29 +170,21 @@ function PrintJobCard({
   const logisticsNum = Number(logistics);
   const logisticsChanged = logisticsNum !== Number(defaultLogistics);
   const logisticsZero = logisticsNum === 0;
-  const needsLogisticsReason =
-    (logisticsChanged || logisticsZero) && logisticsReason.trim().length === 0;
+  const needsLogisticsReason = (logisticsChanged || logisticsZero) && logisticsReason.trim().length === 0;
 
   const hasIncompleteCharge = useMemo(
     () =>
       components.some(
-        (c) =>
-          c.component_type === "additional_charge" &&
-          (!c.description || !(Number(c.amount_mxn) > 0)),
+        (c) => c.component_type === "additional_charge" && (!c.description || !(Number(c.amount_mxn) > 0)),
       ),
     [components],
   );
 
-  const needsOverrideReason =
-    overrideAmount.trim().length > 0 && overrideReason.trim().length < 10;
+  const needsOverrideReason = overrideAmount.trim().length > 0 && overrideReason.trim().length < 10;
 
   const isPricingMissing = pricingStatus === "pricing_missing";
 
-  const canApplyAutomatic =
-    !!result &&
-    !isPricingMissing &&
-    !needsLogisticsReason &&
-    !hasIncompleteCharge;
+  const canApplyAutomatic = !!result && !isPricingMissing && !needsLogisticsReason && !hasIncompleteCharge;
 
   const handleSaveJob = async () => {
     const v = validatePrintJob({
@@ -235,10 +202,7 @@ function PrintJobCard({
       return;
     }
     try {
-      const methodName =
-        methods.find((m) => m.id === methodId)?.name ??
-        job.print_method_name_snapshot ??
-        null;
+      const methodName = methods.find((m) => m.id === methodId)?.name ?? job.print_method_name_snapshot ?? null;
       await api.updateJob.mutateAsync({
         id: job.id,
         values: {
@@ -282,8 +246,7 @@ function PrintJobCard({
       rules.compat.data ?? [],
     );
     setResult(res);
-    const missing =
-      !res.matched_rule_id || res.suggested_customer_price <= 0;
+    const missing = !res.matched_rule_id || res.suggested_customer_price <= 0;
     setPricingStatus(missing ? "pricing_missing" : "calculado");
     if (missing) {
       toast.warning("PRICING_MISSING: no hay regla válida para esta combinación.");
@@ -453,13 +416,8 @@ function PrintJobCard({
     }
   };
 
-  const manualJobItems = jobItems.filter(
-    (ji) => ji.allocation_mode === "fijo" && ji.allocation_amount_mxn != null,
-  );
-  const manualTotal = manualJobItems.reduce(
-    (acc, ji) => acc + Number(ji.allocation_amount_mxn ?? 0),
-    0,
-  );
+  const manualJobItems = jobItems.filter((ji) => ji.allocation_mode === "fijo" && ji.allocation_amount_mxn != null);
+  const manualTotal = manualJobItems.reduce((acc, ji) => acc + Number(ji.allocation_amount_mxn ?? 0), 0);
   const manualQty = manualJobItems.reduce((acc, ji) => acc + Number(ji.quantity ?? 0), 0);
   const canApplyManual =
     manualJobItems.length > 0 &&
@@ -469,9 +427,7 @@ function PrintJobCard({
 
   const handleApplyManualPerItem = async () => {
     if (!canApplyManual) {
-      toast.error(
-        "Todas las partidas deben tener precio manual y el motivo del trabajo debe tener ≥ 10 caracteres.",
-      );
+      toast.error("Todas las partidas deben tener precio manual y el motivo del trabajo debe tener ≥ 10 caracteres.");
       return;
     }
     try {
@@ -480,8 +436,7 @@ function PrintJobCard({
         values: {
           pricing_status: "manual",
           customer_print_price_mxn: Math.round(manualTotal * 100) / 100,
-          customer_unit_price_mxn:
-            manualQty > 0 ? Math.round((manualTotal / manualQty) * 100) / 100 : 0,
+          customer_unit_price_mxn: manualQty > 0 ? Math.round((manualTotal / manualQty) * 100) / 100 : 0,
           override_reason: overrideReason.trim(),
         },
       });
@@ -491,7 +446,6 @@ function PrintJobCard({
       toast.error(e instanceof Error ? e.message : "No se pudo aplicar");
     }
   };
-
 
   const statusBadge = () => {
     switch (pricingStatus) {
@@ -511,20 +465,11 @@ function PrintJobCard({
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 space-y-1">
           <Label className="text-xs">Nombre del trabajo</Label>
-          <Input
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            disabled={disabled}
-          />
+          <Input value={label} onChange={(e) => setLabel(e.target.value)} disabled={disabled} />
         </div>
         <div className="flex flex-col items-end gap-2">
           {statusBadge()}
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleDelete}
-            disabled={disabled || api.deleteJob.isPending}
-          >
+          <Button size="sm" variant="ghost" onClick={handleDelete} disabled={disabled || api.deleteJob.isPending}>
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
@@ -534,11 +479,7 @@ function PrintJobCard({
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div className="space-y-1 md:col-span-2">
           <Label className="text-xs">Técnica de impresión</Label>
-          <Select
-            value={methodId}
-            onValueChange={setMethodId}
-            disabled={disabled || rules.isLoading}
-          >
+          <Select value={methodId} onValueChange={setMethodId} disabled={disabled || rules.isLoading}>
             <SelectTrigger>
               <SelectValue placeholder="Selecciona técnica" />
             </SelectTrigger>
@@ -585,9 +526,7 @@ function PrintJobCard({
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-xs">
-            Logística MXN (default {defaultLogistics})
-          </Label>
+          <Label className="text-xs">Logística MXN (default {defaultLogistics})</Label>
           <Input
             type="number"
             min="0"
@@ -611,12 +550,7 @@ function PrintJobCard({
       </div>
 
       <div className="flex flex-wrap gap-2 justify-end">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleSaveJob}
-          disabled={disabled || api.updateJob.isPending}
-        >
+        <Button size="sm" variant="outline" onClick={handleSaveJob} disabled={disabled || api.updateJob.isPending}>
           Guardar trabajo
         </Button>
         <Button
@@ -651,18 +585,14 @@ function PrintJobCard({
       {/* Partidas asignadas al trabajo (captura manual por partida) */}
       <div className="pt-2 border-t space-y-2">
         <div className="flex items-center justify-between gap-2">
-          <p className="text-xs font-medium">
-            Partidas asignadas ({jobItems.length})
-          </p>
+          <p className="text-xs font-medium">Partidas asignadas ({jobItems.length})</p>
           <Badge variant="outline" className="text-[10px]">
             Modo manual usa allocation_mode=&quot;fijo&quot;
           </Badge>
         </div>
 
         {jobItems.length === 0 && (
-          <p className="text-xs text-muted-foreground">
-            Aún no hay partidas asignadas a este trabajo.
-          </p>
+          <p className="text-xs text-muted-foreground">Aún no hay partidas asignadas a este trabajo.</p>
         )}
 
         {jobItems.map((ji) => {
@@ -802,12 +732,8 @@ function PrintJobCard({
 
       {/* Componentes internos */}
       <div className="pt-2 border-t">
-        <p className="text-xs font-medium mb-2">
-          Componentes internos ({components.length})
-        </p>
-        {components.length === 0 && (
-          <p className="text-xs text-muted-foreground">Sin componentes.</p>
-        )}
+        <p className="text-xs font-medium mb-2">Componentes internos ({components.length})</p>
+        {components.length === 0 && <p className="text-xs text-muted-foreground">Sin componentes.</p>}
         {components.length > 0 && (
           <ul className="text-xs space-y-1">
             {components.map((c) => (
@@ -817,9 +743,7 @@ function PrintJobCard({
                     {c.component_type}
                   </Badge>
                   <span>{c.label}</span>
-                  {c.description && (
-                    <span className="text-muted-foreground">— {c.description}</span>
-                  )}
+                  {c.description && <span className="text-muted-foreground">— {c.description}</span>}
                 </span>
                 <span className="flex items-center gap-2">
                   <span>{formatMoney(Number(c.amount_mxn))}</span>
@@ -830,11 +754,7 @@ function PrintJobCard({
                       api.deleteComponent
                         .mutateAsync(c.id)
                         .then(() => toast.success("Componente eliminado"))
-                        .catch((e: unknown) =>
-                          toast.error(
-                            e instanceof Error ? e.message : "No se pudo eliminar",
-                          ),
-                        )
+                        .catch((e: unknown) => toast.error(e instanceof Error ? e.message : "No se pudo eliminar"))
                     }
                     disabled={disabled}
                   >
@@ -876,11 +796,7 @@ function PrintJobCard({
           rows={2}
         />
         <div className="flex justify-end">
-          <Button
-            size="sm"
-            onClick={handleAddCharge}
-            disabled={disabled || api.addCharge.isPending}
-          >
+          <Button size="sm" onClick={handleAddCharge} disabled={disabled || api.addCharge.isPending}>
             {api.addCharge.isPending ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
             ) : (
@@ -890,8 +806,8 @@ function PrintJobCard({
           </Button>
         </div>
         <p className="text-[10px] text-muted-foreground italic">
-          Los cargos automáticos (reempaque, $0.25, $0.35) están deshabilitados.
-          Todo cargo adicional debe capturarse manualmente con concepto, importe y motivo.
+          Los cargos automáticos (reempaque, $0.25, $0.35) están deshabilitados. Todo cargo adicional debe capturarse
+          manualmente con concepto, importe y motivo.
         </p>
       </div>
     </div>
@@ -936,16 +852,11 @@ function PrintJobItemRow({
 
   const qty = Number(jobItem.quantity ?? quoteItem?.cantidad ?? 0);
   const totalPrice = Number(jobItem.allocation_amount_mxn ?? 0);
-  const isFijo =
-    jobItem.allocation_mode === "fijo" && jobItem.allocation_amount_mxn != null;
+  const isFijo = jobItem.allocation_mode === "fijo" && jobItem.allocation_amount_mxn != null;
   const unit = isFijo && qty > 0 ? totalPrice / qty : 0;
   const status = isFijo ? "manual" : "pendiente";
 
-  const displayName =
-    quoteItem?.modelo_comercial ??
-    quoteItem?.descripcion ??
-    quoteItem?.clave_producto ??
-    "Partida";
+  const displayName = quoteItem?.modelo_comercial ?? quoteItem?.descripcion ?? quoteItem?.clave_producto ?? "Partida";
 
   return (
     <div className="rounded-md border bg-background p-2 space-y-2">
@@ -956,16 +867,12 @@ function PrintJobItemRow({
           </div>
           <div className="text-muted-foreground">
             Cantidad: {qty.toLocaleString("es-MX")} pzas
-            {job.print_method_name_snapshot
-              ? ` · Técnica: ${job.print_method_name_snapshot}`
-              : ""}
+            {job.print_method_name_snapshot ? ` · Técnica: ${job.print_method_name_snapshot}` : ""}
           </div>
           <div className="flex flex-wrap gap-3 pt-1">
             <span>
               <span className="text-muted-foreground">Total impresión:</span>{" "}
-              <span className="font-medium">
-                {isFijo ? formatMoney(totalPrice) : "—"}
-              </span>
+              <span className="font-medium">{isFijo ? formatMoney(totalPrice) : "—"}</span>
             </span>
             <span>
               <span className="text-muted-foreground">Unitario:</span>{" "}
@@ -984,12 +891,7 @@ function PrintJobItemRow({
       </div>
 
       <div className="flex justify-end">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setOpen(true)}
-          disabled={disabled}
-        >
+        <Button size="sm" variant="outline" onClick={() => setOpen(true)} disabled={disabled}>
           <Calculator className="w-4 h-4 mr-1" /> Configurar impresión
         </Button>
       </div>
@@ -1010,4 +912,3 @@ function PrintJobItemRow({
     </div>
   );
 }
-

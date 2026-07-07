@@ -1245,6 +1245,11 @@ export default function FormalQuoteEditor() {
         </CardContent>
       </Card>
 
+      {/* Trabajos de impresión — nuevo modelo (interno, experimental) */}
+      {quoteId && (
+        <FormalQuotePrintJobsSection formalQuoteId={quoteId} disabled={isLocked} />
+      )}
+
       {/* Banco */}
       <Card>
         <CardHeader>

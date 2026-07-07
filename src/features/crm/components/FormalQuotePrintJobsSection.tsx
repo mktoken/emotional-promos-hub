@@ -904,3 +904,110 @@ function ResRow({ k, v, bold }: { k: string; v: string; bold?: boolean }) {
     </div>
   );
 }
+
+function PrintJobItemRow({
+  jobItem,
+  quoteItem,
+  initialReason,
+  disabled,
+  onSave,
+  onRemove,
+}: {
+  jobItem: FormalQuotePrintJobItem;
+  quoteItem: FormalQuoteItemRow | null;
+  initialReason: string;
+  disabled?: boolean;
+  onSave: (price: string, reason: string, qty: string) => void | Promise<void>;
+  onRemove: () => void;
+}) {
+  const [price, setPrice] = useState<string>(
+    jobItem.allocation_amount_mxn != null ? String(jobItem.allocation_amount_mxn) : "",
+  );
+  const [reason, setReason] = useState<string>(initialReason);
+  const [qty, setQty] = useState<string>(String(jobItem.quantity ?? 1));
+
+  const qtyN = Math.max(1, Math.floor(Number(qty) || 0));
+  const priceN = Number(price);
+  const unit =
+    Number.isFinite(priceN) && priceN >= 0 && qtyN > 0 ? priceN / qtyN : 0;
+
+  const isFijo = jobItem.allocation_mode === "fijo" && jobItem.allocation_amount_mxn != null;
+  const status = isFijo ? "manual" : "pendiente";
+
+  const displayName =
+    quoteItem?.modelo_comercial ??
+    quoteItem?.descripcion ??
+    quoteItem?.clave_producto ??
+    "Partida";
+
+  return (
+    <div className="rounded-md border bg-background p-2 space-y-2">
+      <div className="flex items-start justify-between gap-2">
+        <div className="text-xs">
+          <div className="font-medium">
+            {quoteItem ? `#${quoteItem.position} · ${displayName}` : "Partida (eliminada)"}
+          </div>
+          <div className="text-muted-foreground">
+            Cantidad original: {Number(quoteItem?.cantidad ?? 0).toLocaleString("es-MX")} pzas
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant={isFijo ? "default" : "outline"} className="text-[10px]">
+            {status}
+          </Badge>
+          <Button size="sm" variant="ghost" onClick={onRemove} disabled={disabled}>
+            <Trash2 className="w-3 h-3" />
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+        <div className="space-y-1">
+          <Label className="text-[10px]">Cantidad</Label>
+          <Input
+            type="number"
+            min="1"
+            value={qty}
+            onChange={(e) => setQty(e.target.value)}
+            disabled={disabled}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-[10px]">Precio total impresión (MXN)</Label>
+          <Input
+            type="number"
+            min="0"
+            step="0.01"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            disabled={disabled}
+            placeholder="0.00"
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-[10px]">Unitario calculado</Label>
+          <Input value={formatMoney(unit)} readOnly disabled />
+        </div>
+        <div className="space-y-1 md:col-span-1">
+          <Label className="text-[10px]">Motivo / referencia</Label>
+          <Input
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            disabled={disabled}
+            placeholder="Ej. Cotización proveedor X"
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <Button
+          size="sm"
+          onClick={() => onSave(price, reason, qty)}
+          disabled={disabled}
+        >
+          Guardar precio manual
+        </Button>
+      </div>
+    </div>
+  );
+}

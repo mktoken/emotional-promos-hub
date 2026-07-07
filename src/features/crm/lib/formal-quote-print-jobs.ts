@@ -117,7 +117,7 @@ export async function createPrintJob(
     override_reason: insert.override_reason ?? null,
     job_label: insert.job_label ?? "Trabajo de impresión",
   });
-  if (!check.ok) { const errs = (check as { ok: false; errors: string[] }).errors; throw new Error(errs.join(" · ")); }
+  if (!check.ok) throw new Error(check.errors.join(" · "));
 
   const { data, error } = await supabase
     .from("formal_quote_print_jobs")
@@ -157,7 +157,7 @@ export async function updatePrintJob(
       override_reason: merged.override_reason ?? null,
       job_label: merged.job_label ?? "Trabajo de impresión",
     });
-    if (!check.ok) { const errs = (check as { ok: false; errors: string[] }).errors; throw new Error(errs.join(" · ")); }
+    if (!check.ok) throw new Error(check.errors.join(" · "));
   }
 
   const { data, error } = await supabase
@@ -220,7 +220,7 @@ export async function createPrintJobComponent(
     include_in_customer_price: insert.include_in_customer_price ?? true,
     is_visible_to_client: false,
   });
-  if (!check.ok) { const errs = (check as { ok: false; errors: string[] }).errors; throw new Error(errs.join(" · ")); }
+  if (!check.ok) throw new Error(check.errors.join(" · "));
 
   const { data, error } = await supabase
     .from("formal_quote_print_job_components")

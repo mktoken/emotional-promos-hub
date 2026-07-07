@@ -674,9 +674,11 @@ function PrintJobCard({
               quoteItem={qi}
               initialReason={perItemReasons[ji.id] ?? ""}
               disabled={disabled}
-              onSave={(price, reason, qty) =>
-                handleSaveManualItem(ji, price, reason, qty)
-              }
+              job={job}
+              allJobItems={jobItems}
+              api={api}
+              rules={rules}
+              settings={settings}
               onRemove={() => handleRemoveAssignment(ji.id)}
             />
           );
@@ -905,33 +907,38 @@ function ResRow({ k, v, bold }: { k: string; v: string; bold?: boolean }) {
   );
 }
 
+import { PrintJobItemDialog } from "./PrintJobItemDialog";
+
 function PrintJobItemRow({
   jobItem,
   quoteItem,
   initialReason,
   disabled,
-  onSave,
+  job,
+  allJobItems,
+  api,
+  rules,
+  settings,
   onRemove,
 }: {
   jobItem: FormalQuotePrintJobItem;
   quoteItem: FormalQuoteItemRow | null;
   initialReason: string;
   disabled?: boolean;
-  onSave: (price: string, reason: string, qty: string) => void | Promise<void>;
+  job: FormalQuotePrintJob;
+  allJobItems: FormalQuotePrintJobItem[];
+  api: Api;
+  rules: Rules;
+  settings: Settings;
   onRemove: () => void;
 }) {
-  const [price, setPrice] = useState<string>(
-    jobItem.allocation_amount_mxn != null ? String(jobItem.allocation_amount_mxn) : "",
-  );
-  const [reason, setReason] = useState<string>(initialReason);
-  const [qty, setQty] = useState<string>(String(jobItem.quantity ?? 1));
+  const [open, setOpen] = useState(false);
 
-  const qtyN = Math.max(1, Math.floor(Number(qty) || 0));
-  const priceN = Number(price);
-  const unit =
-    Number.isFinite(priceN) && priceN >= 0 && qtyN > 0 ? priceN / qtyN : 0;
-
-  const isFijo = jobItem.allocation_mode === "fijo" && jobItem.allocation_amount_mxn != null;
+  const qty = Number(jobItem.quantity ?? quoteItem?.cantidad ?? 0);
+  const totalPrice = Number(jobItem.allocation_amount_mxn ?? 0);
+  const isFijo =
+    jobItem.allocation_mode === "fijo" && jobItem.allocation_amount_mxn != null;
+  const unit = isFijo && qty > 0 ? totalPrice / qty : 0;
   const status = isFijo ? "manual" : "pendiente";
 
   const displayName =
@@ -943,12 +950,27 @@ function PrintJobItemRow({
   return (
     <div className="rounded-md border bg-background p-2 space-y-2">
       <div className="flex items-start justify-between gap-2">
-        <div className="text-xs">
+        <div className="text-xs space-y-0.5">
           <div className="font-medium">
             {quoteItem ? `#${quoteItem.position} · ${displayName}` : "Partida (eliminada)"}
           </div>
           <div className="text-muted-foreground">
-            Cantidad original: {Number(quoteItem?.cantidad ?? 0).toLocaleString("es-MX")} pzas
+            Cantidad: {qty.toLocaleString("es-MX")} pzas
+            {job.print_method_name_snapshot
+              ? ` · Técnica: ${job.print_method_name_snapshot}`
+              : ""}
+          </div>
+          <div className="flex flex-wrap gap-3 pt-1">
+            <span>
+              <span className="text-muted-foreground">Total impresión:</span>{" "}
+              <span className="font-medium">
+                {isFijo ? formatMoney(totalPrice) : "—"}
+              </span>
+            </span>
+            <span>
+              <span className="text-muted-foreground">Unitario:</span>{" "}
+              <span className="font-medium">{isFijo ? formatMoney(unit) : "—"}</span>
+            </span>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -961,53 +983,31 @@ function PrintJobItemRow({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-        <div className="space-y-1">
-          <Label className="text-[10px]">Cantidad</Label>
-          <Input
-            type="number"
-            min="1"
-            value={qty}
-            onChange={(e) => setQty(e.target.value)}
-            disabled={disabled}
-          />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-[10px]">Precio total impresión (MXN)</Label>
-          <Input
-            type="number"
-            min="0"
-            step="0.01"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            disabled={disabled}
-            placeholder="0.00"
-          />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-[10px]">Unitario calculado</Label>
-          <Input value={formatMoney(unit)} readOnly disabled />
-        </div>
-        <div className="space-y-1 md:col-span-1">
-          <Label className="text-[10px]">Motivo / referencia</Label>
-          <Input
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            disabled={disabled}
-            placeholder="Ej. Cotización proveedor X"
-          />
-        </div>
-      </div>
-
       <div className="flex justify-end">
         <Button
           size="sm"
-          onClick={() => onSave(price, reason, qty)}
+          variant="outline"
+          onClick={() => setOpen(true)}
           disabled={disabled}
         >
-          Guardar precio manual
+          <Calculator className="w-4 h-4 mr-1" /> Configurar impresión
         </Button>
       </div>
+
+      <PrintJobItemDialog
+        open={open}
+        onOpenChange={setOpen}
+        job={job}
+        jobItem={jobItem}
+        quoteItem={quoteItem}
+        allJobItems={allJobItems}
+        initialReason={initialReason}
+        api={api}
+        rules={rules}
+        settings={settings}
+        disabled={disabled}
+      />
     </div>
   );
 }
+

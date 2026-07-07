@@ -224,6 +224,27 @@ export function PrintJobItemDialog({
         },
       });
       await recomputeJobTotals(updated, reason.trim());
+      const totalMxn = Math.round(total * 100) / 100;
+      const unitMxn = qtyN > 0 ? Math.round((totalMxn / qtyN) * 100) / 100 : 0;
+      const methodName = methodId
+        ? (methods.find((m) => m.id === methodId)?.name ?? null)
+        : null;
+      if (onSavedManual) {
+        try {
+          await onSavedManual({
+            totalMxn,
+            unitMxn,
+            qty: qtyN,
+            methodId: methodId || null,
+            methodName,
+            colors,
+            positions,
+            reason: reason.trim(),
+          });
+        } catch (err) {
+          console.warn("[print-job-item-dialog] onSavedManual failed", err);
+        }
+      }
       toast.success("Precio manual guardado y trabajo recalculado");
       onOpenChange(false);
     } catch (e) {

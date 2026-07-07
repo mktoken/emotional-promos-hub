@@ -706,8 +706,8 @@ export default function FormalQuoteEditor() {
         </CardContent>
       </Card>
 
-      {/* Motor de impresión (INTERNO — Sprint 3.0C) */}
-      <Card className="border-primary/30">
+      {/* Motor anterior / piloto — reemplazado por Trabajos de impresión */}
+      <Card className="border-amber-500/40 bg-amber-500/5">
         <Collapsible open={peOpen} onOpenChange={setPeOpen}>
           <CollapsibleTrigger asChild>
             <button
@@ -715,17 +715,26 @@ export default function FormalQuoteEditor() {
               className="w-full flex items-center justify-between p-4 text-left"
               aria-expanded={peOpen}
             >
-              <div className="flex items-center gap-2">
-                <Calculator className="w-4 h-4 text-primary" />
-                <span className="font-semibold text-sm">Motor de impresión (interno)</span>
-                <Badge variant="outline" className="text-[10px]">
-                  Sólo CRM · no se muestra al cliente
-                </Badge>
-                {q.price_override_mxn != null && (
-                  <Badge variant="destructive" className="text-[10px]">
-                    Override manual activo
-                  </Badge>
-                )}
+              <div className="flex items-start gap-2">
+                <Calculator className="w-4 h-4 text-amber-600 mt-0.5" />
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-sm">
+                      Motor anterior / piloto — no usar para cotización final
+                    </span>
+                    <Badge variant="outline" className="text-[10px] border-amber-500/60 text-amber-700">
+                      Referencia interna
+                    </Badge>
+                    {q.price_override_mxn != null && (
+                      <Badge variant="destructive" className="text-[10px]">
+                        Override manual activo
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-amber-700/90">
+                    Este bloque será reemplazado por “Trabajos de impresión”. Úsalo sólo como referencia interna.
+                  </p>
+                </div>
               </div>
               <ChevronDown className={`w-4 h-4 transition-transform ${peOpen ? "rotate-180" : ""}`} />
             </button>
@@ -1181,6 +1190,11 @@ export default function FormalQuoteEditor() {
         </Collapsible>
       </Card>
 
+      {/* Trabajos de impresión — nuevo modelo (interno, operativo) */}
+      {quoteId && (
+        <FormalQuotePrintJobsSection formalQuoteId={quoteId} disabled={isLocked} />
+      )}
+
       {/* Totales */}
       <Card>
         <CardHeader>
@@ -1245,10 +1259,6 @@ export default function FormalQuoteEditor() {
         </CardContent>
       </Card>
 
-      {/* Trabajos de impresión — nuevo modelo (interno, experimental) */}
-      {quoteId && (
-        <FormalQuotePrintJobsSection formalQuoteId={quoteId} disabled={isLocked} />
-      )}
 
       {/* Banco */}
       <Card>

@@ -200,6 +200,32 @@ export async function removeItemFromPrintJob(id: string): Promise<void> {
   if (error) throw error;
 }
 
+export type FormalQuotePrintJobItemUpdate =
+  Database["public"]["Tables"]["formal_quote_print_job_items"]["Update"];
+
+export async function updatePrintJobItem(
+  id: string,
+  values: FormalQuotePrintJobItemUpdate,
+): Promise<FormalQuotePrintJobItem> {
+  if (values.allocation_mode === "fijo") {
+    if (values.allocation_amount_mxn == null) {
+      throw new Error("Si allocation_mode = 'fijo', allocation_amount_mxn es obligatorio.");
+    }
+    const amount = Number(values.allocation_amount_mxn);
+    if (!Number.isFinite(amount) || amount < 0) {
+      throw new Error("El precio manual debe ser mayor o igual a 0.");
+    }
+  }
+  const { data, error } = await supabase
+    .from("formal_quote_print_job_items")
+    .update(values)
+    .eq("id", id)
+    .select(ITEM_COLS)
+    .single();
+  if (error) throw error;
+  return data as FormalQuotePrintJobItem;
+}
+
 // ---------- Components ----------
 
 export async function createPrintJobComponent(

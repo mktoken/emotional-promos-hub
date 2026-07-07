@@ -22,6 +22,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useFormalQuotePrintJobs } from "@/features/crm/hooks/useFormalQuotePrintJobs";
+import { useFormalQuoteItems, type FormalQuoteItemRow } from "@/features/crm/hooks/useFormalQuotes";
 import { usePrintRules } from "@/features/crm/hooks/usePrintRules";
 import { usePrintSettings } from "@/features/crm/hooks/usePrintSettings";
 import { calcPrintEngine, type PrintEngineResult } from "@/features/crm/lib/print-engine";
@@ -29,7 +30,7 @@ import {
   validatePrintJob,
   type PrintJobPricingStatus,
 } from "@/features/crm/lib/formal-quote-validation";
-import type { FormalQuotePrintJob } from "@/features/crm/lib/formal-quote-print-jobs";
+import type { FormalQuotePrintJob, FormalQuotePrintJobItem } from "@/features/crm/lib/formal-quote-print-jobs";
 import { formatMoney } from "@/features/crm/lib/formal-quote-calc";
 
 interface Props {
@@ -42,8 +43,11 @@ export function FormalQuotePrintJobsSection({ formalQuoteId, disabled }: Props) 
   const api = useFormalQuotePrintJobs(formalQuoteId);
   const rules = usePrintRules();
   const settings = usePrintSettings();
+  const quoteItemsQuery = useFormalQuoteItems(formalQuoteId);
   const jobs = api.jobs.data ?? [];
   const components = api.components.data ?? [];
+  const jobItems = api.items.data ?? [];
+  const quoteItems = quoteItemsQuery.data ?? [];
 
   const handleCreate = async () => {
     try {
@@ -103,6 +107,8 @@ export function FormalQuotePrintJobsSection({ formalQuoteId, disabled }: Props) 
                 key={job.id}
                 job={job}
                 components={components.filter((c) => c.print_job_id === job.id)}
+                jobItems={jobItems.filter((ji) => ji.print_job_id === job.id)}
+                quoteItems={quoteItems}
                 api={api}
                 rules={rules}
                 settings={settings}
@@ -137,6 +143,8 @@ type Settings = ReturnType<typeof usePrintSettings>;
 function PrintJobCard({
   job,
   components,
+  jobItems,
+  quoteItems,
   api,
   rules,
   settings,
@@ -144,6 +152,8 @@ function PrintJobCard({
 }: {
   job: FormalQuotePrintJob;
   components: NonNullable<Api["components"]["data"]>;
+  jobItems: FormalQuotePrintJobItem[];
+  quoteItems: FormalQuoteItemRow[];
   api: Api;
   rules: Rules;
   settings: Settings;
@@ -172,6 +182,13 @@ function PrintJobCard({
   const [chargeLabel, setChargeLabel] = useState("");
   const [chargeDesc, setChargeDesc] = useState("");
   const [chargeAmount, setChargeAmount] = useState("");
+
+  const [addItemId, setAddItemId] = useState<string>("");
+
+  const perItemReasons = useMemo<Record<string, string>>(() => {
+    const snap = job.calculation_snapshot as { per_item_reasons?: Record<string, string> } | null;
+    return snap?.per_item_reasons ?? {};
+  }, [job.calculation_snapshot]);
 
   const methods = rules.methods.data ?? [];
   const defaultLogistics = job.logistics_fee_default_mxn ?? 350;
@@ -363,6 +380,119 @@ function PrintJobCard({
     }
   };
 
+  // ===== Partidas asignadas al trabajo (precio manual por partida) =====
+  const assignedQuoteItemIds = new Set(jobItems.map((ji) => ji.formal_quote_item_id));
+  const availableQuoteItems = quoteItems.filter((qi) => !assignedQuoteItemIds.has(qi.id));
+
+  const handleAssignItem = async () => {
+    if (!addItemId) return;
+    const qi = quoteItems.find((x) => x.id === addItemId);
+    if (!qi) return;
+    try {
+      await api.assignItem.mutateAsync({
+        print_job_id: job.id,
+        formal_quote_item_id: qi.id,
+        quantity: Math.max(1, Math.floor(Number(qi.cantidad ?? 1))),
+        allocation_mode: "proporcional",
+        allocation_amount_mxn: null,
+      });
+      setAddItemId("");
+      toast.success("Partida asignada al trabajo");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se pudo asignar");
+    }
+  };
+
+  const handleSaveManualItem = async (
+    jobItem: FormalQuotePrintJobItem,
+    priceStr: string,
+    reason: string,
+    qtyStr: string,
+  ) => {
+    const price = Number(priceStr);
+    const qty = Math.max(1, Math.floor(Number(qtyStr)));
+    if (!Number.isFinite(price) || price < 0) {
+      toast.error("El precio manual debe ser mayor o igual a 0.");
+      return;
+    }
+    if (reason.trim().length < 4) {
+      toast.error("Captura un motivo o referencia (mín. 4 caracteres).");
+      return;
+    }
+    try {
+      await api.updateItem.mutateAsync({
+        id: jobItem.id,
+        values: {
+          allocation_mode: "fijo",
+          allocation_amount_mxn: price,
+          quantity: qty,
+        },
+      });
+      const nextReasons = { ...perItemReasons, [jobItem.id]: reason.trim() };
+      const nextSnap = {
+        ...((job.calculation_snapshot as Record<string, unknown>) ?? {}),
+        per_item_reasons: nextReasons,
+      };
+      await api.updateJob.mutateAsync({
+        id: job.id,
+        values: { calculation_snapshot: nextSnap as unknown as never },
+      });
+      toast.success("Precio manual guardado");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se pudo guardar");
+    }
+  };
+
+  const handleRemoveAssignment = async (id: string) => {
+    if (!confirm("¿Quitar esta partida del trabajo?")) return;
+    try {
+      await api.removeItem.mutateAsync(id);
+      toast.success("Partida quitada");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se pudo quitar");
+    }
+  };
+
+  const manualJobItems = jobItems.filter(
+    (ji) => ji.allocation_mode === "fijo" && ji.allocation_amount_mxn != null,
+  );
+  const manualTotal = manualJobItems.reduce(
+    (acc, ji) => acc + Number(ji.allocation_amount_mxn ?? 0),
+    0,
+  );
+  const manualQty = manualJobItems.reduce((acc, ji) => acc + Number(ji.quantity ?? 0), 0);
+  const canApplyManual =
+    manualJobItems.length > 0 &&
+    manualJobItems.length === jobItems.length &&
+    manualQty > 0 &&
+    overrideReason.trim().length >= 10;
+
+  const handleApplyManualPerItem = async () => {
+    if (!canApplyManual) {
+      toast.error(
+        "Todas las partidas deben tener precio manual y el motivo del trabajo debe tener ≥ 10 caracteres.",
+      );
+      return;
+    }
+    try {
+      await api.updateJob.mutateAsync({
+        id: job.id,
+        values: {
+          pricing_status: "manual",
+          customer_print_price_mxn: Math.round(manualTotal * 100) / 100,
+          customer_unit_price_mxn:
+            manualQty > 0 ? Math.round((manualTotal / manualQty) * 100) / 100 : 0,
+          override_reason: overrideReason.trim(),
+        },
+      });
+      setPricingStatus("manual");
+      toast.success("Precio manual por partida aplicado al trabajo");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se pudo aplicar");
+    }
+  };
+
+
   const statusBadge = () => {
     switch (pricingStatus) {
       case "calculado":
@@ -516,6 +646,99 @@ function PrintJobCard({
         >
           Aplicar precio de impresión al trabajo
         </Button>
+      </div>
+
+      {/* Partidas asignadas al trabajo (captura manual por partida) */}
+      <div className="pt-2 border-t space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs font-medium">
+            Partidas asignadas ({jobItems.length})
+          </p>
+          <Badge variant="outline" className="text-[10px]">
+            Modo manual usa allocation_mode=&quot;fijo&quot;
+          </Badge>
+        </div>
+
+        {jobItems.length === 0 && (
+          <p className="text-xs text-muted-foreground">
+            Aún no hay partidas asignadas a este trabajo.
+          </p>
+        )}
+
+        {jobItems.map((ji) => {
+          const qi = quoteItems.find((x) => x.id === ji.formal_quote_item_id) ?? null;
+          return (
+            <PrintJobItemRow
+              key={ji.id}
+              jobItem={ji}
+              quoteItem={qi}
+              initialReason={perItemReasons[ji.id] ?? ""}
+              disabled={disabled}
+              onSave={(price, reason, qty) =>
+                handleSaveManualItem(ji, price, reason, qty)
+              }
+              onRemove={() => handleRemoveAssignment(ji.id)}
+            />
+          );
+        })}
+
+        {availableQuoteItems.length > 0 && (
+          <div className="flex flex-wrap gap-2 items-end">
+            <div className="flex-1 min-w-[220px]">
+              <Label className="text-xs">Agregar partida al trabajo</Label>
+              <Select value={addItemId} onValueChange={setAddItemId} disabled={disabled}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona una partida de la cotización" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableQuoteItems.map((qi) => (
+                    <SelectItem key={qi.id} value={qi.id}>
+                      #{qi.position} · {qi.modelo_comercial ?? qi.descripcion ?? "Partida"} ·{" "}
+                      {Number(qi.cantidad ?? 0).toLocaleString("es-MX")} pzas
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleAssignItem}
+              disabled={disabled || !addItemId || api.assignItem.isPending}
+            >
+              <Plus className="w-4 h-4 mr-1" /> Asignar
+            </Button>
+          </div>
+        )}
+
+        {jobItems.length > 0 && (
+          <div className="rounded-md border bg-background p-2 text-xs space-y-1">
+            <ResRow
+              k={`Total impresión manual (${manualJobItems.length}/${jobItems.length} con precio)`}
+              v={formatMoney(manualTotal)}
+              bold
+            />
+            <ResRow
+              k={`Unitario ponderado (${manualQty} pzas)`}
+              v={formatMoney(manualQty > 0 ? manualTotal / manualQty : 0)}
+            />
+            <div className="flex justify-end pt-1">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={handleApplyManualPerItem}
+                disabled={disabled || !canApplyManual || api.updateJob.isPending}
+                title={
+                  !canApplyManual
+                    ? "Todas las partidas deben tener precio manual y motivo del trabajo (≥ 10 caracteres)"
+                    : "Aplicar precio manual por partida al trabajo"
+                }
+              >
+                Aplicar precio manual por partida
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Resultado del motor */}
@@ -678,6 +901,113 @@ function ResRow({ k, v, bold }: { k: string; v: string; bold?: boolean }) {
     <div className={`flex justify-between ${bold ? "font-semibold" : ""}`}>
       <span className="text-muted-foreground">{k}</span>
       <span>{v}</span>
+    </div>
+  );
+}
+
+function PrintJobItemRow({
+  jobItem,
+  quoteItem,
+  initialReason,
+  disabled,
+  onSave,
+  onRemove,
+}: {
+  jobItem: FormalQuotePrintJobItem;
+  quoteItem: FormalQuoteItemRow | null;
+  initialReason: string;
+  disabled?: boolean;
+  onSave: (price: string, reason: string, qty: string) => void | Promise<void>;
+  onRemove: () => void;
+}) {
+  const [price, setPrice] = useState<string>(
+    jobItem.allocation_amount_mxn != null ? String(jobItem.allocation_amount_mxn) : "",
+  );
+  const [reason, setReason] = useState<string>(initialReason);
+  const [qty, setQty] = useState<string>(String(jobItem.quantity ?? 1));
+
+  const qtyN = Math.max(1, Math.floor(Number(qty) || 0));
+  const priceN = Number(price);
+  const unit =
+    Number.isFinite(priceN) && priceN >= 0 && qtyN > 0 ? priceN / qtyN : 0;
+
+  const isFijo = jobItem.allocation_mode === "fijo" && jobItem.allocation_amount_mxn != null;
+  const status = isFijo ? "manual" : "pendiente";
+
+  const displayName =
+    quoteItem?.modelo_comercial ??
+    quoteItem?.descripcion ??
+    quoteItem?.clave_producto ??
+    "Partida";
+
+  return (
+    <div className="rounded-md border bg-background p-2 space-y-2">
+      <div className="flex items-start justify-between gap-2">
+        <div className="text-xs">
+          <div className="font-medium">
+            {quoteItem ? `#${quoteItem.position} · ${displayName}` : "Partida (eliminada)"}
+          </div>
+          <div className="text-muted-foreground">
+            Cantidad original: {Number(quoteItem?.cantidad ?? 0).toLocaleString("es-MX")} pzas
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant={isFijo ? "default" : "outline"} className="text-[10px]">
+            {status}
+          </Badge>
+          <Button size="sm" variant="ghost" onClick={onRemove} disabled={disabled}>
+            <Trash2 className="w-3 h-3" />
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+        <div className="space-y-1">
+          <Label className="text-[10px]">Cantidad</Label>
+          <Input
+            type="number"
+            min="1"
+            value={qty}
+            onChange={(e) => setQty(e.target.value)}
+            disabled={disabled}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-[10px]">Precio total impresión (MXN)</Label>
+          <Input
+            type="number"
+            min="0"
+            step="0.01"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            disabled={disabled}
+            placeholder="0.00"
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-[10px]">Unitario calculado</Label>
+          <Input value={formatMoney(unit)} readOnly disabled />
+        </div>
+        <div className="space-y-1 md:col-span-1">
+          <Label className="text-[10px]">Motivo / referencia</Label>
+          <Input
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            disabled={disabled}
+            placeholder="Ej. Cotización proveedor X"
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <Button
+          size="sm"
+          onClick={() => onSave(price, reason, qty)}
+          disabled={disabled}
+        >
+          Guardar precio manual
+        </Button>
+      </div>
     </div>
   );
 }

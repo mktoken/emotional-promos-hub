@@ -706,6 +706,119 @@ export default function FormalQuoteEditor() {
         </CardContent>
       </Card>
 
+
+      {/* Trabajos de impresión — nuevo modelo (interno, operativo) */}
+      {quoteId && (
+        <FormalQuotePrintJobsSection formalQuoteId={quoteId} disabled={isLocked} />
+      )}
+
+      {/* Totales */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Totales</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-1.5 text-sm">
+          <TotalRow k="Subtotal" v={formatMoney(totals.subtotal)} />
+          <TotalRow k={`IVA (${(taxRate * 100).toFixed(0)}%)`} v={formatMoney(totals.tax_amount)} />
+          <div className="flex justify-between font-semibold text-base pt-2 border-t border-border/50">
+            <span>Total</span>
+            <span>{formatMoney(totals.total)}</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Condiciones */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Condiciones y notas</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <Label htmlFor="condp">Condiciones de pago</Label>
+            <Textarea
+              id="condp"
+              rows={2}
+              value={condPago}
+              onChange={(e) => setCondPago(e.target.value)}
+              disabled={isLocked}
+            />
+          </div>
+          <div>
+            <Label htmlFor="conde">Condiciones de entrega</Label>
+            <Textarea
+              id="conde"
+              rows={2}
+              value={condEntrega}
+              onChange={(e) => setCondEntrega(e.target.value)}
+              disabled={isLocked}
+            />
+          </div>
+          <div>
+            <Label htmlFor="notaspub">Notas públicas (aparecen en la cotización)</Label>
+            <Textarea
+              id="notaspub"
+              rows={2}
+              value={notasPub}
+              onChange={(e) => setNotasPub(e.target.value)}
+              disabled={isLocked}
+            />
+          </div>
+          <div>
+            <Label htmlFor="notasint">Notas internas (no se imprimen)</Label>
+            <Textarea
+              id="notasint"
+              rows={2}
+              value={notasInt}
+              onChange={(e) => setNotasInt(e.target.value)}
+              disabled={isLocked}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+
+      {/* Banco */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Datos bancarios</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {banks.isLoading && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
+          {!banks.isLoading && (banks.data ?? []).length === 0 && (
+            <p className="text-sm text-muted-foreground">No hay cuentas bancarias activas.</p>
+          )}
+          {(banks.data ?? []).length > 0 && (
+            <Select value={selectedBankId} onValueChange={setSelectedBankId} disabled={isLocked}>
+              <SelectTrigger aria-label="Cuenta bancaria">
+                <SelectValue placeholder="Selecciona cuenta" />
+              </SelectTrigger>
+              <SelectContent>
+                {(banks.data ?? []).map((b) => (
+                  <SelectItem key={b.id} value={b.id}>
+                    {b.bank_name} · {b.account_holder}
+                    {b.is_default ? " (default)" : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <p className="text-xs text-muted-foreground">
+            Al emitir se guarda un snapshot con los datos exactos del banco.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Guardar */}
+      <div className="flex justify-end sticky bottom-2 z-10">
+        <Button onClick={handleSaveHeader} disabled={updateQuote.isPending || isLocked} className="shadow-lg">
+          {updateQuote.isPending ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Save className="w-4 h-4 mr-2" />
+          )}
+          Guardar cambios
+        </Button>
+      </div>
       {/* Motor anterior / piloto — reemplazado por Trabajos de impresión */}
       <Card className="border-amber-500/40 bg-amber-500/5">
         <Collapsible open={peOpen} onOpenChange={setPeOpen}>
@@ -720,7 +833,7 @@ export default function FormalQuoteEditor() {
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-sm">
-                      Motor anterior / piloto — no usar para cotización final
+                      Debug interno — motor anterior
                     </span>
                     <Badge variant="outline" className="text-[10px] border-amber-500/60 text-amber-700">
                       Referencia interna
@@ -1189,119 +1302,6 @@ export default function FormalQuoteEditor() {
           </CollapsibleContent>
         </Collapsible>
       </Card>
-
-      {/* Trabajos de impresión — nuevo modelo (interno, operativo) */}
-      {quoteId && (
-        <FormalQuotePrintJobsSection formalQuoteId={quoteId} disabled={isLocked} />
-      )}
-
-      {/* Totales */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Totales</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-1.5 text-sm">
-          <TotalRow k="Subtotal" v={formatMoney(totals.subtotal)} />
-          <TotalRow k={`IVA (${(taxRate * 100).toFixed(0)}%)`} v={formatMoney(totals.tax_amount)} />
-          <div className="flex justify-between font-semibold text-base pt-2 border-t border-border/50">
-            <span>Total</span>
-            <span>{formatMoney(totals.total)}</span>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Condiciones */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Condiciones y notas</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div>
-            <Label htmlFor="condp">Condiciones de pago</Label>
-            <Textarea
-              id="condp"
-              rows={2}
-              value={condPago}
-              onChange={(e) => setCondPago(e.target.value)}
-              disabled={isLocked}
-            />
-          </div>
-          <div>
-            <Label htmlFor="conde">Condiciones de entrega</Label>
-            <Textarea
-              id="conde"
-              rows={2}
-              value={condEntrega}
-              onChange={(e) => setCondEntrega(e.target.value)}
-              disabled={isLocked}
-            />
-          </div>
-          <div>
-            <Label htmlFor="notaspub">Notas públicas (aparecen en la cotización)</Label>
-            <Textarea
-              id="notaspub"
-              rows={2}
-              value={notasPub}
-              onChange={(e) => setNotasPub(e.target.value)}
-              disabled={isLocked}
-            />
-          </div>
-          <div>
-            <Label htmlFor="notasint">Notas internas (no se imprimen)</Label>
-            <Textarea
-              id="notasint"
-              rows={2}
-              value={notasInt}
-              onChange={(e) => setNotasInt(e.target.value)}
-              disabled={isLocked}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-
-      {/* Banco */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Datos bancarios</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {banks.isLoading && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
-          {!banks.isLoading && (banks.data ?? []).length === 0 && (
-            <p className="text-sm text-muted-foreground">No hay cuentas bancarias activas.</p>
-          )}
-          {(banks.data ?? []).length > 0 && (
-            <Select value={selectedBankId} onValueChange={setSelectedBankId} disabled={isLocked}>
-              <SelectTrigger aria-label="Cuenta bancaria">
-                <SelectValue placeholder="Selecciona cuenta" />
-              </SelectTrigger>
-              <SelectContent>
-                {(banks.data ?? []).map((b) => (
-                  <SelectItem key={b.id} value={b.id}>
-                    {b.bank_name} · {b.account_holder}
-                    {b.is_default ? " (default)" : ""}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          <p className="text-xs text-muted-foreground">
-            Al emitir se guarda un snapshot con los datos exactos del banco.
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Guardar */}
-      <div className="flex justify-end sticky bottom-2 z-10">
-        <Button onClick={handleSaveHeader} disabled={updateQuote.isPending || isLocked} className="shadow-lg">
-          {updateQuote.isPending ? (
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          ) : (
-            <Save className="w-4 h-4 mr-2" />
-          )}
-          Guardar cambios
-        </Button>
-      </div>
     </div>
   );
 }

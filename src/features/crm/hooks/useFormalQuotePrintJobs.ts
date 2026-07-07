@@ -14,6 +14,7 @@ import {
   removeItemFromPrintJob,
   updatePrintJob,
   updatePrintJobComponent,
+  updatePrintJobItem,
   type FormalQuotePrintJob,
   type FormalQuotePrintJobComponent,
   type FormalQuotePrintJobComponentInsert,
@@ -21,6 +22,7 @@ import {
   type FormalQuotePrintJobInsert,
   type FormalQuotePrintJobItem,
   type FormalQuotePrintJobItemInsert,
+  type FormalQuotePrintJobItemUpdate,
   type FormalQuotePrintJobUpdate,
 } from "@/features/crm/lib/formal-quote-print-jobs";
 
@@ -88,6 +90,12 @@ export function useFormalQuotePrintJobs(formalQuoteId: string | undefined) {
     onSuccess: invalidateAll,
   });
 
+  const updateItem = useMutation({
+    mutationFn: ({ id, values }: { id: string; values: FormalQuotePrintJobItemUpdate }) =>
+      updatePrintJobItem(id, values),
+    onSuccess: invalidateAll,
+  });
+
   const createComponent = useMutation({
     mutationFn: (values: FormalQuotePrintJobComponentInsert) =>
       createPrintJobComponent(values),
@@ -139,6 +147,7 @@ export function useFormalQuotePrintJobs(formalQuoteId: string | undefined) {
     deleteJob,
     assignItem,
     removeItem,
+    updateItem,
     createComponent,
     updateComponent,
     deleteComponent,

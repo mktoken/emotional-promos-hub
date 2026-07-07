@@ -120,7 +120,7 @@ export function PrintJobItemDialog({
       const a = Number(jobItem.allocation_amount_mxn ?? 0);
       setPriceUnit(q > 0 && a > 0 ? String(Math.round((a / q) * 100) / 100) : "");
       setReason(initialReason);
-      setMethodId(job.print_method_id ?? quoteItem?.print_method ?? "");
+      setMethodId(job.print_method_id ?? qiPrintMethod ?? "");
       setColors(Number(job.print_colors ?? quoteItem?.print_colors ?? 1) || 1);
       setPositions(Number(job.print_positions ?? 1) || 1);
     }

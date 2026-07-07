@@ -107,7 +107,7 @@ export function validatePrintJob(
     errors.push("Un precio manual requiere motivo de override.");
   }
 
-  return errors.length === 0 ? { ok: true } : { ok: false, errors };
+  return { ok: errors.length === 0, errors };
 }
 
 export function validatePrintJobComponent(
@@ -171,7 +171,7 @@ export function validatePrintJobComponent(
     }
   }
 
-  return errors.length === 0 ? { ok: true } : { ok: false, errors };
+  return { ok: errors.length === 0, errors };
 }
 
 /**

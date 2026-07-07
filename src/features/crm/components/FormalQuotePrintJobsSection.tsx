@@ -380,6 +380,119 @@ function PrintJobCard({
     }
   };
 
+  // ===== Partidas asignadas al trabajo (precio manual por partida) =====
+  const assignedQuoteItemIds = new Set(jobItems.map((ji) => ji.formal_quote_item_id));
+  const availableQuoteItems = quoteItems.filter((qi) => !assignedQuoteItemIds.has(qi.id));
+
+  const handleAssignItem = async () => {
+    if (!addItemId) return;
+    const qi = quoteItems.find((x) => x.id === addItemId);
+    if (!qi) return;
+    try {
+      await api.assignItem.mutateAsync({
+        print_job_id: job.id,
+        formal_quote_item_id: qi.id,
+        quantity: Math.max(1, Math.floor(Number(qi.cantidad ?? 1))),
+        allocation_mode: "proporcional",
+        allocation_amount_mxn: null,
+      });
+      setAddItemId("");
+      toast.success("Partida asignada al trabajo");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se pudo asignar");
+    }
+  };
+
+  const handleSaveManualItem = async (
+    jobItem: FormalQuotePrintJobItem,
+    priceStr: string,
+    reason: string,
+    qtyStr: string,
+  ) => {
+    const price = Number(priceStr);
+    const qty = Math.max(1, Math.floor(Number(qtyStr)));
+    if (!Number.isFinite(price) || price < 0) {
+      toast.error("El precio manual debe ser mayor o igual a 0.");
+      return;
+    }
+    if (reason.trim().length < 4) {
+      toast.error("Captura un motivo o referencia (mín. 4 caracteres).");
+      return;
+    }
+    try {
+      await api.updateItem.mutateAsync({
+        id: jobItem.id,
+        values: {
+          allocation_mode: "fijo",
+          allocation_amount_mxn: price,
+          quantity: qty,
+        },
+      });
+      const nextReasons = { ...perItemReasons, [jobItem.id]: reason.trim() };
+      const nextSnap = {
+        ...((job.calculation_snapshot as Record<string, unknown>) ?? {}),
+        per_item_reasons: nextReasons,
+      };
+      await api.updateJob.mutateAsync({
+        id: job.id,
+        values: { calculation_snapshot: nextSnap as unknown as never },
+      });
+      toast.success("Precio manual guardado");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se pudo guardar");
+    }
+  };
+
+  const handleRemoveAssignment = async (id: string) => {
+    if (!confirm("¿Quitar esta partida del trabajo?")) return;
+    try {
+      await api.removeItem.mutateAsync(id);
+      toast.success("Partida quitada");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se pudo quitar");
+    }
+  };
+
+  const manualJobItems = jobItems.filter(
+    (ji) => ji.allocation_mode === "fijo" && ji.allocation_amount_mxn != null,
+  );
+  const manualTotal = manualJobItems.reduce(
+    (acc, ji) => acc + Number(ji.allocation_amount_mxn ?? 0),
+    0,
+  );
+  const manualQty = manualJobItems.reduce((acc, ji) => acc + Number(ji.quantity ?? 0), 0);
+  const canApplyManual =
+    manualJobItems.length > 0 &&
+    manualJobItems.length === jobItems.length &&
+    manualQty > 0 &&
+    overrideReason.trim().length >= 10;
+
+  const handleApplyManualPerItem = async () => {
+    if (!canApplyManual) {
+      toast.error(
+        "Todas las partidas deben tener precio manual y el motivo del trabajo debe tener ≥ 10 caracteres.",
+      );
+      return;
+    }
+    try {
+      await api.updateJob.mutateAsync({
+        id: job.id,
+        values: {
+          pricing_status: "manual",
+          customer_print_price_mxn: Math.round(manualTotal * 100) / 100,
+          customer_unit_price_mxn:
+            manualQty > 0 ? Math.round((manualTotal / manualQty) * 100) / 100 : 0,
+          override_reason: overrideReason.trim(),
+        },
+      });
+      setPricingStatus("manual");
+      toast.success("Precio manual por partida aplicado al trabajo");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se pudo aplicar");
+    }
+  };
+
+
   const statusBadge = () => {
     switch (pricingStatus) {
       case "calculado":

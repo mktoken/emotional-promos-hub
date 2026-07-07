@@ -1190,6 +1190,11 @@ export default function FormalQuoteEditor() {
         </Collapsible>
       </Card>
 
+      {/* Trabajos de impresión — nuevo modelo (interno, operativo) */}
+      {quoteId && (
+        <FormalQuotePrintJobsSection formalQuoteId={quoteId} disabled={isLocked} />
+      )}
+
       {/* Totales */}
       <Card>
         <CardHeader>

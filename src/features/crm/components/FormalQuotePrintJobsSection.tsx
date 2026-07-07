@@ -183,6 +183,13 @@ function PrintJobCard({
   const [chargeDesc, setChargeDesc] = useState("");
   const [chargeAmount, setChargeAmount] = useState("");
 
+  const [addItemId, setAddItemId] = useState<string>("");
+
+  const perItemReasons = useMemo<Record<string, string>>(() => {
+    const snap = job.calculation_snapshot as { per_item_reasons?: Record<string, string> } | null;
+    return snap?.per_item_reasons ?? {};
+  }, [job.calculation_snapshot]);
+
   const methods = rules.methods.data ?? [];
   const defaultLogistics = job.logistics_fee_default_mxn ?? 350;
   const logisticsNum = Number(logistics);

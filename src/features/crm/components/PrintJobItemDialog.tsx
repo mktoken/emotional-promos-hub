@@ -78,6 +78,7 @@ export function PrintJobItemDialog({
   rules,
   settings,
   disabled,
+  onSavedManual,
 }: Props) {
   const methods = rules.methods.data ?? [];
 

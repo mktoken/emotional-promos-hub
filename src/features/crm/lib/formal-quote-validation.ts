@@ -62,9 +62,10 @@ export interface PrintJobComponentValidationInput {
   is_visible_to_client?: boolean;
 }
 
-export type ValidationResult =
-  | { ok: true }
-  | { ok: false; errors: string[] };
+export interface ValidationResult {
+  ok: boolean;
+  errors: string[];
+}
 
 const nonBlank = (v?: string | null): boolean =>
   typeof v === "string" && v.trim().length > 0;

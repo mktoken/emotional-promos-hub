@@ -14,6 +14,7 @@ import {
   removeItemFromPrintJob,
   updatePrintJob,
   updatePrintJobComponent,
+  updatePrintJobItem,
   type FormalQuotePrintJob,
   type FormalQuotePrintJobComponent,
   type FormalQuotePrintJobComponentInsert,
@@ -21,6 +22,7 @@ import {
   type FormalQuotePrintJobInsert,
   type FormalQuotePrintJobItem,
   type FormalQuotePrintJobItemInsert,
+  type FormalQuotePrintJobItemUpdate,
   type FormalQuotePrintJobUpdate,
 } from "@/features/crm/lib/formal-quote-print-jobs";
 

@@ -90,6 +90,12 @@ export function useFormalQuotePrintJobs(formalQuoteId: string | undefined) {
     onSuccess: invalidateAll,
   });
 
+  const updateItem = useMutation({
+    mutationFn: ({ id, values }: { id: string; values: FormalQuotePrintJobItemUpdate }) =>
+      updatePrintJobItem(id, values),
+    onSuccess: invalidateAll,
+  });
+
   const createComponent = useMutation({
     mutationFn: (values: FormalQuotePrintJobComponentInsert) =>
       createPrintJobComponent(values),

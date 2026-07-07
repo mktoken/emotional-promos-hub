@@ -197,6 +197,8 @@ export function PrintJobItemDialog({
         calculation_snapshot: nextSnap as unknown as never,
         customer_print_price_mxn: Math.round(total * 100) / 100,
         customer_unit_price_mxn: unit,
+        pricing_status: "manual",
+        override_reason: savedReason,
       },
     });
   };

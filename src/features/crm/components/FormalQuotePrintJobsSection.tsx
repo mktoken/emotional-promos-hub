@@ -107,6 +107,8 @@ export function FormalQuotePrintJobsSection({ formalQuoteId, disabled }: Props) 
                 key={job.id}
                 job={job}
                 components={components.filter((c) => c.print_job_id === job.id)}
+                jobItems={jobItems.filter((ji) => ji.print_job_id === job.id)}
+                quoteItems={quoteItems}
                 api={api}
                 rules={rules}
                 settings={settings}

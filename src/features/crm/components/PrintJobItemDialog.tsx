@@ -54,6 +54,16 @@ interface Props {
   rules: Rules;
   settings: Settings;
   disabled?: boolean;
+  onSavedManual?: (info: {
+    totalMxn: number;
+    unitMxn: number;
+    qty: number;
+    methodId: string | null;
+    methodName: string | null;
+    colors: number;
+    positions: number;
+    reason: string;
+  }) => Promise<void> | void;
 }
 
 export function PrintJobItemDialog({

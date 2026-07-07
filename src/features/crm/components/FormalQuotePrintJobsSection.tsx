@@ -674,9 +674,11 @@ function PrintJobCard({
               quoteItem={qi}
               initialReason={perItemReasons[ji.id] ?? ""}
               disabled={disabled}
-              onSave={(price, reason, qty) =>
-                handleSaveManualItem(ji, price, reason, qty)
-              }
+              job={job}
+              allJobItems={jobItems}
+              api={api}
+              rules={rules}
+              settings={settings}
               onRemove={() => handleRemoveAssignment(ji.id)}
             />
           );

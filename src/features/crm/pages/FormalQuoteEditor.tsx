@@ -50,6 +50,7 @@ import { usePrintSettings } from "@/features/crm/hooks/usePrintSettings";
 import { usePrintRules } from "@/features/crm/hooks/usePrintRules";
 import { calcPrintEngine, suggestPrintMethod, type PrintEngineResult } from "@/features/crm/lib/print-engine";
 import type { Json } from "@/integrations/supabase/types";
+import { FormalQuotePrintJobsSection } from "@/features/crm/components/FormalQuotePrintJobsSection";
 
 const STAFF = new Set(["admin", "sales_manager", "sales_agent"]);
 
@@ -1243,6 +1244,11 @@ export default function FormalQuoteEditor() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Trabajos de impresión — nuevo modelo (interno, experimental) */}
+      {quoteId && (
+        <FormalQuotePrintJobsSection formalQuoteId={quoteId} disabled={isLocked} />
+      )}
 
       {/* Banco */}
       <Card>

@@ -1245,13 +1245,17 @@ export type Database = {
           is_kit_parent: boolean
           modelo_comercial: string
           notes: string | null
+          notes_customer: string | null
+          notes_internal: string | null
           parent_item_id: string | null
           personalizacion: Json
           position: number
           precio_unitario: number
           print_colors: number | null
           print_method: string | null
+          print_status: string
           print_unit_price: number
+          product_ref_id: string | null
           setup_fee: number
           source: string
           subtotal: number
@@ -1271,13 +1275,17 @@ export type Database = {
           is_kit_parent?: boolean
           modelo_comercial: string
           notes?: string | null
+          notes_customer?: string | null
+          notes_internal?: string | null
           parent_item_id?: string | null
           personalizacion?: Json
           position?: number
           precio_unitario?: number
           print_colors?: number | null
           print_method?: string | null
+          print_status?: string
           print_unit_price?: number
+          product_ref_id?: string | null
           setup_fee?: number
           source?: string
           subtotal?: number
@@ -1297,13 +1305,17 @@ export type Database = {
           is_kit_parent?: boolean
           modelo_comercial?: string
           notes?: string | null
+          notes_customer?: string | null
+          notes_internal?: string | null
           parent_item_id?: string | null
           personalizacion?: Json
           position?: number
           precio_unitario?: number
           print_colors?: number | null
           print_method?: string | null
+          print_status?: string
           print_unit_price?: number
+          product_ref_id?: string | null
           setup_fee?: number
           source?: string
           subtotal?: number
@@ -1323,6 +1335,197 @@ export type Database = {
             columns: ["parent_item_id"]
             isOneToOne: false
             referencedRelation: "formal_quote_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      formal_quote_print_job_components: {
+        Row: {
+          amount_mxn: number
+          applies: boolean
+          component_type: string
+          condition_note: string | null
+          created_at: string
+          description: string | null
+          id: string
+          include_in_customer_price: boolean
+          is_conditional: boolean
+          is_manual: boolean
+          is_visible_to_client: boolean
+          label: string
+          print_job_id: string
+          quantity: number | null
+          sort_order: number
+          unit_cost_mxn: number | null
+          updated_at: string
+        }
+        Insert: {
+          amount_mxn?: number
+          applies?: boolean
+          component_type: string
+          condition_note?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          include_in_customer_price?: boolean
+          is_conditional?: boolean
+          is_manual?: boolean
+          is_visible_to_client?: boolean
+          label: string
+          print_job_id: string
+          quantity?: number | null
+          sort_order?: number
+          unit_cost_mxn?: number | null
+          updated_at?: string
+        }
+        Update: {
+          amount_mxn?: number
+          applies?: boolean
+          component_type?: string
+          condition_note?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          include_in_customer_price?: boolean
+          is_conditional?: boolean
+          is_manual?: boolean
+          is_visible_to_client?: boolean
+          label?: string
+          print_job_id?: string
+          quantity?: number | null
+          sort_order?: number
+          unit_cost_mxn?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formal_quote_print_job_components_print_job_id_fkey"
+            columns: ["print_job_id"]
+            isOneToOne: false
+            referencedRelation: "formal_quote_print_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      formal_quote_print_job_items: {
+        Row: {
+          allocation_amount_mxn: number | null
+          allocation_mode: string
+          formal_quote_item_id: string
+          id: string
+          print_job_id: string
+          quantity: number
+        }
+        Insert: {
+          allocation_amount_mxn?: number | null
+          allocation_mode?: string
+          formal_quote_item_id: string
+          id?: string
+          print_job_id: string
+          quantity: number
+        }
+        Update: {
+          allocation_amount_mxn?: number | null
+          allocation_mode?: string
+          formal_quote_item_id?: string
+          id?: string
+          print_job_id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formal_quote_print_job_items_formal_quote_item_id_fkey"
+            columns: ["formal_quote_item_id"]
+            isOneToOne: false
+            referencedRelation: "formal_quote_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "formal_quote_print_job_items_print_job_id_fkey"
+            columns: ["print_job_id"]
+            isOneToOne: false
+            referencedRelation: "formal_quote_print_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      formal_quote_print_jobs: {
+        Row: {
+          calculation_snapshot: Json
+          created_at: string
+          customer_print_price_mxn: number | null
+          customer_unit_price_mxn: number | null
+          formal_quote_id: string
+          id: string
+          internal_print_cost_mxn: number | null
+          job_label: string
+          logistics_fee_default_mxn: number
+          logistics_fee_mxn: number
+          logistics_override_reason: string | null
+          override_reason: string | null
+          position: number
+          pricing_status: string
+          print_colors: number | null
+          print_method_id: string | null
+          print_method_name_snapshot: string | null
+          print_positions: number | null
+          updated_at: string
+        }
+        Insert: {
+          calculation_snapshot?: Json
+          created_at?: string
+          customer_print_price_mxn?: number | null
+          customer_unit_price_mxn?: number | null
+          formal_quote_id: string
+          id?: string
+          internal_print_cost_mxn?: number | null
+          job_label?: string
+          logistics_fee_default_mxn?: number
+          logistics_fee_mxn?: number
+          logistics_override_reason?: string | null
+          override_reason?: string | null
+          position?: number
+          pricing_status?: string
+          print_colors?: number | null
+          print_method_id?: string | null
+          print_method_name_snapshot?: string | null
+          print_positions?: number | null
+          updated_at?: string
+        }
+        Update: {
+          calculation_snapshot?: Json
+          created_at?: string
+          customer_print_price_mxn?: number | null
+          customer_unit_price_mxn?: number | null
+          formal_quote_id?: string
+          id?: string
+          internal_print_cost_mxn?: number | null
+          job_label?: string
+          logistics_fee_default_mxn?: number
+          logistics_fee_mxn?: number
+          logistics_override_reason?: string | null
+          override_reason?: string | null
+          position?: number
+          pricing_status?: string
+          print_colors?: number | null
+          print_method_id?: string | null
+          print_method_name_snapshot?: string | null
+          print_positions?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formal_quote_print_jobs_formal_quote_id_fkey"
+            columns: ["formal_quote_id"]
+            isOneToOne: false
+            referencedRelation: "formal_quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "formal_quote_print_jobs_print_method_id_fkey"
+            columns: ["print_method_id"]
+            isOneToOne: false
+            referencedRelation: "print_methods"
             referencedColumns: ["id"]
           },
         ]
@@ -3635,6 +3838,7 @@ export type Database = {
       can_access_client: { Args: { _client_id: string }; Returns: boolean }
       can_access_deal: { Args: { _deal_id: string }; Returns: boolean }
       can_access_lead: { Args: { _lead_id: string }; Returns: boolean }
+      can_manage_formal_quote: { Args: { _quote_id: string }; Returns: boolean }
       crm_make_lead_dedupe_hash: {
         Args: {
           p_company: string

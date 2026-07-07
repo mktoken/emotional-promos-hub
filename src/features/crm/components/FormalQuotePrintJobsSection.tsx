@@ -22,6 +22,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useFormalQuotePrintJobs } from "@/features/crm/hooks/useFormalQuotePrintJobs";
+import { useFormalQuoteItems, type FormalQuoteItemRow } from "@/features/crm/hooks/useFormalQuotes";
 import { usePrintRules } from "@/features/crm/hooks/usePrintRules";
 import { usePrintSettings } from "@/features/crm/hooks/usePrintSettings";
 import { calcPrintEngine, type PrintEngineResult } from "@/features/crm/lib/print-engine";
@@ -29,7 +30,7 @@ import {
   validatePrintJob,
   type PrintJobPricingStatus,
 } from "@/features/crm/lib/formal-quote-validation";
-import type { FormalQuotePrintJob } from "@/features/crm/lib/formal-quote-print-jobs";
+import type { FormalQuotePrintJob, FormalQuotePrintJobItem } from "@/features/crm/lib/formal-quote-print-jobs";
 import { formatMoney } from "@/features/crm/lib/formal-quote-calc";
 
 interface Props {

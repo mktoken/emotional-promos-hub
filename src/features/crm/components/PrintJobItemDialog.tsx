@@ -83,8 +83,17 @@ export function PrintJobItemDialog({
   });
   const [reason, setReason] = useState<string>(initialReason);
 
+  const qiPrintMethod =
+    typeof quoteItem?.print_method === "string" ? quoteItem.print_method : "";
+  const personalizacionText =
+    typeof quoteItem?.personalizacion === "string"
+      ? quoteItem.personalizacion
+      : quoteItem?.personalizacion != null
+        ? JSON.stringify(quoteItem.personalizacion)
+        : "";
+
   const [methodId, setMethodId] = useState<string>(
-    job.print_method_id ?? quoteItem?.print_method ?? "",
+    job.print_method_id ?? qiPrintMethod ?? "",
   );
   const [colors, setColors] = useState<number>(
     Number(job.print_colors ?? quoteItem?.print_colors ?? 1) || 1,

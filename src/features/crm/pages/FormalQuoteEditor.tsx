@@ -1856,3 +1856,110 @@ function PeRow({ k, v, strong, raw }: { k: string; v: number; strong?: boolean; 
     </div>
   );
 }
+
+function ProductLookupPanel({
+  item,
+  productRef,
+  disabled,
+  onApply,
+  onUnlink,
+}: {
+  item: FormalQuoteItemRow;
+  productRef: ProductRef | null;
+  disabled?: boolean;
+  onApply: (match: SafeProductMatch) => void;
+  onUnlink: () => void;
+}) {
+  const [query, setQuery] = useState<string>(
+    cleanText(item.clave_producto) ?? cleanText(item.modelo_comercial) ?? "",
+  );
+  const [results, setResults] = useState<SafeProductMatch[] | null>(null);
+  const [searching, setSearching] = useState(false);
+
+  const handleSearch = async () => {
+    if (query.trim().length < 2) {
+      toast.error("Captura al menos 2 caracteres de la clave.");
+      return;
+    }
+    try {
+      setSearching(true);
+      const res = await searchProductByClave(query.trim(), 5);
+      setResults(res);
+      if (res.length === 0) {
+        toast.message("Sin coincidencias para esa clave.");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al buscar producto");
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  return (
+    <div className="rounded-md border border-dashed border-border bg-background/60 p-2 space-y-2">
+      <div className="flex items-center gap-2 flex-wrap">
+        <Search className="w-4 h-4 text-muted-foreground" />
+        <span className="text-xs font-medium">Buscar producto por clave / SKU</span>
+        {productRef && (
+          <Badge variant="secondary" className="text-[10px]">
+            Vinculado: {productRef.id_interno ?? productRef.sku_base ?? productRef.ref_id} · {productRef.source}
+          </Badge>
+        )}
+      </div>
+      <div className="flex gap-2">
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Clave, SKU o modelo"
+          disabled={disabled || searching}
+        />
+        <Button size="sm" onClick={handleSearch} disabled={disabled || searching}>
+          {searching && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+          Buscar
+        </Button>
+        {productRef && (
+          <Button size="sm" variant="ghost" onClick={onUnlink} disabled={disabled}>
+            Desvincular
+          </Button>
+        )}
+      </div>
+      {results && results.length > 0 && (
+        <div className="space-y-1 max-h-64 overflow-y-auto">
+          {results.map((r) => (
+            <div
+              key={`${r.source}-${r.ref_id}`}
+              className="flex items-center justify-between gap-2 rounded border px-2 py-1 text-xs"
+            >
+              <div className="min-w-0">
+                <p className="font-medium truncate">{r.nombre ?? r.id_interno ?? r.ref_id}</p>
+                <p className="text-muted-foreground truncate">
+                  {[
+                    r.id_interno ? `Clave: ${r.id_interno}` : null,
+                    r.sku_base && r.sku_base !== r.id_interno ? `SKU: ${r.sku_base}` : null,
+                    r.categoria,
+                    r.precio_desde_mxn != null ? `Desde $${r.precio_desde_mxn}` : null,
+                    r.has_scales ? `${r.scales.length} escalas` : "sin escala",
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+              </div>
+              <div className="flex items-center gap-1">
+                <Badge variant="outline" className="text-[10px]">
+                  {r.source}
+                </Badge>
+                <Button size="sm" variant="outline" onClick={() => onApply(r)} disabled={disabled}>
+                  Vincular y prellenar
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {results && results.length === 0 && (
+        <p className="text-[11px] text-muted-foreground">Sin coincidencias.</p>
+      )}
+    </div>
+  );
+}
+

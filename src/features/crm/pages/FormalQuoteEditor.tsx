@@ -1692,7 +1692,7 @@ function ItemEditor({
           value={local.cantidad}
           step={1}
           onChange={(n) => setLocal({ ...local, cantidad: n })}
-          onCommit={(n) => commit({ cantidad: n })}
+          onCommit={(n) => handleQtyCommit(n)}
           disabled={disabled}
         />
         <NumField

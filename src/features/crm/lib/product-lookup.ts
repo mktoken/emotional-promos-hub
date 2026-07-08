@@ -33,7 +33,8 @@ export interface SafeProductMatch {
 function n(v: unknown): number | null {
   if (typeof v === "number" && Number.isFinite(v)) return v;
   if (typeof v === "string" && v.trim() !== "") {
-    const p = Number(v);
+    const normalized = v.replace(/[$,\s]/g, "");
+    const p = Number(normalized);
     return Number.isFinite(p) ? p : null;
   }
   return null;
@@ -44,7 +45,16 @@ function s(v: unknown): string | null {
     const t = v.trim();
     return t.length > 0 ? t : null;
   }
+  if (typeof v === "number" && Number.isFinite(v)) return String(v);
   return null;
+}
+
+function norm(v: unknown): string {
+  return (s(v) ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
 }
 
 function extractImage(imgs: unknown): string | null {
@@ -54,14 +64,14 @@ function extractImage(imgs: unknown): string | null {
       if (typeof x === "string" && x.trim()) return x.trim();
       if (x && typeof x === "object") {
         const obj = x as Record<string, unknown>;
-        const u = s(obj.url) ?? s(obj.src) ?? s(obj.imagen) ?? s(obj.href);
+        const u = s(obj.url) ?? s(obj.src) ?? s(obj.imagen) ?? s(obj.href) ?? s(obj.imagen_url);
         if (u) return u;
       }
     }
   }
   if (typeof imgs === "object") {
     const obj = imgs as Record<string, unknown>;
-    return s(obj.url) ?? s(obj.src) ?? s(obj.principal) ?? null;
+    return s(obj.url) ?? s(obj.src) ?? s(obj.principal) ?? s(obj.imagen_url) ?? null;
   }
   return null;
 }
@@ -75,6 +85,7 @@ function extractName(dg: unknown, fallback: string | null): string | null {
       s(obj.nombre) ??
       s(obj.titulo) ??
       s(obj.modelo) ??
+      s(obj.product_name) ??
       fallback
     );
   }
@@ -89,6 +100,7 @@ function extractDescription(dg: unknown): string | null {
       s(obj.descripcion_larga) ??
       s(obj.descripcion_comercial) ??
       s(obj.detalle) ??
+      s(obj.description) ??
       null
     );
   }
@@ -98,7 +110,7 @@ function extractDescription(dg: unknown): string | null {
 function extractUnit(dg: unknown): string | null {
   if (dg && typeof dg === "object") {
     const obj = dg as Record<string, unknown>;
-    return s(obj.unidad) ?? s(obj.unidad_medida) ?? null;
+    return s(obj.unidad) ?? s(obj.unidad_medida) ?? s(obj.unit) ?? null;
   }
   return null;
 }
@@ -113,36 +125,67 @@ function extractDefaultColor(variantes: unknown): string | null {
   return null;
 }
 
-// Extrae escalas seguras (unit_price_mxn) desde variantes públicas si existen.
-// productos_publicos no expone costos; sólo unit_price/precio si vienen.
-function extractPublicScales(
-  variantes: unknown,
-): SafeProductMatch["scales"] {
-  const out: SafeProductMatch["scales"] = [];
-  if (!Array.isArray(variantes)) return out;
-  for (const v of variantes) {
-    if (!v || typeof v !== "object") continue;
-    const obj = v as Record<string, unknown>;
-    const escalas = obj.escalas ?? obj.precio_escalas ?? obj.precios;
-    if (!Array.isArray(escalas)) continue;
-    for (const e of escalas) {
-      if (!e || typeof e !== "object") continue;
-      const eo = e as Record<string, unknown>;
-      const min = n(eo.min_qty) ?? n(eo.min) ?? n(eo.desde);
-      const max = n(eo.max_qty) ?? n(eo.max) ?? n(eo.hasta);
-      const unit =
-        n(eo.unit_price_mxn) ??
-        n(eo.precio_unitario_mxn) ??
-        n(eo.precio_unitario) ??
-        n(eo.precio) ??
-        null;
-      if (min != null && unit != null && unit > 0) {
-        out.push({ min_qty: min, max_qty: max, unit_price_mxn: unit });
-      }
-    }
+const MIN_KEYS = ["min_qty", "min", "desde", "cantidad_minima", "qty_min", "rango_desde"];
+const MAX_KEYS = ["max_qty", "max", "hasta", "cantidad_maxima", "qty_max", "rango_hasta"];
+const SAFE_PRICE_KEYS = [
+  "unit_price_mxn",
+  "precio_unitario_mxn",
+  "precio_unitario",
+  "precio_venta_mxn",
+  "precio_venta",
+  "precio_publico_mxn",
+  "precio_publico",
+  "precio_lista_mxn",
+  "precio_lista",
+  "precio_mxn",
+  "precio",
+  "price",
+  "sale_price",
+];
+
+function firstNumber(obj: Record<string, unknown>, keys: string[]): number | null {
+  for (const k of keys) {
+    const v = n(obj[k]);
+    if (v != null) return v;
   }
-  out.sort((a, b) => a.min_qty - b.min_qty);
-  return out;
+  return null;
+}
+
+function collectScales(value: unknown, out: SafeProductMatch["scales"], depth = 0) {
+  if (depth > 5 || value == null) return;
+  if (Array.isArray(value)) {
+    for (const item of value) collectScales(item, out, depth + 1);
+    return;
+  }
+  if (typeof value !== "object") return;
+  const obj = value as Record<string, unknown>;
+
+  const min = firstNumber(obj, MIN_KEYS);
+  const max = firstNumber(obj, MAX_KEYS);
+  const unit = firstNumber(obj, SAFE_PRICE_KEYS);
+
+  if (min != null && unit != null && unit > 0) {
+    out.push({ min_qty: min, max_qty: max, unit_price_mxn: unit });
+  }
+
+  // Recorrer estructuras comunes, sin leer campos de costo/proveedor.
+  for (const key of ["escalas", "precio_escalas", "precios", "tiers", "rango_precios", "variantes"]) {
+    if (key in obj) collectScales(obj[key], out, depth + 1);
+  }
+}
+
+// Extrae escalas seguras (unit_price_mxn) desde variantes/datos públicos si existen.
+// Nunca usa claves de costo: cost, costeo, costo, unit_cost, margen, proveedor.
+function extractPublicScales(...values: unknown[]): SafeProductMatch["scales"] {
+  const out: SafeProductMatch["scales"] = [];
+  for (const v of values) collectScales(v, out);
+
+  const dedup = new Map<string, SafeProductMatch["scales"][number]>();
+  for (const sc of out) {
+    if (sc.min_qty <= 0 || sc.unit_price_mxn <= 0) continue;
+    dedup.set(`${sc.min_qty}-${sc.max_qty ?? ""}-${sc.unit_price_mxn}`, sc);
+  }
+  return Array.from(dedup.values()).sort((a, b) => a.min_qty - b.min_qty);
 }
 
 export function pickPriceForQty(
@@ -168,99 +211,192 @@ export function pickPriceForQty(
   return null;
 }
 
+function rowToSafeMatch(source: ProductLookupSource, row: Record<string, unknown>): SafeProductMatch | null {
+  const id = s(row.id);
+  if (!id) return null;
+  const dg = row.datos_generales;
+  const vars_ = row.variantes;
+  const scales = extractPublicScales(vars_, dg);
+  const precioDesde = n(row.precio_desde_mxn);
+
+  return {
+    source,
+    ref_id: id,
+    id_interno: s(row.id_interno),
+    sku_base: s(row.sku_base),
+    nombre: extractName(dg, s(row.id_interno) ?? s(row.sku_base)),
+    descripcion: extractDescription(dg),
+    categoria: s(row.categoria_principal),
+    imagen_url: extractImage(row.imagenes),
+    precio_desde_mxn: precioDesde ?? scales[0]?.unit_price_mxn ?? null,
+    color_default: extractDefaultColor(vars_),
+    unidad: extractUnit(dg) ?? "PZA",
+    scales,
+    has_scales: scales.length > 0,
+  };
+}
+
+function matchSearchText(row: Record<string, unknown>, query: string): boolean {
+  const qn = norm(query);
+  if (!qn) return false;
+  const dg =
+    row.datos_generales && typeof row.datos_generales === "object"
+      ? (row.datos_generales as Record<string, unknown>)
+      : {};
+  const values = [
+    row.id_interno,
+    row.sku_base,
+    dg.nombre_comercial,
+    dg.modelo_comercial,
+    dg.nombre,
+    dg.titulo,
+    dg.modelo,
+    dg.descripcion,
+    dg.descripcion_comercial,
+  ];
+  return values.some((v) => {
+    const vn = norm(v);
+    return vn.length > 0 && (vn.includes(qn) || qn.includes(vn));
+  });
+}
+
+export function isExactProductMatch(match: SafeProductMatch, query: string): boolean {
+  const qn = norm(query);
+  if (!qn) return false;
+  return [match.id_interno, match.sku_base, match.nombre].some((v) => norm(v) === qn);
+}
+
+function dedupeMatches(matches: SafeProductMatch[]): SafeProductMatch[] {
+  const seen = new Set<string>();
+  const out: SafeProductMatch[] = [];
+  for (const m of matches) {
+    const key = `${m.source}-${m.ref_id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(m);
+  }
+  return out;
+}
+
+async function searchPublicos(query: string, limit: number): Promise<SafeProductMatch[]> {
+  const like = `%${query}%`;
+  const fields = "id,id_interno,sku_base,categoria_principal,datos_generales,variantes,imagenes,precio_desde_mxn";
+
+  const results: SafeProductMatch[] = [];
+
+  // Intento 1: filtro en DB por campos directos + JSON comercial.
+  const { data, error } = await supabase
+    .from("productos_publicos")
+    .select(fields)
+    .or(
+      [
+        `id_interno.ilike.${like}`,
+        `sku_base.ilike.${like}`,
+        `datos_generales->>modelo_comercial.ilike.${like}`,
+        `datos_generales->>nombre_comercial.ilike.${like}`,
+        `datos_generales->>nombre.ilike.${like}`,
+        `datos_generales->>modelo.ilike.${like}`,
+      ].join(","),
+    )
+    .limit(Math.max(limit, 10));
+
+  if (!error) {
+    for (const row of data ?? []) {
+      const m = rowToSafeMatch("publico", row as Record<string, unknown>);
+      if (m) results.push(m);
+    }
+  }
+
+  // Intento 2: fallback client-side para casos donde PostgREST no filtre JSON
+  // o el modelo esté guardado en otro campo comercial.
+  if (results.length === 0) {
+    const { data: fallback } = await supabase.from("productos_publicos").select(fields).limit(300);
+
+    for (const row of fallback ?? []) {
+      const r = row as Record<string, unknown>;
+      if (!matchSearchText(r, query)) continue;
+      const m = rowToSafeMatch("publico", r);
+      if (m) results.push(m);
+      if (results.length >= limit) break;
+    }
+  }
+
+  return dedupeMatches(results).slice(0, limit);
+}
+
+async function searchB2B(query: string, limit: number): Promise<SafeProductMatch[]> {
+  const like = `%${query}%`;
+  const fields = "id,id_interno,sku_base,categoria_principal,datos_generales,variantes,imagenes,activo";
+
+  const results: SafeProductMatch[] = [];
+
+  const { data, error } = await supabase
+    .from("productos_b2b")
+    .select(fields)
+    .or(
+      [
+        `id_interno.ilike.${like}`,
+        `sku_base.ilike.${like}`,
+        `datos_generales->>modelo_comercial.ilike.${like}`,
+        `datos_generales->>nombre_comercial.ilike.${like}`,
+        `datos_generales->>nombre.ilike.${like}`,
+        `datos_generales->>modelo.ilike.${like}`,
+      ].join(","),
+    )
+    .limit(Math.max(limit, 10));
+
+  if (!error) {
+    for (const row of data ?? []) {
+      const r = row as Record<string, unknown>;
+      if (r.activo === false) continue;
+      const m = rowToSafeMatch("b2b", r);
+      if (m) results.push(m);
+    }
+  }
+
+  if (results.length === 0) {
+    const { data: fallback } = await supabase.from("productos_b2b").select(fields).eq("activo", true).limit(300);
+
+    for (const row of fallback ?? []) {
+      const r = row as Record<string, unknown>;
+      if (!matchSearchText(r, query)) continue;
+      const m = rowToSafeMatch("b2b", r);
+      if (m) results.push(m);
+      if (results.length >= limit) break;
+    }
+  }
+
+  return dedupeMatches(results).slice(0, limit);
+}
+
 // -------------- búsqueda ----------------
 
 /**
  * Busca un producto por clave/modelo/SKU en:
  *  1) productos_publicos (vista segura del catálogo)
- *  2) productos_b2b (sólo campos comerciales)
+ *  2) productos_b2b (sólo campos comerciales whitelisted)
  * Devuelve como máximo `limit` resultados combinados.
  */
-export async function searchProductByClave(
-  query: string,
-  limit = 5,
-): Promise<SafeProductMatch[]> {
+export async function searchProductByClave(query: string, limit = 5): Promise<SafeProductMatch[]> {
   const q = query.trim();
   if (q.length < 2) return [];
-  const like = `%${q}%`;
-  const results: SafeProductMatch[] = [];
 
-  // 1) productos_publicos
-  try {
-    const { data: pubs } = await supabase
-      .from("productos_publicos")
-      .select(
-        "id,id_interno,sku_base,categoria_principal,datos_generales,variantes,imagenes,precio_desde_mxn",
-      )
-      .or(`id_interno.ilike.${like},sku_base.ilike.${like}`)
-      .limit(limit);
-    for (const row of pubs ?? []) {
-      if (!row || typeof row !== "object") continue;
-      const id = s((row as Record<string, unknown>).id);
-      if (!id) continue;
-      const dg = (row as Record<string, unknown>).datos_generales;
-      const vars_ = (row as Record<string, unknown>).variantes;
-      const scales = extractPublicScales(vars_);
-      results.push({
-        source: "publico",
-        ref_id: id,
-        id_interno: s((row as Record<string, unknown>).id_interno),
-        sku_base: s((row as Record<string, unknown>).sku_base),
-        nombre: extractName(dg, s((row as Record<string, unknown>).id_interno)),
-        descripcion: extractDescription(dg),
-        categoria: s((row as Record<string, unknown>).categoria_principal),
-        imagen_url: extractImage((row as Record<string, unknown>).imagenes),
-        precio_desde_mxn: n((row as Record<string, unknown>).precio_desde_mxn),
-        color_default: extractDefaultColor(vars_),
-        unidad: extractUnit(dg),
-        scales,
-        has_scales: scales.length > 0,
-      });
-    }
-  } catch (e) {
-    console.warn("[product-lookup] productos_publicos search failed", e);
-  }
+  const publicMatches = await searchPublicos(q, limit);
+  const remaining = Math.max(0, limit - publicMatches.length);
+  const b2bMatches = remaining > 0 ? await searchB2B(q, remaining) : [];
 
-  // 2) productos_b2b — NUNCA leer costeo, datos_logistica_b2b, proveedor.
-  try {
-    const remaining = Math.max(0, limit - results.length);
-    if (remaining > 0) {
-      const { data: b2b } = await supabase
-        .from("productos_b2b")
-        .select(
-          "id,id_interno,sku_base,categoria_principal,datos_generales,variantes,imagenes,activo",
-        )
-        .or(`id_interno.ilike.${like},sku_base.ilike.${like}`)
-        .limit(remaining);
-      for (const row of b2b ?? []) {
-        if (!row || typeof row !== "object") continue;
-        const r = row as Record<string, unknown>;
-        if (r.activo === false) continue;
-        const id = s(r.id);
-        if (!id) continue;
-        const dg = r.datos_generales;
-        const vars_ = r.variantes;
-        const scales = extractPublicScales(vars_); // sólo si públicamente disponibles en variantes
-        results.push({
-          source: "b2b",
-          ref_id: id,
-          id_interno: s(r.id_interno),
-          sku_base: s(r.sku_base),
-          nombre: extractName(dg, s(r.id_interno)),
-          descripcion: extractDescription(dg),
-          categoria: s(r.categoria_principal),
-          imagen_url: extractImage(r.imagenes),
-          precio_desde_mxn: null, // b2b no expone precio público de forma directa
-          color_default: extractDefaultColor(vars_),
-          unidad: extractUnit(dg),
-          scales,
-          has_scales: scales.length > 0,
-        });
-      }
-    }
-  } catch (e) {
-    console.warn("[product-lookup] productos_b2b search failed", e);
-  }
+  const combined = dedupeMatches([...publicMatches, ...b2bMatches]);
 
-  return results;
+  // Orden: coincidencia exacta primero, luego productos con precio/escala.
+  combined.sort((a, b) => {
+    const exactA = isExactProductMatch(a, q) ? 0 : 1;
+    const exactB = isExactProductMatch(b, q) ? 0 : 1;
+    if (exactA !== exactB) return exactA - exactB;
+    const priceA = a.has_scales || (a.precio_desde_mxn ?? 0) > 0 ? 0 : 1;
+    const priceB = b.has_scales || (b.precio_desde_mxn ?? 0) > 0 ? 0 : 1;
+    if (priceA !== priceB) return priceA - priceB;
+    return (a.nombre ?? "").localeCompare(b.nombre ?? "", "es");
+  });
+
+  return combined.slice(0, limit);
 }

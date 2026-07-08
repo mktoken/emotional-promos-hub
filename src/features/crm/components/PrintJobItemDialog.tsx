@@ -354,6 +354,13 @@ export function PrintJobItemDialog({
     }
   };
 
+  const claveDisplay =
+    (typeof quoteItem?.clave_producto === "string" && quoteItem.clave_producto.trim()) ||
+    "Sin clave";
+  const methodName = methodId
+    ? (methods.find((m) => m.id === methodId)?.name ?? null)
+    : null;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -369,6 +376,34 @@ export function PrintJobItemDialog({
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Resumen partida (producto / clave / técnica) */}
+          <div className="rounded-md border bg-muted/30 p-2 text-xs grid grid-cols-2 md:grid-cols-3 gap-2">
+            <div>
+              <p className="text-muted-foreground">Producto</p>
+              <p className="font-medium truncate">{displayName}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Clave / modelo</p>
+              <p className="font-medium">{claveDisplay}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Cantidad</p>
+              <p className="font-medium">{qtyN.toLocaleString("es-MX")} pzas</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Técnica</p>
+              <p className="font-medium">{methodName ?? "Sin técnica"}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Tintas</p>
+              <p className="font-medium">{colors}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Posiciones</p>
+              <p className="font-medium">{positions}</p>
+            </div>
+          </div>
+
           {/* Datos base */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="space-y-1">

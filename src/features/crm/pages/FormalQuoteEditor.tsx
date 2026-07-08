@@ -1497,6 +1497,30 @@ function ItemEditor({
   const hasDescription = Boolean(cleanText(local.descripcion));
   const clave = getItemClave(local);
   const personalizationLabel = getItemPersonalizationLabel(local);
+  const productRef = getProductRef(local);
+  const claveDisplay =
+    clave ??
+    productRef?.id_interno ??
+    productRef?.sku_base ??
+    cleanText(local.modelo_comercial) ??
+    "Sin clave";
+
+  const handleQtyCommit = (nQty: number) => {
+    const patch: Partial<FormalQuoteItemRow> = { cantidad: nQty };
+    if (productRef) {
+      const priced = pickPriceForQty(productRef, nQty);
+      if (priced && Number.isFinite(priced.unit_price_mxn) && priced.unit_price_mxn > 0) {
+        patch.precio_unitario = Math.round(priced.unit_price_mxn * 100) / 100;
+        setLocal({ ...local, ...patch });
+        if (!priced.used_scale) {
+          toast.message("Sin escala automática para este producto", {
+            description: `Se usó el precio base (${formatMoney(priced.unit_price_mxn)}).`,
+          });
+        }
+      }
+    }
+    commit(patch);
+  };
 
   return (
     <div className="border border-border/70 rounded-lg p-3 space-y-3 bg-muted/20">
@@ -1505,6 +1529,15 @@ function ItemEditor({
           <div className="flex items-center gap-2 flex-wrap">
             <Badge variant={item.source === "MANUAL" ? "secondary" : "outline"}>{item.source}</Badge>
             <span className="text-xs font-medium text-muted-foreground">Partida #{item.position}</span>
+            <Badge variant="outline" className="font-mono text-[10px]">
+              {claveDisplay}
+            </Badge>
+            {productRef && (
+              <Badge variant="secondary" className="text-[10px]">
+                <Link2 className="w-3 h-3 mr-1" />
+                Vinculado · {productRef.source}
+              </Badge>
+            )}
           </div>
           <h3 className="text-base font-semibold leading-tight break-words">{displayName}</h3>
           {commercialDescription && (
@@ -1512,7 +1545,10 @@ function ItemEditor({
           )}
           <p className="text-xs text-muted-foreground">
             {[
-              clave ? `Clave: ${clave}` : null,
+              `Clave: ${claveDisplay}`,
+              productRef?.sku_base && productRef.sku_base !== claveDisplay
+                ? `SKU: ${productRef.sku_base}`
+                : null,
               local.color ? `Color: ${local.color}` : null,
               `Cantidad: ${Number(local.cantidad ?? 0).toLocaleString("es-MX")} pzas`,
             ]
@@ -1530,6 +1566,61 @@ function ItemEditor({
           <Trash2 className="w-4 h-4" />
         </Button>
       </div>
+
+      <ProductLookupPanel
+        item={local}
+        productRef={productRef}
+        disabled={disabled}
+        onApply={(match) => {
+          const qty = Number(local.cantidad ?? 1) || 1;
+          const priced = pickPriceForQty(match, qty);
+          const pzBase = (local.personalizacion ?? null) as Record<string, unknown> | null;
+          const nextPz = {
+            ...(pzBase ?? {}),
+            __product_ref: {
+              source: match.source,
+              ref_id: match.ref_id,
+              id_interno: match.id_interno,
+              sku_base: match.sku_base,
+              precio_desde_mxn: match.precio_desde_mxn,
+              has_scales: match.has_scales,
+              scales: match.scales,
+            },
+          };
+          const patch: Partial<FormalQuoteItemRow> = {
+            clave_producto: match.id_interno ?? match.sku_base ?? local.clave_producto,
+            modelo_comercial: match.nombre ?? local.modelo_comercial,
+            descripcion: cleanText(local.descripcion) ?? match.descripcion ?? local.descripcion,
+            imagen_url: local.imagen_url ?? match.imagen_url,
+            color: local.color ?? match.color_default,
+            unidad: local.unidad ?? match.unidad ?? "PZA",
+            source: "CATALOG",
+            personalizacion: nextPz as unknown as FormalQuoteItemRow["personalizacion"],
+          };
+          if (priced && priced.unit_price_mxn > 0) {
+            patch.precio_unitario = Math.round(priced.unit_price_mxn * 100) / 100;
+          }
+          setLocal({ ...local, ...patch });
+          commit(patch);
+          toast.success("Producto vinculado y prellenado");
+          if (!match.has_scales) {
+            toast.message("Sin escala automática para este producto");
+          }
+        }}
+        onUnlink={() => {
+          const pzBase = (local.personalizacion ?? null) as Record<string, unknown> | null;
+          if (!pzBase || !("__product_ref" in pzBase)) return;
+          const { __product_ref: _r, ...rest } = pzBase;
+          void _r;
+          const patch: Partial<FormalQuoteItemRow> = {
+            personalizacion: rest as unknown as FormalQuoteItemRow["personalizacion"],
+          };
+          setLocal({ ...local, ...patch });
+          commit(patch);
+          toast.message("Producto desvinculado");
+        }}
+      />
+
 
       <div className="grid sm:grid-cols-2 gap-2">
         <div>

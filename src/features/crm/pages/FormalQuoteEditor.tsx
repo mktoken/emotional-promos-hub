@@ -14,7 +14,10 @@ import {
   Calculator,
   ShieldAlert,
   Lightbulb,
+  Search,
+  Link2,
 } from "lucide-react";
+
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,6 +55,12 @@ import { calcPrintEngine, suggestPrintMethod, type PrintEngineResult } from "@/f
 import type { Json } from "@/integrations/supabase/types";
 import { FormalQuotePrintJobsSection } from "@/features/crm/components/FormalQuotePrintJobsSection";
 import { QuoteItemPrintConfigurator } from "@/features/crm/components/QuoteItemPrintConfigurator";
+import {
+  searchProductByClave,
+  pickPriceForQty,
+  type SafeProductMatch,
+} from "@/features/crm/lib/product-lookup";
+
 
 const STAFF = new Set(["admin", "sales_manager", "sales_agent"]);
 
@@ -1367,8 +1376,59 @@ function getItemDescriptionSuggestion(item: FormalQuoteItemRow): string | null {
 }
 
 function getItemClave(item: FormalQuoteItemRow): string | null {
-  return cleanText(item.clave_producto);
+  const direct = cleanText(item.clave_producto);
+  if (direct) return direct;
+  const pz = (item.personalizacion ?? null) as Record<string, unknown> | null;
+  if (pz && typeof pz === "object") {
+    const ref = pz["__product_ref"];
+    if (ref && typeof ref === "object") {
+      const r = ref as Record<string, unknown>;
+      const v =
+        cleanText(typeof r.id_interno === "string" ? r.id_interno : null) ??
+        cleanText(typeof r.sku_base === "string" ? r.sku_base : null);
+      if (v) return v;
+    }
+    const fields = ["sku", "modelo", "codigo", "clave", "product_sku"];
+    for (const f of fields) {
+      const val = pz[f];
+      if (typeof val === "string" && val.trim()) return val.trim();
+    }
+  }
+  return cleanText(item.modelo_comercial);
 }
+
+interface ProductRef {
+  source: "publico" | "b2b";
+  ref_id: string;
+  id_interno: string | null;
+  sku_base: string | null;
+  precio_desde_mxn: number | null;
+  has_scales: boolean;
+  scales: SafeProductMatch["scales"];
+}
+
+function getProductRef(item: FormalQuoteItemRow): ProductRef | null {
+  const pz = (item.personalizacion ?? null) as Record<string, unknown> | null;
+  if (!pz || typeof pz !== "object") return null;
+  const raw = pz["__product_ref"];
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw as Record<string, unknown>;
+  if (typeof r.ref_id !== "string" || typeof r.source !== "string") return null;
+  return {
+    source: r.source === "b2b" ? "b2b" : "publico",
+    ref_id: r.ref_id,
+    id_interno: typeof r.id_interno === "string" ? r.id_interno : null,
+    sku_base: typeof r.sku_base === "string" ? r.sku_base : null,
+    precio_desde_mxn: typeof r.precio_desde_mxn === "number" ? r.precio_desde_mxn : null,
+    has_scales: Boolean(r.has_scales),
+    scales: Array.isArray(r.scales)
+      ? (r.scales as SafeProductMatch["scales"]).filter(
+          (s) => s && typeof s.min_qty === "number" && typeof s.unit_price_mxn === "number",
+        )
+      : [],
+  };
+}
+
 
 function getItemPersonalizationLabel(item: FormalQuoteItemRow): string | null {
   const raw = item.personalizacion as unknown;
@@ -1437,6 +1497,30 @@ function ItemEditor({
   const hasDescription = Boolean(cleanText(local.descripcion));
   const clave = getItemClave(local);
   const personalizationLabel = getItemPersonalizationLabel(local);
+  const productRef = getProductRef(local);
+  const claveDisplay =
+    clave ??
+    productRef?.id_interno ??
+    productRef?.sku_base ??
+    cleanText(local.modelo_comercial) ??
+    "Sin clave";
+
+  const handleQtyCommit = (nQty: number) => {
+    const patch: Partial<FormalQuoteItemRow> = { cantidad: nQty };
+    if (productRef) {
+      const priced = pickPriceForQty(productRef, nQty);
+      if (priced && Number.isFinite(priced.unit_price_mxn) && priced.unit_price_mxn > 0) {
+        patch.precio_unitario = Math.round(priced.unit_price_mxn * 100) / 100;
+        setLocal({ ...local, ...patch });
+        if (!priced.used_scale) {
+          toast.message("Sin escala automática para este producto", {
+            description: `Se usó el precio base (${formatMoney(priced.unit_price_mxn)}).`,
+          });
+        }
+      }
+    }
+    commit(patch);
+  };
 
   return (
     <div className="border border-border/70 rounded-lg p-3 space-y-3 bg-muted/20">
@@ -1445,6 +1529,15 @@ function ItemEditor({
           <div className="flex items-center gap-2 flex-wrap">
             <Badge variant={item.source === "MANUAL" ? "secondary" : "outline"}>{item.source}</Badge>
             <span className="text-xs font-medium text-muted-foreground">Partida #{item.position}</span>
+            <Badge variant="outline" className="font-mono text-[10px]">
+              {claveDisplay}
+            </Badge>
+            {productRef && (
+              <Badge variant="secondary" className="text-[10px]">
+                <Link2 className="w-3 h-3 mr-1" />
+                Vinculado · {productRef.source}
+              </Badge>
+            )}
           </div>
           <h3 className="text-base font-semibold leading-tight break-words">{displayName}</h3>
           {commercialDescription && (
@@ -1452,7 +1545,10 @@ function ItemEditor({
           )}
           <p className="text-xs text-muted-foreground">
             {[
-              clave ? `Clave: ${clave}` : null,
+              `Clave: ${claveDisplay}`,
+              productRef?.sku_base && productRef.sku_base !== claveDisplay
+                ? `SKU: ${productRef.sku_base}`
+                : null,
               local.color ? `Color: ${local.color}` : null,
               `Cantidad: ${Number(local.cantidad ?? 0).toLocaleString("es-MX")} pzas`,
             ]
@@ -1470,6 +1566,61 @@ function ItemEditor({
           <Trash2 className="w-4 h-4" />
         </Button>
       </div>
+
+      <ProductLookupPanel
+        item={local}
+        productRef={productRef}
+        disabled={disabled}
+        onApply={(match) => {
+          const qty = Number(local.cantidad ?? 1) || 1;
+          const priced = pickPriceForQty(match, qty);
+          const pzBase = (local.personalizacion ?? null) as Record<string, unknown> | null;
+          const nextPz = {
+            ...(pzBase ?? {}),
+            __product_ref: {
+              source: match.source,
+              ref_id: match.ref_id,
+              id_interno: match.id_interno,
+              sku_base: match.sku_base,
+              precio_desde_mxn: match.precio_desde_mxn,
+              has_scales: match.has_scales,
+              scales: match.scales,
+            },
+          };
+          const patch: Partial<FormalQuoteItemRow> = {
+            clave_producto: match.id_interno ?? match.sku_base ?? local.clave_producto,
+            modelo_comercial: match.nombre ?? local.modelo_comercial,
+            descripcion: cleanText(local.descripcion) ?? match.descripcion ?? local.descripcion,
+            imagen_url: local.imagen_url ?? match.imagen_url,
+            color: local.color ?? match.color_default,
+            unidad: local.unidad ?? match.unidad ?? "PZA",
+            source: "CATALOG",
+            personalizacion: nextPz as unknown as FormalQuoteItemRow["personalizacion"],
+          };
+          if (priced && priced.unit_price_mxn > 0) {
+            patch.precio_unitario = Math.round(priced.unit_price_mxn * 100) / 100;
+          }
+          setLocal({ ...local, ...patch });
+          commit(patch);
+          toast.success("Producto vinculado y prellenado");
+          if (!match.has_scales) {
+            toast.message("Sin escala automática para este producto");
+          }
+        }}
+        onUnlink={() => {
+          const pzBase = (local.personalizacion ?? null) as Record<string, unknown> | null;
+          if (!pzBase || !("__product_ref" in pzBase)) return;
+          const { __product_ref: _r, ...rest } = pzBase;
+          void _r;
+          const patch: Partial<FormalQuoteItemRow> = {
+            personalizacion: rest as unknown as FormalQuoteItemRow["personalizacion"],
+          };
+          setLocal({ ...local, ...patch });
+          commit(patch);
+          toast.message("Producto desvinculado");
+        }}
+      />
+
 
       <div className="grid sm:grid-cols-2 gap-2">
         <div>
@@ -1541,7 +1692,7 @@ function ItemEditor({
           value={local.cantidad}
           step={1}
           onChange={(n) => setLocal({ ...local, cantidad: n })}
-          onCommit={(n) => commit({ cantidad: n })}
+          onCommit={(n) => handleQtyCommit(n)}
           disabled={disabled}
         />
         <NumField
@@ -1705,3 +1856,110 @@ function PeRow({ k, v, strong, raw }: { k: string; v: number; strong?: boolean; 
     </div>
   );
 }
+
+function ProductLookupPanel({
+  item,
+  productRef,
+  disabled,
+  onApply,
+  onUnlink,
+}: {
+  item: FormalQuoteItemRow;
+  productRef: ProductRef | null;
+  disabled?: boolean;
+  onApply: (match: SafeProductMatch) => void;
+  onUnlink: () => void;
+}) {
+  const [query, setQuery] = useState<string>(
+    cleanText(item.clave_producto) ?? cleanText(item.modelo_comercial) ?? "",
+  );
+  const [results, setResults] = useState<SafeProductMatch[] | null>(null);
+  const [searching, setSearching] = useState(false);
+
+  const handleSearch = async () => {
+    if (query.trim().length < 2) {
+      toast.error("Captura al menos 2 caracteres de la clave.");
+      return;
+    }
+    try {
+      setSearching(true);
+      const res = await searchProductByClave(query.trim(), 5);
+      setResults(res);
+      if (res.length === 0) {
+        toast.message("Sin coincidencias para esa clave.");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al buscar producto");
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  return (
+    <div className="rounded-md border border-dashed border-border bg-background/60 p-2 space-y-2">
+      <div className="flex items-center gap-2 flex-wrap">
+        <Search className="w-4 h-4 text-muted-foreground" />
+        <span className="text-xs font-medium">Buscar producto por clave / SKU</span>
+        {productRef && (
+          <Badge variant="secondary" className="text-[10px]">
+            Vinculado: {productRef.id_interno ?? productRef.sku_base ?? productRef.ref_id} · {productRef.source}
+          </Badge>
+        )}
+      </div>
+      <div className="flex gap-2">
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Clave, SKU o modelo"
+          disabled={disabled || searching}
+        />
+        <Button size="sm" onClick={handleSearch} disabled={disabled || searching}>
+          {searching && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+          Buscar
+        </Button>
+        {productRef && (
+          <Button size="sm" variant="ghost" onClick={onUnlink} disabled={disabled}>
+            Desvincular
+          </Button>
+        )}
+      </div>
+      {results && results.length > 0 && (
+        <div className="space-y-1 max-h-64 overflow-y-auto">
+          {results.map((r) => (
+            <div
+              key={`${r.source}-${r.ref_id}`}
+              className="flex items-center justify-between gap-2 rounded border px-2 py-1 text-xs"
+            >
+              <div className="min-w-0">
+                <p className="font-medium truncate">{r.nombre ?? r.id_interno ?? r.ref_id}</p>
+                <p className="text-muted-foreground truncate">
+                  {[
+                    r.id_interno ? `Clave: ${r.id_interno}` : null,
+                    r.sku_base && r.sku_base !== r.id_interno ? `SKU: ${r.sku_base}` : null,
+                    r.categoria,
+                    r.precio_desde_mxn != null ? `Desde $${r.precio_desde_mxn}` : null,
+                    r.has_scales ? `${r.scales.length} escalas` : "sin escala",
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+              </div>
+              <div className="flex items-center gap-1">
+                <Badge variant="outline" className="text-[10px]">
+                  {r.source}
+                </Badge>
+                <Button size="sm" variant="outline" onClick={() => onApply(r)} disabled={disabled}>
+                  Vincular y prellenar
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {results && results.length === 0 && (
+        <p className="text-[11px] text-muted-foreground">Sin coincidencias.</p>
+      )}
+    </div>
+  );
+}
+

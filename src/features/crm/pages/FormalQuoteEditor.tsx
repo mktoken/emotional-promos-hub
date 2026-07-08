@@ -1376,8 +1376,59 @@ function getItemDescriptionSuggestion(item: FormalQuoteItemRow): string | null {
 }
 
 function getItemClave(item: FormalQuoteItemRow): string | null {
-  return cleanText(item.clave_producto);
+  const direct = cleanText(item.clave_producto);
+  if (direct) return direct;
+  const pz = (item.personalizacion ?? null) as Record<string, unknown> | null;
+  if (pz && typeof pz === "object") {
+    const ref = pz["__product_ref"];
+    if (ref && typeof ref === "object") {
+      const r = ref as Record<string, unknown>;
+      const v =
+        cleanText(typeof r.id_interno === "string" ? r.id_interno : null) ??
+        cleanText(typeof r.sku_base === "string" ? r.sku_base : null);
+      if (v) return v;
+    }
+    const fields = ["sku", "modelo", "codigo", "clave", "product_sku"];
+    for (const f of fields) {
+      const val = pz[f];
+      if (typeof val === "string" && val.trim()) return val.trim();
+    }
+  }
+  return cleanText(item.modelo_comercial);
 }
+
+interface ProductRef {
+  source: "publico" | "b2b";
+  ref_id: string;
+  id_interno: string | null;
+  sku_base: string | null;
+  precio_desde_mxn: number | null;
+  has_scales: boolean;
+  scales: SafeProductMatch["scales"];
+}
+
+function getProductRef(item: FormalQuoteItemRow): ProductRef | null {
+  const pz = (item.personalizacion ?? null) as Record<string, unknown> | null;
+  if (!pz || typeof pz !== "object") return null;
+  const raw = pz["__product_ref"];
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw as Record<string, unknown>;
+  if (typeof r.ref_id !== "string" || typeof r.source !== "string") return null;
+  return {
+    source: r.source === "b2b" ? "b2b" : "publico",
+    ref_id: r.ref_id,
+    id_interno: typeof r.id_interno === "string" ? r.id_interno : null,
+    sku_base: typeof r.sku_base === "string" ? r.sku_base : null,
+    precio_desde_mxn: typeof r.precio_desde_mxn === "number" ? r.precio_desde_mxn : null,
+    has_scales: Boolean(r.has_scales),
+    scales: Array.isArray(r.scales)
+      ? (r.scales as SafeProductMatch["scales"]).filter(
+          (s) => s && typeof s.min_qty === "number" && typeof s.unit_price_mxn === "number",
+        )
+      : [],
+  };
+}
+
 
 function getItemPersonalizationLabel(item: FormalQuoteItemRow): string | null {
   const raw = item.personalizacion as unknown;

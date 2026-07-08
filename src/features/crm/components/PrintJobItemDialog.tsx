@@ -3,24 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Calculator, Lightbulb, Loader2 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useFormalQuotePrintJobs } from "@/features/crm/hooks/useFormalQuotePrintJobs";
 import { usePrintRules } from "@/features/crm/hooks/usePrintRules";
@@ -31,10 +19,7 @@ import {
   type PrintEngineResult,
   type PrintSuggestionResult,
 } from "@/features/crm/lib/print-engine";
-import type {
-  FormalQuotePrintJob,
-  FormalQuotePrintJobItem,
-} from "@/features/crm/lib/formal-quote-print-jobs";
+import type { FormalQuotePrintJob, FormalQuotePrintJobItem } from "@/features/crm/lib/formal-quote-print-jobs";
 import { formatMoney } from "@/features/crm/lib/formal-quote-calc";
 import type { FormalQuoteItemRow } from "@/features/crm/hooks/useFormalQuotes";
 
@@ -94,8 +79,7 @@ export function PrintJobItemDialog({
   });
   const [reason, setReason] = useState<string>(initialReason);
 
-  const qiPrintMethod =
-    typeof quoteItem?.print_method === "string" ? quoteItem.print_method : "";
+  const qiPrintMethod = typeof quoteItem?.print_method === "string" ? quoteItem.print_method : "";
   const personalizacionText =
     typeof quoteItem?.personalizacion === "string"
       ? quoteItem.personalizacion
@@ -103,15 +87,9 @@ export function PrintJobItemDialog({
         ? JSON.stringify(quoteItem.personalizacion)
         : "";
 
-  const [methodId, setMethodId] = useState<string>(
-    job.print_method_id ?? qiPrintMethod ?? "",
-  );
-  const [colors, setColors] = useState<number>(
-    Number(job.print_colors ?? quoteItem?.print_colors ?? 1) || 1,
-  );
-  const [positions, setPositions] = useState<number>(
-    Number(job.print_positions ?? 1) || 1,
-  );
+  const [methodId, setMethodId] = useState<string>(job.print_method_id ?? qiPrintMethod ?? "");
+  const [colors, setColors] = useState<number>(Number(job.print_colors ?? quoteItem?.print_colors ?? 1) || 1);
+  const [positions, setPositions] = useState<number>(Number(job.print_positions ?? 1) || 1);
 
   const [engineResult, setEngineResult] = useState<PrintEngineResult | null>(null);
   const [suggestion, setSuggestion] = useState<PrintSuggestionResult | null>(null);
@@ -124,9 +102,7 @@ export function PrintJobItemDialog({
       setSaving(false);
     } else {
       setQty(String(jobItem.quantity ?? quoteItem?.cantidad ?? 1));
-      setPriceTotal(
-        jobItem.allocation_amount_mxn != null ? String(jobItem.allocation_amount_mxn) : "",
-      );
+      setPriceTotal(jobItem.allocation_amount_mxn != null ? String(jobItem.allocation_amount_mxn) : "");
       const q = Number(jobItem.quantity ?? quoteItem?.cantidad ?? 0);
       const a = Number(jobItem.allocation_amount_mxn ?? 0);
       setPriceUnit(q > 0 && a > 0 ? String(Math.round((a / q) * 100) / 100) : "");
@@ -173,14 +149,9 @@ export function PrintJobItemDialog({
     return snap?.per_item_reasons ?? {};
   }, [job.calculation_snapshot]);
 
-  const recomputeJobTotals = async (
-    updatedItem: FormalQuotePrintJobItem,
-    savedReason: string,
-  ) => {
+  const recomputeJobTotals = async (updatedItem: FormalQuotePrintJobItem, savedReason: string) => {
     const nextItems = allJobItems.map((it) => (it.id === updatedItem.id ? updatedItem : it));
-    const fijos = nextItems.filter(
-      (i) => i.allocation_mode === "fijo" && i.allocation_amount_mxn != null,
-    );
+    const fijos = nextItems.filter((i) => i.allocation_mode === "fijo" && i.allocation_amount_mxn != null);
     const total = fijos.reduce((acc, i) => acc + Number(i.allocation_amount_mxn ?? 0), 0);
     const qtySum = fijos.reduce((acc, i) => acc + Number(i.quantity ?? 0), 0);
     const unit = qtySum > 0 ? Math.round((total / qtySum) * 100) / 100 : 0;
@@ -226,9 +197,7 @@ export function PrintJobItemDialog({
       await recomputeJobTotals(updated, reason.trim());
       const totalMxn = Math.round(total * 100) / 100;
       const unitMxn = qtyN > 0 ? Math.round((totalMxn / qtyN) * 100) / 100 : 0;
-      const methodName = methodId
-        ? (methods.find((m) => m.id === methodId)?.name ?? null)
-        : null;
+      const methodName = methodId ? (methods.find((m) => m.id === methodId)?.name ?? null) : null;
       if (onSavedManual) {
         try {
           await onSavedManual({
@@ -285,19 +254,14 @@ export function PrintJobItemDialog({
   };
 
   const handleSuggest = () => {
-    const res = suggestPrintMethod(
-      rules.methods.data ?? [],
-      rules.pricing.data ?? [],
-      rules.compat.data ?? [],
-      {
-        qty: qtyN,
-        colors,
-        positions,
-        material: null,
-        product_category: null,
-        personalization_label: personalizacionText || null,
-      },
-    );
+    const res = suggestPrintMethod(rules.methods.data ?? [], rules.pricing.data ?? [], rules.compat.data ?? [], {
+      qty: qtyN,
+      colors,
+      positions,
+      material: null,
+      product_category: null,
+      personalization_label: personalizacionText || null,
+    });
     setSuggestion(res);
     if (!res.primary) toast.warning("Sin sugerencia disponible.");
   };
@@ -335,11 +299,7 @@ export function PrintJobItemDialog({
     }
   };
 
-  const displayName =
-    quoteItem?.modelo_comercial ??
-    quoteItem?.descripcion ??
-    quoteItem?.clave_producto ??
-    "Partida";
+  const displayName = quoteItem?.modelo_comercial ?? quoteItem?.descripcion ?? quoteItem?.clave_producto ?? "Partida";
 
   const statusBadge = () => {
     switch (status) {
@@ -355,11 +315,8 @@ export function PrintJobItemDialog({
   };
 
   const claveDisplay =
-    (typeof quoteItem?.clave_producto === "string" && quoteItem.clave_producto.trim()) ||
-    "Sin clave";
-  const methodName = methodId
-    ? (methods.find((m) => m.id === methodId)?.name ?? null)
-    : null;
+    (typeof quoteItem?.clave_producto === "string" && quoteItem.clave_producto.trim()) || "Sin clave";
+  const methodName = methodId ? (methods.find((m) => m.id === methodId)?.name ?? null) : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -370,8 +327,8 @@ export function PrintJobItemDialog({
             {statusBadge()}
           </DialogTitle>
           <DialogDescription>
-            {quoteItem ? `#${quoteItem.position} · ${displayName}` : "Partida"} · Cantidad
-            original: {Number(quoteItem?.cantidad ?? 0).toLocaleString("es-MX")} pzas
+            {quoteItem ? `#${quoteItem.position} · ${displayName}` : "Partida"} · Cantidad original:{" "}
+            {Number(quoteItem?.cantidad ?? 0).toLocaleString("es-MX")} pzas
           </DialogDescription>
         </DialogHeader>
 
@@ -450,8 +407,8 @@ export function PrintJobItemDialog({
               </Badge>
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Captura el precio total o unitario. Se calcula el otro automáticamente.
-              El motivo/referencia es obligatorio (mín. 10 caracteres).
+              Captura el precio total o unitario. Se calcula el otro automáticamente. El motivo/referencia es
+              obligatorio (mín. 10 caracteres).
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -480,9 +437,7 @@ export function PrintJobItemDialog({
               </div>
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">
-                Motivo / referencia (obligatorio, mín. 10 caracteres)
-              </Label>
+              <Label className="text-xs">Motivo / referencia (obligatorio, mín. 10 caracteres)</Label>
               <Textarea
                 rows={2}
                 value={reason}
@@ -495,9 +450,7 @@ export function PrintJobItemDialog({
               <Button
                 size="sm"
                 onClick={handleSaveManual}
-                disabled={
-                  disabled || saving || !priceTotal || reason.trim().length < 10
-                }
+                disabled={disabled || saving || !priceTotal || reason.trim().length < 10}
               >
                 {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Guardar precio manual
@@ -509,12 +462,7 @@ export function PrintJobItemDialog({
           <div className="rounded-md border p-3 space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold">B · Calcular con motor</p>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleSuggest}
-                disabled={disabled || rules.isLoading}
-              >
+              <Button size="sm" variant="ghost" onClick={handleSuggest} disabled={disabled || rules.isLoading}>
                 <Lightbulb className="w-4 h-4 mr-1" /> Sugerir técnica
               </Button>
             </div>
@@ -543,11 +491,7 @@ export function PrintJobItemDialog({
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               <div className="space-y-1 md:col-span-2">
                 <Label className="text-xs">Técnica</Label>
-                <Select
-                  value={methodId}
-                  onValueChange={setMethodId}
-                  disabled={disabled || rules.isLoading}
-                >
+                <Select value={methodId} onValueChange={setMethodId} disabled={disabled || rules.isLoading}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona técnica" />
                   </SelectTrigger>
@@ -617,7 +561,11 @@ export function PrintJobItemDialog({
 
                 <div className="space-y-0.5">
                   <p className="font-semibold text-[11px] uppercase text-muted-foreground">
-                    Desglose interno (uso CRM)
+                    Desglose interno calculado (uso CRM)
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Reempaque y cargos extra NO se aplican automáticamente. Agrégalos sólo como cargo adicional manual
+                    si realmente aplican.
                   </p>
                   <Row k="Impresión base" v={formatMoney(engineResult.base_print_cost)} />
                   {engineResult.cost_breakdown.setup > 0 && (
@@ -627,10 +575,7 @@ export function PrintJobItemDialog({
                     <Row k="Placa / cliché" v={formatMoney(engineResult.cost_breakdown.plate)} />
                   )}
                   {engineResult.cost_breakdown.negative_positive > 0 && (
-                    <Row
-                      k="Negativo / positivo"
-                      v={formatMoney(engineResult.cost_breakdown.negative_positive)}
-                    />
+                    <Row k="Negativo / positivo" v={formatMoney(engineResult.cost_breakdown.negative_positive)} />
                   )}
                   {engineResult.cost_breakdown.mold > 0 && (
                     <Row k="Molde" v={formatMoney(engineResult.cost_breakdown.mold)} />
@@ -642,10 +587,7 @@ export function PrintJobItemDialog({
                     <Row k="Cargos extra" v={formatMoney(engineResult.cost_breakdown.extras)} />
                   )}
                   {engineResult.cost_breakdown.compat_extra > 0 && (
-                    <Row
-                      k="Compatibilidad extra"
-                      v={formatMoney(engineResult.cost_breakdown.compat_extra)}
-                    />
+                    <Row k="Compatibilidad extra" v={formatMoney(engineResult.cost_breakdown.compat_extra)} />
                   )}
                   <Row k="Logística" v={formatMoney(engineResult.logistics)} />
                   <Row k="Buffer operativo" v={formatMoney(engineResult.buffer)} />
@@ -654,21 +596,17 @@ export function PrintJobItemDialog({
 
                 {status === "pricing_missing" ? (
                   <p className="text-destructive">
-                    PRICING_MISSING — no hay regla válida para esta combinación
-                    (cantidad {qtyN}, tintas {colors}, posiciones {positions}).
-                    No se puede aplicar precio automático. Usa la sección A (precio manual).
+                    PRICING_MISSING — no hay regla válida para esta combinación (cantidad {qtyN}, tintas {colors},
+                    posiciones {positions}). No se puede aplicar precio automático. Usa la sección A (precio manual).
                   </p>
                 ) : (
                   <div className="space-y-0.5 border-t pt-2">
                     <Row
-                      k="Precio sugerido TOTAL"
+                      k="Precio sugerido TOTAL (referencia interna)"
                       v={formatMoney(engineResult.suggested_customer_price)}
                       bold
                     />
-                    <Row
-                      k="Precio sugerido UNITARIO"
-                      v={formatMoney(engineResult.suggested_unit_price)}
-                    />
+                    <Row k="Precio sugerido UNITARIO" v={formatMoney(engineResult.suggested_unit_price)} />
                     <div className="flex justify-end pt-2">
                       <Button
                         size="sm"
@@ -703,4 +641,3 @@ function Row({ k, v, bold }: { k: string; v: string; bold?: boolean }) {
     </div>
   );
 }
-

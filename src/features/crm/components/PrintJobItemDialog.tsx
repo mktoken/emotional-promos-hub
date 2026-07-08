@@ -80,12 +80,8 @@ export function PrintJobItemDialog({
   const [reason, setReason] = useState<string>(initialReason);
 
   const qiPrintMethod = typeof quoteItem?.print_method === "string" ? quoteItem.print_method : "";
-  const personalizacionText =
-    typeof quoteItem?.personalizacion === "string"
-      ? quoteItem.personalizacion
-      : quoteItem?.personalizacion != null
-        ? JSON.stringify(quoteItem.personalizacion)
-        : "";
+  const personalizacionText = formatPersonalizacion(quoteItem?.personalizacion);
+  const descriptionText = getQuoteItemDescription(quoteItem);
 
   const [methodId, setMethodId] = useState<string>(job.print_method_id ?? qiPrintMethod ?? "");
   const [colors, setColors] = useState<number>(Number(job.print_colors ?? quoteItem?.print_colors ?? 1) || 1);
@@ -162,6 +158,8 @@ export function PrintJobItemDialog({
       per_item_reasons: nextReasons,
     };
 
+    const selectedMethodName = methodId ? (methods.find((m) => m.id === methodId)?.name ?? null) : null;
+
     await api.updateJob.mutateAsync({
       id: job.id,
       values: {
@@ -170,6 +168,10 @@ export function PrintJobItemDialog({
         customer_unit_price_mxn: unit,
         pricing_status: "manual",
         override_reason: savedReason,
+        print_method_id: methodId || null,
+        print_method_name_snapshot: selectedMethodName,
+        print_colors: colors,
+        print_positions: positions,
       },
     });
   };
@@ -266,6 +268,32 @@ export function PrintJobItemDialog({
     if (!res.primary) toast.warning("Sin sugerencia disponible.");
   };
 
+  useEffect(() => {
+    if (!open || suggestion || rules.isLoading) return;
+    const hasMethods = (rules.methods.data ?? []).length > 0;
+    if (!hasMethods) return;
+    const res = suggestPrintMethod(rules.methods.data ?? [], rules.pricing.data ?? [], rules.compat.data ?? [], {
+      qty: qtyN,
+      colors,
+      positions,
+      material: null,
+      product_category: null,
+      personalization_label: personalizacionText || null,
+    });
+    setSuggestion(res);
+  }, [
+    open,
+    suggestion,
+    rules.isLoading,
+    rules.methods.data,
+    rules.pricing.data,
+    rules.compat.data,
+    qtyN,
+    colors,
+    positions,
+    personalizacionText,
+  ]);
+
   const handleUseSuggested = () => {
     if (!suggestion?.primary) return;
     setMethodId(suggestion.primary.method.id);
@@ -290,6 +318,24 @@ export function PrintJobItemDialog({
         },
       });
       await recomputeJobTotals(updated, reason.trim());
+      const unitMxn = qtyN > 0 ? Math.round((total / qtyN) * 100) / 100 : 0;
+      const methodName = methodId ? (methods.find((m) => m.id === methodId)?.name ?? null) : null;
+      if (onSavedManual) {
+        try {
+          await onSavedManual({
+            totalMxn: total,
+            unitMxn,
+            qty: qtyN,
+            methodId: methodId || null,
+            methodName,
+            colors,
+            positions,
+            reason: reason.trim(),
+          });
+        } catch (err) {
+          console.warn("[print-job-item-dialog] onSavedManual suggested failed", err);
+        }
+      }
       toast.success("Precio sugerido aplicado a la partida");
       onOpenChange(false);
     } catch (e) {
@@ -334,30 +380,62 @@ export function PrintJobItemDialog({
 
         <div className="space-y-4">
           {/* Resumen partida (producto / clave / técnica) */}
-          <div className="rounded-md border bg-muted/30 p-2 text-xs grid grid-cols-2 md:grid-cols-3 gap-2">
-            <div>
-              <p className="text-muted-foreground">Producto</p>
-              <p className="font-medium truncate">{displayName}</p>
+          <div className="rounded-xl border bg-muted/25 p-3 text-xs space-y-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              <div>
+                <p className="text-muted-foreground">Producto</p>
+                <p className="font-medium truncate">{displayName}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Clave / modelo</p>
+                <p className="font-medium">{claveDisplay}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Cantidad</p>
+                <p className="font-medium">{qtyN.toLocaleString("es-MX")} pzas</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Técnica aplicada</p>
+                <p className="font-medium">{methodName ?? "Sin técnica"}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Tintas</p>
+                <p className="font-medium">{colors}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Posiciones</p>
+                <p className="font-medium">{positions}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-muted-foreground">Clave / modelo</p>
-              <p className="font-medium">{claveDisplay}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Cantidad</p>
-              <p className="font-medium">{qtyN.toLocaleString("es-MX")} pzas</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Técnica</p>
-              <p className="font-medium">{methodName ?? "Sin técnica"}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Tintas</p>
-              <p className="font-medium">{colors}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Posiciones</p>
-              <p className="font-medium">{positions}</p>
+
+            {descriptionText && (
+              <div className="rounded-lg border bg-background/70 px-3 py-2">
+                <p className="text-muted-foreground">Descripción comercial</p>
+                <p className="font-medium leading-relaxed">{descriptionText}</p>
+              </div>
+            )}
+
+            <div className="rounded-lg border bg-background/70 px-3 py-2">
+              <p className="text-muted-foreground">Técnica sugerida por análisis</p>
+              {suggestion?.primary ? (
+                <div className="flex items-center justify-between gap-2 flex-wrap mt-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold">{suggestion.primary.method.name}</span>
+                    <Badge variant="outline" className="text-[10px]">
+                      {suggestion.primary.status}
+                    </Badge>
+                    <Badge variant="secondary" className="text-[10px]">
+                      Confianza: {suggestion.confidence}
+                    </Badge>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={handleUseSuggested}>
+                    Usar técnica sugerida
+                  </Button>
+                  {suggestion.reason && <p className="text-muted-foreground basis-full">{suggestion.reason}</p>}
+                </div>
+              ) : (
+                <p className="font-medium mt-1">Sin sugerencia disponible todavía</p>
+              )}
             </div>
           </div>
 
@@ -391,9 +469,9 @@ export function PrintJobItemDialog({
             {personalizacionText && (
               <div className="space-y-1 md:col-span-2">
                 <Label className="text-xs">Personalización solicitada</Label>
-                <p className="text-xs text-muted-foreground border rounded px-2 py-2 bg-muted/30">
+                <div className="text-xs text-muted-foreground border rounded px-2 py-2 bg-muted/30 whitespace-pre-line leading-relaxed">
                   {personalizacionText}
-                </p>
+                </div>
               </div>
             )}
           </div>
@@ -631,6 +709,60 @@ export function PrintJobItemDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+function cleanText(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const t = v.trim();
+  return t.length > 0 ? t : null;
+}
+
+function getQuoteItemDescription(item: FormalQuoteItemRow | null): string | null {
+  const desc = cleanText(item?.descripcion);
+  const model = cleanText(item?.modelo_comercial);
+  if (!desc) return null;
+  if (model && desc.toLowerCase() === model.toLowerCase()) return null;
+  return desc;
+}
+
+function formatPersonalizacion(value: unknown): string {
+  if (value == null) return "";
+  if (typeof value === "string") {
+    try {
+      return formatPersonalizacion(JSON.parse(value));
+    } catch {
+      return value.trim();
+    }
+  }
+  if (typeof value !== "object" || Array.isArray(value)) return String(value);
+
+  const obj = value as Record<string, unknown>;
+  const lines: string[] = [];
+
+  const label = cleanText(obj.label) ?? cleanText(obj.tipo) ?? cleanText(obj.logo_format);
+  if (label) lines.push(`Tipo: ${label}`);
+
+  const publica = cleanText(obj.publica);
+  if (publica) lines.push(`Detalle: ${publica}`);
+
+  const material = cleanText(obj.material);
+  if (material) lines.push(`Material: ${material}`);
+
+  const ubicacion = cleanText(obj.ubicacion) ?? cleanText(obj.area_impresion);
+  if (ubicacion) lines.push(`Ubicación: ${ubicacion}`);
+
+  const entrega = cleanText(obj.entrega_estimada);
+  if (entrega) lines.push(`Entrega estimada: ${entrega}`);
+
+  const tecnica = cleanText(obj.tecnica_sugerida) ?? cleanText(obj.sugerida_economica);
+  if (tecnica) lines.push(`Sugerencia original: ${tecnica}`);
+
+  const precioReferencia = typeof obj.precio_referencia_cliente === "number" ? obj.precio_referencia_cliente : null;
+  if (precioReferencia != null) {
+    lines.push(`Referencia cliente: ${formatMoney(precioReferencia)}`);
+  }
+
+  return lines.length > 0 ? lines.join("\n") : JSON.stringify(obj);
 }
 
 function Row({ k, v, bold }: { k: string; v: string; bold?: boolean }) {

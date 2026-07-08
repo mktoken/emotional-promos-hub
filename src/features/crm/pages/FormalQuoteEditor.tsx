@@ -55,6 +55,12 @@ import { calcPrintEngine, suggestPrintMethod, type PrintEngineResult } from "@/f
 import type { Json } from "@/integrations/supabase/types";
 import { FormalQuotePrintJobsSection } from "@/features/crm/components/FormalQuotePrintJobsSection";
 import { QuoteItemPrintConfigurator } from "@/features/crm/components/QuoteItemPrintConfigurator";
+import {
+  searchProductByClave,
+  pickPriceForQty,
+  type SafeProductMatch,
+} from "@/features/crm/lib/product-lookup";
+
 
 const STAFF = new Set(["admin", "sales_manager", "sales_agent"]);
 

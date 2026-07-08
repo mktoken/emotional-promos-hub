@@ -1,11 +1,7 @@
 // Motor interno de impresión. USO EXCLUSIVO CRM.
 // PROHIBIDO exponer costos, márgenes, logística, buffer, proveedor,
 // reglas internas ni snapshot en PDF, email o frontend público.
-import type {
-  PrintMethodRow,
-  PrintPricingRuleRow,
-  PrintCompatRuleRow,
-} from "@/features/crm/hooks/usePrintRules";
+import type { PrintMethodRow, PrintPricingRuleRow, PrintCompatRuleRow } from "@/features/crm/hooks/usePrintRules";
 import type { PrintSettingsRow } from "@/features/crm/hooks/usePrintSettings";
 
 function n(v: number | null | undefined): number {
@@ -67,10 +63,7 @@ export interface PrintEngineResult {
   warnings: PrintEngineWarning[];
 }
 
-function matchPricingRule(
-  rules: PrintPricingRuleRow[],
-  input: PrintEngineInput,
-): PrintPricingRuleRow | null {
+function matchPricingRule(rules: PrintPricingRuleRow[], input: PrintEngineInput): PrintPricingRuleRow | null {
   const candidates = rules.filter((r) => {
     if (r.print_method_id !== input.print_method_id) return false;
     if (r.active === false) return false;
@@ -81,12 +74,7 @@ function matchPricingRule(
     if (input.positions < n(r.positions_min)) return false;
     if (r.positions_max != null && input.positions > n(r.positions_max)) return false;
     if (r.material && input.material && r.material !== input.material) return false;
-    if (
-      r.product_category &&
-      input.product_category &&
-      r.product_category !== input.product_category
-    )
-      return false;
+    if (r.product_category && input.product_category && r.product_category !== input.product_category) return false;
     return true;
   });
   // Preferir el rango más específico: material/categoría match no-null, luego rango más estrecho
@@ -109,32 +97,18 @@ function matchPricingRule(
   return candidates[0] ?? null;
 }
 
-function matchCompatRule(
-  rules: PrintCompatRuleRow[],
-  input: PrintEngineInput,
-): PrintCompatRuleRow | null {
+function matchCompatRule(rules: PrintCompatRuleRow[], input: PrintEngineInput): PrintCompatRuleRow | null {
   const candidates = rules.filter((r) => {
     if (r.print_method_id !== input.print_method_id) return false;
     if (r.active === false) return false;
     if (r.material && input.material && r.material !== input.material) return false;
-    if (
-      r.product_category &&
-      input.product_category &&
-      r.product_category !== input.product_category
-    )
-      return false;
+    if (r.product_category && input.product_category && r.product_category !== input.product_category) return false;
     if (r.shape_type && input.shape_type && r.shape_type !== input.shape_type) return false;
     return true;
   });
   candidates.sort((a, b) => {
-    const specA =
-      (a.material ? 1 : 0) +
-      (a.product_category ? 1 : 0) +
-      (a.shape_type ? 1 : 0);
-    const specB =
-      (b.material ? 1 : 0) +
-      (b.product_category ? 1 : 0) +
-      (b.shape_type ? 1 : 0);
+    const specA = (a.material ? 1 : 0) + (a.product_category ? 1 : 0) + (a.shape_type ? 1 : 0);
+    const specB = (b.material ? 1 : 0) + (b.product_category ? 1 : 0) + (b.shape_type ? 1 : 0);
     return specB - specA;
   });
   return candidates[0] ?? null;
@@ -168,16 +142,14 @@ export function calcPrintEngine(
     warnings.push({
       code: "PRICING_MISSING",
       severity: "error",
-      message:
-        "No hay reglas de impresión cargadas para esta técnica/cantidad/tintas/posiciones.",
+      message: "No hay reglas de impresión cargadas para esta técnica/cantidad/tintas/posiciones.",
     });
   }
   if (!compat) {
     warnings.push({
       code: "COMPAT_MISSING",
       severity: "warning",
-      message:
-        "No hay regla de compatibilidad para esta combinación. Validar manualmente.",
+      message: "No hay regla de compatibilidad para esta combinación. Validar manualmente.",
     });
   } else {
     if (compat.compatibility_status === "not_recommended") {
@@ -186,10 +158,7 @@ export function calcPrintEngine(
         severity: "error",
         message: "Combinación NO recomendada por reglas de compatibilidad.",
       });
-    } else if (
-      compat.compatibility_status === "validation_required" ||
-      compat.requires_manual_validation
-    ) {
+    } else if (compat.compatibility_status === "validation_required" || compat.requires_manual_validation) {
       warnings.push({
         code: "VALIDATION_REQUIRED",
         severity: "warning",
@@ -234,9 +203,7 @@ export function calcPrintEngine(
     }
   }
 
-  const billableQty = rule
-    ? Math.max(qty, n(rule.minimum_billable_qty))
-    : qty;
+  const billableQty = rule ? Math.max(qty, n(rule.minimum_billable_qty)) : qty;
   if (rule && billableQty > qty) {
     warnings.push({
       code: "MIN_BILLABLE_APPLIED",
@@ -274,19 +241,35 @@ export function calcPrintEngine(
   const plate = rule ? n(rule.plate_cost) : 0;
   const negative_positive = rule ? n(rule.negative_positive_cost) : 0;
   const mold = rule ? n(rule.mold_cost) : 0;
-  const repack = rule ? n(rule.repack_unit_cost) * billableQty : 0;
-  const extras = rule
-    ? n(rule.extra_fixed_cost) + n(rule.extra_unit_cost) * billableQty
-    : 0;
-  const compat_extra = compat
-    ? n(compat.extra_fixed_cost) + n(compat.extra_unit_cost) * billableQty
+
+  // IMPORTANTE SPRINT 3.1:
+  // Reempaque, cargo extra por pieza y extras de compatibilidad NO se calculan
+  // automáticamente. Son cargos condicionales y poco comunes.
+  // Si aplican, el asesor debe agregarlos como "Cargo adicional" manual
+  // dentro del trabajo/partida, con concepto, importe y motivo.
+  const repack = 0;
+  const extras = 0;
+  const compat_extra = 0;
+
+  const ignoredConditionalCosts = rule
+    ? n(rule.repack_unit_cost) * billableQty +
+      n(rule.extra_fixed_cost) +
+      n(rule.extra_unit_cost) * billableQty +
+      (compat ? n(compat.extra_fixed_cost) + n(compat.extra_unit_cost) * billableQty : 0)
     : 0;
 
-  const additional_internal_costs =
-    setup + plate + negative_positive + mold + repack + extras + compat_extra;
+  if (ignoredConditionalCosts > 0) {
+    warnings.push({
+      code: "CONDITIONAL_CHARGES_NOT_AUTO_APPLIED",
+      severity: "info",
+      message:
+        "Reempaque/cargos extra existen en la lista, pero no se aplican automáticamente. Agrégalos manualmente sólo si realmente aplican.",
+    });
+  }
 
-  const logistics =
-    n(input.logistics_fee_mxn) * Math.max(0, Math.floor(n(input.logistics_job_count)));
+  const additional_internal_costs = setup + plate + negative_positive + mold + repack + extras + compat_extra;
+
+  const logistics = n(input.logistics_fee_mxn) * Math.max(0, Math.floor(n(input.logistics_job_count)));
 
   const buffer_pct = n(settings.operational_buffer_pct);
   const buffer = (base_print_cost + additional_internal_costs + logistics) * buffer_pct;
@@ -421,10 +404,7 @@ function personalizationPreference(label: string | null | undefined): string[] {
   return [];
 }
 
-function estimateInternalCost(
-  rule: PrintPricingRuleRow | null,
-  input: PrintSuggestionInput,
-): number | null {
+function estimateInternalCost(rule: PrintPricingRuleRow | null, input: PrintSuggestionInput): number | null {
   if (!rule) return null;
   const qty = Math.max(1, Math.floor(n(input.qty)));
   const colors = Math.max(1, Math.floor(n(input.colors)));
@@ -443,14 +423,9 @@ function estimateInternalCost(
     raw = billable * unit_cost;
   }
   const base = Math.max(raw, n(rule.minimum_charge));
-  const extras =
-    n(rule.setup_cost) +
-    n(rule.plate_cost) +
-    n(rule.negative_positive_cost) +
-    n(rule.mold_cost) +
-    n(rule.repack_unit_cost) * billable +
-    n(rule.extra_fixed_cost) +
-    n(rule.extra_unit_cost) * billable;
+  // Para sugerencia automática tampoco consideramos reempaque ni cargos extra
+  // automáticos. Esos conceptos se agregan manualmente sólo si aplican.
+  const extras = n(rule.setup_cost) + n(rule.plate_cost) + n(rule.negative_positive_cost) + n(rule.mold_cost);
   return base + extras;
 }
 
@@ -472,19 +447,12 @@ function pickPricingRule(
     if (positions < n(r.positions_min)) return false;
     if (r.positions_max != null && positions > n(r.positions_max)) return false;
     if (r.material && input.material && r.material !== input.material) return false;
-    if (
-      r.product_category &&
-      input.product_category &&
-      r.product_category !== input.product_category
-    )
-      return false;
+    if (r.product_category && input.product_category && r.product_category !== input.product_category) return false;
     return true;
   });
   candidates.sort((a, b) => {
-    const specA =
-      (a.material ? 1 : 0) + (a.product_category ? 1 : 0);
-    const specB =
-      (b.material ? 1 : 0) + (b.product_category ? 1 : 0);
+    const specA = (a.material ? 1 : 0) + (a.product_category ? 1 : 0);
+    const specB = (b.material ? 1 : 0) + (b.product_category ? 1 : 0);
     if (specB !== specA) return specB - specA;
     const widthA = (a.max_qty ?? Number.MAX_SAFE_INTEGER) - n(a.min_qty);
     const widthB = (b.max_qty ?? Number.MAX_SAFE_INTEGER) - n(b.min_qty);
@@ -502,20 +470,13 @@ function pickCompatRule(
     if (r.print_method_id !== methodId) return false;
     if (r.active === false) return false;
     if (r.material && input.material && r.material !== input.material) return false;
-    if (
-      r.product_category &&
-      input.product_category &&
-      r.product_category !== input.product_category
-    )
-      return false;
+    if (r.product_category && input.product_category && r.product_category !== input.product_category) return false;
     if (r.shape_type && input.shape_type && r.shape_type !== input.shape_type) return false;
     return true;
   });
   candidates.sort((a, b) => {
-    const specA =
-      (a.material ? 1 : 0) + (a.product_category ? 1 : 0) + (a.shape_type ? 1 : 0);
-    const specB =
-      (b.material ? 1 : 0) + (b.product_category ? 1 : 0) + (b.shape_type ? 1 : 0);
+    const specA = (a.material ? 1 : 0) + (a.product_category ? 1 : 0) + (a.shape_type ? 1 : 0);
+    const specB = (b.material ? 1 : 0) + (b.product_category ? 1 : 0) + (b.shape_type ? 1 : 0);
     return specB - specA;
   });
   return candidates[0] ?? null;
@@ -532,8 +493,7 @@ export function suggestPrintMethod(
     return {
       primary: null,
       alternates: [],
-      reason:
-        "No hay perfil técnico suficiente para este producto. Validar manualmente.",
+      reason: "No hay perfil técnico suficiente para este producto. Validar manualmente.",
       confidence: "none",
     };
   }
@@ -556,8 +516,7 @@ export function suggestPrintMethod(
     }
     if (pricing) reasons.push("Regla de precio aplicable para cantidad/tintas/posiciones");
     const code = (m.code ?? "").toLowerCase();
-    const personalizationMatch =
-      prefCodes.length > 0 && prefCodes.some((c) => code.includes(c));
+    const personalizationMatch = prefCodes.length > 0 && prefCodes.some((c) => code.includes(c));
     if (personalizationMatch && input.personalization_label) {
       reasons.push(`Coincide con personalización solicitada: "${input.personalization_label}"`);
     }
@@ -616,12 +575,10 @@ export function suggestPrintMethod(
       reason = "Requiere validación manual antes de enviar al cliente.";
     } else if (primary.status === "not_recommended") {
       confidence = "low";
-      reason =
-        "Única opción disponible pero NO recomendada por reglas. Validar manualmente antes de ofrecer.";
+      reason = "Única opción disponible pero NO recomendada por reglas. Validar manualmente antes de ofrecer.";
     } else {
       confidence = "low";
-      reason =
-        "Sin regla de compatibilidad específica. Validar manualmente antes de enviar al cliente.";
+      reason = "Sin regla de compatibilidad específica. Validar manualmente antes de enviar al cliente.";
     }
     if (primary.personalizationMatch) {
       reason += ` Coincide con personalización solicitada.`;
@@ -630,4 +587,3 @@ export function suggestPrintMethod(
 
   return { primary, alternates, reason, confidence };
 }
-

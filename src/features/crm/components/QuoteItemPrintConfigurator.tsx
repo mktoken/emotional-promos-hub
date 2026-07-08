@@ -19,10 +19,7 @@ import { Loader2, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useFormalQuotePrintJobs } from "@/features/crm/hooks/useFormalQuotePrintJobs";
-import {
-  useUpdateFormalQuoteItem,
-  type FormalQuoteItemRow,
-} from "@/features/crm/hooks/useFormalQuotes";
+import { useUpdateFormalQuoteItem, type FormalQuoteItemRow } from "@/features/crm/hooks/useFormalQuotes";
 import { usePrintRules } from "@/features/crm/hooks/usePrintRules";
 import { usePrintSettings } from "@/features/crm/hooks/usePrintSettings";
 import { calcItemSubtotal, formatMoney } from "@/features/crm/lib/formal-quote-calc";
@@ -54,30 +51,22 @@ export function QuoteItemPrintConfigurator({ formalQuoteId, item, disabled }: Pr
     [jobItems, item.id],
   );
   const existingJob = useMemo(
-    () =>
-      existingJobItem
-        ? (jobs.find((j) => j.id === existingJobItem.print_job_id) ?? null)
-        : null,
+    () => (existingJobItem ? (jobs.find((j) => j.id === existingJobItem.print_job_id) ?? null) : null),
     [jobs, existingJobItem],
   );
 
-  const activeJob = openJobId
-    ? (jobs.find((j) => j.id === openJobId) ?? existingJob)
-    : existingJob;
+  const activeJob = openJobId ? (jobs.find((j) => j.id === openJobId) ?? existingJob) : existingJob;
   const activeJobItem = openJobItemId
     ? (jobItems.find((ji) => ji.id === openJobItemId) ?? existingJobItem)
     : existingJobItem;
   const allJobItemsForActive = useMemo(
-    () =>
-      activeJob ? jobItems.filter((ji) => ji.print_job_id === activeJob.id) : [],
+    () => (activeJob ? jobItems.filter((ji) => ji.print_job_id === activeJob.id) : []),
     [jobItems, activeJob],
   );
 
   const initialReason = useMemo(() => {
     if (!activeJob || !activeJobItem) return "";
-    const snap = activeJob.calculation_snapshot as
-      | { per_item_reasons?: Record<string, string> }
-      | null;
+    const snap = activeJob.calculation_snapshot as { per_item_reasons?: Record<string, string> } | null;
     return snap?.per_item_reasons?.[activeJobItem.id] ?? "";
   }, [activeJob, activeJobItem]);
 
@@ -112,9 +101,7 @@ export function QuoteItemPrintConfigurator({ formalQuoteId, item, disabled }: Pr
       setOpenJobItemId(newItem.id);
       setOpen(true);
     } catch (e) {
-      toast.error(
-        e instanceof Error ? e.message : "No se pudo preparar el trabajo de impresión",
-      );
+      toast.error(e instanceof Error ? e.message : "No se pudo preparar el trabajo de impresión");
     } finally {
       setPreparing(false);
     }
@@ -157,45 +144,62 @@ export function QuoteItemPrintConfigurator({ formalQuoteId, item, disabled }: Pr
     }
   };
 
-  const statusBadge = (() => {
-    if (!existingJobItem) {
-      return (
-        <Badge variant="outline" className="text-[10px]">
-          Sin impresión
-        </Badge>
-      );
-    }
-    const status = existingJob?.pricing_status ?? "pendiente";
-    if (status === "manual")
-      return <Badge className="text-[10px]">Manual</Badge>;
-    if (status === "calculado")
-      return (
-        <Badge className="bg-emerald-600 text-[10px]">Calculado</Badge>
-      );
-    if (status === "pricing_missing")
-      return (
-        <Badge variant="destructive" className="text-[10px]">
-          PRICING_MISSING
-        </Badge>
-      );
-    return (
-      <Badge variant="outline" className="text-[10px]">
-        Pendiente
-      </Badge>
-    );
-  })();
-
   const totalMxn = existingJobItem?.allocation_amount_mxn ?? null;
   const unitMxn =
     totalMxn != null && existingJobItem && Number(existingJobItem.quantity ?? 0) > 0
       ? totalMxn / Number(existingJobItem.quantity)
       : null;
+  const isConfigured = totalMxn != null && Number(totalMxn) >= 0;
+  const status = existingJob?.pricing_status ?? "pendiente";
+  const summaryReason =
+    existingJob && existingJobItem
+      ? ((existingJob.calculation_snapshot as { per_item_reasons?: Record<string, string> } | null)?.per_item_reasons?.[
+          existingJobItem.id
+        ] ??
+        existingJob.override_reason ??
+        "")
+      : "";
+  const updatedAt = existingJob?.updated_at
+    ? new Date(existingJob.updated_at).toLocaleString("es-MX", {
+        dateStyle: "short",
+        timeStyle: "short",
+      })
+    : null;
+
+  const statusBadge = (() => {
+    if (!existingJobItem) {
+      return (
+        <Badge variant="outline" className="text-[10px] bg-background">
+          Pendiente
+        </Badge>
+      );
+    }
+    if (status === "manual") return <Badge className="bg-emerald-600 text-[10px]">Cotizada manual</Badge>;
+    if (status === "calculado") return <Badge className="bg-emerald-600 text-[10px]">Cotizada con motor</Badge>;
+    if (status === "pricing_missing")
+      return (
+        <Badge variant="destructive" className="text-[10px]">
+          Falta regla
+        </Badge>
+      );
+    return (
+      <Badge variant="outline" className="text-[10px] bg-background">
+        Pendiente
+      </Badge>
+    );
+  })();
 
   return (
-    <div className="rounded-md border border-primary/30 bg-primary/5 p-3 space-y-2">
-      <div className="flex items-center justify-between gap-2 flex-wrap">
+    <div
+      className={
+        isConfigured
+          ? "rounded-xl border-2 border-emerald-500/35 bg-emerald-50/50 p-3 space-y-3 shadow-sm"
+          : "rounded-xl border-2 border-amber-500/35 bg-amber-50/50 p-3 space-y-3 shadow-sm"
+      }
+    >
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
-          <Printer className="w-4 h-4 text-primary" />
+          <Printer className={isConfigured ? "w-4 h-4 text-emerald-700" : "w-4 h-4 text-amber-700"} />
           <span className="text-sm font-semibold">Impresión de esta partida</span>
           {statusBadge}
           {existingJob?.print_method_name_snapshot && (
@@ -212,37 +216,51 @@ export function QuoteItemPrintConfigurator({ formalQuoteId, item, disabled }: Pr
           {(preparing || api.createJob.isPending || api.assignItem.isPending) && (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
           )}
-          Configurar impresión
+          {isConfigured ? "Editar impresión" : "Cotizar impresión"}
         </Button>
       </div>
-      {existingJobItem && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-          <div>
-            <p className="text-muted-foreground">Total impresión</p>
-            <p className="font-medium">
-              {totalMxn != null ? formatMoney(totalMxn) : "—"}
+
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs rounded-lg bg-background/80 border p-3">
+        <div>
+          <p className="text-muted-foreground">Total impresión</p>
+          <p className="font-semibold text-sm">{totalMxn != null ? formatMoney(totalMxn) : "—"}</p>
+        </div>
+        <div>
+          <p className="text-muted-foreground">Unitario impresión</p>
+          <p className="font-semibold text-sm">{unitMxn != null ? formatMoney(unitMxn) : "—"}</p>
+        </div>
+        <div>
+          <p className="text-muted-foreground">Técnica</p>
+          <p className="font-medium">{existingJob?.print_method_name_snapshot ?? "Sin técnica"}</p>
+        </div>
+        <div>
+          <p className="text-muted-foreground">Tintas / Posiciones</p>
+          <p className="font-medium">
+            {existingJob?.print_colors ?? "—"} · {existingJob?.print_positions ?? "—"}
+          </p>
+        </div>
+        <div>
+          <p className="text-muted-foreground">Modo</p>
+          <p className="font-medium">{existingJobItem?.allocation_mode === "fijo" ? "Fijo" : "Pendiente"}</p>
+        </div>
+      </div>
+
+      {(summaryReason || updatedAt) && (
+        <div className="rounded-lg bg-background/70 border px-3 py-2 text-[11px] text-muted-foreground">
+          {summaryReason && (
+            <p>
+              <span className="font-medium text-foreground">Referencia:</span>{" "}
+              {summaryReason.length > 120 ? `${summaryReason.slice(0, 120)}…` : summaryReason}
             </p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Unitario impresión</p>
-            <p className="font-medium">
-              {unitMxn != null ? formatMoney(unitMxn) : "—"}
+          )}
+          {updatedAt && (
+            <p>
+              <span className="font-medium text-foreground">Última actualización:</span> {updatedAt}
             </p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Tintas / Posiciones</p>
-            <p className="font-medium">
-              {existingJob?.print_colors ?? "—"} · {existingJob?.print_positions ?? "—"}
-            </p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Modo</p>
-            <p className="font-medium capitalize">
-              {existingJobItem.allocation_mode ?? "proporcional"}
-            </p>
-          </div>
+          )}
         </div>
       )}
+
       <p className="text-[11px] text-muted-foreground">
         Uso interno. Los costos, buffers y componentes internos nunca se muestran al cliente.
       </p>

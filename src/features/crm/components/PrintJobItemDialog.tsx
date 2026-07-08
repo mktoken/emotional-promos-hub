@@ -594,7 +594,64 @@ export function PrintJobItemDialog({
             </div>
 
             {engineResult && (
-              <div className="rounded-md border bg-background p-2 text-xs space-y-1">
+              <div className="rounded-md border bg-background p-2 text-xs space-y-2">
+                {engineResult.warnings.length > 0 && (
+                  <ul className="space-y-1">
+                    {engineResult.warnings.map((w, i) => (
+                      <li
+                        key={`${w.code}-${i}`}
+                        className={
+                          w.severity === "error"
+                            ? "text-destructive"
+                            : w.severity === "warning"
+                              ? "text-amber-600"
+                              : "text-muted-foreground"
+                        }
+                      >
+                        <span className="font-mono text-[10px] mr-1">[{w.code}]</span>
+                        {w.message}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <div className="space-y-0.5">
+                  <p className="font-semibold text-[11px] uppercase text-muted-foreground">
+                    Desglose interno (uso CRM)
+                  </p>
+                  <Row k="Impresión base" v={formatMoney(engineResult.base_print_cost)} />
+                  {engineResult.cost_breakdown.setup > 0 && (
+                    <Row k="Setup / preprensa" v={formatMoney(engineResult.cost_breakdown.setup)} />
+                  )}
+                  {engineResult.cost_breakdown.plate > 0 && (
+                    <Row k="Placa / cliché" v={formatMoney(engineResult.cost_breakdown.plate)} />
+                  )}
+                  {engineResult.cost_breakdown.negative_positive > 0 && (
+                    <Row
+                      k="Negativo / positivo"
+                      v={formatMoney(engineResult.cost_breakdown.negative_positive)}
+                    />
+                  )}
+                  {engineResult.cost_breakdown.mold > 0 && (
+                    <Row k="Molde" v={formatMoney(engineResult.cost_breakdown.mold)} />
+                  )}
+                  {engineResult.cost_breakdown.repack > 0 && (
+                    <Row k="Reempaque" v={formatMoney(engineResult.cost_breakdown.repack)} />
+                  )}
+                  {engineResult.cost_breakdown.extras > 0 && (
+                    <Row k="Cargos extra" v={formatMoney(engineResult.cost_breakdown.extras)} />
+                  )}
+                  {engineResult.cost_breakdown.compat_extra > 0 && (
+                    <Row
+                      k="Compatibilidad extra"
+                      v={formatMoney(engineResult.cost_breakdown.compat_extra)}
+                    />
+                  )}
+                  <Row k="Logística" v={formatMoney(engineResult.logistics)} />
+                  <Row k="Buffer operativo" v={formatMoney(engineResult.buffer)} />
+                  <Row k="Costo interno total" v={formatMoney(engineResult.internal_total)} bold />
+                </div>
+
                 {status === "pricing_missing" ? (
                   <p className="text-destructive">
                     PRICING_MISSING — no hay regla válida para esta combinación
@@ -602,7 +659,7 @@ export function PrintJobItemDialog({
                     No se puede aplicar precio automático. Usa la sección A (precio manual).
                   </p>
                 ) : (
-                  <>
+                  <div className="space-y-0.5 border-t pt-2">
                     <Row
                       k="Precio sugerido TOTAL"
                       v={formatMoney(engineResult.suggested_customer_price)}
@@ -616,9 +673,7 @@ export function PrintJobItemDialog({
                       <Button
                         size="sm"
                         onClick={applySuggestedPrice}
-                        disabled={
-                          disabled || saving || reason.trim().length < 10
-                        }
+                        disabled={disabled || saving || reason.trim().length < 10}
                         title={
                           reason.trim().length < 10
                             ? "Captura motivo/referencia ≥ 10 caracteres"
@@ -629,7 +684,7 @@ export function PrintJobItemDialog({
                         Aplicar precio sugerido a la partida
                       </Button>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             )}
@@ -648,3 +703,4 @@ function Row({ k, v, bold }: { k: string; v: string; bold?: boolean }) {
     </div>
   );
 }
+

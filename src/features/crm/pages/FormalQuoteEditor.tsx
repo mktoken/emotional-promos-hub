@@ -695,7 +695,7 @@ export default function FormalQuoteEditor() {
             <Plus className="w-4 h-4 mr-2" /> Agregar manual
           </Button>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           {items.isLoading && (
             <div className="flex justify-center py-4">
               <Loader2 className="w-5 h-5 animate-spin text-primary" />
@@ -1518,8 +1518,8 @@ function ItemEditor({
   };
 
   return (
-    <div className="border border-border/70 rounded-lg p-3 space-y-3 bg-muted/20">
-      <div className="flex items-start justify-between gap-3 flex-wrap border-b border-border/60 pb-3">
+    <div className="border-2 border-border/80 rounded-2xl p-4 space-y-4 bg-background shadow-sm ring-1 ring-muted/40">
+      <div className="flex items-start justify-between gap-3 flex-wrap rounded-xl border border-border/60 bg-muted/35 p-3">
         <div className="min-w-0 space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
             <Badge variant={item.source === "MANUAL" ? "secondary" : "outline"}>{item.source}</Badge>
@@ -1794,7 +1794,7 @@ function ItemEditor({
         </div>
       )}
 
-      <div className="flex justify-end pt-1 border-t border-border/50">
+      <div className="flex justify-end rounded-xl border bg-muted/30 px-3 py-2">
         <span className="text-sm">
           Subtotal partida: <span className="font-semibold">{formatMoney(subtotal)}</span>
         </span>

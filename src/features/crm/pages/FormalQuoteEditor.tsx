@@ -58,9 +58,9 @@ import { QuoteItemPrintConfigurator } from "@/features/crm/components/QuoteItemP
 import {
   searchProductByClave,
   pickPriceForQty,
+  isExactProductMatch,
   type SafeProductMatch,
 } from "@/features/crm/lib/product-lookup";
-
 
 const STAFF = new Set(["admin", "sales_manager", "sales_agent"]);
 
@@ -1429,7 +1429,6 @@ function getProductRef(item: FormalQuoteItemRow): ProductRef | null {
   };
 }
 
-
 function getItemPersonalizationLabel(item: FormalQuoteItemRow): string | null {
   const raw = item.personalizacion as unknown;
   if (!raw || typeof raw !== "object") return null;
@@ -1499,11 +1498,7 @@ function ItemEditor({
   const personalizationLabel = getItemPersonalizationLabel(local);
   const productRef = getProductRef(local);
   const claveDisplay =
-    clave ??
-    productRef?.id_interno ??
-    productRef?.sku_base ??
-    cleanText(local.modelo_comercial) ??
-    "Sin clave";
+    clave ?? productRef?.id_interno ?? productRef?.sku_base ?? cleanText(local.modelo_comercial) ?? "Sin clave";
 
   const handleQtyCommit = (nQty: number) => {
     const patch: Partial<FormalQuoteItemRow> = { cantidad: nQty };
@@ -1546,9 +1541,7 @@ function ItemEditor({
           <p className="text-xs text-muted-foreground">
             {[
               `Clave: ${claveDisplay}`,
-              productRef?.sku_base && productRef.sku_base !== claveDisplay
-                ? `SKU: ${productRef.sku_base}`
-                : null,
+              productRef?.sku_base && productRef.sku_base !== claveDisplay ? `SKU: ${productRef.sku_base}` : null,
               local.color ? `Color: ${local.color}` : null,
               `Cantidad: ${Number(local.cantidad ?? 0).toLocaleString("es-MX")} pzas`,
             ]
@@ -1620,7 +1613,6 @@ function ItemEditor({
           toast.message("Producto desvinculado");
         }}
       />
-
 
       <div className="grid sm:grid-cols-2 gap-2">
         <div>
@@ -1870,9 +1862,7 @@ function ProductLookupPanel({
   onApply: (match: SafeProductMatch) => void;
   onUnlink: () => void;
 }) {
-  const [query, setQuery] = useState<string>(
-    cleanText(item.clave_producto) ?? cleanText(item.modelo_comercial) ?? "",
-  );
+  const [query, setQuery] = useState<string>(cleanText(item.clave_producto) ?? cleanText(item.modelo_comercial) ?? "");
   const [results, setResults] = useState<SafeProductMatch[] | null>(null);
   const [searching, setSearching] = useState(false);
 
@@ -1883,10 +1873,21 @@ function ProductLookupPanel({
     }
     try {
       setSearching(true);
-      const res = await searchProductByClave(query.trim(), 5);
+      const q = query.trim();
+      const res = await searchProductByClave(q, 5);
       setResults(res);
       if (res.length === 0) {
         toast.message("Sin coincidencias para esa clave.");
+        return;
+      }
+
+      // Si hay una coincidencia exacta o sólo un resultado, aplicar automáticamente.
+      // Esto evita que el asesor tenga que buscar y luego hacer otro click para
+      // prellenar precio/datos del producto.
+      const exact = res.find((m) => isExactProductMatch(m, q));
+      const autoMatch = exact ?? (res.length === 1 ? res[0] : null);
+      if (autoMatch) {
+        onApply(autoMatch);
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error al buscar producto");
@@ -1956,10 +1957,7 @@ function ProductLookupPanel({
           ))}
         </div>
       )}
-      {results && results.length === 0 && (
-        <p className="text-[11px] text-muted-foreground">Sin coincidencias.</p>
-      )}
+      {results && results.length === 0 && <p className="text-[11px] text-muted-foreground">Sin coincidencias.</p>}
     </div>
   );
 }
-

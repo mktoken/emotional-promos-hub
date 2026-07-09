@@ -8,6 +8,7 @@ import { Loader2, Printer, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCrmAuth } from "@/features/crm/hooks/useCrmAuth";
 import {
+  type FormalQuoteItemRow,
   useFormalQuote,
   useFormalQuoteItems,
   logFormalQuoteEvent,
@@ -15,12 +16,7 @@ import {
 import { useCompanyFull } from "@/features/crm/hooks/useCompanyFull";
 import { useBankAccounts } from "@/features/crm/hooks/useBankAccounts";
 import { useAsesorProfile } from "@/features/crm/hooks/useCotizaciones";
-import {
-  calcItemSubtotal,
-  calcQuoteTotals,
-  formatMoney,
-  formatDateMx,
-} from "@/features/crm/lib/formal-quote-calc";
+import { calcItemSubtotal, calcQuoteTotals, formatMoney, formatDateMx } from "@/features/crm/lib/formal-quote-calc";
 
 const STAFF = new Set(["admin", "sales_manager", "sales_agent"]);
 
@@ -59,6 +55,110 @@ interface BankSnap {
   currency?: string | null;
   reference_instructions?: string | null;
   branch?: string | null;
+}
+
+interface ClientPrintInfo {
+  hasIncludedPrint: boolean;
+  hasPendingPrint: boolean;
+  summary: string | null;
+  note: string | null;
+}
+
+const SENSITIVE_PRINT_NOTE_RE =
+  /(costo|interno|margen|buffer|log[ií]stica|proveedor|placa|negativo|snapshot|override|utilidad|repack|reempaque)/i;
+
+function cleanClientText(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const v = value.trim();
+  return v.length > 0 ? v : null;
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
+}
+
+function readStringField(obj: Record<string, unknown> | null, keys: string[]): string | null {
+  if (!obj) return null;
+  for (const key of keys) {
+    const value = cleanClientText(obj[key]);
+    if (value) return value;
+  }
+  return null;
+}
+
+function readNumberField(obj: Record<string, unknown> | null, keys: string[]): number | null {
+  if (!obj) return null;
+  for (const key of keys) {
+    const value = obj[key];
+    const n = typeof value === "number" ? value : typeof value === "string" ? Number(value) : NaN;
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  return null;
+}
+
+function getSafeLegacyCustomerNote(item: FormalQuoteItemRow): string | null {
+  const note = cleanClientText(item.notes_customer) ?? cleanClientText(item.notes);
+  if (!note) return null;
+  return SENSITIVE_PRINT_NOTE_RE.test(note) ? null : note;
+}
+
+function getClientPrintInfo(item: FormalQuoteItemRow): ClientPrintInfo {
+  const personalization = asRecord(item.personalizacion as unknown);
+  const suggested = asRecord(personalization?.sugerida_economica);
+  const productPrint = asRecord(personalization?.print);
+  const uvInfo = asRecord(personalization?.per_item_uv);
+
+  const status = cleanClientText(item.print_status)?.toLowerCase() ?? "";
+  const method =
+    cleanClientText(item.print_method) ??
+    readStringField(productPrint, ["method", "method_name", "print_method", "tecnica"]) ??
+    readStringField(suggested, ["method", "method_name", "tecnica"]) ??
+    readStringField(personalization, ["print_method", "tecnica", "tipo"]);
+
+  const colors =
+    Number(item.print_colors ?? 0) > 0
+      ? Number(item.print_colors)
+      : (readNumberField(productPrint, ["colors", "print_colors", "tintas"]) ??
+        readNumberField(suggested, ["colors", "print_colors", "tintas"]) ??
+        readNumberField(personalization, ["colors", "print_colors", "tintas"]));
+
+  const positions =
+    readNumberField(productPrint, ["positions", "print_positions", "posiciones"]) ??
+    readNumberField(suggested, ["positions", "print_positions", "posiciones"]) ??
+    readNumberField(personalization, ["positions", "print_positions", "posiciones"]);
+
+  const personalizationLabel =
+    readStringField(personalization, ["publica", "label", "personalizacion", "logo_format"]) ??
+    readStringField(suggested, ["label", "description", "descripcion"]);
+
+  const hasPriceSignal = Number(item.print_unit_price ?? 0) > 0 || Number(item.setup_fee ?? 0) > 0;
+  const hasMethod = Boolean(method);
+  const hasPendingPrint =
+    hasMethod && (status === "pendiente" || status === "pricing_missing" || status === "cotizacion_especial");
+
+  const hasIncludedPrint =
+    hasMethod &&
+    !hasPendingPrint &&
+    (status === "calculado" || status === "manual" || status === "cotizado" || status === "quoted" || hasPriceSignal);
+
+  const details = [
+    method,
+    `${Number(item.cantidad ?? 0).toLocaleString("es-MX")} ${item.unidad || "pzas"}`,
+    colors ? `${colors} tinta${colors === 1 ? "" : "s"}` : null,
+    positions ? `${positions} posición${positions === 1 ? "" : "es"}` : null,
+    uvInfo && uvInfo.fondeo === true ? "Fondeo incluido" : null,
+    uvInfo && uvInfo.urgency === true ? "Urgencia incluida" : null,
+  ].filter(Boolean);
+
+  const safeNote = getSafeLegacyCustomerNote(item) ?? personalizationLabel;
+
+  return {
+    hasIncludedPrint,
+    hasPendingPrint,
+    summary: details.length > 0 ? details.join(" · ") : null,
+    note: safeNote,
+  };
 }
 
 export default function FormalQuotePrint() {
@@ -141,8 +241,7 @@ export default function FormalQuotePrint() {
   const bank: BankSnap =
     (quote.bank_account_snapshot as BankSnap | null) ??
     (() => {
-      const def =
-        (banksLive.data ?? []).find((b) => b.is_default) ?? (banksLive.data ?? [])[0];
+      const def = (banksLive.data ?? []).find((b) => b.is_default) ?? (banksLive.data ?? [])[0];
       if (!def) return {};
       return {
         bank_name: def.bank_name,
@@ -182,14 +281,8 @@ export default function FormalQuotePrint() {
                 className="h-16 w-auto object-contain mb-2"
               />
             ) : null}
-            <h1 className="text-lg font-bold">
-              {company.nombre_empresa ?? "Promocionales Emocionales"}
-            </h1>
-            {hasDireccion && (
-              <p className="text-xs text-neutral-600 whitespace-pre-line">
-                {company.direccion}
-              </p>
-            )}
+            <h1 className="text-lg font-bold">{company.nombre_empresa ?? "Promocionales Emocionales"}</h1>
+            {hasDireccion && <p className="text-xs text-neutral-600 whitespace-pre-line">{company.direccion}</p>}
             <div className="text-xs text-neutral-600 mt-1 space-y-0.5">
               {company.telefono && <p>Tel: {company.telefono}</p>}
               {company.whatsapp_general && <p>WhatsApp: {company.whatsapp_general}</p>}
@@ -197,9 +290,7 @@ export default function FormalQuotePrint() {
             </div>
           </div>
           <div className="text-right shrink-0">
-            <p className="text-xs uppercase tracking-widest text-neutral-500">
-              Cotización
-            </p>
+            <p className="text-xs uppercase tracking-widest text-neutral-500">Cotización</p>
             <p className="text-xl font-mono font-bold">{quote.folio}</p>
             <p className="text-xs text-neutral-600 mt-1">
               Emitida: {formatDateMx(quote.issued_at ?? quote.created_at)}
@@ -233,7 +324,11 @@ export default function FormalQuotePrint() {
                         : cliente.formato_propuesta === "individual"
                           ? "Cotizar por separado"
                           : null);
-                return label ? <p>Modalidad solicitada: <strong>{label}</strong></p> : null;
+                return label ? (
+                  <p>
+                    Modalidad solicitada: <strong>{label}</strong>
+                  </p>
+                ) : null;
               })()}
             </div>
           </div>
@@ -264,9 +359,7 @@ export default function FormalQuotePrint() {
               const sub = calcItemSubtotal(it);
               return (
                 <tr key={it.id} className="align-top break-inside-avoid">
-                  <td className="p-2 border border-neutral-300 text-xs">
-                    {it.position}
-                  </td>
+                  <td className="p-2 border border-neutral-300 text-xs">{it.position}</td>
                   <td className="p-2 border border-neutral-300">
                     <div className="flex gap-3">
                       {it.imagen_url && (
@@ -278,31 +371,30 @@ export default function FormalQuotePrint() {
                       )}
                       <div className="min-w-0">
                         <p className="font-medium">{it.modelo_comercial}</p>
-                        {it.color && (
-                          <p className="text-xs text-neutral-600">Color: {it.color}</p>
-                        )}
-                        {it.descripcion && (
-                          <p className="text-xs whitespace-pre-line">{it.descripcion}</p>
-                        )}
-                        {it.print_method && (
-                          <p className="text-xs text-neutral-600">
-                            Impresión: {it.print_method}
-                            {it.print_colors ? ` · ${it.print_colors} tinta(s)` : ""}
-                          </p>
-                        )}
-                        {(Number(it.setup_fee) > 0 || Number(it.print_unit_price) > 0) && (
-                          <p className="text-xs text-neutral-600">
-                            {Number(it.setup_fee) > 0 &&
-                              `Setup: ${formatMoney(Number(it.setup_fee))} · `}
-                            {Number(it.print_unit_price) > 0 &&
-                              `Impresión unit.: ${formatMoney(Number(it.print_unit_price))}`}
-                          </p>
-                        )}
-                        {it.notes && (
-                          <p className="text-xs text-neutral-600 italic mt-0.5">
-                            {it.notes}
-                          </p>
-                        )}
+                        {it.color && <p className="text-xs text-neutral-600">Color: {it.color}</p>}
+                        {it.descripcion && <p className="text-xs whitespace-pre-line">{it.descripcion}</p>}
+                        {(() => {
+                          const printInfo = getClientPrintInfo(it);
+                          if (printInfo.hasIncludedPrint) {
+                            return (
+                              <div className="mt-2 rounded border border-neutral-200 bg-neutral-50 p-2 text-xs text-neutral-700">
+                                <p className="font-semibold text-neutral-900">Personalización incluida:</p>
+                                {printInfo.summary && <p>{printInfo.summary}</p>}
+                                {printInfo.note && <p className="mt-0.5 whitespace-pre-line">{printInfo.note}</p>}
+                              </div>
+                            );
+                          }
+
+                          if (printInfo.hasPendingPrint) {
+                            return (
+                              <p className="print:hidden mt-1 text-xs text-amber-700">
+                                Personalización pendiente de cotización
+                              </p>
+                            );
+                          }
+
+                          return null;
+                        })()}
                       </div>
                     </div>
                   </td>
@@ -312,14 +404,10 @@ export default function FormalQuotePrint() {
                   <td className="p-2 border border-neutral-300 text-right">
                     {formatMoney(Number(it.precio_unitario))}
                     {Number(it.descuento_pct) > 0 && (
-                      <div className="text-xs text-neutral-500">
-                        -{(Number(it.descuento_pct) * 100).toFixed(0)}%
-                      </div>
+                      <div className="text-xs text-neutral-500">-{(Number(it.descuento_pct) * 100).toFixed(0)}%</div>
                     )}
                   </td>
-                  <td className="p-2 border border-neutral-300 text-right font-medium">
-                    {formatMoney(sub)}
-                  </td>
+                  <td className="p-2 border border-neutral-300 text-right font-medium">{formatMoney(sub)}</td>
                 </tr>
               );
             })}
@@ -342,30 +430,23 @@ export default function FormalQuotePrint() {
               <span>{formatMoney(totals.total)}</span>
             </div>
             <p className="text-[10px] text-neutral-500 pt-1">
-              Precios en {quote.currency}. Los precios se muestran antes de IVA; el IVA
-              se desglosa al final.
+              Precios en {quote.currency}. Los precios se muestran antes de IVA; el IVA se desglosa al final.
             </p>
           </div>
         </div>
 
         {/* Condiciones */}
-        {(quote.condiciones_pago ||
-          quote.condiciones_entrega ||
-          quote.notas_publicas) && (
+        {(quote.condiciones_pago || quote.condiciones_entrega || quote.notas_publicas) && (
           <div className="mt-6 pt-4 border-t border-neutral-300 grid sm:grid-cols-2 gap-4 text-sm break-inside-avoid">
             {quote.condiciones_pago && (
               <div>
-                <p className="text-xs uppercase text-neutral-500 mb-1">
-                  Condiciones de pago
-                </p>
+                <p className="text-xs uppercase text-neutral-500 mb-1">Condiciones de pago</p>
                 <p className="whitespace-pre-line">{quote.condiciones_pago}</p>
               </div>
             )}
             {quote.condiciones_entrega && (
               <div>
-                <p className="text-xs uppercase text-neutral-500 mb-1">
-                  Condiciones de entrega
-                </p>
+                <p className="text-xs uppercase text-neutral-500 mb-1">Condiciones de entrega</p>
                 <p className="whitespace-pre-line">{quote.condiciones_entrega}</p>
               </div>
             )}
@@ -381,9 +462,7 @@ export default function FormalQuotePrint() {
         {/* Datos bancarios */}
         {(bank.bank_name || bank.clabe || bank.account_number) && (
           <div className="mt-6 pt-4 border-t border-neutral-300 text-sm break-inside-avoid">
-            <p className="text-xs uppercase text-neutral-500 mb-1">
-              Datos para depósito / transferencia
-            </p>
+            <p className="text-xs uppercase text-neutral-500 mb-1">Datos para depósito / transferencia</p>
             <div className="grid sm:grid-cols-2 gap-x-6 gap-y-0.5">
               {bank.bank_name && (
                 <p>
@@ -417,9 +496,7 @@ export default function FormalQuotePrint() {
               )}
             </div>
             {bank.reference_instructions && (
-              <p className="mt-2 text-xs text-neutral-600 whitespace-pre-line">
-                {bank.reference_instructions}
-              </p>
+              <p className="mt-2 text-xs text-neutral-600 whitespace-pre-line">{bank.reference_instructions}</p>
             )}
           </div>
         )}
@@ -427,9 +504,7 @@ export default function FormalQuotePrint() {
         {/* Firma */}
         {(advisor.firma || advisor.full_name) && (
           <div className="mt-8 pt-4 border-t border-neutral-300 break-inside-avoid">
-            {advisor.firma && (
-              <p className="text-sm whitespace-pre-line">{advisor.firma}</p>
-            )}
+            {advisor.firma && <p className="text-sm whitespace-pre-line">{advisor.firma}</p>}
             {!advisor.firma && advisor.full_name && (
               <p className="text-sm">
                 Atentamente,

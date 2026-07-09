@@ -91,6 +91,8 @@ export function PrintJobItemDialog({
   const [engineResult, setEngineResult] = useState<PrintEngineResult | null>(null);
   const [suggestion, setSuggestion] = useState<PrintSuggestionResult | null>(null);
   const [saving, setSaving] = useState(false);
+  const [urgency, setUrgency] = useState<boolean>(false);
+  const [fondeo, setFondeo] = useState<boolean>(false);
 
   useEffect(() => {
     if (!open) {

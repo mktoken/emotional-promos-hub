@@ -145,6 +145,77 @@ export function PrintJobItemDialog({
     return "pendiente";
   }, [engineResult, jobItem]);
 
+  const selectedMethodCode = useMemo(
+    () => (methodId ? (methods.find((m) => m.id === methodId)?.code ?? "") : "").toLowerCase(),
+    [methodId, methods],
+  );
+  const isUV = selectedMethodCode.startsWith("uv_");
+  const isUV360 = selectedMethodCode === "uv_cilindrica_360";
+  const isUVFlat = selectedMethodCode.startsWith("uv_cama_plana");
+  const isUVOneSide = selectedMethodCode === "uv_cilindrica_una_cara";
+
+  // Ajuste UV: quita placa/negativo/cliché/molde/reempaque/extras del interno,
+  // aplica urgencia +30% sobre el base, y suma fondeo opcional en UV 360.
+  const adjusted = useMemo(() => {
+    if (!engineResult) return null;
+    if (!isUV && !urgency && !fondeo) return engineResult;
+    const bufferPct = Number(settings.data?.operational_buffer_pct ?? 0) || 0;
+    const marginPct = Number(settings.data?.default_margin_pct ?? 0) || 0;
+    const minProfit = Number(settings.data?.minimum_profit_mxn ?? 0) || 0;
+
+    let base = engineResult.base_print_cost;
+    let additional = engineResult.additional_internal_costs;
+    if (isUV) {
+      const b = engineResult.cost_breakdown;
+      additional = Math.max(0, additional - b.plate - b.negative_positive - b.mold - b.repack - b.extras - b.compat_extra);
+    }
+    if (urgency) base = Math.round(base * 1.3 * 100) / 100;
+    const fondeoActive = fondeo && isUV360;
+    const fondeoAmount = fondeoActive ? qtyN * 30 : 0;
+
+    const logistics = engineResult.logistics;
+    const preBuffer = base + additional + logistics + fondeoAmount;
+    const buffer = Math.round(preBuffer * bufferPct * 100) / 100;
+    const internal_total = Math.round((preBuffer + buffer) * 100) / 100;
+    const denom = 1 - marginPct;
+    const price_by_margin = denom > 0 ? internal_total / denom : internal_total;
+    const price_by_min_profit = internal_total + minProfit;
+    const suggested_customer_price = Math.round(Math.max(price_by_margin, price_by_min_profit) * 100) / 100;
+    const suggested_unit_price = qtyN > 0 ? Math.round((suggested_customer_price / qtyN) * 100) / 100 : 0;
+
+    return {
+      ...engineResult,
+      base_print_cost: base,
+      additional_internal_costs: additional,
+      cost_breakdown: isUV
+        ? {
+            ...engineResult.cost_breakdown,
+            plate: 0,
+            negative_positive: 0,
+            mold: 0,
+            repack: 0,
+            extras: 0,
+            compat_extra: 0,
+          }
+        : engineResult.cost_breakdown,
+      buffer,
+      internal_total,
+      price_by_margin: Math.round(price_by_margin * 100) / 100,
+      price_by_min_profit: Math.round(price_by_min_profit * 100) / 100,
+      suggested_customer_price,
+      suggested_unit_price,
+      // extra info local
+      _uv: {
+        urgency,
+        urgencyDelta: urgency ? Math.round((base - base / 1.3) * 100) / 100 : 0,
+        fondeoActive,
+        fondeoAmount,
+      },
+    } as PrintEngineResult & {
+      _uv: { urgency: boolean; urgencyDelta: number; fondeoActive: boolean; fondeoAmount: number };
+    };
+  }, [engineResult, isUV, isUV360, urgency, fondeo, qtyN, settings.data]);
+
   const perItemReasons = useMemo<Record<string, string>>(() => {
     const snap = job.calculation_snapshot as { per_item_reasons?: Record<string, string> } | null;
     return snap?.per_item_reasons ?? {};

@@ -229,9 +229,24 @@ export function PrintJobItemDialog({
     const unit = qtySum > 0 ? Math.round((total / qtySum) * 100) / 100 : 0;
 
     const nextReasons = { ...perItemReasons, [updatedItem.id]: savedReason };
+    const prevSnap = (job.calculation_snapshot as Record<string, unknown>) ?? {};
+    const prevUv = (prevSnap.per_item_uv as Record<string, unknown>) ?? {};
+    const uvEntry = isUV
+      ? {
+          method_code: selectedMethodCode,
+          urgency,
+          fondeo: fondeo && isUV360,
+          fondeo_amount_mxn: fondeo && isUV360 ? qtyN * 30 : 0,
+        }
+      : undefined;
+    const nextUv = { ...prevUv };
+    if (uvEntry) nextUv[updatedItem.id] = uvEntry;
+    else delete nextUv[updatedItem.id];
+
     const nextSnap = {
-      ...((job.calculation_snapshot as Record<string, unknown>) ?? {}),
+      ...prevSnap,
       per_item_reasons: nextReasons,
+      per_item_uv: nextUv,
     };
 
     const selectedMethodName = methodId ? (methods.find((m) => m.id === methodId)?.name ?? null) : null;

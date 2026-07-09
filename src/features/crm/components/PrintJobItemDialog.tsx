@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useFormalQuotePrintJobs } from "@/features/crm/hooks/useFormalQuotePrintJobs";
 import { usePrintRules } from "@/features/crm/hooks/usePrintRules";
@@ -90,12 +91,16 @@ export function PrintJobItemDialog({
   const [engineResult, setEngineResult] = useState<PrintEngineResult | null>(null);
   const [suggestion, setSuggestion] = useState<PrintSuggestionResult | null>(null);
   const [saving, setSaving] = useState(false);
+  const [urgency, setUrgency] = useState<boolean>(false);
+  const [fondeo, setFondeo] = useState<boolean>(false);
 
   useEffect(() => {
     if (!open) {
       setEngineResult(null);
       setSuggestion(null);
       setSaving(false);
+      setUrgency(false);
+      setFondeo(false);
     } else {
       setQty(String(jobItem.quantity ?? quoteItem?.cantidad ?? 1));
       setPriceTotal(jobItem.allocation_amount_mxn != null ? String(jobItem.allocation_amount_mxn) : "");
@@ -140,6 +145,77 @@ export function PrintJobItemDialog({
     return "pendiente";
   }, [engineResult, jobItem]);
 
+  const selectedMethodCode = useMemo(
+    () => (methodId ? (methods.find((m) => m.id === methodId)?.code ?? "") : "").toLowerCase(),
+    [methodId, methods],
+  );
+  const isUV = selectedMethodCode.startsWith("uv_");
+  const isUV360 = selectedMethodCode === "uv_cilindrica_360";
+  const isUVFlat = selectedMethodCode.startsWith("uv_cama_plana");
+  const isUVOneSide = selectedMethodCode === "uv_cilindrica_una_cara";
+
+  // Ajuste UV: quita placa/negativo/cliché/molde/reempaque/extras del interno,
+  // aplica urgencia +30% sobre el base, y suma fondeo opcional en UV 360.
+  const adjusted = useMemo(() => {
+    if (!engineResult) return null;
+    if (!isUV && !urgency && !fondeo) return engineResult;
+    const bufferPct = Number(settings.data?.operational_buffer_pct ?? 0) || 0;
+    const marginPct = Number(settings.data?.default_margin_pct ?? 0) || 0;
+    const minProfit = Number(settings.data?.minimum_profit_mxn ?? 0) || 0;
+
+    let base = engineResult.base_print_cost;
+    let additional = engineResult.additional_internal_costs;
+    if (isUV) {
+      const b = engineResult.cost_breakdown;
+      additional = Math.max(0, additional - b.plate - b.negative_positive - b.mold - b.repack - b.extras - b.compat_extra);
+    }
+    if (urgency) base = Math.round(base * 1.3 * 100) / 100;
+    const fondeoActive = fondeo && isUV360;
+    const fondeoAmount = fondeoActive ? qtyN * 30 : 0;
+
+    const logistics = engineResult.logistics;
+    const preBuffer = base + additional + logistics + fondeoAmount;
+    const buffer = Math.round(preBuffer * bufferPct * 100) / 100;
+    const internal_total = Math.round((preBuffer + buffer) * 100) / 100;
+    const denom = 1 - marginPct;
+    const price_by_margin = denom > 0 ? internal_total / denom : internal_total;
+    const price_by_min_profit = internal_total + minProfit;
+    const suggested_customer_price = Math.round(Math.max(price_by_margin, price_by_min_profit) * 100) / 100;
+    const suggested_unit_price = qtyN > 0 ? Math.round((suggested_customer_price / qtyN) * 100) / 100 : 0;
+
+    return {
+      ...engineResult,
+      base_print_cost: base,
+      additional_internal_costs: additional,
+      cost_breakdown: isUV
+        ? {
+            ...engineResult.cost_breakdown,
+            plate: 0,
+            negative_positive: 0,
+            mold: 0,
+            repack: 0,
+            extras: 0,
+            compat_extra: 0,
+          }
+        : engineResult.cost_breakdown,
+      buffer,
+      internal_total,
+      price_by_margin: Math.round(price_by_margin * 100) / 100,
+      price_by_min_profit: Math.round(price_by_min_profit * 100) / 100,
+      suggested_customer_price,
+      suggested_unit_price,
+      // extra info local
+      _uv: {
+        urgency,
+        urgencyDelta: urgency ? Math.round((base - base / 1.3) * 100) / 100 : 0,
+        fondeoActive,
+        fondeoAmount,
+      },
+    } as PrintEngineResult & {
+      _uv: { urgency: boolean; urgencyDelta: number; fondeoActive: boolean; fondeoAmount: number };
+    };
+  }, [engineResult, isUV, isUV360, urgency, fondeo, qtyN, settings.data]);
+
   const perItemReasons = useMemo<Record<string, string>>(() => {
     const snap = job.calculation_snapshot as { per_item_reasons?: Record<string, string> } | null;
     return snap?.per_item_reasons ?? {};
@@ -153,9 +229,24 @@ export function PrintJobItemDialog({
     const unit = qtySum > 0 ? Math.round((total / qtySum) * 100) / 100 : 0;
 
     const nextReasons = { ...perItemReasons, [updatedItem.id]: savedReason };
+    const prevSnap = (job.calculation_snapshot as Record<string, unknown>) ?? {};
+    const prevUv = (prevSnap.per_item_uv as Record<string, unknown>) ?? {};
+    const uvEntry = isUV
+      ? {
+          method_code: selectedMethodCode,
+          urgency,
+          fondeo: fondeo && isUV360,
+          fondeo_amount_mxn: fondeo && isUV360 ? qtyN * 30 : 0,
+        }
+      : undefined;
+    const nextUv = { ...prevUv };
+    if (uvEntry) nextUv[updatedItem.id] = uvEntry;
+    else delete nextUv[updatedItem.id];
+
     const nextSnap = {
-      ...((job.calculation_snapshot as Record<string, unknown>) ?? {}),
+      ...prevSnap,
       per_item_reasons: nextReasons,
+      per_item_uv: nextUv,
     };
 
     const selectedMethodName = methodId ? (methods.find((m) => m.id === methodId)?.name ?? null) : null;
@@ -306,7 +397,8 @@ export function PrintJobItemDialog({
       toast.error("Captura motivo/referencia ≥ 10 caracteres para aplicar el precio sugerido.");
       return;
     }
-    const total = Math.round(engineResult.suggested_customer_price * 100) / 100;
+    const totalSource = adjusted?.suggested_customer_price ?? engineResult.suggested_customer_price;
+    const total = Math.round(totalSource * 100) / 100;
     try {
       setSaving(true);
       const updated = await api.updateItem.mutateAsync({
@@ -604,6 +696,30 @@ export function PrintJobItemDialog({
               </div>
             </div>
 
+            {isUV && (
+              <div className="rounded-md border bg-muted/30 p-2 space-y-2">
+                <p className="text-[11px] font-semibold uppercase text-muted-foreground">Opciones UV</p>
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-medium">Urgencia +30%</p>
+                    <p className="text-[11px] text-muted-foreground">Multiplica el costo base UV por 1.30.</p>
+                  </div>
+                  <Switch checked={urgency} onCheckedChange={setUrgency} disabled={disabled} />
+                </div>
+                {isUV360 && (
+                  <div className="flex items-center justify-between gap-2 border-t pt-2">
+                    <div>
+                      <p className="text-xs font-medium">Agregar fondeo</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Fondeo opcional +$30 por pieza (sólo UV cilíndrica 360°).
+                      </p>
+                    </div>
+                    <Switch checked={fondeo} onCheckedChange={setFondeo} disabled={disabled} />
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="flex justify-end gap-2">
               <Button
                 size="sm"
@@ -615,7 +731,10 @@ export function PrintJobItemDialog({
               </Button>
             </div>
 
-            {engineResult && (
+            {engineResult && (() => {
+              const disp = adjusted ?? engineResult;
+              const uv = (disp as unknown as { _uv?: { urgency: boolean; urgencyDelta: number; fondeoActive: boolean; fondeoAmount: number } })._uv;
+              return (
               <div className="rounded-md border bg-background p-2 text-xs space-y-2">
                 {engineResult.warnings.length > 0 && (
                   <ul className="space-y-1">
@@ -641,35 +760,48 @@ export function PrintJobItemDialog({
                   <p className="font-semibold text-[11px] uppercase text-muted-foreground">
                     Desglose interno calculado (uso CRM)
                   </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    Reempaque y cargos extra NO se aplican automáticamente. Agrégalos sólo como cargo adicional manual
-                    si realmente aplican.
-                  </p>
-                  <Row k="Impresión base" v={formatMoney(engineResult.base_print_cost)} />
-                  {engineResult.cost_breakdown.setup > 0 && (
-                    <Row k="Setup / preprensa" v={formatMoney(engineResult.cost_breakdown.setup)} />
+                  {!isUV && (
+                    <p className="text-[11px] text-muted-foreground">
+                      Reempaque y cargos extra NO se aplican automáticamente. Agrégalos sólo como cargo adicional
+                      manual si realmente aplican.
+                    </p>
                   )}
-                  {engineResult.cost_breakdown.plate > 0 && (
-                    <Row k="Placa / cliché" v={formatMoney(engineResult.cost_breakdown.plate)} />
+                  <Row
+                    k={
+                      isUVFlat
+                        ? "Impresión UV base"
+                        : isUV360
+                          ? "Impresión UV 360 base"
+                          : isUVOneSide
+                            ? "Impresión UV una cara base"
+                            : "Impresión base"
+                    }
+                    v={formatMoney(disp.base_print_cost)}
+                  />
+                  {uv?.urgency && <Row k="Urgencia +30%" v={formatMoney(uv.urgencyDelta)} />}
+                  {uv?.fondeoActive && (
+                    <Row k={`Fondeo opcional (${qtyN} × $30)`} v={formatMoney(uv.fondeoAmount)} />
                   )}
-                  {engineResult.cost_breakdown.negative_positive > 0 && (
-                    <Row k="Negativo / positivo" v={formatMoney(engineResult.cost_breakdown.negative_positive)} />
+                  {disp.cost_breakdown.setup > 0 && (
+                    <Row k="Setup / preprensa" v={formatMoney(disp.cost_breakdown.setup)} />
                   )}
-                  {engineResult.cost_breakdown.mold > 0 && (
-                    <Row k="Molde" v={formatMoney(engineResult.cost_breakdown.mold)} />
+                  {disp.cost_breakdown.plate > 0 && (
+                    <Row k="Placa / cliché" v={formatMoney(disp.cost_breakdown.plate)} />
                   )}
-                  {engineResult.cost_breakdown.repack > 0 && (
-                    <Row k="Reempaque" v={formatMoney(engineResult.cost_breakdown.repack)} />
+                  {disp.cost_breakdown.negative_positive > 0 && (
+                    <Row k="Negativo / positivo" v={formatMoney(disp.cost_breakdown.negative_positive)} />
                   )}
-                  {engineResult.cost_breakdown.extras > 0 && (
-                    <Row k="Cargos extra" v={formatMoney(engineResult.cost_breakdown.extras)} />
+                  {disp.cost_breakdown.mold > 0 && <Row k="Molde" v={formatMoney(disp.cost_breakdown.mold)} />}
+                  {disp.cost_breakdown.repack > 0 && <Row k="Reempaque" v={formatMoney(disp.cost_breakdown.repack)} />}
+                  {disp.cost_breakdown.extras > 0 && (
+                    <Row k="Cargos extra" v={formatMoney(disp.cost_breakdown.extras)} />
                   )}
-                  {engineResult.cost_breakdown.compat_extra > 0 && (
-                    <Row k="Compatibilidad extra" v={formatMoney(engineResult.cost_breakdown.compat_extra)} />
+                  {disp.cost_breakdown.compat_extra > 0 && (
+                    <Row k="Compatibilidad extra" v={formatMoney(disp.cost_breakdown.compat_extra)} />
                   )}
-                  <Row k="Logística" v={formatMoney(engineResult.logistics)} />
-                  <Row k="Buffer operativo" v={formatMoney(engineResult.buffer)} />
-                  <Row k="Costo interno total" v={formatMoney(engineResult.internal_total)} bold />
+                  <Row k="Logística" v={formatMoney(disp.logistics)} />
+                  <Row k="Buffer operativo" v={formatMoney(disp.buffer)} />
+                  <Row k="Costo interno total" v={formatMoney(disp.internal_total)} bold />
                 </div>
 
                 {status === "pricing_missing" ? (
@@ -681,10 +813,10 @@ export function PrintJobItemDialog({
                   <div className="space-y-0.5 border-t pt-2">
                     <Row
                       k="Precio sugerido TOTAL (referencia interna)"
-                      v={formatMoney(engineResult.suggested_customer_price)}
+                      v={formatMoney(disp.suggested_customer_price)}
                       bold
                     />
-                    <Row k="Precio sugerido UNITARIO" v={formatMoney(engineResult.suggested_unit_price)} />
+                    <Row k="Precio sugerido UNITARIO" v={formatMoney(disp.suggested_unit_price)} />
                     <div className="flex justify-end pt-2">
                       <Button
                         size="sm"
@@ -703,7 +835,8 @@ export function PrintJobItemDialog({
                   </div>
                 )}
               </div>
-            )}
+              );
+            })()}
           </div>
         </div>
       </DialogContent>

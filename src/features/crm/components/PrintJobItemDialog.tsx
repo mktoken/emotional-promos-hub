@@ -99,6 +99,8 @@ export function PrintJobItemDialog({
       setEngineResult(null);
       setSuggestion(null);
       setSaving(false);
+      setUrgency(false);
+      setFondeo(false);
     } else {
       setQty(String(jobItem.quantity ?? quoteItem?.cantidad ?? 1));
       setPriceTotal(jobItem.allocation_amount_mxn != null ? String(jobItem.allocation_amount_mxn) : "");

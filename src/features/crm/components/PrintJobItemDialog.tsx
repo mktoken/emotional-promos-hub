@@ -813,10 +813,10 @@ export function PrintJobItemDialog({
                   <div className="space-y-0.5 border-t pt-2">
                     <Row
                       k="Precio sugerido TOTAL (referencia interna)"
-                      v={formatMoney(engineResult.suggested_customer_price)}
+                      v={formatMoney(disp.suggested_customer_price)}
                       bold
                     />
-                    <Row k="Precio sugerido UNITARIO" v={formatMoney(engineResult.suggested_unit_price)} />
+                    <Row k="Precio sugerido UNITARIO" v={formatMoney(disp.suggested_unit_price)} />
                     <div className="flex justify-end pt-2">
                       <Button
                         size="sm"
@@ -835,7 +835,8 @@ export function PrintJobItemDialog({
                   </div>
                 )}
               </div>
-            )}
+              );
+            })()}
           </div>
         </div>
       </DialogContent>

@@ -696,6 +696,30 @@ export function PrintJobItemDialog({
               </div>
             </div>
 
+            {isUV && (
+              <div className="rounded-md border bg-muted/30 p-2 space-y-2">
+                <p className="text-[11px] font-semibold uppercase text-muted-foreground">Opciones UV</p>
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-medium">Urgencia +30%</p>
+                    <p className="text-[11px] text-muted-foreground">Multiplica el costo base UV por 1.30.</p>
+                  </div>
+                  <Switch checked={urgency} onCheckedChange={setUrgency} disabled={disabled} />
+                </div>
+                {isUV360 && (
+                  <div className="flex items-center justify-between gap-2 border-t pt-2">
+                    <div>
+                      <p className="text-xs font-medium">Agregar fondeo</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Fondeo opcional +$30 por pieza (sólo UV cilíndrica 360°).
+                      </p>
+                    </div>
+                    <Switch checked={fondeo} onCheckedChange={setFondeo} disabled={disabled} />
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="flex justify-end gap-2">
               <Button
                 size="sm"
@@ -707,7 +731,10 @@ export function PrintJobItemDialog({
               </Button>
             </div>
 
-            {engineResult && (
+            {engineResult && (() => {
+              const disp = adjusted ?? engineResult;
+              const uv = (disp as unknown as { _uv?: { urgency: boolean; urgencyDelta: number; fondeoActive: boolean; fondeoAmount: number } })._uv;
+              return (
               <div className="rounded-md border bg-background p-2 text-xs space-y-2">
                 {engineResult.warnings.length > 0 && (
                   <ul className="space-y-1">
@@ -733,35 +760,48 @@ export function PrintJobItemDialog({
                   <p className="font-semibold text-[11px] uppercase text-muted-foreground">
                     Desglose interno calculado (uso CRM)
                   </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    Reempaque y cargos extra NO se aplican automáticamente. Agrégalos sólo como cargo adicional manual
-                    si realmente aplican.
-                  </p>
-                  <Row k="Impresión base" v={formatMoney(engineResult.base_print_cost)} />
-                  {engineResult.cost_breakdown.setup > 0 && (
-                    <Row k="Setup / preprensa" v={formatMoney(engineResult.cost_breakdown.setup)} />
+                  {!isUV && (
+                    <p className="text-[11px] text-muted-foreground">
+                      Reempaque y cargos extra NO se aplican automáticamente. Agrégalos sólo como cargo adicional
+                      manual si realmente aplican.
+                    </p>
                   )}
-                  {engineResult.cost_breakdown.plate > 0 && (
-                    <Row k="Placa / cliché" v={formatMoney(engineResult.cost_breakdown.plate)} />
+                  <Row
+                    k={
+                      isUVFlat
+                        ? "Impresión UV base"
+                        : isUV360
+                          ? "Impresión UV 360 base"
+                          : isUVOneSide
+                            ? "Impresión UV una cara base"
+                            : "Impresión base"
+                    }
+                    v={formatMoney(disp.base_print_cost)}
+                  />
+                  {uv?.urgency && <Row k="Urgencia +30%" v={formatMoney(uv.urgencyDelta)} />}
+                  {uv?.fondeoActive && (
+                    <Row k={`Fondeo opcional (${qtyN} × $30)`} v={formatMoney(uv.fondeoAmount)} />
                   )}
-                  {engineResult.cost_breakdown.negative_positive > 0 && (
-                    <Row k="Negativo / positivo" v={formatMoney(engineResult.cost_breakdown.negative_positive)} />
+                  {disp.cost_breakdown.setup > 0 && (
+                    <Row k="Setup / preprensa" v={formatMoney(disp.cost_breakdown.setup)} />
                   )}
-                  {engineResult.cost_breakdown.mold > 0 && (
-                    <Row k="Molde" v={formatMoney(engineResult.cost_breakdown.mold)} />
+                  {disp.cost_breakdown.plate > 0 && (
+                    <Row k="Placa / cliché" v={formatMoney(disp.cost_breakdown.plate)} />
                   )}
-                  {engineResult.cost_breakdown.repack > 0 && (
-                    <Row k="Reempaque" v={formatMoney(engineResult.cost_breakdown.repack)} />
+                  {disp.cost_breakdown.negative_positive > 0 && (
+                    <Row k="Negativo / positivo" v={formatMoney(disp.cost_breakdown.negative_positive)} />
                   )}
-                  {engineResult.cost_breakdown.extras > 0 && (
-                    <Row k="Cargos extra" v={formatMoney(engineResult.cost_breakdown.extras)} />
+                  {disp.cost_breakdown.mold > 0 && <Row k="Molde" v={formatMoney(disp.cost_breakdown.mold)} />}
+                  {disp.cost_breakdown.repack > 0 && <Row k="Reempaque" v={formatMoney(disp.cost_breakdown.repack)} />}
+                  {disp.cost_breakdown.extras > 0 && (
+                    <Row k="Cargos extra" v={formatMoney(disp.cost_breakdown.extras)} />
                   )}
-                  {engineResult.cost_breakdown.compat_extra > 0 && (
-                    <Row k="Compatibilidad extra" v={formatMoney(engineResult.cost_breakdown.compat_extra)} />
+                  {disp.cost_breakdown.compat_extra > 0 && (
+                    <Row k="Compatibilidad extra" v={formatMoney(disp.cost_breakdown.compat_extra)} />
                   )}
-                  <Row k="Logística" v={formatMoney(engineResult.logistics)} />
-                  <Row k="Buffer operativo" v={formatMoney(engineResult.buffer)} />
-                  <Row k="Costo interno total" v={formatMoney(engineResult.internal_total)} bold />
+                  <Row k="Logística" v={formatMoney(disp.logistics)} />
+                  <Row k="Buffer operativo" v={formatMoney(disp.buffer)} />
+                  <Row k="Costo interno total" v={formatMoney(disp.internal_total)} bold />
                 </div>
 
                 {status === "pricing_missing" ? (

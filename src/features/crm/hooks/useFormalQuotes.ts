@@ -5,12 +5,9 @@ import type { Database } from "@/integrations/supabase/types";
 
 export type FormalQuoteRow = Database["public"]["Tables"]["formal_quotes"]["Row"];
 export type FormalQuoteUpdate = Database["public"]["Tables"]["formal_quotes"]["Update"];
-export type FormalQuoteItemRow =
-  Database["public"]["Tables"]["formal_quote_items"]["Row"];
-export type FormalQuoteItemInsert =
-  Database["public"]["Tables"]["formal_quote_items"]["Insert"];
-export type FormalQuoteItemUpdate =
-  Database["public"]["Tables"]["formal_quote_items"]["Update"];
+export type FormalQuoteItemRow = Database["public"]["Tables"]["formal_quote_items"]["Row"];
+export type FormalQuoteItemInsert = Database["public"]["Tables"]["formal_quote_items"]["Insert"];
+export type FormalQuoteItemUpdate = Database["public"]["Tables"]["formal_quote_items"]["Update"];
 
 // Columnas seguras (nunca proveedor/costos/margen/raw_payload/provider_sku).
 // logistics_*, price_override_*, print_engine_snapshot son INTERNOS del CRM.
@@ -19,7 +16,7 @@ const QUOTE_COLS =
   "id, folio, cotizacion_lead_id, status, cliente, assigned_to, created_by, currency, subtotal, tax_rate, tax_amount, total, condiciones_pago, condiciones_entrega, notas_publicas, notas_internas, valid_until, issued_at, sent_at, accepted_at, rejected_at, company_snapshot, advisor_snapshot, bank_account_snapshot, logistics_fee_mxn, logistics_job_count, price_override_mxn, price_override_reason, print_engine_snapshot, created_at, updated_at";
 
 const ITEM_COLS =
-  "id, formal_quote_id, position, source, clave_producto, modelo_comercial, descripcion, color, imagen_url, cantidad, unidad, precio_unitario, descuento_pct, subtotal, personalizacion, print_method, print_colors, setup_fee, print_unit_price, notes, is_kit_parent, parent_item_id, created_at, updated_at";
+  "id, formal_quote_id, position, source, clave_producto, modelo_comercial, descripcion, color, imagen_url, cantidad, unidad, precio_unitario, descuento_pct, subtotal, personalizacion, print_method, print_colors, setup_fee, print_unit_price, print_status, notes, notes_customer, notes_internal, product_ref_id, is_kit_parent, parent_item_id, created_at, updated_at";
 
 export function useFormalQuotes() {
   return useQuery({
@@ -41,11 +38,7 @@ export function useFormalQuote(id: string | undefined) {
     queryKey: ["formal_quotes", id],
     enabled: !!id,
     queryFn: async (): Promise<FormalQuoteRow | null> => {
-      const { data, error } = await supabase
-        .from("formal_quotes")
-        .select(QUOTE_COLS)
-        .eq("id", id!)
-        .maybeSingle();
+      const { data, error } = await supabase.from("formal_quotes").select(QUOTE_COLS).eq("id", id!).maybeSingle();
       if (error) throw error;
       return (data as FormalQuoteRow | null) ?? null;
     },
@@ -91,10 +84,7 @@ export function useUpdateFormalQuote(id: string | undefined) {
   return useMutation({
     mutationFn: async (values: FormalQuoteUpdate) => {
       if (!id) throw new Error("Falta id");
-      const { error } = await supabase
-        .from("formal_quotes")
-        .update(values)
-        .eq("id", id);
+      const { error } = await supabase.from("formal_quotes").update(values).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -108,9 +98,7 @@ export function useInsertFormalQuoteItem(quoteId: string | undefined) {
   return useMutation({
     mutationFn: async (values: Omit<FormalQuoteItemInsert, "formal_quote_id">) => {
       if (!quoteId) throw new Error("Falta quoteId");
-      const { error } = await supabase
-        .from("formal_quote_items")
-        .insert({ ...values, formal_quote_id: quoteId });
+      const { error } = await supabase.from("formal_quote_items").insert({ ...values, formal_quote_id: quoteId });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -123,10 +111,7 @@ export function useUpdateFormalQuoteItem() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, values }: { id: string; values: FormalQuoteItemUpdate }) => {
-      const { error } = await supabase
-        .from("formal_quote_items")
-        .update(values)
-        .eq("id", id);
+      const { error } = await supabase.from("formal_quote_items").update(values).eq("id", id);
       if (error) throw error;
     },
     onSuccess: (_d, vars) => {

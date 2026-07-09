@@ -397,7 +397,8 @@ export function PrintJobItemDialog({
       toast.error("Captura motivo/referencia ≥ 10 caracteres para aplicar el precio sugerido.");
       return;
     }
-    const total = Math.round(engineResult.suggested_customer_price * 100) / 100;
+    const totalSource = adjusted?.suggested_customer_price ?? engineResult.suggested_customer_price;
+    const total = Math.round(totalSource * 100) / 100;
     try {
       setSaving(true);
       const updated = await api.updateItem.mutateAsync({

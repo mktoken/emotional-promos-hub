@@ -3762,6 +3762,125 @@ export type Database = {
         }
         Relationships: []
       }
+      stock_refresh_cursors: {
+        Row: {
+          cycle_count: number
+          last_completed_cycle_at: string | null
+          last_run_at: string | null
+          next_offset: number
+          next_page: number
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          cycle_count?: number
+          last_completed_cycle_at?: string | null
+          last_run_at?: string | null
+          next_offset?: number
+          next_page?: number
+          provider: string
+          updated_at?: string
+        }
+        Update: {
+          cycle_count?: number
+          last_completed_cycle_at?: string | null
+          last_run_at?: string | null
+          next_offset?: number
+          next_page?: number
+          provider?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      stock_refresh_run_items: {
+        Row: {
+          batch_number: number
+          created_at: string
+          error: string | null
+          id: string
+          items_seen: number
+          offset_used: number | null
+          page_used: number | null
+          provider: string
+          response: Json
+          run_id: string
+          status: string
+          stock_updated: number
+        }
+        Insert: {
+          batch_number: number
+          created_at?: string
+          error?: string | null
+          id?: string
+          items_seen?: number
+          offset_used?: number | null
+          page_used?: number | null
+          provider: string
+          response?: Json
+          run_id: string
+          status: string
+          stock_updated?: number
+        }
+        Update: {
+          batch_number?: number
+          created_at?: string
+          error?: string | null
+          id?: string
+          items_seen?: number
+          offset_used?: number | null
+          page_used?: number | null
+          provider?: string
+          response?: Json
+          run_id?: string
+          status?: string
+          stock_updated?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_refresh_run_items_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "stock_refresh_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_refresh_runs: {
+        Row: {
+          error: string | null
+          finished_at: string | null
+          id: string
+          mode: string
+          params: Json
+          provider: string
+          result: Json
+          started_at: string
+          status: string
+        }
+        Insert: {
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          mode: string
+          params?: Json
+          provider: string
+          result?: Json
+          started_at?: string
+          status: string
+        }
+        Update: {
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          mode?: string
+          params?: Json
+          provider?: string
+          result?: Json
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       tabuladores_impresion: {
         Row: {
           activo: boolean | null

@@ -747,22 +747,10 @@ Deno.serve(async (req) => {
     } catch (_) {
       publicCountAfter = null;
     }
-    if (
-      mode === "full" &&
-      publicCountBefore != null &&
-      publicCountAfter != null &&
-      publicCountBefore !== publicCountAfter
-    ) {
-      return jsonResponse(
-        {
-          ok: false,
-          error: "productos_publicos_count_changed",
-          before: publicCountBefore,
-          after: publicCountAfter,
-        },
-        500,
-      );
-    }
+    const publicCountDelta =
+      publicCountBefore != null && publicCountAfter != null
+        ? publicCountAfter - publicCountBefore
+        : null;
 
     const totalSelected = Object.values(selected).reduce((a, b) => a + b, 0);
     return jsonResponse({
@@ -782,7 +770,9 @@ Deno.serve(async (req) => {
       has_more: false,
       public_view_count_before: publicCountBefore,
       public_view_count_after: publicCountAfter,
+      public_view_count_delta: publicCountDelta,
     });
+
   } catch (e) {
     return jsonResponse(
       { ok: false, error: "unhandled", detail: String(e) },

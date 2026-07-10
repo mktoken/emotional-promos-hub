@@ -1,4 +1,4 @@
-// Edge Function temporal: test-g4-connection
+// Edge Function: test-g4-connection
 // Diagnóstico de conexión SOAP con WebService G4.
 // No persiste datos. No expone secrets.
 
@@ -9,6 +9,8 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Content-Type": "application/json",
 };
+
+const DEFAULT_SAMPLE_SKU = "lib-bio-neg";
 
 function jsonResponse(status: number, body: Record<string, unknown>) {
   return new Response(JSON.stringify(body), { status, headers: corsHeaders });
@@ -27,23 +29,23 @@ function buildSoapEnvelope(
   method: "getProduct" | "getProductStock",
   user: string,
   key: string,
-  identifier: string,
+  sku: string,
   namespace: string,
-  parameterName: string = "sku",
 ): string {
+  const skuNode = sku ? `<tns:sku>${escapeXml(sku)}</tns:sku>` : "";
   return `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="${namespace}">
   <soap:Body>
     <tns:${method}>
       <tns:user>${escapeXml(user)}</tns:user>
       <tns:key>${escapeXml(key)}</tns:key>
-      <tns:${parameterName}>${escapeXml(identifier)}</tns:${parameterName}>
+      ${skuNode}
     </tns:${method}>
   </soap:Body>
 </soap:Envelope>`;
 }
 
-function tryDecodeBase64(text: string): string | null {
+function tryDecodeBase64(text: string): { decoded: string | null; wasDecoded: boolean } {
   try {
     const inner = text.match(/<[^>]*(?:Result|Return)[^>]*>([\s\S]*?)<\/[^>]*(?:Result|Return)[^>]*>/i);
     const candidate = (inner?.[1] ?? text).trim();
@@ -52,78 +54,43 @@ function tryDecodeBase64(text: string): string | null {
       const bin = atob(cleaned);
       const bytes = new Uint8Array(bin.length);
       for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-      return new TextDecoder("utf-8").decode(bytes);
+      const decoded = new TextDecoder("utf-8").decode(bytes);
+      return { decoded, wasDecoded: true };
     }
-    return null;
+    return { decoded: null, wasDecoded: false };
   } catch {
-    return null;
+    return { decoded: null, wasDecoded: false };
   }
 }
 
-// Detecta si el XML decodificado contiene un producto reconocible
-// Campos esperados: codigo_producto, codigo_color, nombre_producto, precio,
-// existencias, sku, code.
-function detectProductInXml(xml: string): {
-  found: boolean;
-  detectedFields: string[];
-  messageCode: string | null;
-  messageDescription: string | null;
+function extractProducts(xml: string): {
+  count: number;
+  sample: Record<string, string> | null;
 } {
-  const fieldsToProbe = [
-    "codigo_producto",
-    "codigo_color",
-    "nombre_producto",
-    "precio",
-    "existencias",
-    "sku",
-    "code",
-  ];
-  const detected: string[] = [];
-  for (const f of fieldsToProbe) {
-    const re = new RegExp(`<[^>]*\\b${f}\\b[^>]*>([\\s\\S]*?)<\\/[^>]*\\b${f}\\b[^>]*>`, "i");
-    const m = xml.match(re);
-    if (m && m[1] && m[1].trim().length > 0) {
-      detected.push(f);
+  const productRegex = /<([a-zA-Z_][\w.]*:)?product\b[^>]*>([\s\S]*?)<\/([a-zA-Z_][\w.]*:)?product>/gi;
+  const matches = [...xml.matchAll(productRegex)];
+  let count = matches.length;
+  let sampleInner: string | null = matches[0]?.[2] ?? null;
+
+  // Fallback: si no hay <product>, buscar campos típicos sueltos
+  if (count === 0) {
+    const hasFields = /<[^>]*\b(codigo_producto|nombre_producto|sku|precio|existencias)\b[^>]*>[^<]+<\//i.test(xml);
+    if (hasFields) {
+      count = 1;
+      sampleInner = xml;
     }
   }
 
-  // Códigos/mensajes de respuesta típicos de WS PHP
-  const codeMatch = xml.match(/<[^>]*\b(?:codigo|code|status|resultado)\b[^>]*>([^<]+)<\/[^>]*>/i);
-  const descMatch = xml.match(/<[^>]*\b(?:mensaje|message|descripcion|description)\b[^>]*>([^<]+)<\/[^>]*>/i);
+  if (!sampleInner) return { count, sample: null };
 
-  // Considera encontrado si detectó al menos un campo de producto (no solo mensaje)
-  const productFields = detected.filter(
-    (f) => f !== "code" || /<[^>]*\bcode\b[^>]*>[^<]{3,}<\//i.test(xml),
-  );
-  const hasProductIndicators = detected.some((f) =>
-    ["codigo_producto", "nombre_producto", "precio", "existencias", "sku"].includes(f),
-  );
-
-  return {
-    found: hasProductIndicators && productFields.length > 0,
-    detectedFields: detected,
-    messageCode: codeMatch ? codeMatch[1].trim().slice(0, 120) : null,
-    messageDescription: descMatch ? descMatch[1].trim().slice(0, 240) : null,
-  };
-}
-
-function buildValueVariants(raw: string): Array<{ label: string; value: string }> {
-  const original = raw;
-  const variants = [
-    { label: "original", value: original },
-    { label: "uppercase", value: original.toUpperCase() },
-    { label: "lowercase", value: original.toLowerCase() },
-    { label: "sin_guiones", value: original.replace(/-/g, "") },
-    { label: "uppercase_sin_guiones", value: original.toUpperCase().replace(/-/g, "") },
-    { label: "guion_bajo", value: original.replace(/-/g, "_") },
-  ];
-  // Deduplicar por value, conservando primer label
-  const seen = new Set<string>();
-  return variants.filter((v) => {
-    if (seen.has(v.value)) return false;
-    seen.add(v.value);
-    return true;
-  });
+  const fields = ["codigo_producto", "codigo_color", "nombre_producto", "precio", "existencias", "sku", "code"];
+  const sample: Record<string, string> = {};
+  for (const f of fields) {
+    const re = new RegExp(`<[^>]*\\b${f}\\b[^>]*>([\\s\\S]*?)<\\/[^>]*\\b${f}\\b[^>]*>`, "i");
+    const m = sampleInner.match(re);
+    if (m && m[1]) sample[f] = m[1].trim().slice(0, 200);
+  }
+  return { count, sample: Object.keys(sample).length > 0 ? sample : null };
 }
 
 Deno.serve(async (req) => {
@@ -136,47 +103,65 @@ Deno.serve(async (req) => {
   try {
     const G4_USER = Deno.env.get("G4_USER") ?? "";
     const G4_KEY = Deno.env.get("G4_KEY") ?? "";
-    const G4_WSDL_URL = Deno.env.get("G4_WSDL_URL") ?? "";
+    const G4_WSDL_URL = Deno.env.get("G4_WSDL_URL") ?? "https://distr.ws.g4mexico.com/index.php?wsdl";
     const PROVIDERS_TEST_KEY = Deno.env.get("PROVIDERS_TEST_KEY") ?? "";
     const G4_TEST_KEY = Deno.env.get("G4_TEST_KEY") ?? "";
 
-    if (!G4_USER || !G4_KEY || !G4_WSDL_URL || (!PROVIDERS_TEST_KEY && !G4_TEST_KEY)) {
+    if (!G4_USER || !G4_KEY) {
       return jsonResponse(500, {
         ok: false,
-        error: "Faltan secrets G4_USER, G4_KEY, G4_WSDL_URL o algún test_key",
-        attempts,
+        provider: "g4",
+        error: "Faltan secrets G4_USER o G4_KEY",
+      });
+    }
+    if (!PROVIDERS_TEST_KEY && !G4_TEST_KEY) {
+      return jsonResponse(500, {
+        ok: false,
+        provider: "g4",
+        error: "Falta secret PROVIDERS_TEST_KEY o G4_TEST_KEY",
       });
     }
 
     const url = new URL(req.url);
-    const mode = url.searchParams.get("mode");
-    const sku = url.searchParams.get("sku");
+    const mode = url.searchParams.get("mode") ?? "sample";
+    const skuParam = url.searchParams.get("sku");
     const testKey = url.searchParams.get("test_key");
 
     const validTestKey = PROVIDERS_TEST_KEY || G4_TEST_KEY;
     if (testKey !== validTestKey) {
       return jsonResponse(401, {
         ok: false,
+        provider: "g4",
         error: "test_key inválido",
-        attempts,
       });
     }
 
-    const validModes = ["product", "stock", "sample", "diagnose-g4-sku"];
-    if (!mode || !validModes.includes(mode)) {
+    const validModes = ["product", "stock", "sample"];
+    if (!validModes.includes(mode)) {
       return jsonResponse(400, {
         ok: false,
+        provider: "g4",
         error: `Parámetro mode debe ser uno de: ${validModes.join(", ")}`,
-        attempts,
       });
     }
-    if ((mode === "product" || mode === "stock" || mode === "diagnose-g4-sku") && !sku) {
-      return jsonResponse(400, {
-        ok: false,
-        error: "Parámetro sku requerido",
-        attempts,
-      });
+
+    // sample usa lib-bio-neg por defecto; product/stock requieren sku
+    let effectiveSku = "";
+    if (mode === "sample") {
+      effectiveSku = skuParam && skuParam.trim() ? skuParam.trim() : DEFAULT_SAMPLE_SKU;
+    } else {
+      if (!skuParam) {
+        return jsonResponse(400, {
+          ok: false,
+          provider: "g4",
+          error: "Parámetro sku requerido para mode=product o mode=stock",
+        });
+      }
+      effectiveSku = skuParam;
     }
+
+    const method: "getProduct" | "getProductStock" =
+      mode === "stock" ? "getProductStock" : "getProduct";
 
     const endpoint = G4_WSDL_URL.replace(/\?wsdl.*$/i, "");
     const namespaces = [
@@ -184,86 +169,6 @@ Deno.serve(async (req) => {
       "http://www.4promotional.net/",
       "urn:G4",
     ];
-
-    // ===== MODE: diagnose-g4-sku =====
-    if (mode === "diagnose-g4-sku") {
-      const parameterNames = ["sku", "codigo_producto", "codigo", "code", "clave"];
-      const valueVariants = buildValueVariants(sku!);
-      const methods: Array<"getProduct" | "getProductStock"> = ["getProduct", "getProductStock"];
-
-      const diagnoseAttempts: Array<Record<string, unknown>> = [];
-      let successful = 0;
-
-      // Para limitar carga, usamos solo el primer namespace que dé HTTP 200 (no fault) o el primero por defecto
-      // pero para diagnóstico probamos con el primer namespace de la lista únicamente.
-      const ns = namespaces[0];
-
-      for (const method of methods) {
-        for (const paramName of parameterNames) {
-          for (const variant of valueVariants) {
-            const envelope = buildSoapEnvelope(method, G4_USER, G4_KEY, variant.value, ns, paramName);
-            const soapAction = `${ns}${ns.endsWith("/") ? "" : "/"}${method}`;
-            try {
-              const res = await fetch(endpoint, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "text/xml; charset=utf-8",
-                  "SOAPAction": `"${soapAction}"`,
-                },
-                body: envelope,
-              });
-              const text = await res.text();
-              const decoded = tryDecodeBase64(text) ?? text;
-              const detection = detectProductInXml(decoded);
-              if (detection.found) successful++;
-              diagnoseAttempts.push({
-                method,
-                parameter_name: paramName,
-                value_variant: variant.label,
-                status: res.status,
-                found_product: detection.found,
-                detected_fields: detection.detectedFields,
-                message_code: detection.messageCode,
-                message_description: detection.messageDescription,
-                decodedXmlPreview: decoded.slice(0, 500),
-              });
-            } catch (err) {
-              diagnoseAttempts.push({
-                method,
-                parameter_name: paramName,
-                value_variant: variant.label,
-                status: 0,
-                found_product: false,
-                error: err instanceof Error ? err.message.slice(0, 200) : String(err).slice(0, 200),
-              });
-            }
-          }
-        }
-      }
-
-      const summary: Record<string, number> = {};
-      for (const a of diagnoseAttempts) {
-        if (a.found_product) {
-          const key = `${a.method}|${a.parameter_name}|${a.value_variant}`;
-          summary[key] = (summary[key] ?? 0) + 1;
-        }
-      }
-
-      return jsonResponse(200, {
-        ok: true,
-        mode,
-        sku_original: sku,
-        namespace_used: ns,
-        successful_attempts: successful,
-        attempts_summary: summary,
-        attempts: diagnoseAttempts,
-      });
-    }
-
-    // ===== MODES: product / stock / sample =====
-    const method: "getProduct" | "getProductStock" =
-      mode === "stock" ? "getProductStock" : "getProduct";
-    const effectiveSku = mode === "sample" ? "" : (sku ?? "");
 
     let lastResponseText = "";
     let lastStatus = 0;
@@ -294,45 +199,33 @@ Deno.serve(async (req) => {
           length: text.length,
         });
 
-        if (res.ok && !isFault) {
-          const decoded = tryDecodeBase64(text) ?? text;
-          if (mode === "sample") {
-            const productMatches = decoded.match(/<([a-zA-Z_][\w.]*:)?product\b[^>]*>/gi) || [];
-            const productCountDetected = productMatches.length;
-            const firstProductMatch = decoded.match(/<([a-zA-Z_][\w.]*:)?product\b[^>]*>([\s\S]*?)<\/([a-zA-Z_][\w.]*:)?product>/i);
-            let firstProductKeys: string[] = [];
-            let sampleSku: string | null = null;
-            if (firstProductMatch) {
-              const inner = firstProductMatch[2];
-              const keyMatches = inner.match(/<([a-zA-Z_][\w.]*)[^>]*>/g) || [];
-              firstProductKeys = [...new Set(keyMatches.map(k => {
-                const m = k.match(/<([a-zA-Z_][\w.]*)[^>]*>/);
-                return m ? m[1].split(":").pop()! : "";
-              }).filter(Boolean))];
-              const skuMatch = inner.match(/<[^>]*\b(?:codigo_producto|sku|code|clave)\b[^>]*>([^<]*)<\/[^>]*>/i);
-              sampleSku = skuMatch ? skuMatch[1].trim() : null;
-            }
-            return jsonResponse(200, {
-              ok: true,
-              mode,
-              method,
-              status: res.status,
-              productCountDetected,
-              firstProductKeys,
-              sampleSku,
-              decodedXmlPreview: decoded.slice(0, 1000),
-              attempts,
-            });
-          }
+        if (!res.ok || isFault) continue;
+
+        const { decoded, wasDecoded } = tryDecodeBase64(text);
+        const xmlToParse = decoded ?? text;
+        const { count, sample } = extractProducts(xmlToParse);
+        const hasProducts = count > 0;
+
+        if (hasProducts) {
           return jsonResponse(200, {
             ok: true,
+            provider: "g4",
             mode,
+            sku: effectiveSku,
             method,
-            sku,
-            decodedXml: decoded,
+            status: res.status,
+            base64Decoded: wasDecoded,
+            hasProducts: true,
+            productCountDetected: count,
+            sampleProduct: sample,
+            namespace: ns,
+            decodedXmlPreview: xmlToParse.slice(0, 500),
             attempts,
           });
         }
+
+        // Respuesta válida pero sin productos: seguir probando namespaces
+        attempts[attempts.length - 1].note = "sin productos detectados";
       } catch (err) {
         attempts.push({
           namespace: ns,
@@ -342,15 +235,27 @@ Deno.serve(async (req) => {
       }
     }
 
-    return jsonResponse(502, {
+    // Ningún namespace devolvió productos
+    const { decoded, wasDecoded } = tryDecodeBase64(lastResponseText);
+    return jsonResponse(200, {
       ok: false,
-      error: `No se obtuvo respuesta válida del WebService (último status ${lastStatus})`,
+      provider: "g4",
+      mode,
+      sku: effectiveSku,
+      method,
+      status: lastStatus,
+      base64Decoded: wasDecoded,
+      hasProducts: false,
+      productCountDetected: 0,
+      sampleProduct: null,
+      error: "No se detectaron productos en la respuesta del WebService G4",
+      decodedXmlPreview: (decoded ?? lastResponseText).slice(0, 1000),
       attempts,
-      responsePreview: lastResponseText.slice(0, 2000),
     });
   } catch (e) {
     return jsonResponse(500, {
       ok: false,
+      provider: "g4",
       error: e instanceof Error ? e.message : String(e),
       attempts,
     });

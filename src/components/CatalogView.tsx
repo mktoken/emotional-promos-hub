@@ -294,7 +294,7 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
         setLoadingMore(false);
       }
     },
-    [selectedCategoryId, ecoOnly, ecoIds, excludeIds, debouncedSearch, getCategoryProductIds],
+    [selectedCategoryId, ecoOnly, ecoIds, excludeIds, debouncedSearch, categories, getCategoryProductIds],
   );
 
   // Al cambiar filtros/búsqueda o cuando termina la carga de prerequisitos, resetea a página 0.

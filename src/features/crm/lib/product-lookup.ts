@@ -278,15 +278,19 @@ function dedupeMatches(matches: SafeProductMatch[]): SafeProductMatch[] {
   return out;
 }
 
-const FALLBACK_LIMIT = 60;
+const FALLBACK_LIMIT = 100;
+const IS_DEV = typeof import.meta !== "undefined" && (import.meta as { env?: { DEV?: boolean } }).env?.DEV === true;
+
+function warnDev(scope: string, err: unknown) {
+  if (IS_DEV) console.warn(`[product-lookup:${scope}]`, err);
+}
 
 async function searchPublicos(query: string, limit: number): Promise<SafeProductMatch[]> {
   const like = `%${query}%`;
-  const fields = "id,id_interno,sku_base,categoria_principal,datos_generales,variantes,imagenes,precio_desde_mxn";
+  const fields = "id,id_interno,sku_base,categoria_principal,datos_generales,variantes,imagenes,precio_desde_mxn,updated_at";
 
   const results: SafeProductMatch[] = [];
 
-  // Intento 1: filtro en DB por campos directos + JSON comercial.
   const { data, error } = await supabase
     .from("productos_publicos")
     .select(fields)
@@ -294,25 +298,29 @@ async function searchPublicos(query: string, limit: number): Promise<SafeProduct
       [
         `id_interno.ilike.${like}`,
         `sku_base.ilike.${like}`,
+        `categoria_principal.ilike.${like}`,
         `datos_generales->>modelo_comercial.ilike.${like}`,
         `datos_generales->>nombre_comercial.ilike.${like}`,
         `datos_generales->>nombre.ilike.${like}`,
         `datos_generales->>modelo.ilike.${like}`,
+        `datos_generales->>descripcion.ilike.${like}`,
       ].join(","),
     )
     .limit(Math.max(limit, 10));
 
-  if (!error) {
-    for (const row of data ?? []) {
-      const m = rowToSafeMatch("publico", row as Record<string, unknown>);
-      if (m) results.push(m);
-    }
+  if (error) warnDev("publicos", error);
+  else for (const row of data ?? []) {
+    const m = rowToSafeMatch("publico", row as Record<string, unknown>);
+    if (m) results.push(m);
   }
 
-  // Intento 2: fallback client-side sólo para queries >= 3 chars.
   if (results.length === 0 && query.length >= 3) {
-    const { data: fallback } = await supabase.from("productos_publicos").select(fields).limit(FALLBACK_LIMIT);
-
+    const { data: fallback, error: fErr } = await supabase
+      .from("productos_publicos")
+      .select(fields)
+      .order("updated_at", { ascending: false })
+      .limit(FALLBACK_LIMIT);
+    if (fErr) warnDev("publicos_fallback", fErr);
     for (const row of fallback ?? []) {
       const r = row as Record<string, unknown>;
       if (!matchSearchText(r, query)) continue;
@@ -327,7 +335,7 @@ async function searchPublicos(query: string, limit: number): Promise<SafeProduct
 
 async function searchB2B(query: string, limit: number): Promise<SafeProductMatch[]> {
   const like = `%${query}%`;
-  const fields = "id,id_interno,sku_base,categoria_principal,datos_generales,variantes,imagenes,activo";
+  const fields = "id,id_interno,sku_base,categoria_principal,datos_generales,variantes,imagenes,updated_at";
 
   const results: SafeProductMatch[] = [];
 
@@ -338,30 +346,29 @@ async function searchB2B(query: string, limit: number): Promise<SafeProductMatch
       [
         `id_interno.ilike.${like}`,
         `sku_base.ilike.${like}`,
+        `categoria_principal.ilike.${like}`,
         `datos_generales->>modelo_comercial.ilike.${like}`,
         `datos_generales->>nombre_comercial.ilike.${like}`,
         `datos_generales->>nombre.ilike.${like}`,
         `datos_generales->>modelo.ilike.${like}`,
+        `datos_generales->>descripcion.ilike.${like}`,
       ].join(","),
     )
     .limit(Math.max(limit, 10));
 
-  if (!error) {
-    for (const row of data ?? []) {
-      const r = row as Record<string, unknown>;
-      if (r.activo === false) continue;
-      const m = rowToSafeMatch("b2b", r);
-      if (m) results.push(m);
-    }
+  if (error) warnDev("b2b", error);
+  else for (const row of data ?? []) {
+    const m = rowToSafeMatch("b2b", row as Record<string, unknown>);
+    if (m) results.push(m);
   }
 
   if (results.length === 0 && query.length >= 3) {
-    const { data: fallback } = await supabase
+    const { data: fallback, error: fErr } = await supabase
       .from("productos_b2b")
       .select(fields)
-      .eq("activo", true)
+      .order("updated_at", { ascending: false })
       .limit(FALLBACK_LIMIT);
-
+    if (fErr) warnDev("b2b_fallback", fErr);
     for (const row of fallback ?? []) {
       const r = row as Record<string, unknown>;
       if (!matchSearchText(r, query)) continue;
@@ -374,29 +381,116 @@ async function searchB2B(query: string, limit: number): Promise<SafeProductMatch
   return dedupeMatches(results).slice(0, limit);
 }
 
-// -------------- búsqueda ----------------
+// Búsqueda staff interna por payload de proveedor. Retorna sólo productos_b2b_id
+// vinculados; luego se hidratan como SafeProductMatch desde productos_b2b (whitelist).
+async function searchByProviderRaw(query: string, limit: number): Promise<string[]> {
+  if (query.length < 2) return [];
+  const like = `%${query}%`;
+  const { data, error } = await supabase
+    .from("provider_raw_products")
+    .select("productos_b2b_id")
+    .not("productos_b2b_id", "is", null)
+    .or(
+      [
+        `provider_sku.ilike.${like}`,
+        `nombre.ilike.${like}`,
+        `descripcion.ilike.${like}`,
+        `categoria.ilike.${like}`,
+      ].join(","),
+    )
+    .limit(limit * 3);
+  if (error) {
+    warnDev("provider_raw", error);
+    return [];
+  }
+  return ((data ?? []) as Array<{ productos_b2b_id: string | null }>)
+    .map((r) => r.productos_b2b_id)
+    .filter((v): v is string => !!v);
+}
+
+async function searchByProviderOfertas(query: string, limit: number): Promise<string[]> {
+  if (query.length < 2) return [];
+  const like = `%${query}%`;
+  const { data, error } = await supabase
+    .from("producto_proveedor_ofertas")
+    .select("id")
+    .or(
+      [
+        `variant_sku.ilike.${like}`,
+        `modelo.ilike.${like}`,
+        `color_nombre.ilike.${like}`,
+        `material.ilike.${like}`,
+      ].join(","),
+    )
+    .limit(limit * 3);
+  if (error) {
+    warnDev("ofertas", error);
+    return [];
+  }
+  const ofertaIds = ((data ?? []) as Array<{ id: string }>).map((r) => r.id);
+  if (ofertaIds.length === 0) return [];
+
+  const { data: mapRows, error: mapErr } = await supabase
+    .from("producto_b2b_oferta_map")
+    .select("producto_b2b_id")
+    .in("oferta_id", ofertaIds);
+  if (mapErr) {
+    warnDev("oferta_map", mapErr);
+    return [];
+  }
+  return ((mapRows ?? []) as Array<{ producto_b2b_id: string | null }>)
+    .map((r) => r.producto_b2b_id)
+    .filter((v): v is string => !!v);
+}
+
+async function hydrateB2BByIds(ids: string[], limit: number): Promise<SafeProductMatch[]> {
+  if (ids.length === 0) return [];
+  const uniq = Array.from(new Set(ids)).slice(0, Math.max(limit * 2, 20));
+  const fields = "id,id_interno,sku_base,categoria_principal,datos_generales,variantes,imagenes,updated_at";
+  const { data, error } = await supabase.from("productos_b2b").select(fields).in("id", uniq);
+  if (error) {
+    warnDev("hydrate_b2b", error);
+    return [];
+  }
+  const out: SafeProductMatch[] = [];
+  for (const row of data ?? []) {
+    const m = rowToSafeMatch("b2b", row as Record<string, unknown>);
+    if (m) out.push(m);
+  }
+  return out;
+}
 
 /**
  * Busca un producto por clave/modelo/SKU en:
  *  1) productos_publicos (vista segura del catálogo)
  *  2) productos_b2b (sólo campos comerciales whitelisted)
- * Devuelve como máximo `limit` resultados combinados.
+ *  3) provider_raw_products + producto_proveedor_ofertas → productos_b2b
+ * Devuelve como máximo `limit` resultados combinados. Nunca expone
+ * provider_sku, raw_payload, costos, proveedor interno ni datos_logistica_b2b.
  */
 export async function searchProductByClave(query: string, limit = 5): Promise<SafeProductMatch[]> {
   const q = query.trim();
   if (q.length < 2) return [];
 
-  // Ejecutar públicos y b2b en paralelo.
-  const [publicMatches, b2bMatchesAll] = await Promise.all([searchPublicos(q, limit), searchB2B(q, limit)]);
-  const b2bMatches = b2bMatchesAll.slice(0, Math.max(0, limit));
+  const [publicMatches, b2bMatches, rawIds, ofertaIds] = await Promise.all([
+    searchPublicos(q, limit),
+    searchB2B(q, limit),
+    searchByProviderRaw(q, limit),
+    searchByProviderOfertas(q, limit),
+  ]);
 
-  const combined = dedupeMatches([...publicMatches, ...b2bMatches]);
+  const providerMatches = await hydrateB2BByIds([...rawIds, ...ofertaIds], limit);
 
-  // Orden: coincidencia exacta primero, luego productos con precio/escala.
+  const combined = dedupeMatches([...publicMatches, ...b2bMatches, ...providerMatches]);
+
   combined.sort((a, b) => {
     const exactA = isExactProductMatch(a, q) ? 0 : 1;
     const exactB = isExactProductMatch(b, q) ? 0 : 1;
     if (exactA !== exactB) return exactA - exactB;
+    // Preferir la fuente pública (tiene precio comercial).
+    const srcA = a.source === "publico" ? 0 : 1;
+    const srcB = b.source === "publico" ? 0 : 1;
+    if (srcA !== srcB) return srcA - srcB;
     const priceA = a.has_scales || (a.precio_desde_mxn ?? 0) > 0 ? 0 : 1;
     const priceB = b.has_scales || (b.precio_desde_mxn ?? 0) > 0 ? 0 : 1;
     if (priceA !== priceB) return priceA - priceB;

@@ -71,6 +71,55 @@ function intersect(a: string[] | null, b: string[] | null): string[] | null {
   return a.filter((id) => setB.has(id));
 }
 
+// Normaliza texto para matching de intención de búsqueda.
+function normalizeText(v: string): string {
+  return v
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+// Mapa intención → slug de categoría consolidada.
+const INTENT_TO_SLUG: Record<string, string> = {
+  termo: "bebidas-termos-vasos", termos: "bebidas-termos-vasos",
+  vaso: "bebidas-termos-vasos", vasos: "bebidas-termos-vasos",
+  cilindro: "bebidas-termos-vasos", cilindros: "bebidas-termos-vasos",
+  botella: "bebidas-termos-vasos", botellas: "bebidas-termos-vasos",
+  taza: "bebidas-termos-vasos", tazas: "bebidas-termos-vasos",
+  mug: "bebidas-termos-vasos", drinkware: "bebidas-termos-vasos",
+  boligrafo: "escritura", boligrafos: "escritura",
+  pluma: "escritura", plumas: "escritura",
+  lapiz: "escritura", marcador: "escritura",
+  libreta: "oficina-libretas-papeleria", libretas: "oficina-libretas-papeleria",
+  agenda: "oficina-libretas-papeleria", agendas: "oficina-libretas-papeleria",
+  cuaderno: "oficina-libretas-papeleria", cuadernos: "oficina-libretas-papeleria",
+  oficina: "oficina-libretas-papeleria", papeleria: "oficina-libretas-papeleria",
+  mochila: "bolsas-mochilas-viaje", mochilas: "bolsas-mochilas-viaje",
+  bolsa: "bolsas-mochilas-viaje", bolsas: "bolsas-mochilas-viaje",
+  maleta: "bolsas-mochilas-viaje", maletas: "bolsas-mochilas-viaje",
+  viaje: "bolsas-mochilas-viaje", tote: "bolsas-mochilas-viaje",
+  morral: "bolsas-mochilas-viaje", hielera: "bolsas-mochilas-viaje",
+  usb: "tecnologia", tecnologia: "tecnologia",
+  bocina: "tecnologia", audifono: "tecnologia",
+  cargador: "tecnologia", cable: "tecnologia",
+  powerbank: "tecnologia", "power bank": "tecnologia",
+  playera: "textiles-ropa", polo: "textiles-ropa",
+  sudadera: "textiles-ropa", textil: "textiles-ropa",
+  ropa: "textiles-ropa", camisa: "textiles-ropa",
+  gorra: "gorras-accesorios", gorras: "gorras-accesorios",
+  cachucha: "gorras-accesorios", visera: "gorras-accesorios",
+  llavero: "llaveros-identificadores", llaveros: "llaveros-identificadores",
+  gafete: "llaveros-identificadores", lanyard: "llaveros-identificadores",
+  credencial: "llaveros-identificadores", identificador: "llaveros-identificadores",
+};
+
+function detectIntentSlug(query: string): string | null {
+  const n = normalizeText(query);
+  if (!n) return null;
+  return INTENT_TO_SLUG[n] ?? null;
+}
+
 const sel = (s: string): string => s; // evita parseo de tipos costoso de PostgREST
 
 export default function CatalogView({ onViewChange, onOpenProduct }: CatalogViewProps) {
@@ -100,12 +149,12 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
     return () => clearTimeout(t);
   }, [searchTerm]);
 
-  // Carga inicial: categorías, IDs de Ecológicos e IDs G4 a ocultar.
+  // Carga inicial: categorías e IDs de la colección Ecológicos.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [catsRes, ecoColRes, g4Res] = await Promise.all([
+        const [catsRes, ecoColRes] = await Promise.all([
           supabase
             .from("product_categories")
             .select("id,name,slug,sort_order")
@@ -117,16 +166,12 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
             .select("id,slug")
             .eq("slug", "ecologicos")
             .maybeSingle(),
-          supabase
-            .from("productos_b2b")
-            .select("id")
-            .ilike("proveedor_nombre", "%g4%"),
         ]);
 
         if (cancelled) return;
 
         setCategories((catsRes.data ?? []) as CategoryOption[]);
-        setExcludeIds(((g4Res.data ?? []) as Array<{ id: string }>).map((r) => r.id));
+        setExcludeIds([]);
 
         const ecoCollectionId = (ecoColRes.data as { id: string } | null)?.id ?? null;
         if (ecoCollectionId) {
@@ -170,13 +215,28 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
       setErrorList(null);
 
       try {
-        // Determinar IDs permitidos según filtros de categoría/colección.
+        // Determinar IDs permitidos según filtros de categoría/colección/intención.
         let allowedIds: string[] | null = null;
         if (selectedCategoryId) {
           allowedIds = await getCategoryProductIds(selectedCategoryId);
         }
         if (ecoOnly) {
           allowedIds = intersect(allowedIds, ecoIds);
+        }
+
+        // Detección de intención: si la búsqueda coincide con una palabra clave,
+        // usamos los IDs de la categoría consolidada correspondiente en vez de un LIKE textual.
+        let intentApplied = false;
+        if (debouncedSearch.length >= 2 && !selectedCategoryId) {
+          const slug = detectIntentSlug(debouncedSearch);
+          if (slug) {
+            const cat = categories.find((c) => c.slug === slug);
+            if (cat) {
+              const intentIds = await getCategoryProductIds(cat.id);
+              allowedIds = intersect(allowedIds, intentIds);
+              intentApplied = true;
+            }
+          }
         }
 
         // Si el filtro produce lista vacía, no hay resultados.
@@ -197,13 +257,16 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
         if (excludeIds.length > 0) {
           q = q.not("id", "in", `(${excludeIds.join(",")})`);
         }
-        if (debouncedSearch.length >= 2) {
+        // Sólo aplicar filtro textual server-side si NO se aplicó una intención por categoría.
+        if (!intentApplied && debouncedSearch.length >= 2) {
           const like = `%${debouncedSearch}%`;
           q = q.or(
             [
               `id_interno.ilike.${like}`,
               `sku_base.ilike.${like}`,
+              `categoria_principal.ilike.${like}`,
               `datos_generales->>nombre.ilike.${like}`,
+              `datos_generales->>descripcion.ilike.${like}`,
               `datos_generales->>modelo_comercial.ilike.${like}`,
               `datos_generales->>nombre_comercial.ilike.${like}`,
             ].join(","),
@@ -231,7 +294,7 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
         setLoadingMore(false);
       }
     },
-    [selectedCategoryId, ecoOnly, ecoIds, excludeIds, debouncedSearch, getCategoryProductIds],
+    [selectedCategoryId, ecoOnly, ecoIds, excludeIds, debouncedSearch, categories, getCategoryProductIds],
   );
 
   // Al cambiar filtros/búsqueda o cuando termina la carga de prerequisitos, resetea a página 0.

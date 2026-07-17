@@ -1,20 +1,29 @@
-import { useState, useEffect } from "react";
-import { Search, Filter, Package, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Search, Filter, Package, Loader2, Leaf } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-interface ProductoB2B {
+interface ProductoCard {
   id: string;
   id_interno: string;
   sku_base: string | null;
   categoria_principal: string | null;
   datos_generales: { nombre?: string; descripcion?: string } | null;
-  variantes: Array<{ sku_variante?: string; color_nombre?: string; stock_total?: number }> | null;
+  variantes: Array<{ stock_total?: number }> | null;
   imagenes: unknown[] | null;
-  motor_de_personalizacion: unknown | null;
-  activo: boolean | null;
-  updated_at: string | null;
   precio_desde_mxn: number | null;
 }
+
+interface CategoryOption {
+  id: string;
+  name: string;
+  slug: string;
+  sort_order: number;
+}
+
+const PAGE_SIZE = 24;
+const SEARCH_DEBOUNCE_MS = 300;
+const CARD_SELECT =
+  "id,id_interno,sku_base,categoria_principal,datos_generales,variantes,imagenes,precio_desde_mxn";
 
 const isHttpUrl = (v: unknown): v is string => typeof v === "string" && /^https?:\/\//i.test(v);
 
@@ -54,43 +63,199 @@ interface CatalogViewProps {
   onOpenProduct: (productId: string) => void;
 }
 
+// Interseca dos arrays de strings preservando el orden del primero.
+function intersect(a: string[] | null, b: string[] | null): string[] | null {
+  if (a === null) return b;
+  if (b === null) return a;
+  const setB = new Set(b);
+  return a.filter((id) => setB.has(id));
+}
+
+const sel = (s: string): string => s; // evita parseo de tipos costoso de PostgREST
+
 export default function CatalogView({ onViewChange, onOpenProduct }: CatalogViewProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [productos, setProductos] = useState<ProductoB2B[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState("Todos");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [ecoOnly, setEcoOnly] = useState(false);
+  const [products, setProducts] = useState<ProductoCard[]>([]);
+  const [loadingList, setLoadingList] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [errorList, setErrorList] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [totalCount, setTotalCount] = useState<number | null>(null);
 
+  // IDs precargados: G4 (a excluir) y Ecológicos (a filtrar).
+  const [excludeIds, setExcludeIds] = useState<string[]>([]);
+  const [ecoIds, setEcoIds] = useState<string[]>([]);
+  const [prereqReady, setPrereqReady] = useState(false);
+
+  // Cache de IDs por categoría para evitar refetch al cambiar de página.
+  const categoryIdsCache = useRef<Map<string, string[]>>(new Map());
+
+  // Debounce búsqueda
   useEffect(() => {
-    async function fetchProductos() {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("productos_publicos")
-        .select(
-          "id,id_interno,sku_base,categoria_principal,datos_generales,variantes,imagenes,motor_de_personalizacion,activo,updated_at,precio_desde_mxn",
-        )
-        .eq("activo", true)
-        .order("updated_at", { ascending: false });
+    const t = setTimeout(() => setDebouncedSearch(searchTerm.trim()), SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
 
-      if (!error && data) {
-        setProductos(data as unknown as ProductoB2B[]);
+  // Carga inicial: categorías, IDs de Ecológicos e IDs G4 a ocultar.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const [catsRes, ecoColRes, g4Res] = await Promise.all([
+          supabase
+            .from("product_categories")
+            .select("id,name,slug,sort_order")
+            .eq("is_active", true)
+            .order("sort_order", { ascending: true })
+            .order("name", { ascending: true }),
+          supabase
+            .from("product_collections")
+            .select("id,slug")
+            .eq("slug", "ecologicos")
+            .maybeSingle(),
+          supabase
+            .from("productos_b2b")
+            .select("id")
+            .ilike("proveedor_nombre", "%g4%"),
+        ]);
+
+        if (cancelled) return;
+
+        setCategories((catsRes.data ?? []) as CategoryOption[]);
+        setExcludeIds(((g4Res.data ?? []) as Array<{ id: string }>).map((r) => r.id));
+
+        const ecoCollectionId = (ecoColRes.data as { id: string } | null)?.id ?? null;
+        if (ecoCollectionId) {
+          const { data: ecoAssign } = await supabase
+            .from("product_collection_assignments")
+            .select("producto_b2b_id")
+            .eq("collection_id", ecoCollectionId);
+          if (!cancelled) {
+            setEcoIds(((ecoAssign ?? []) as Array<{ producto_b2b_id: string }>).map((r) => r.producto_b2b_id));
+          }
+        }
+      } catch {
+        // silencioso: si falla, catálogo cae a productos sin filtros server-side
+      } finally {
+        if (!cancelled) setPrereqReady(true);
       }
-      setLoading(false);
-    }
-    fetchProductos();
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const categories = ["Todos", ...new Set(productos.map((p) => p.categoria_principal).filter(Boolean))];
+  // Obtiene los IDs de una categoría (cacheados).
+  const getCategoryProductIds = useCallback(async (categoryId: string): Promise<string[]> => {
+    const cached = categoryIdsCache.current.get(categoryId);
+    if (cached) return cached;
+    const { data } = await supabase
+      .from("product_category_assignments")
+      .select("producto_b2b_id")
+      .eq("category_id", categoryId);
+    const ids = ((data ?? []) as Array<{ producto_b2b_id: string }>).map((r) => r.producto_b2b_id);
+    categoryIdsCache.current.set(categoryId, ids);
+    return ids;
+  }, []);
 
-  const filtered = productos.filter((p) => {
-    const nombre = p.datos_generales?.nombre ?? "";
-    const matchSearch =
-      nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (p.sku_base ?? "").toLowerCase().includes(searchTerm.toLowerCase());
-    const matchCategory = selectedCategory === "Todos" || p.categoria_principal === selectedCategory;
-    return matchSearch && matchCategory;
-  });
+  // Ejecuta una página de productos aplicando filtros.
+  const fetchPage = useCallback(
+    async (pageIndex: number, append: boolean) => {
+      if (append) setLoadingMore(true);
+      else setLoadingList(true);
+      setErrorList(null);
 
-  const getTotalStock = (p: ProductoB2B) => (p.variantes ?? []).reduce((sum, v) => sum + (v.stock_total ?? 0), 0);
+      try {
+        // Determinar IDs permitidos según filtros de categoría/colección.
+        let allowedIds: string[] | null = null;
+        if (selectedCategoryId) {
+          allowedIds = await getCategoryProductIds(selectedCategoryId);
+        }
+        if (ecoOnly) {
+          allowedIds = intersect(allowedIds, ecoIds);
+        }
+
+        // Si el filtro produce lista vacía, no hay resultados.
+        if (allowedIds !== null && allowedIds.length === 0) {
+          setProducts(append ? (prev) => prev : []);
+          setTotalCount(0);
+          return;
+        }
+
+        let q = supabase
+          .from("productos_publicos")
+          .select(sel(CARD_SELECT), { count: "exact" })
+          .eq("activo", true);
+
+        if (allowedIds && allowedIds.length > 0) {
+          q = q.in("id", allowedIds);
+        }
+        if (excludeIds.length > 0) {
+          q = q.not("id", "in", `(${excludeIds.join(",")})`);
+        }
+        if (debouncedSearch.length >= 2) {
+          const like = `%${debouncedSearch}%`;
+          q = q.or(
+            [
+              `id_interno.ilike.${like}`,
+              `sku_base.ilike.${like}`,
+              `datos_generales->>nombre.ilike.${like}`,
+              `datos_generales->>modelo_comercial.ilike.${like}`,
+              `datos_generales->>nombre_comercial.ilike.${like}`,
+            ].join(","),
+          );
+        }
+
+        const from = pageIndex * PAGE_SIZE;
+        const to = from + PAGE_SIZE - 1;
+        q = q.order("updated_at", { ascending: false }).range(from, to);
+
+        const { data, error, count } = await q.returns<ProductoCard[]>();
+        if (error) throw error;
+
+        setTotalCount(count ?? null);
+        if (append) {
+          setProducts((prev) => [...prev, ...(data ?? [])]);
+        } else {
+          setProducts(data ?? []);
+        }
+      } catch (err) {
+        setErrorList(err instanceof Error ? err.message : "Error cargando catálogo");
+        if (!append) setProducts([]);
+      } finally {
+        setLoadingList(false);
+        setLoadingMore(false);
+      }
+    },
+    [selectedCategoryId, ecoOnly, ecoIds, excludeIds, debouncedSearch, getCategoryProductIds],
+  );
+
+  // Al cambiar filtros/búsqueda o cuando termina la carga de prerequisitos, resetea a página 0.
+  useEffect(() => {
+    if (!prereqReady) return;
+    setPage(0);
+    fetchPage(0, false);
+  }, [prereqReady, debouncedSearch, selectedCategoryId, ecoOnly, fetchPage]);
+
+  const handleLoadMore = () => {
+    const next = page + 1;
+    setPage(next);
+    fetchPage(next, true);
+  };
+
+  const getTotalStock = (p: ProductoCard) =>
+    (p.variantes ?? []).reduce((sum, v) => sum + (Number(v?.stock_total) || 0), 0);
+
+  const hasMore = totalCount !== null && products.length < totalCount;
+
+  const categoryButtons = useMemo(
+    () => [{ id: null as string | null, name: "Todos" }, ...categories.map((c) => ({ id: c.id, name: c.name }))],
+    [categories],
+  );
 
   return (
     <div className="pb-20 bg-surface min-h-screen">
@@ -124,19 +289,38 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
                 <Filter size={18} /> Filtros
               </h3>
               <div className="space-y-6">
+                {ecoIds.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground mb-3">Colecciones</h4>
+                    <button
+                      type="button"
+                      onClick={() => setEcoOnly((v) => !v)}
+                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold border transition ${
+                        ecoOnly
+                          ? "bg-success/10 text-success border-success/30"
+                          : "bg-secondary text-secondary-foreground border-transparent hover:border-success/30"
+                      }`}
+                    >
+                      <Leaf size={16} />
+                      Ecológicos
+                      <span className="ml-auto text-xs opacity-70">{ecoIds.length}</span>
+                    </button>
+                  </div>
+                )}
+
                 <div>
                   <h4 className="text-sm font-semibold text-foreground mb-3">Categorías</h4>
                   <div className="space-y-2">
-                    {categories.map((cat) => (
-                      <label key={cat} className="flex items-center gap-2 cursor-pointer">
+                    {categoryButtons.map((cat) => (
+                      <label key={cat.id ?? "todos"} className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="radio"
                           name="category"
-                          checked={selectedCategory === cat}
-                          onChange={() => setSelectedCategory(cat as string)}
+                          checked={selectedCategoryId === cat.id}
+                          onChange={() => setSelectedCategoryId(cat.id)}
                           className="text-primary focus:ring-primary accent-primary"
                         />
-                        <span className="text-sm text-muted-foreground hover:text-foreground">{cat}</span>
+                        <span className="text-sm text-muted-foreground hover:text-foreground">{cat.name}</span>
                       </label>
                     ))}
                   </div>
@@ -147,72 +331,110 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
 
           {/* Grid */}
           <div className="flex-1">
-            {loading ? (
+            {loadingList ? (
               <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
                 <Loader2 size={40} className="animate-spin text-primary" />
                 <p className="font-medium">Cargando catálogo...</p>
               </div>
-            ) : filtered.length === 0 ? (
+            ) : errorList ? (
+              <div className="text-center py-20 text-destructive">
+                <p className="font-semibold mb-2">No pudimos cargar el catálogo.</p>
+                <button
+                  onClick={() => fetchPage(0, false)}
+                  className="mt-2 text-primary underline text-sm"
+                >
+                  Reintentar
+                </button>
+              </div>
+            ) : products.length === 0 ? (
               <div className="text-center py-20 text-muted-foreground">No se encontraron productos.</div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filtered.map((prod) => {
-                  const stock = getTotalStock(prod);
-                  const nombre = prod.datos_generales?.nombre ?? prod.id_interno;
-                  const precio = Number(prod.precio_desde_mxn || 0);
-                  const imgUrl = getSafeImageUrl(prod.imagenes);
+              <>
+                {totalCount !== null && (
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Mostrando {products.length.toLocaleString("es-MX")} de{" "}
+                    {totalCount.toLocaleString("es-MX")} productos
+                  </p>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {products.map((prod) => {
+                    const stock = getTotalStock(prod);
+                    const nombre = prod.datos_generales?.nombre ?? prod.id_interno;
+                    const precio = Number(prod.precio_desde_mxn || 0);
+                    const imgUrl = getSafeImageUrl(prod.imagenes);
 
-                  return (
-                    <div
-                      key={prod.id}
-                      className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-md transition-shadow group cursor-pointer"
-                      onClick={() => onOpenProduct(prod.id)}
-                    >
-                      <div className="aspect-square bg-white relative flex items-center justify-center overflow-hidden">
-                        <div className="absolute top-3 left-3 bg-card/90 backdrop-blur px-2 py-1 rounded-md text-[10px] font-bold text-foreground border border-border z-10">
-                          {prod.categoria_principal ?? "General"}
-                        </div>
-                        {imgUrl ? (
-                          <img
-                            src={imgUrl}
-                            alt={nombre}
-                            className="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500"
-                            onError={(e) => {
-                              e.currentTarget.style.display = "none";
-                              (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove("hidden");
-                            }}
+                    return (
+                      <div
+                        key={prod.id}
+                        className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-md transition-shadow group cursor-pointer"
+                        onClick={() => onOpenProduct(prod.id)}
+                      >
+                        <div className="aspect-square bg-white relative flex items-center justify-center overflow-hidden">
+                          <div className="absolute top-3 left-3 bg-card/90 backdrop-blur px-2 py-1 rounded-md text-[10px] font-bold text-foreground border border-border z-10">
+                            {prod.categoria_principal ?? "General"}
+                          </div>
+                          {imgUrl ? (
+                            <img
+                              src={imgUrl}
+                              alt={nombre}
+                              loading="lazy"
+                              decoding="async"
+                              className="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500"
+                              onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                                (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove("hidden");
+                              }}
+                            />
+                          ) : null}
+                          <Package
+                            size={80}
+                            className={`opacity-40 group-hover:scale-110 transition-transform duration-500 text-muted-foreground absolute ${imgUrl ? "hidden" : ""}`}
                           />
-                        ) : null}
-                        <Package
-                          size={80}
-                          className={`opacity-40 group-hover:scale-110 transition-transform duration-500 text-muted-foreground absolute ${imgUrl ? "hidden" : ""}`}
-                        />
+                        </div>
+                        <div className="p-5">
+                          <p
+                            className={`text-xs font-bold mb-1 flex items-center gap-1 ${stock > 0 ? "text-success" : "text-destructive"}`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${stock > 0 ? "bg-success animate-pulse" : "bg-destructive"}`}
+                            ></span>
+                            {stock > 0 ? `${stock.toLocaleString()} disp.` : "Sin stock"}
+                          </p>
+                          <h3 className="font-bold text-foreground mb-2 line-clamp-1">{nombre}</h3>
+                          <p className="text-muted-foreground text-sm mb-4">
+                            Desde{" "}
+                            <strong className="text-foreground">
+                              {precio.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                            </strong>{" "}
+                            c/u
+                          </p>
+                          <button className="w-full bg-secondary hover:bg-primary/10 text-secondary-foreground hover:text-primary font-semibold py-2 rounded-lg transition-colors border border-transparent hover:border-primary/20 text-sm">
+                            Ver Detalles
+                          </button>
+                        </div>
                       </div>
-                      <div className="p-5">
-                        <p
-                          className={`text-xs font-bold mb-1 flex items-center gap-1 ${stock > 0 ? "text-success" : "text-destructive"}`}
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${stock > 0 ? "bg-success animate-pulse" : "bg-destructive"}`}
-                          ></span>
-                          {stock > 0 ? `${stock.toLocaleString()} disp.` : "Sin stock"}
-                        </p>
-                        <h3 className="font-bold text-foreground mb-2 line-clamp-1">{nombre}</h3>
-                        <p className="text-muted-foreground text-sm mb-4">
-                          Desde{" "}
-                          <strong className="text-foreground">
-                            {precio.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
-                          </strong>{" "}
-                          c/u
-                        </p>
-                        <button className="w-full bg-secondary hover:bg-primary/10 text-secondary-foreground hover:text-primary font-semibold py-2 rounded-lg transition-colors border border-transparent hover:border-primary/20 text-sm">
-                          Ver Detalles
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+
+                {hasMore && (
+                  <div className="flex justify-center mt-10">
+                    <button
+                      onClick={handleLoadMore}
+                      disabled={loadingMore}
+                      className="bg-primary hover:bg-primary/90 disabled:opacity-70 text-primary-foreground font-bold px-8 py-3 rounded-xl shadow-sm transition-colors inline-flex items-center gap-2"
+                    >
+                      {loadingMore ? (
+                        <>
+                          <Loader2 size={18} className="animate-spin" /> Cargando...
+                        </>
+                      ) : (
+                        `Cargar más (${(totalCount! - products.length).toLocaleString("es-MX")} restantes)`
+                      )}
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

@@ -71,6 +71,55 @@ function intersect(a: string[] | null, b: string[] | null): string[] | null {
   return a.filter((id) => setB.has(id));
 }
 
+// Normaliza texto para matching de intención de búsqueda.
+function normalizeText(v: string): string {
+  return v
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+// Mapa intención → slug de categoría consolidada.
+const INTENT_TO_SLUG: Record<string, string> = {
+  termo: "bebidas-termos-vasos", termos: "bebidas-termos-vasos",
+  vaso: "bebidas-termos-vasos", vasos: "bebidas-termos-vasos",
+  cilindro: "bebidas-termos-vasos", cilindros: "bebidas-termos-vasos",
+  botella: "bebidas-termos-vasos", botellas: "bebidas-termos-vasos",
+  taza: "bebidas-termos-vasos", tazas: "bebidas-termos-vasos",
+  mug: "bebidas-termos-vasos", drinkware: "bebidas-termos-vasos",
+  boligrafo: "escritura", boligrafos: "escritura",
+  pluma: "escritura", plumas: "escritura",
+  lapiz: "escritura", marcador: "escritura",
+  libreta: "oficina-libretas-papeleria", libretas: "oficina-libretas-papeleria",
+  agenda: "oficina-libretas-papeleria", agendas: "oficina-libretas-papeleria",
+  cuaderno: "oficina-libretas-papeleria", cuadernos: "oficina-libretas-papeleria",
+  oficina: "oficina-libretas-papeleria", papeleria: "oficina-libretas-papeleria",
+  mochila: "bolsas-mochilas-viaje", mochilas: "bolsas-mochilas-viaje",
+  bolsa: "bolsas-mochilas-viaje", bolsas: "bolsas-mochilas-viaje",
+  maleta: "bolsas-mochilas-viaje", maletas: "bolsas-mochilas-viaje",
+  viaje: "bolsas-mochilas-viaje", tote: "bolsas-mochilas-viaje",
+  morral: "bolsas-mochilas-viaje", hielera: "bolsas-mochilas-viaje",
+  usb: "tecnologia", tecnologia: "tecnologia",
+  bocina: "tecnologia", audifono: "tecnologia",
+  cargador: "tecnologia", cable: "tecnologia",
+  powerbank: "tecnologia", "power bank": "tecnologia",
+  playera: "textiles-ropa", polo: "textiles-ropa",
+  sudadera: "textiles-ropa", textil: "textiles-ropa",
+  ropa: "textiles-ropa", camisa: "textiles-ropa",
+  gorra: "gorras-accesorios", gorras: "gorras-accesorios",
+  cachucha: "gorras-accesorios", visera: "gorras-accesorios",
+  llavero: "llaveros-identificadores", llaveros: "llaveros-identificadores",
+  gafete: "llaveros-identificadores", lanyard: "llaveros-identificadores",
+  credencial: "llaveros-identificadores", identificador: "llaveros-identificadores",
+};
+
+function detectIntentSlug(query: string): string | null {
+  const n = normalizeText(query);
+  if (!n) return null;
+  return INTENT_TO_SLUG[n] ?? null;
+}
+
 const sel = (s: string): string => s; // evita parseo de tipos costoso de PostgREST
 
 export default function CatalogView({ onViewChange, onOpenProduct }: CatalogViewProps) {

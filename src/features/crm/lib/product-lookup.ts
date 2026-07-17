@@ -381,80 +381,24 @@ async function searchB2B(query: string, limit: number): Promise<SafeProductMatch
   return dedupeMatches(results).slice(0, limit);
 }
 
-// Búsqueda staff interna por payload de proveedor. Retorna sólo productos_b2b_id
-// vinculados; luego se hidratan como SafeProductMatch desde productos_b2b (whitelist).
-async function searchByProviderRaw(query: string, limit: number): Promise<string[]> {
+// Búsqueda staff vía RPC segura (SECURITY DEFINER, whitelist server-side).
+// Nunca expone provider_sku, raw_payload, costos, proveedor interno ni datos_logistica_b2b.
+async function searchProviderViaRpc(query: string, limit: number): Promise<SafeProductMatch[]> {
   if (query.length < 2) return [];
-  const like = `%${query}%`;
-  const { data, error } = await supabase
-    .from("provider_raw_products")
-    .select("productos_b2b_id")
-    .not("productos_b2b_id", "is", null)
-    .or(
-      [
-        `provider_sku.ilike.${like}`,
-        `nombre.ilike.${like}`,
-        `descripcion.ilike.${like}`,
-        `categoria.ilike.${like}`,
-      ].join(","),
-    )
-    .limit(limit * 3);
+  const { data, error } = await (supabase.rpc as unknown as (
+    fn: string,
+    args: Record<string, unknown>,
+  ) => Promise<{ data: unknown; error: unknown }>)("crm_product_lookup_safe", {
+    _query: query,
+    _limit: limit,
+  });
   if (error) {
-    warnDev("provider_raw", error);
-    return [];
-  }
-  return ((data ?? []) as Array<{ productos_b2b_id: string | null }>)
-    .map((r) => r.productos_b2b_id)
-    .filter((v): v is string => !!v);
-}
-
-async function searchByProviderOfertas(query: string, limit: number): Promise<string[]> {
-  if (query.length < 2) return [];
-  const like = `%${query}%`;
-  const { data, error } = await supabase
-    .from("producto_proveedor_ofertas")
-    .select("id")
-    .or(
-      [
-        `variant_sku.ilike.${like}`,
-        `modelo.ilike.${like}`,
-        `color_nombre.ilike.${like}`,
-        `material.ilike.${like}`,
-      ].join(","),
-    )
-    .limit(limit * 3);
-  if (error) {
-    warnDev("ofertas", error);
-    return [];
-  }
-  const ofertaIds = ((data ?? []) as Array<{ id: string }>).map((r) => r.id);
-  if (ofertaIds.length === 0) return [];
-
-  const { data: mapRows, error: mapErr } = await supabase
-    .from("producto_b2b_oferta_map")
-    .select("producto_b2b_id")
-    .in("oferta_id", ofertaIds);
-  if (mapErr) {
-    warnDev("oferta_map", mapErr);
-    return [];
-  }
-  return ((mapRows ?? []) as Array<{ producto_b2b_id: string | null }>)
-    .map((r) => r.producto_b2b_id)
-    .filter((v): v is string => !!v);
-}
-
-async function hydrateB2BByIds(ids: string[], limit: number): Promise<SafeProductMatch[]> {
-  if (ids.length === 0) return [];
-  const uniq = Array.from(new Set(ids)).slice(0, Math.max(limit * 2, 20));
-  const fields = "id,id_interno,sku_base,categoria_principal,datos_generales,variantes,imagenes,updated_at";
-  const { data, error } = await supabase.from("productos_b2b").select(fields).in("id", uniq);
-  if (error) {
-    warnDev("hydrate_b2b", error);
+    warnDev("rpc_lookup", error);
     return [];
   }
   const out: SafeProductMatch[] = [];
-  for (const row of data ?? []) {
-    const m = rowToSafeMatch("b2b", row as Record<string, unknown>);
+  for (const row of (data ?? []) as Array<Record<string, unknown>>) {
+    const m = rowToSafeMatch("b2b", row);
     if (m) out.push(m);
   }
   return out;
@@ -464,22 +408,17 @@ async function hydrateB2BByIds(ids: string[], limit: number): Promise<SafeProduc
  * Busca un producto por clave/modelo/SKU en:
  *  1) productos_publicos (vista segura del catálogo)
  *  2) productos_b2b (sólo campos comerciales whitelisted)
- *  3) provider_raw_products + producto_proveedor_ofertas → productos_b2b
- * Devuelve como máximo `limit` resultados combinados. Nunca expone
- * provider_sku, raw_payload, costos, proveedor interno ni datos_logistica_b2b.
+ *  3) RPC crm_product_lookup_safe (proveedor/ofertas, staff-only, whitelist server)
  */
 export async function searchProductByClave(query: string, limit = 5): Promise<SafeProductMatch[]> {
   const q = query.trim();
   if (q.length < 2) return [];
 
-  const [publicMatches, b2bMatches, rawIds, ofertaIds] = await Promise.all([
+  const [publicMatches, b2bMatches, providerMatches] = await Promise.all([
     searchPublicos(q, limit),
     searchB2B(q, limit),
-    searchByProviderRaw(q, limit),
-    searchByProviderOfertas(q, limit),
+    searchProviderViaRpc(q, limit),
   ]);
-
-  const providerMatches = await hydrateB2BByIds([...rawIds, ...ofertaIds], limit);
 
   const combined = dedupeMatches([...publicMatches, ...b2bMatches, ...providerMatches]);
 
@@ -487,7 +426,6 @@ export async function searchProductByClave(query: string, limit = 5): Promise<Sa
     const exactA = isExactProductMatch(a, q) ? 0 : 1;
     const exactB = isExactProductMatch(b, q) ? 0 : 1;
     if (exactA !== exactB) return exactA - exactB;
-    // Preferir la fuente pública (tiene precio comercial).
     const srcA = a.source === "publico" ? 0 : 1;
     const srcB = b.source === "publico" ? 0 : 1;
     if (srcA !== srcB) return srcA - srcB;

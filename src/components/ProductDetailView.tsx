@@ -468,6 +468,8 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                   <img
                     src={mainImage}
                     alt={productName}
+                    decoding="async"
+                    fetchPriority="high"
                     className="max-w-[82%] max-h-[82%] object-contain z-0"
                     onError={(e) => {
                       e.currentTarget.style.display = "none";
@@ -498,6 +500,8 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                       <img
                         src={imageUrl}
                         alt={`${productName} ${index + 1}`}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-contain p-1"
                       />
                     </button>

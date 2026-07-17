@@ -2684,6 +2684,269 @@ export type Database = {
           },
         ]
       }
+      product_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      product_category_aliases: {
+        Row: {
+          category_id: string
+          confidence: number
+          created_at: string
+          id: string
+          is_active: boolean
+          notes: string | null
+          provider_code: string
+          source_category: string
+          source_subcategory: string
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          confidence?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          provider_code?: string
+          source_category: string
+          source_subcategory?: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          confidence?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          provider_code?: string
+          source_category?: string
+          source_subcategory?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_category_aliases_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_category_assignments: {
+        Row: {
+          category_id: string
+          confidence: number
+          created_at: string
+          id: string
+          notes: string | null
+          producto_b2b_id: string
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          confidence?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          producto_b2b_id: string
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          confidence?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          producto_b2b_id?: string
+          source?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_category_assignments_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_category_assignments_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: true
+            referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_category_review_queue: {
+        Row: {
+          created_at: string
+          current_category: string | null
+          current_subcategory: string | null
+          id: string
+          producto_b2b_id: string
+          reason: string
+          reviewer_notes: string | null
+          status: string
+          suggested_category_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_category?: string | null
+          current_subcategory?: string | null
+          id?: string
+          producto_b2b_id: string
+          reason: string
+          reviewer_notes?: string | null
+          status?: string
+          suggested_category_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_category?: string | null
+          current_subcategory?: string | null
+          id?: string
+          producto_b2b_id?: string
+          reason?: string
+          reviewer_notes?: string | null
+          status?: string
+          suggested_category_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_category_review_queue_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_category_review_queue_suggested_category_id_fkey"
+            columns: ["suggested_category_id"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_collection_assignments: {
+        Row: {
+          collection_id: string
+          confidence: number
+          created_at: string
+          id: string
+          notes: string | null
+          producto_b2b_id: string
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          collection_id: string
+          confidence?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          producto_b2b_id: string
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          collection_id?: string
+          confidence?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          producto_b2b_id?: string
+          source?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_collection_assignments_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "product_collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_collection_assignments_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_collections: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       product_personalization_capabilities: {
         Row: {
           active: boolean

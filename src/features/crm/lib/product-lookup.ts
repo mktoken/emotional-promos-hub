@@ -278,6 +278,8 @@ function dedupeMatches(matches: SafeProductMatch[]): SafeProductMatch[] {
   return out;
 }
 
+const FALLBACK_LIMIT = 60;
+
 async function searchPublicos(query: string, limit: number): Promise<SafeProductMatch[]> {
   const like = `%${query}%`;
   const fields = "id,id_interno,sku_base,categoria_principal,datos_generales,variantes,imagenes,precio_desde_mxn";
@@ -307,10 +309,9 @@ async function searchPublicos(query: string, limit: number): Promise<SafeProduct
     }
   }
 
-  // Intento 2: fallback client-side para casos donde PostgREST no filtre JSON
-  // o el modelo esté guardado en otro campo comercial.
-  if (results.length === 0) {
-    const { data: fallback } = await supabase.from("productos_publicos").select(fields).limit(300);
+  // Intento 2: fallback client-side sólo para queries >= 3 chars.
+  if (results.length === 0 && query.length >= 3) {
+    const { data: fallback } = await supabase.from("productos_publicos").select(fields).limit(FALLBACK_LIMIT);
 
     for (const row of fallback ?? []) {
       const r = row as Record<string, unknown>;
@@ -354,8 +355,12 @@ async function searchB2B(query: string, limit: number): Promise<SafeProductMatch
     }
   }
 
-  if (results.length === 0) {
-    const { data: fallback } = await supabase.from("productos_b2b").select(fields).eq("activo", true).limit(300);
+  if (results.length === 0 && query.length >= 3) {
+    const { data: fallback } = await supabase
+      .from("productos_b2b")
+      .select(fields)
+      .eq("activo", true)
+      .limit(FALLBACK_LIMIT);
 
     for (const row of fallback ?? []) {
       const r = row as Record<string, unknown>;
@@ -381,9 +386,9 @@ export async function searchProductByClave(query: string, limit = 5): Promise<Sa
   const q = query.trim();
   if (q.length < 2) return [];
 
-  const publicMatches = await searchPublicos(q, limit);
-  const remaining = Math.max(0, limit - publicMatches.length);
-  const b2bMatches = remaining > 0 ? await searchB2B(q, remaining) : [];
+  // Ejecutar públicos y b2b en paralelo.
+  const [publicMatches, b2bMatchesAll] = await Promise.all([searchPublicos(q, limit), searchB2B(q, limit)]);
+  const b2bMatches = b2bMatchesAll.slice(0, Math.max(0, limit));
 
   const combined = dedupeMatches([...publicMatches, ...b2bMatches]);
 

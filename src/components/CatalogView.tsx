@@ -215,28 +215,13 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
       setErrorList(null);
 
       try {
-        // Determinar IDs permitidos según filtros de categoría/colección/intención.
+        // Determinar IDs permitidos según filtros de categoría/colección.
         let allowedIds: string[] | null = null;
         if (selectedCategoryId) {
           allowedIds = await getCategoryProductIds(selectedCategoryId);
         }
         if (ecoOnly) {
           allowedIds = intersect(allowedIds, ecoIds);
-        }
-
-        // Detección de intención: si la búsqueda coincide con una palabra clave,
-        // usamos los IDs de la categoría consolidada correspondiente en vez de un LIKE textual.
-        let intentApplied = false;
-        if (debouncedSearch.length >= 2 && !selectedCategoryId) {
-          const slug = detectIntentSlug(debouncedSearch);
-          if (slug) {
-            const cat = categories.find((c) => c.slug === slug);
-            if (cat) {
-              const intentIds = await getCategoryProductIds(cat.id);
-              allowedIds = intersect(allowedIds, intentIds);
-              intentApplied = true;
-            }
-          }
         }
 
         // Si el filtro produce lista vacía, no hay resultados.
@@ -257,8 +242,8 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
         if (excludeIds.length > 0) {
           q = q.not("id", "in", `(${excludeIds.join(",")})`);
         }
-        // Sólo aplicar filtro textual server-side si NO se aplicó una intención por categoría.
-        if (!intentApplied && debouncedSearch.length >= 2) {
+        // Búsqueda textual server-side (siempre que haya query >= 2).
+        if (debouncedSearch.length >= 2) {
           const like = `%${debouncedSearch}%`;
           q = q.or(
             [

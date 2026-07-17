@@ -202,6 +202,7 @@ export default function LandingView({ onViewChange }: LandingViewProps) {
                                 src={p.imagen}
                                 alt={p.nombre}
                                 loading="lazy"
+                                decoding="async"
                                 className="w-full h-full object-contain p-2"
                               />
                             ) : (
@@ -279,6 +280,7 @@ export default function LandingView({ onViewChange }: LandingViewProps) {
                         src={p.imagen}
                         alt={p.nombre}
                         loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform"
                       />
                     ) : (

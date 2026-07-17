@@ -149,12 +149,12 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
     return () => clearTimeout(t);
   }, [searchTerm]);
 
-  // Carga inicial: categorías, IDs de Ecológicos e IDs G4 a ocultar.
+  // Carga inicial: categorías e IDs de la colección Ecológicos.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [catsRes, ecoColRes, g4Res] = await Promise.all([
+        const [catsRes, ecoColRes] = await Promise.all([
           supabase
             .from("product_categories")
             .select("id,name,slug,sort_order")
@@ -166,16 +166,12 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
             .select("id,slug")
             .eq("slug", "ecologicos")
             .maybeSingle(),
-          supabase
-            .from("productos_b2b")
-            .select("id")
-            .ilike("proveedor_nombre", "%g4%"),
         ]);
 
         if (cancelled) return;
 
         setCategories((catsRes.data ?? []) as CategoryOption[]);
-        setExcludeIds(((g4Res.data ?? []) as Array<{ id: string }>).map((r) => r.id));
+        setExcludeIds([]);
 
         const ecoCollectionId = (ecoColRes.data as { id: string } | null)?.id ?? null;
         if (ecoCollectionId) {

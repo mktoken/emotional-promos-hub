@@ -4235,10 +4235,10 @@ export type Database = {
         Returns: {
           categoria_principal: string
           datos_generales: Json
+          id: string
           id_interno: string
           imagenes: Json
           precio_desde_mxn: number
-          ref_id: string
           sku_base: string
           source: string
           variantes: Json

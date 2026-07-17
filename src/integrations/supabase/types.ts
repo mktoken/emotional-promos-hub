@@ -4230,6 +4230,20 @@ export type Database = {
         }
         Returns: string
       }
+      crm_product_lookup_safe: {
+        Args: { _limit?: number; _query: string }
+        Returns: {
+          categoria_principal: string
+          datos_generales: Json
+          id_interno: string
+          imagenes: Json
+          precio_desde_mxn: number
+          ref_id: string
+          sku_base: string
+          source: string
+          variantes: Json
+        }[]
+      }
       has_role: {
         Args: { _role: Database["public"]["Enums"]["app_role"]; _uid: string }
         Returns: boolean

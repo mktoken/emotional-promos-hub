@@ -245,21 +245,15 @@ function parseG4Product(open: string, inner: string): G4Product {
     ? true
     : /^(1|true|si|sí|yes)$/i.test(String(activoRaw).trim());
 
-  // Imágenes: <imagenes><principal>..</principal><ambientada>..</ambientada><adicionales>..</adicionales></imagenes>
+  // Imágenes: G4 entrega URL como atributo (url="...") o como texto interno.
+  // <principal url="..."/>, <ambientada url="..."/>, <adicionales><adicional url="..."/></adicionales>
   const imagenesBlock = inner.match(/<imagenes\b[^>]*>([\s\S]*?)<\/imagenes\s*>/i);
   const imagesXml = imagenesBlock?.[1] ?? "";
-  const principal = extractChildText(imagesXml, "principal");
-  const ambientada = extractChildText(imagesXml, "ambientada");
-  const adicionales: string[] = [];
+  const principal = getElementUrlOrText(imagesXml, "principal");
+  const ambientada = getElementUrlOrText(imagesXml, "ambientada");
   const adBlock = imagesXml.match(/<adicionales\b[^>]*>([\s\S]*?)<\/adicionales\s*>/i);
-  if (adBlock) {
-    const imgRe = /<(?:imagen|adicional|url|item)\b[^>]*>([\s\S]*?)<\/(?:imagen|adicional|url|item)\s*>/gi;
-    let m: RegExpExecArray | null;
-    while ((m = imgRe.exec(adBlock[1])) !== null) {
-      const v = decodeHtmlEntities(m[1]).trim();
-      if (v) adicionales.push(v);
-    }
-  }
+  const adBlockXml = adBlock?.[1] ?? "";
+  const adicionales = getElementUrls(adBlockXml, ["adicional", "imagen", "url", "item"]);
 
   // Precios: <precios><escala rango="1-49" precio="10.00"/>...</precios> (o hijos)
   const preciosBlock = inner.match(/<precios\b[^>]*>([\s\S]*?)<\/precios\s*>/i);

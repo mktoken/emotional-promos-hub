@@ -63,6 +63,68 @@ function tryDecodeBase64(text: string): { decoded: string | null; wasDecoded: bo
   }
 }
 
+function decodeHtmlEntities(s: string): string {
+  return s
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&");
+}
+
+function cleanUrl(v: string | null | undefined): string | null {
+  if (v === null || v === undefined) return null;
+  let s = decodeHtmlEntities(String(v)).trim();
+  if (!s) return null;
+  const cdata = s.match(/^<!\[CDATA\[([\s\S]*?)\]\]>$/);
+  if (cdata) s = cdata[1].trim();
+  if (!/^https?:\/\//i.test(s)) return null;
+  return s;
+}
+
+function extractElementsWithAttrUrl(xml: string, tag: string): string[] {
+  const urls: string[] = [];
+  const seen = new Set<string>();
+  const selfRe = new RegExp(`<${tag}\\b([^>]*)\\/>`, "gi");
+  const openRe = new RegExp(`<${tag}\\b([^>]*)>([\\s\\S]*?)<\\/${tag}\\s*>`, "gi");
+  const readAttrUrl = (openTag: string): string | null => {
+    const m = openTag.match(/\burl\s*=\s*"([^"]*)"/i);
+    return m ? cleanUrl(m[1]) : null;
+  };
+  let m: RegExpExecArray | null;
+  while ((m = openRe.exec(xml)) !== null) {
+    const url = readAttrUrl(m[1]) ?? cleanUrl(m[2].trim());
+    if (url && !seen.has(url)) { seen.add(url); urls.push(url); }
+  }
+  while ((m = selfRe.exec(xml)) !== null) {
+    const url = readAttrUrl(m[1]);
+    if (url && !seen.has(url)) { seen.add(url); urls.push(url); }
+  }
+  return urls;
+}
+
+function detectImages(xml: string): {
+  principal: string | null;
+  ambientada: string | null;
+  additionalCount: number;
+  firstImage: string | null;
+} {
+  const imgBlock = xml.match(/<imagenes\b[^>]*>([\s\S]*?)<\/imagenes\s*>/i);
+  const imagesXml = imgBlock?.[1] ?? "";
+  const principal = extractElementsWithAttrUrl(imagesXml, "principal")[0] ?? null;
+  const ambientada = extractElementsWithAttrUrl(imagesXml, "ambientada")[0] ?? null;
+  const adBlock = imagesXml.match(/<adicionales\b[^>]*>([\s\S]*?)<\/adicionales\s*>/i);
+  const adXml = adBlock?.[1] ?? "";
+  const additional: string[] = [];
+  for (const tag of ["adicional", "imagen", "url", "item"]) {
+    for (const u of extractElementsWithAttrUrl(adXml, tag)) {
+      if (!additional.includes(u)) additional.push(u);
+    }
+  }
+  const firstImage = principal ?? ambientada ?? additional[0] ?? null;
+  return { principal, ambientada, additionalCount: additional.length, firstImage };
+}
+
 function extractProducts(xml: string): {
   count: number;
   sample: Record<string, string> | null;
@@ -72,7 +134,6 @@ function extractProducts(xml: string): {
   let count = matches.length;
   let sampleInner: string | null = matches[0]?.[2] ?? null;
 
-  // Fallback: si no hay <product>, buscar campos típicos sueltos
   if (count === 0) {
     const hasFields = /<[^>]*\b(codigo_producto|nombre_producto|sku|precio|existencias)\b[^>]*>[^<]+<\//i.test(xml);
     if (hasFields) {
@@ -207,6 +268,7 @@ Deno.serve(async (req) => {
         const hasProducts = count > 0;
 
         if (hasProducts) {
+          const img = detectImages(xmlToParse);
           return jsonResponse(200, {
             ok: true,
             provider: "g4",
@@ -219,6 +281,11 @@ Deno.serve(async (req) => {
             productCountDetected: count,
             sampleProduct: sample,
             namespace: ns,
+            imageParsingMode: "attribute_url_or_text",
+            imagePrincipalDetected: !!img.principal,
+            imageAmbientadaDetected: !!img.ambientada,
+            additionalImagesCount: img.additionalCount,
+            firstImageUrl: img.firstImage,
             decodedXmlPreview: xmlToParse.slice(0, 500),
             attempts,
           });

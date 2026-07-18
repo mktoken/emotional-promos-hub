@@ -149,6 +149,45 @@ function extractAllElements(xml: string, tag: string): Array<{ open: string; inn
   return out;
 }
 
+// ---------- Image URL helpers (attribute-first) ----------
+
+function cleanUrl(v: string | null | undefined): string | null {
+  if (v === null || v === undefined) return null;
+  let s = decodeHtmlEntities(String(v)).trim();
+  if (!s) return null;
+  // Strip CDATA if wrapped
+  const cdata = s.match(/^<!\[CDATA\[([\s\S]*?)\]\]>$/);
+  if (cdata) s = cdata[1].trim();
+  if (!/^https?:\/\//i.test(s)) return null;
+  return s;
+}
+
+function getElementUrlOrText(xml: string, tag: string): string | null {
+  const els = extractAllElements(xml, tag);
+  if (els.length === 0) return null;
+  const first = els[0];
+  const fromAttr = cleanUrl(first.attrs["url"]);
+  if (fromAttr) return fromAttr;
+  const innerText = first.inner ? first.inner.trim() : "";
+  return cleanUrl(innerText);
+}
+
+function getElementUrls(xml: string, tags: string[]): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const tag of tags) {
+    const els = extractAllElements(xml, tag);
+    for (const el of els) {
+      const url = cleanUrl(el.attrs["url"]) ?? cleanUrl(el.inner ? el.inner.trim() : "");
+      if (url && !seen.has(url)) {
+        seen.add(url);
+        out.push(url);
+      }
+    }
+  }
+  return out;
+}
+
 // Extrae valor combinando @attribute y hijo con el mismo nombre
 function getField(
   attrs: Record<string, string>,
@@ -206,21 +245,15 @@ function parseG4Product(open: string, inner: string): G4Product {
     ? true
     : /^(1|true|si|sí|yes)$/i.test(String(activoRaw).trim());
 
-  // Imágenes: <imagenes><principal>..</principal><ambientada>..</ambientada><adicionales>..</adicionales></imagenes>
+  // Imágenes: G4 entrega URL como atributo (url="...") o como texto interno.
+  // <principal url="..."/>, <ambientada url="..."/>, <adicionales><adicional url="..."/></adicionales>
   const imagenesBlock = inner.match(/<imagenes\b[^>]*>([\s\S]*?)<\/imagenes\s*>/i);
   const imagesXml = imagenesBlock?.[1] ?? "";
-  const principal = extractChildText(imagesXml, "principal");
-  const ambientada = extractChildText(imagesXml, "ambientada");
-  const adicionales: string[] = [];
+  const principal = getElementUrlOrText(imagesXml, "principal");
+  const ambientada = getElementUrlOrText(imagesXml, "ambientada");
   const adBlock = imagesXml.match(/<adicionales\b[^>]*>([\s\S]*?)<\/adicionales\s*>/i);
-  if (adBlock) {
-    const imgRe = /<(?:imagen|adicional|url|item)\b[^>]*>([\s\S]*?)<\/(?:imagen|adicional|url|item)\s*>/gi;
-    let m: RegExpExecArray | null;
-    while ((m = imgRe.exec(adBlock[1])) !== null) {
-      const v = decodeHtmlEntities(m[1]).trim();
-      if (v) adicionales.push(v);
-    }
-  }
+  const adBlockXml = adBlock?.[1] ?? "";
+  const adicionales = getElementUrls(adBlockXml, ["adicional", "imagen", "url", "item"]);
 
   // Precios: <precios><escala rango="1-49" precio="10.00"/>...</precios> (o hijos)
   const preciosBlock = inner.match(/<precios\b[^>]*>([\s\S]*?)<\/precios\s*>/i);

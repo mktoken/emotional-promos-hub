@@ -621,8 +621,38 @@ Deno.serve(async (req) => {
           let productoB2bId: string;
           if (existingProd) {
             productoB2bId = existingProd.id as string;
-            // never re-activate; leave staff-managed rows alone besides pilot fields
-            // (do not touch activo — plan says do not modify structure/data outside scope)
+            // Refresh imágenes/variantes/promoted_at para productos g4_mx ya mapeados.
+            // NO cambiar activo, costeo, datos_logistica_b2b, motor_de_personalizacion, ni datos manuales sensibles.
+            let isG4Existing = code === "g4_mx";
+            if (!isG4Existing) {
+              const { data: existingMap } = await sb
+                .from("producto_b2b_oferta_map")
+                .select("provider_code")
+                .eq("producto_b2b_id", productoB2bId)
+                .limit(1);
+              if (existingMap && existingMap[0]?.provider_code === "g4_mx") {
+                isG4Existing = true;
+              }
+            }
+            if (isG4Existing) {
+              const { data: currentProd } = await sb
+                .from("productos_b2b")
+                .select("datos_generales")
+                .eq("id", productoB2bId)
+                .maybeSingle();
+              const currentDG = (currentProd?.datos_generales ?? {}) as Record<string, unknown>;
+              await sb
+                .from("productos_b2b")
+                .update({
+                  imagenes: imagenesJson,
+                  variantes: variantesJson,
+                  datos_generales: {
+                    ...currentDG,
+                    promoted_at: new Date().toISOString(),
+                  },
+                })
+                .eq("id", productoB2bId);
+            }
           } else {
             const { data: ins, error: insErr } = await sb
               .from("productos_b2b")

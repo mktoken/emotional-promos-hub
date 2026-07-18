@@ -149,6 +149,45 @@ function extractAllElements(xml: string, tag: string): Array<{ open: string; inn
   return out;
 }
 
+// ---------- Image URL helpers (attribute-first) ----------
+
+function cleanUrl(v: string | null | undefined): string | null {
+  if (v === null || v === undefined) return null;
+  let s = decodeHtmlEntities(String(v)).trim();
+  if (!s) return null;
+  // Strip CDATA if wrapped
+  const cdata = s.match(/^<!\[CDATA\[([\s\S]*?)\]\]>$/);
+  if (cdata) s = cdata[1].trim();
+  if (!/^https?:\/\//i.test(s)) return null;
+  return s;
+}
+
+function getElementUrlOrText(xml: string, tag: string): string | null {
+  const els = extractAllElements(xml, tag);
+  if (els.length === 0) return null;
+  const first = els[0];
+  const fromAttr = cleanUrl(first.attrs["url"]);
+  if (fromAttr) return fromAttr;
+  const innerText = first.inner ? first.inner.trim() : "";
+  return cleanUrl(innerText);
+}
+
+function getElementUrls(xml: string, tags: string[]): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const tag of tags) {
+    const els = extractAllElements(xml, tag);
+    for (const el of els) {
+      const url = cleanUrl(el.attrs["url"]) ?? cleanUrl(el.inner ? el.inner.trim() : "");
+      if (url && !seen.has(url)) {
+        seen.add(url);
+        out.push(url);
+      }
+    }
+  }
+  return out;
+}
+
 // Extrae valor combinando @attribute y hijo con el mismo nombre
 function getField(
   attrs: Record<string, string>,

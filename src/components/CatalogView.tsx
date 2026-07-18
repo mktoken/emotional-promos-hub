@@ -260,7 +260,10 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
 
         const from = pageIndex * PAGE_SIZE;
         const to = from + PAGE_SIZE - 1;
-        q = q.order("updated_at", { ascending: false }).range(from, to);
+        q = q
+          .order("precio_desde_mxn", { ascending: true, nullsFirst: false })
+          .order("id", { ascending: true })
+          .range(from, to);
 
         const { data, error, count } = await q.returns<ProductoCard[]>();
         if (error) throw error;

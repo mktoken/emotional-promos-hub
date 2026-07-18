@@ -268,6 +268,7 @@ Deno.serve(async (req) => {
         const hasProducts = count > 0;
 
         if (hasProducts) {
+          const img = detectImages(xmlToParse);
           return jsonResponse(200, {
             ok: true,
             provider: "g4",
@@ -280,6 +281,11 @@ Deno.serve(async (req) => {
             productCountDetected: count,
             sampleProduct: sample,
             namespace: ns,
+            imageParsingMode: "attribute_url_or_text",
+            imagePrincipalDetected: !!img.principal,
+            imageAmbientadaDetected: !!img.ambientada,
+            additionalImagesCount: img.additionalCount,
+            firstImageUrl: img.firstImage,
             decodedXmlPreview: xmlToParse.slice(0, 500),
             attempts,
           });

@@ -723,7 +723,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
         )}
 
         {/* Grid */}
-        <div className="mt-2">
+        <div ref={productsTopRef} className="mt-2 scroll-mt-24">
           {loadingList ? (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
               <Loader2 size={40} className="animate-spin text-primary" />
@@ -753,12 +753,23 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
             </div>
           ) : (
             <>
-              {totalCount !== null && (
+              {totalCount !== null && totalCount > 0 && (
                 <p className="text-sm text-muted-foreground mb-4">
-                  Mostrando {products.length.toLocaleString("es-MX")} de{" "}
-                  {totalCount.toLocaleString("es-MX")} productos
+                  Mostrando{" "}
+                  <strong className="text-foreground">
+                    {((page - 1) * PAGE_SIZE + 1).toLocaleString("es-MX")}
+                    –
+                    {Math.min(page * PAGE_SIZE, totalCount).toLocaleString("es-MX")}
+                  </strong>{" "}
+                  de {totalCount.toLocaleString("es-MX")} productos
+                  {totalPages > 1 && (
+                    <>
+                      {" · "}Página {page} de {totalPages}
+                    </>
+                  )}
                 </p>
               )}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((prod) => {
                   const nombre = prod.nombre ?? prod.id_interno;

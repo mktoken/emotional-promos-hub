@@ -638,7 +638,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
 
         {/* Desktop: subcategorías de la categoría activa */}
         {activeCategory && subcategories.length > 0 && (
-          <div className="hidden md:flex items-center gap-2 flex-wrap mb-4 pl-1 border-l-2 border-primary/30 pl-3">
+          <div className="hidden md:flex items-center gap-2 flex-wrap mb-4 border-l-2 border-primary/30 pl-3">
             <button
               type="button"
               onClick={() => selectSubcategory(null)}
@@ -650,7 +650,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
             >
               Todas
             </button>
-            {subcategories.map((sub) => {
+            {visibleSubs.map((sub) => {
               const active = selectedSubcategorySlug === sub.subcategory_slug;
               return (
                 <button
@@ -665,8 +665,35 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
                 </button>
               );
             })}
+            {overflowSubs.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full font-semibold bg-secondary text-muted-foreground hover:text-foreground transition"
+                  >
+                    <MoreHorizontal size={14} /> Más subcategorías ({overflowSubs.length})
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="max-h-80 overflow-y-auto">
+                  {overflowSubs.map((sub) => (
+                    <DropdownMenuItem
+                      key={sub.subcategory_slug}
+                      onSelect={() => selectSubcategory(sub.subcategory_slug)}
+                      className="flex items-center justify-between gap-4"
+                    >
+                      <span>{sub.subcategory_name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {Number(sub.product_count).toLocaleString("es-MX")}
+                      </span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         )}
+
 
         {activeFilterCount > 0 && (
           <div className="hidden md:flex items-center gap-2 mb-6">

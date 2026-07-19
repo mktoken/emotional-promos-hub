@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ShoppingCart, MessageCircle } from "lucide-react";
 import LandingView from "@/components/LandingView";
 import CatalogView from "@/components/CatalogView";
@@ -20,10 +21,26 @@ const getQuoteLineKey = (item: Omit<QuoteItem, "cartId"> | QuoteItem) =>
     item.personalizacionSugeridaEconomica?.incluida ? item.personalizacionSugeridaEconomica.tipo : "",
   ].join("|");
 
+const SCROLL_KEY_PREFIX = "catalog-scroll:";
+
 export default function Index() {
-  const [currentView, setCurrentView] = useState<ViewType>("landing");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [quoteCart, setQuoteCart] = useState<QuoteItem[]>([]);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+
+  const viewParam = searchParams.get("view");
+  const currentView: ViewType =
+    viewParam === "catalog" || viewParam === "pdp" || viewParam === "cart" ? viewParam : "landing";
+  const selectedProductId = searchParams.get("product");
+
+  const setView = useCallback(
+    (v: ViewType) => {
+      const next = new URLSearchParams();
+      if (v !== "landing") next.set("view", v);
+      setSearchParams(next);
+    },
+    [setSearchParams],
+  );
 
   const addToQuote = (item: Omit<QuoteItem, "cartId">) => {
     setQuoteCart((prev) => {
@@ -60,7 +77,7 @@ export default function Index() {
         };
       });
     });
-    setCurrentView("cart");
+    setView("cart");
   };
 
   const removeFromQuote = (cartId: number) => {
@@ -68,9 +85,43 @@ export default function Index() {
   };
 
   const openProduct = (productId: string) => {
-    setSelectedProductId(productId);
-    setCurrentView("pdp");
+    const returnTo = `${window.location.pathname}${window.location.search}`;
+    try {
+      sessionStorage.setItem(`${SCROLL_KEY_PREFIX}${returnTo}`, String(window.scrollY));
+    } catch {
+      /* ignore */
+    }
+    const next = new URLSearchParams();
+    next.set("view", "pdp");
+    next.set("product", productId);
+    next.set("returnTo", returnTo);
+    setSearchParams(next);
   };
+
+  const backFromProduct = useCallback(() => {
+    const returnTo = searchParams.get("returnTo");
+    if (returnTo) {
+      try {
+        const url = new URL(returnTo, window.location.origin);
+        navigate(`${url.pathname}${url.search}`);
+        return;
+      } catch {
+        /* ignore */
+      }
+    }
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+    setView("catalog");
+  }, [searchParams, navigate, setView]);
+
+  // Scroll al inicio cuando cambia la vista (excepto pdp→catalog, que restaura scroll dentro del catálogo).
+  useEffect(() => {
+    if (currentView === "landing" || currentView === "cart") {
+      window.scrollTo(0, 0);
+    }
+  }, [currentView]);
 
   return (
     <div className="min-h-screen bg-surface font-sans text-foreground">
@@ -78,20 +129,20 @@ export default function Index() {
       <nav className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
-            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setCurrentView("landing")}>
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView("landing")}>
               <img src="/images/logo-pe.gif" alt="Promocionales Emocionales" className="h-12 w-auto" />
             </div>
 
             <div className="flex items-center space-x-4 md:space-x-8">
               <button
-                onClick={() => setCurrentView("catalog")}
+                onClick={() => setView("catalog")}
                 className="hidden md:block text-sm font-bold text-primary hover:text-primary/80 transition px-4 py-2 bg-primary/10 rounded-lg"
               >
                 Catálogo +10k
               </button>
 
               <button
-                onClick={() => setCurrentView("cart")}
+                onClick={() => setView("cart")}
                 className="relative flex items-center gap-2 text-sm font-bold text-foreground hover:text-primary transition px-3 py-2 bg-secondary hover:bg-muted rounded-lg"
               >
                 <ShoppingCart size={20} />
@@ -108,19 +159,19 @@ export default function Index() {
       </nav>
 
       {/* VIEWS */}
-      {currentView === "landing" && <LandingView onViewChange={(v) => setCurrentView(v as ViewType)} />}
+      {currentView === "landing" && <LandingView onViewChange={(v) => setView(v as ViewType)} />}
       {currentView === "catalog" && (
-        <CatalogView onViewChange={(v) => setCurrentView(v as ViewType)} onOpenProduct={openProduct} />
+        <CatalogView onViewChange={(v) => setView(v as ViewType)} onOpenProduct={openProduct} />
       )}
       {currentView === "pdp" && (
         <ProductDetailView
           productId={selectedProductId}
-          onBack={() => setCurrentView("catalog")}
+          onBack={backFromProduct}
           onAddToQuote={addToQuote}
         />
       )}
       {currentView === "cart" && (
-        <QuoteCartView cart={quoteCart} onRemove={removeFromQuote} onBack={() => setCurrentView("catalog")} />
+        <QuoteCartView cart={quoteCart} onRemove={removeFromQuote} onBack={() => setView("catalog")} />
       )}
 
       {/* Footer Corporativo */}

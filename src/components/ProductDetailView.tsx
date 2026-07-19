@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Info,
   Palette,
+  ZoomIn,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type {
@@ -21,6 +22,10 @@ import type {
   PersonalizationOptionKey,
   PersonalizationOptionRule,
 } from "@/data/mockData";
+import { normalizeProductImages } from "@/lib/product-images";
+import SafeProductImage from "@/components/catalog/SafeProductImage";
+import ProductImageLightbox from "@/components/catalog/ProductImageLightbox";
+
 
 interface ProductDetailViewProps {
   productId: string | null;

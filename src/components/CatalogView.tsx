@@ -214,7 +214,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
     };
   }, [selectedCategorySlug, ecoOnly]);
 
-  // Fetch productos
+  // Fetch productos con paginación numerada
   const fetchProducts = useCallback(async () => {
     setLoadingList(true);
     setErrorList(null);
@@ -226,8 +226,8 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
         p_collection_slug: ecoOnly ? "ecologicos" : null,
         p_min_price: null,
         p_max_price: null,
-        p_limit: PAGE_SIZE * page,
-        p_offset: 0,
+        p_limit: PAGE_SIZE,
+        p_offset: (page - 1) * PAGE_SIZE,
         p_subcategory_slug: selectedSubcategorySlug || null,
       });
       if (error) throw new Error(error.message);
@@ -243,6 +243,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
       setLoadingList(false);
     }
   }, [q, selectedCategorySlug, selectedSubcategorySlug, ecoOnly, page]);
+
 
   useEffect(() => {
     fetchProducts();

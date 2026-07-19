@@ -67,38 +67,8 @@ const PAGE_SIZE = 24;
 const SEARCH_DEBOUNCE_MS = 300;
 const SCROLL_KEY_PREFIX = "catalog-scroll:";
 
-const isHttpUrl = (v: unknown): v is string => typeof v === "string" && /^https?:\/\//i.test(v);
 
-const pickUrlFromItem = (item: unknown): string | null => {
-  if (!item) return null;
-  if (isHttpUrl(item)) return item;
-  if (typeof item === "object") {
-    const url = (item as { url?: unknown }).url;
-    if (isHttpUrl(url)) return url;
-  }
-  return null;
-};
 
-const getSafeImageUrl = (imgData: unknown): string | null => {
-  if (!imgData) return null;
-  if (Array.isArray(imgData)) {
-    for (const item of imgData) {
-      const u = pickUrlFromItem(item);
-      if (u) return u;
-    }
-    return null;
-  }
-  if (typeof imgData === "string") {
-    if (isHttpUrl(imgData)) return imgData;
-    try {
-      return getSafeImageUrl(JSON.parse(imgData));
-    } catch {
-      return null;
-    }
-  }
-  if (typeof imgData === "object") return pickUrlFromItem(imgData);
-  return null;
-};
 
 interface CatalogViewProps {
   onViewChange: (view: string) => void;

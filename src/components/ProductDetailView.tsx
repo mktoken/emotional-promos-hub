@@ -152,6 +152,8 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   const [estimatedUnit, setEstimatedUnit] = useState(0);
   const [selectedPersonalization, setSelectedPersonalization] = useState<PersonalizationOptionKey>("logo_1_ink");
   const [includeEconomyAlternative, setIncludeEconomyAlternative] = useState(true);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
 
   useEffect(() => {
     async function fetchProduct() {

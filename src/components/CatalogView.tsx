@@ -1,16 +1,21 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Search, Filter, Package, Loader2, Leaf } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-interface ProductoCard {
+interface RpcProduct {
   id: string;
   id_interno: string;
   sku_base: string | null;
-  categoria_principal: string | null;
-  datos_generales: { nombre?: string; descripcion?: string } | null;
-  variantes: Array<{ stock_total?: number }> | null;
-  imagenes: unknown[] | null;
+  nombre: string | null;
+  descripcion: string | null;
+  imagenes: unknown;
   precio_desde_mxn: number | null;
+  categoria_slug: string | null;
+  categoria_nombre: string | null;
+  subcategoria_slug: string | null;
+  subcategoria_nombre: string | null;
+  relevance: number | null;
+  total_count: number | null;
 }
 
 interface CategoryOption {
@@ -20,10 +25,16 @@ interface CategoryOption {
   sort_order: number;
 }
 
+interface SubcategoryOption {
+  id: string;
+  category_id: string;
+  name: string;
+  slug: string;
+  sort_order: number;
+}
+
 const PAGE_SIZE = 24;
 const SEARCH_DEBOUNCE_MS = 300;
-const CARD_SELECT =
-  "id,id_interno,sku_base,categoria_principal,datos_generales,variantes,imagenes,precio_desde_mxn";
 
 const isHttpUrl = (v: unknown): v is string => typeof v === "string" && /^https?:\/\//i.test(v);
 
@@ -63,85 +74,27 @@ interface CatalogViewProps {
   onOpenProduct: (productId: string) => void;
 }
 
-// Interseca dos arrays de strings preservando el orden del primero.
-function intersect(a: string[] | null, b: string[] | null): string[] | null {
-  if (a === null) return b;
-  if (b === null) return a;
-  const setB = new Set(b);
-  return a.filter((id) => setB.has(id));
-}
-
-// Normaliza texto para matching de intención de búsqueda.
-function normalizeText(v: string): string {
-  return v
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-}
-
-// Mapa intención → slug de categoría consolidada.
-const INTENT_TO_SLUG: Record<string, string> = {
-  termo: "bebidas-termos-vasos", termos: "bebidas-termos-vasos",
-  vaso: "bebidas-termos-vasos", vasos: "bebidas-termos-vasos",
-  cilindro: "bebidas-termos-vasos", cilindros: "bebidas-termos-vasos",
-  botella: "bebidas-termos-vasos", botellas: "bebidas-termos-vasos",
-  taza: "bebidas-termos-vasos", tazas: "bebidas-termos-vasos",
-  mug: "bebidas-termos-vasos", drinkware: "bebidas-termos-vasos",
-  boligrafo: "escritura", boligrafos: "escritura",
-  pluma: "escritura", plumas: "escritura",
-  lapiz: "escritura", marcador: "escritura",
-  libreta: "oficina-libretas-papeleria", libretas: "oficina-libretas-papeleria",
-  agenda: "oficina-libretas-papeleria", agendas: "oficina-libretas-papeleria",
-  cuaderno: "oficina-libretas-papeleria", cuadernos: "oficina-libretas-papeleria",
-  oficina: "oficina-libretas-papeleria", papeleria: "oficina-libretas-papeleria",
-  mochila: "bolsas-mochilas-viaje", mochilas: "bolsas-mochilas-viaje",
-  bolsa: "bolsas-mochilas-viaje", bolsas: "bolsas-mochilas-viaje",
-  maleta: "bolsas-mochilas-viaje", maletas: "bolsas-mochilas-viaje",
-  viaje: "bolsas-mochilas-viaje", tote: "bolsas-mochilas-viaje",
-  morral: "bolsas-mochilas-viaje", hielera: "bolsas-mochilas-viaje",
-  usb: "tecnologia", tecnologia: "tecnologia",
-  bocina: "tecnologia", audifono: "tecnologia",
-  cargador: "tecnologia", cable: "tecnologia",
-  powerbank: "tecnologia", "power bank": "tecnologia",
-  playera: "textiles-ropa", polo: "textiles-ropa",
-  sudadera: "textiles-ropa", textil: "textiles-ropa",
-  ropa: "textiles-ropa", camisa: "textiles-ropa",
-  gorra: "gorras-accesorios", gorras: "gorras-accesorios",
-  cachucha: "gorras-accesorios", visera: "gorras-accesorios",
-  llavero: "llaveros-identificadores", llaveros: "llaveros-identificadores",
-  gafete: "llaveros-identificadores", lanyard: "llaveros-identificadores",
-  credencial: "llaveros-identificadores", identificador: "llaveros-identificadores",
-};
-
-function detectIntentSlug(query: string): string | null {
-  const n = normalizeText(query);
-  if (!n) return null;
-  return INTENT_TO_SLUG[n] ?? null;
-}
-
-const sel = (s: string): string => s; // evita parseo de tipos costoso de PostgREST
+// Cast estrecho para la RPC v3 (aún no reflejada en tipos generados).
+type RpcCaller = (
+  fn: string,
+  args: Record<string, unknown>,
+) => Promise<{ data: RpcProduct[] | null; error: { message: string } | null }>;
 
 export default function CatalogView({ onViewChange, onOpenProduct }: CatalogViewProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [categories, setCategories] = useState<CategoryOption[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [subcategories, setSubcategories] = useState<SubcategoryOption[]>([]);
+  const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(null);
+  const [selectedSubcategorySlug, setSelectedSubcategorySlug] = useState<string | null>(null);
   const [ecoOnly, setEcoOnly] = useState(false);
-  const [products, setProducts] = useState<ProductoCard[]>([]);
+  const [products, setProducts] = useState<RpcProduct[]>([]);
   const [loadingList, setLoadingList] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [errorList, setErrorList] = useState<string | null>(null);
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState<number | null>(null);
-
-  // IDs precargados: G4 (a excluir) y Ecológicos (a filtrar).
-  const [excludeIds, setExcludeIds] = useState<string[]>([]);
-  const [ecoIds, setEcoIds] = useState<string[]>([]);
-  const [prereqReady, setPrereqReady] = useState(false);
-
-  // Cache de IDs por categoría para evitar refetch al cambiar de página.
-  const categoryIdsCache = useRef<Map<string, string[]>>(new Map());
+  const [hasEcoCollection, setHasEcoCollection] = useState(false);
 
   // Debounce búsqueda
   useEffect(() => {
@@ -149,65 +102,60 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
     return () => clearTimeout(t);
   }, [searchTerm]);
 
-  // Carga inicial: categorías e IDs de la colección Ecológicos.
+  // Carga inicial: categorías y colección Ecológicos.
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      try {
-        const [catsRes, ecoColRes] = await Promise.all([
-          supabase
-            .from("product_categories")
-            .select("id,name,slug,sort_order")
-            .eq("is_active", true)
-            .order("sort_order", { ascending: true })
-            .order("name", { ascending: true }),
-          supabase
-            .from("product_collections")
-            .select("id,slug")
-            .eq("slug", "ecologicos")
-            .maybeSingle(),
-        ]);
-
-        if (cancelled) return;
-
-        setCategories((catsRes.data ?? []) as CategoryOption[]);
-        setExcludeIds([]);
-
-        const ecoCollectionId = (ecoColRes.data as { id: string } | null)?.id ?? null;
-        if (ecoCollectionId) {
-          const { data: ecoAssign } = await supabase
-            .from("product_collection_assignments")
-            .select("producto_b2b_id")
-            .eq("collection_id", ecoCollectionId);
-          if (!cancelled) {
-            setEcoIds(((ecoAssign ?? []) as Array<{ producto_b2b_id: string }>).map((r) => r.producto_b2b_id));
-          }
-        }
-      } catch {
-        // silencioso: si falla, catálogo cae a productos sin filtros server-side
-      } finally {
-        if (!cancelled) setPrereqReady(true);
-      }
+      const [catsRes, ecoColRes] = await Promise.all([
+        supabase
+          .from("product_categories")
+          .select("id,name,slug,sort_order")
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true })
+          .order("name", { ascending: true }),
+        supabase
+          .from("product_collections")
+          .select("id")
+          .eq("slug", "ecologicos")
+          .maybeSingle(),
+      ]);
+      if (cancelled) return;
+      setCategories((catsRes.data ?? []) as CategoryOption[]);
+      setHasEcoCollection(!!ecoColRes.data);
     })();
     return () => {
       cancelled = true;
     };
   }, []);
 
-  // Obtiene los IDs de una categoría (cacheados).
-  const getCategoryProductIds = useCallback(async (categoryId: string): Promise<string[]> => {
-    const cached = categoryIdsCache.current.get(categoryId);
-    if (cached) return cached;
-    const { data } = await supabase
-      .from("product_category_assignments")
-      .select("producto_b2b_id")
-      .eq("category_id", categoryId);
-    const ids = ((data ?? []) as Array<{ producto_b2b_id: string }>).map((r) => r.producto_b2b_id);
-    categoryIdsCache.current.set(categoryId, ids);
-    return ids;
-  }, []);
+  // Cargar subcategorías cuando cambie categoría seleccionada.
+  useEffect(() => {
+    let cancelled = false;
+    if (!selectedCategorySlug) {
+      setSubcategories([]);
+      return;
+    }
+    const cat = categories.find((c) => c.slug === selectedCategorySlug);
+    if (!cat) {
+      setSubcategories([]);
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from("product_subcategories")
+        .select("id,category_id,name,slug,sort_order")
+        .eq("category_id", cat.id)
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .order("name", { ascending: true });
+      if (cancelled) return;
+      setSubcategories((data ?? []) as SubcategoryOption[]);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCategorySlug, categories]);
 
-  // Ejecuta una página de productos aplicando filtros.
   const fetchPage = useCallback(
     async (pageIndex: number, append: boolean) => {
       if (append) setLoadingMore(true);
@@ -215,65 +163,22 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
       setErrorList(null);
 
       try {
-        // Determinar IDs permitidos según filtros de categoría/colección.
-        let allowedIds: string[] | null = null;
-        if (selectedCategoryId) {
-          allowedIds = await getCategoryProductIds(selectedCategoryId);
-        }
-        if (ecoOnly) {
-          allowedIds = intersect(allowedIds, ecoIds);
-        }
-
-        // Si el filtro produce lista vacía, no hay resultados.
-        if (allowedIds !== null && allowedIds.length === 0) {
-          setProducts(append ? (prev) => prev : []);
-          setTotalCount(0);
-          return;
-        }
-
-        let q = supabase
-          .from("productos_publicos")
-          .select(sel(CARD_SELECT), { count: "exact" })
-          .eq("activo", true);
-
-        if (allowedIds && allowedIds.length > 0) {
-          q = q.in("id", allowedIds);
-        }
-        if (excludeIds.length > 0) {
-          q = q.not("id", "in", `(${excludeIds.join(",")})`);
-        }
-        // Búsqueda textual server-side (siempre que haya query >= 2).
-        if (debouncedSearch.length >= 2) {
-          const like = `%${debouncedSearch}%`;
-          q = q.or(
-            [
-              `id_interno.ilike.${like}`,
-              `sku_base.ilike.${like}`,
-              `categoria_principal.ilike.${like}`,
-              `datos_generales->>nombre.ilike.${like}`,
-              `datos_generales->>descripcion.ilike.${like}`,
-              `datos_generales->>modelo_comercial.ilike.${like}`,
-              `datos_generales->>nombre_comercial.ilike.${like}`,
-            ].join(","),
-          );
-        }
-
-        const from = pageIndex * PAGE_SIZE;
-        const to = from + PAGE_SIZE - 1;
-        q = q
-          .order("precio_desde_mxn", { ascending: true, nullsFirst: false })
-          .order("id", { ascending: true })
-          .range(from, to);
-
-        const { data, error, count } = await q.returns<ProductoCard[]>();
-        if (error) throw error;
-
-        setTotalCount(count ?? null);
-        if (append) {
-          setProducts((prev) => [...prev, ...(data ?? [])]);
-        } else {
-          setProducts(data ?? []);
-        }
+        const rpc = supabase.rpc.bind(supabase) as unknown as RpcCaller;
+        const { data, error } = await rpc("catalog_search_products", {
+          p_query: debouncedSearch || "",
+          p_category_slug: selectedCategorySlug || null,
+          p_collection_slug: ecoOnly ? "ecologicos" : null,
+          p_min_price: null,
+          p_max_price: null,
+          p_limit: PAGE_SIZE,
+          p_offset: (pageIndex - 1) * PAGE_SIZE,
+          p_subcategory_slug: selectedSubcategorySlug || null,
+        });
+        if (error) throw new Error(error.message);
+        const rows = data ?? [];
+        const total = rows.length > 0 ? Number(rows[0].total_count ?? 0) : 0;
+        setTotalCount(total);
+        setProducts((prev) => (append ? [...prev, ...rows] : rows));
       } catch (err) {
         setErrorList(err instanceof Error ? err.message : "Error cargando catálogo");
         if (!append) setProducts([]);
@@ -282,15 +187,14 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
         setLoadingMore(false);
       }
     },
-    [selectedCategoryId, ecoOnly, ecoIds, excludeIds, debouncedSearch, categories, getCategoryProductIds],
+    [debouncedSearch, selectedCategorySlug, selectedSubcategorySlug, ecoOnly],
   );
 
-  // Al cambiar filtros/búsqueda o cuando termina la carga de prerequisitos, resetea a página 0.
+  // Reset a página 1 cuando cambian filtros.
   useEffect(() => {
-    if (!prereqReady) return;
-    setPage(0);
-    fetchPage(0, false);
-  }, [prereqReady, debouncedSearch, selectedCategoryId, ecoOnly, fetchPage]);
+    setPage(1);
+    fetchPage(1, false);
+  }, [debouncedSearch, selectedCategorySlug, selectedSubcategorySlug, ecoOnly, fetchPage]);
 
   const handleLoadMore = () => {
     const next = page + 1;
@@ -298,13 +202,19 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
     fetchPage(next, true);
   };
 
-  const getTotalStock = (p: ProductoCard) =>
-    (p.variantes ?? []).reduce((sum, v) => sum + (Number(v?.stock_total) || 0), 0);
+  const handleSelectCategory = (slug: string | null) => {
+    setSelectedCategorySlug(slug);
+    setSelectedSubcategorySlug(null);
+  };
+
+  const handleSelectSubcategory = (slug: string | null) => {
+    setSelectedSubcategorySlug(slug);
+  };
 
   const hasMore = totalCount !== null && products.length < totalCount;
 
   const categoryButtons = useMemo(
-    () => [{ id: null as string | null, name: "Todos" }, ...categories.map((c) => ({ id: c.id, name: c.name }))],
+    () => [{ slug: null as string | null, name: "Todos" }, ...categories.map((c) => ({ slug: c.slug, name: c.name }))],
     [categories],
   );
 
@@ -340,7 +250,7 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
                 <Filter size={18} /> Filtros
               </h3>
               <div className="space-y-6">
-                {ecoIds.length > 0 && (
+                {hasEcoCollection && (
                   <div>
                     <h4 className="text-sm font-semibold text-foreground mb-3">Colecciones</h4>
                     <button
@@ -354,7 +264,6 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
                     >
                       <Leaf size={16} />
                       Ecológicos
-                      <span className="ml-auto text-xs opacity-70">{ecoIds.length}</span>
                     </button>
                   </div>
                 )}
@@ -363,12 +272,12 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
                   <h4 className="text-sm font-semibold text-foreground mb-3">Categorías</h4>
                   <div className="space-y-2">
                     {categoryButtons.map((cat) => (
-                      <label key={cat.id ?? "todos"} className="flex items-center gap-2 cursor-pointer">
+                      <label key={cat.slug ?? "todos"} className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="radio"
                           name="category"
-                          checked={selectedCategoryId === cat.id}
-                          onChange={() => setSelectedCategoryId(cat.id)}
+                          checked={selectedCategorySlug === cat.slug}
+                          onChange={() => handleSelectCategory(cat.slug)}
                           className="text-primary focus:ring-primary accent-primary"
                         />
                         <span className="text-sm text-muted-foreground hover:text-foreground">{cat.name}</span>
@@ -376,6 +285,36 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
                     ))}
                   </div>
                 </div>
+
+                {selectedCategorySlug && subcategories.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground mb-3">Subcategorías</h4>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="subcategory"
+                          checked={selectedSubcategorySlug === null}
+                          onChange={() => handleSelectSubcategory(null)}
+                          className="text-primary focus:ring-primary accent-primary"
+                        />
+                        <span className="text-sm text-muted-foreground hover:text-foreground">Todas</span>
+                      </label>
+                      {subcategories.map((sub) => (
+                        <label key={sub.id} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="subcategory"
+                            checked={selectedSubcategorySlug === sub.slug}
+                            onChange={() => handleSelectSubcategory(sub.slug)}
+                            className="text-primary focus:ring-primary accent-primary"
+                          />
+                          <span className="text-sm text-muted-foreground hover:text-foreground">{sub.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -391,14 +330,16 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
               <div className="text-center py-20 text-destructive">
                 <p className="font-semibold mb-2">No pudimos cargar el catálogo.</p>
                 <button
-                  onClick={() => fetchPage(0, false)}
+                  onClick={() => fetchPage(1, false)}
                   className="mt-2 text-primary underline text-sm"
                 >
                   Reintentar
                 </button>
               </div>
             ) : products.length === 0 ? (
-              <div className="text-center py-20 text-muted-foreground">No se encontraron productos.</div>
+              <div className="text-center py-20 text-muted-foreground">
+                No encontramos productos con esos filtros. Prueba cambiar la búsqueda o la subcategoría.
+              </div>
             ) : (
               <>
                 {totalCount !== null && (
@@ -409,8 +350,7 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
                 )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {products.map((prod) => {
-                    const stock = getTotalStock(prod);
-                    const nombre = prod.datos_generales?.nombre ?? prod.id_interno;
+                    const nombre = prod.nombre ?? prod.id_interno;
                     const precio = Number(prod.precio_desde_mxn || 0);
                     const imgUrl = getSafeImageUrl(prod.imagenes);
 
@@ -421,13 +361,14 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
                         onClick={() => onOpenProduct(prod.id)}
                       >
                         <div className="aspect-square bg-white relative flex items-center justify-center overflow-hidden">
-                          <div className="absolute top-3 left-3 bg-card/90 backdrop-blur px-2 py-1 rounded-md text-[10px] font-bold text-foreground border border-border z-10">
-                            {prod.categoria_principal ?? "General"}
+                          <div className="absolute top-3 left-3 bg-card/90 backdrop-blur px-2 py-1 rounded-md text-[10px] font-bold text-foreground border border-border z-10 max-w-[70%] truncate">
+                            {prod.categoria_nombre ?? "General"}
+                            {prod.subcategoria_nombre ? ` · ${prod.subcategoria_nombre}` : ""}
                           </div>
                           {imgUrl ? (
                             <img
                               src={imgUrl}
-                              alt={nombre}
+                              alt={nombre ?? "Producto"}
                               loading="lazy"
                               decoding="async"
                               className="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500"
@@ -443,22 +384,16 @@ export default function CatalogView({ onViewChange, onOpenProduct }: CatalogView
                           />
                         </div>
                         <div className="p-5">
-                          <p
-                            className={`text-xs font-bold mb-1 flex items-center gap-1 ${stock > 0 ? "text-success" : "text-destructive"}`}
-                          >
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full ${stock > 0 ? "bg-success animate-pulse" : "bg-destructive"}`}
-                            ></span>
-                            {stock > 0 ? `${stock.toLocaleString()} disp.` : "Sin stock"}
-                          </p>
                           <h3 className="font-bold text-foreground mb-2 line-clamp-1">{nombre}</h3>
-                          <p className="text-muted-foreground text-sm mb-4">
-                            Desde{" "}
-                            <strong className="text-foreground">
-                              {precio.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
-                            </strong>{" "}
-                            c/u
-                          </p>
+                          {precio > 0 && (
+                            <p className="text-muted-foreground text-sm mb-4">
+                              Desde{" "}
+                              <strong className="text-foreground">
+                                {precio.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                              </strong>{" "}
+                              c/u
+                            </p>
+                          )}
                           <button className="w-full bg-secondary hover:bg-primary/10 text-secondary-foreground hover:text-primary font-semibold py-2 rounded-lg transition-colors border border-transparent hover:border-primary/20 text-sm">
                             Ver Detalles
                           </button>

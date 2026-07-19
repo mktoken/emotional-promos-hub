@@ -1,6 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, Filter, Package, Loader2, Leaf, X, ChevronRight, SlidersHorizontal } from "lucide-react";
+import {
+  Search,
+  Filter,
+  Package,
+  Loader2,
+  Leaf,
+  X,
+  ChevronRight,
+  ChevronLeft,
+  SlidersHorizontal,
+  MoreHorizontal,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Sheet,
@@ -10,6 +21,13 @@ import {
   SheetTrigger,
   SheetFooter,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 
 interface RpcProduct {
   id: string;
@@ -110,7 +128,9 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const catalogTopRef = useRef<HTMLDivElement | null>(null);
+  const productsTopRef = useRef<HTMLDivElement | null>(null);
   const prevSearchRef = useRef<string | null>(null);
+
 
   // Actualizar params conservando view=catalog
   const updateParams = useCallback(
@@ -194,7 +214,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
     };
   }, [selectedCategorySlug, ecoOnly]);
 
-  // Fetch productos
+  // Fetch productos con paginación numerada
   const fetchProducts = useCallback(async () => {
     setLoadingList(true);
     setErrorList(null);
@@ -206,8 +226,8 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
         p_collection_slug: ecoOnly ? "ecologicos" : null,
         p_min_price: null,
         p_max_price: null,
-        p_limit: PAGE_SIZE * page,
-        p_offset: 0,
+        p_limit: PAGE_SIZE,
+        p_offset: (page - 1) * PAGE_SIZE,
         p_subcategory_slug: selectedSubcategorySlug || null,
       });
       if (error) throw new Error(error.message);
@@ -224,11 +244,13 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
     }
   }, [q, selectedCategorySlug, selectedSubcategorySlug, ecoOnly, page]);
 
+
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
-  // Scroll restore / scroll top al cambiar filtros
+  // Scroll: restaurar posición si volvemos con la misma URL,
+  // o llevar al inicio del listado al cambiar filtros/página.
   useEffect(() => {
     if (loadingList) return;
     const currentSearch = window.location.search;
@@ -243,11 +265,36 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
       });
     } else if (prevSearchRef.current !== null && prevSearchRef.current !== currentSearch) {
       requestAnimationFrame(() => {
-        catalogTopRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+        (productsTopRef.current ?? catalogTopRef.current)?.scrollIntoView({
+          block: "start",
+          behavior: "smooth",
+        });
       });
     }
     prevSearchRef.current = currentSearch;
   }, [loadingList, products]);
+
+  // Cálculos de paginación
+  const totalPages = totalCount && totalCount > 0 ? Math.max(1, Math.ceil(totalCount / PAGE_SIZE)) : 1;
+
+  // Si la página actual quedó fuera de rango tras un filtro, corregir en URL.
+  useEffect(() => {
+    if (loadingList) return;
+    if (totalCount === null) return;
+    if (page > totalPages) {
+      updateParams({ page: totalPages > 1 ? totalPages : null });
+    }
+  }, [loadingList, totalCount, totalPages, page, updateParams]);
+
+  // Si la subcategoría seleccionada ya no existe para la categoría/colección actual, limpiarla.
+  useEffect(() => {
+    if (!selectedSubcategorySlug) return;
+    if (subcategories.length === 0) return;
+    const stillExists = subcategories.some((s) => s.subcategory_slug === selectedSubcategorySlug);
+    if (!stillExists) {
+      updateParams({ subcategory: null, page: null });
+    }
+  }, [subcategories, selectedSubcategorySlug, updateParams]);
 
   // Handlers
   const selectCategory = (slug: string | null) => {
@@ -268,11 +315,12 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
     setInputValue("");
     setMobileFiltersOpen(false);
   };
-  const loadMore = () => {
-    updateParams({ page: page + 1 });
+  const goToPage = (target: number) => {
+    const clamped = Math.max(1, Math.min(totalPages, target));
+    if (clamped === page) return;
+    updateParams({ page: clamped === 1 ? null : clamped });
   };
 
-  const hasMore = totalCount !== null && products.length < totalCount;
   const activeCategory = categories.find((c) => c.slug === selectedCategorySlug) ?? null;
   const activeSubcategory = subcategories.find((s) => s.subcategory_slug === selectedSubcategorySlug) ?? null;
 
@@ -283,6 +331,47 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
     () => [{ slug: null as string | null, name: "Todos" }, ...categories.map((c) => ({ slug: c.slug, name: c.name }))],
     [categories],
   );
+
+  // División de subcategorías: primeras N como chips + resto en dropdown "Más subcategorías".
+  const MAX_VISIBLE_SUBS = 6;
+  const { visibleSubs, overflowSubs } = useMemo(() => {
+    if (subcategories.length <= MAX_VISIBLE_SUBS) {
+      return { visibleSubs: subcategories, overflowSubs: [] as SubcategoryRow[] };
+    }
+    const base = subcategories.slice(0, MAX_VISIBLE_SUBS);
+    const rest = subcategories.slice(MAX_VISIBLE_SUBS);
+    // Si la subcategoría activa está en el overflow, promoverla al visible.
+    if (
+      selectedSubcategorySlug &&
+      !base.some((s) => s.subcategory_slug === selectedSubcategorySlug) &&
+      rest.some((s) => s.subcategory_slug === selectedSubcategorySlug)
+    ) {
+      const active = rest.find((s) => s.subcategory_slug === selectedSubcategorySlug)!;
+      const newBase = [active, ...base.slice(0, MAX_VISIBLE_SUBS - 1)];
+      const newRest = subcategories.filter((s) => !newBase.some((b) => b.subcategory_slug === s.subcategory_slug));
+      return { visibleSubs: newBase, overflowSubs: newRest };
+    }
+    return { visibleSubs: base, overflowSubs: rest };
+  }, [subcategories, selectedSubcategorySlug]);
+
+  // Números de página visibles estilo Google (máx ~7 items incluyendo ellipsis).
+  const pageNumbers = useMemo<Array<number | "…">>(() => {
+    const items: Array<number | "…"> = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) items.push(i);
+      return items;
+    }
+    const add = (n: number | "…") => items.push(n);
+    add(1);
+    const left = Math.max(2, page - 1);
+    const right = Math.min(totalPages - 1, page + 1);
+    if (left > 2) add("…");
+    for (let i = left; i <= right; i++) add(i);
+    if (right < totalPages - 1) add("…");
+    add(totalPages);
+    return items;
+  }, [page, totalPages]);
+
 
   // Panel de filtros reutilizable (desktop sidebar + mobile sheet)
   const FiltersPanel = (
@@ -549,7 +638,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
 
         {/* Desktop: subcategorías de la categoría activa */}
         {activeCategory && subcategories.length > 0 && (
-          <div className="hidden md:flex items-center gap-2 flex-wrap mb-4 pl-1 border-l-2 border-primary/30 pl-3">
+          <div className="hidden md:flex items-center gap-2 flex-wrap mb-4 border-l-2 border-primary/30 pl-3">
             <button
               type="button"
               onClick={() => selectSubcategory(null)}
@@ -561,7 +650,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
             >
               Todas
             </button>
-            {subcategories.map((sub) => {
+            {visibleSubs.map((sub) => {
               const active = selectedSubcategorySlug === sub.subcategory_slug;
               return (
                 <button
@@ -576,8 +665,35 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
                 </button>
               );
             })}
+            {overflowSubs.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full font-semibold bg-secondary text-muted-foreground hover:text-foreground transition"
+                  >
+                    <MoreHorizontal size={14} /> Más subcategorías ({overflowSubs.length})
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="max-h-80 overflow-y-auto">
+                  {overflowSubs.map((sub) => (
+                    <DropdownMenuItem
+                      key={sub.subcategory_slug}
+                      onSelect={() => selectSubcategory(sub.subcategory_slug)}
+                      className="flex items-center justify-between gap-4"
+                    >
+                      <span>{sub.subcategory_name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {Number(sub.product_count).toLocaleString("es-MX")}
+                      </span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         )}
+
 
         {activeFilterCount > 0 && (
           <div className="hidden md:flex items-center gap-2 mb-6">
@@ -607,7 +723,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
         )}
 
         {/* Grid */}
-        <div className="mt-2">
+        <div ref={productsTopRef} className="mt-2 scroll-mt-24">
           {loadingList ? (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
               <Loader2 size={40} className="animate-spin text-primary" />
@@ -637,12 +753,23 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
             </div>
           ) : (
             <>
-              {totalCount !== null && (
+              {totalCount !== null && totalCount > 0 && (
                 <p className="text-sm text-muted-foreground mb-4">
-                  Mostrando {products.length.toLocaleString("es-MX")} de{" "}
-                  {totalCount.toLocaleString("es-MX")} productos
+                  Mostrando{" "}
+                  <strong className="text-foreground">
+                    {((page - 1) * PAGE_SIZE + 1).toLocaleString("es-MX")}
+                    –
+                    {Math.min(page * PAGE_SIZE, totalCount).toLocaleString("es-MX")}
+                  </strong>{" "}
+                  de {totalCount.toLocaleString("es-MX")} productos
+                  {totalPages > 1 && (
+                    <>
+                      {" · "}Página {page} de {totalPages}
+                    </>
+                  )}
                 </p>
               )}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((prod) => {
                   const nombre = prod.nombre ?? prod.id_interno;
@@ -698,23 +825,78 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
                 })}
               </div>
 
-              {hasMore && (
-                <div className="flex justify-center mt-10">
-                  <button
-                    onClick={loadMore}
-                    disabled={loadingList}
-                    className="bg-primary hover:bg-primary/90 disabled:opacity-70 text-primary-foreground font-bold px-8 py-3 rounded-xl shadow-sm transition-colors inline-flex items-center gap-2"
-                  >
-                    {loadingList ? (
-                      <>
-                        <Loader2 size={18} className="animate-spin" /> Cargando...
-                      </>
-                    ) : (
-                      `Cargar más (${(totalCount! - products.length).toLocaleString("es-MX")} restantes)`
+              {totalPages > 1 && (
+                <nav
+                  className="mt-10 flex flex-col items-center gap-3"
+                  aria-label="Paginación de catálogo"
+                >
+                  {/* Mobile compacto */}
+                  <div className="flex items-center gap-2 md:hidden">
+                    <button
+                      type="button"
+                      onClick={() => goToPage(page - 1)}
+                      disabled={page <= 1 || loadingList}
+                      className="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-border bg-card text-sm font-semibold disabled:opacity-40"
+                    >
+                      <ChevronLeft size={16} /> Anterior
+                    </button>
+                    <span className="text-sm text-muted-foreground font-medium px-2">
+                      Página {page} de {totalPages}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => goToPage(page + 1)}
+                      disabled={page >= totalPages || loadingList}
+                      className="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-border bg-card text-sm font-semibold disabled:opacity-40"
+                    >
+                      Siguiente <ChevronRight size={16} />
+                    </button>
+                  </div>
+
+                  {/* Desktop numerado */}
+                  <div className="hidden md:flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => goToPage(page - 1)}
+                      disabled={page <= 1 || loadingList}
+                      className="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-border bg-card text-sm font-semibold hover:border-primary/50 disabled:opacity-40 disabled:hover:border-border"
+                    >
+                      <ChevronLeft size={16} /> Anterior
+                    </button>
+                    {pageNumbers.map((n, idx) =>
+                      n === "…" ? (
+                        <span key={`ell-${idx}`} className="px-2 text-muted-foreground select-none">
+                          …
+                        </span>
+                      ) : (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => goToPage(n)}
+                          disabled={loadingList}
+                          aria-current={n === page ? "page" : undefined}
+                          className={`min-w-9 px-3 py-2 rounded-lg border text-sm font-semibold transition ${
+                            n === page
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-card text-foreground border-border hover:border-primary/50"
+                          }`}
+                        >
+                          {n}
+                        </button>
+                      ),
                     )}
-                  </button>
-                </div>
+                    <button
+                      type="button"
+                      onClick={() => goToPage(page + 1)}
+                      disabled={page >= totalPages || loadingList}
+                      className="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-border bg-card text-sm font-semibold hover:border-primary/50 disabled:opacity-40 disabled:hover:border-border"
+                    >
+                      Siguiente <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </nav>
               )}
+
             </>
           )}
         </div>

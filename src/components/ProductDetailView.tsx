@@ -261,12 +261,25 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
     agregableToProposal: false,
   };
 
-  const productImages = getImageUrls(product?.imagenes);
-  const variantImages = colors.map((color) => color.imageUrl).filter((url): url is string => Boolean(url));
-  const galleryImages = Array.from(
-    new Set([currentColor.imageUrl, ...productImages, ...variantImages].filter(Boolean)),
-  ) as string[];
-  const mainImage = galleryImages[selectedImageIndex] || currentColor.imageUrl || productImages[0] || null;
+  const productImages = normalizeProductImages(product?.imagenes);
+  const variantImagesRaw = colors.map((color) => color.imageUrl).filter((url): url is string => Boolean(url));
+  const variantImages = normalizeProductImages(variantImagesRaw);
+  const currentVariantImages = currentColor.imageUrl ? normalizeProductImages([currentColor.imageUrl]) : [];
+  const galleryImages = normalizeProductImages([
+    ...currentVariantImages,
+    ...productImages,
+    ...variantImages,
+  ]);
+  const safeSelectedIndex =
+    galleryImages.length > 0
+      ? Math.min(Math.max(0, selectedImageIndex), galleryImages.length - 1)
+      : 0;
+  const mainImageFallbackList =
+    galleryImages.length > 0
+      ? [...galleryImages.slice(safeSelectedIndex), ...galleryImages.slice(0, safeSelectedIndex)]
+      : [];
+  const mainImage = galleryImages[safeSelectedIndex] ?? null;
+
   const material = currentColor.material?.trim() || "Por confirmar con asesor";
   const availableStock = Number(currentColor.stock ?? 0);
   const productAllowsProposal = Boolean(product?.datos_generales?.agregable_a_propuesta ?? true);

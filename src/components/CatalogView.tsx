@@ -787,23 +787,78 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
                 })}
               </div>
 
-              {hasMore && (
-                <div className="flex justify-center mt-10">
-                  <button
-                    onClick={loadMore}
-                    disabled={loadingList}
-                    className="bg-primary hover:bg-primary/90 disabled:opacity-70 text-primary-foreground font-bold px-8 py-3 rounded-xl shadow-sm transition-colors inline-flex items-center gap-2"
-                  >
-                    {loadingList ? (
-                      <>
-                        <Loader2 size={18} className="animate-spin" /> Cargando...
-                      </>
-                    ) : (
-                      `Cargar más (${(totalCount! - products.length).toLocaleString("es-MX")} restantes)`
+              {totalPages > 1 && (
+                <nav
+                  className="mt-10 flex flex-col items-center gap-3"
+                  aria-label="Paginación de catálogo"
+                >
+                  {/* Mobile compacto */}
+                  <div className="flex items-center gap-2 md:hidden">
+                    <button
+                      type="button"
+                      onClick={() => goToPage(page - 1)}
+                      disabled={page <= 1 || loadingList}
+                      className="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-border bg-card text-sm font-semibold disabled:opacity-40"
+                    >
+                      <ChevronLeft size={16} /> Anterior
+                    </button>
+                    <span className="text-sm text-muted-foreground font-medium px-2">
+                      Página {page} de {totalPages}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => goToPage(page + 1)}
+                      disabled={page >= totalPages || loadingList}
+                      className="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-border bg-card text-sm font-semibold disabled:opacity-40"
+                    >
+                      Siguiente <ChevronRight size={16} />
+                    </button>
+                  </div>
+
+                  {/* Desktop numerado */}
+                  <div className="hidden md:flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => goToPage(page - 1)}
+                      disabled={page <= 1 || loadingList}
+                      className="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-border bg-card text-sm font-semibold hover:border-primary/50 disabled:opacity-40 disabled:hover:border-border"
+                    >
+                      <ChevronLeft size={16} /> Anterior
+                    </button>
+                    {pageNumbers.map((n, idx) =>
+                      n === "…" ? (
+                        <span key={`ell-${idx}`} className="px-2 text-muted-foreground select-none">
+                          …
+                        </span>
+                      ) : (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => goToPage(n)}
+                          disabled={loadingList}
+                          aria-current={n === page ? "page" : undefined}
+                          className={`min-w-9 px-3 py-2 rounded-lg border text-sm font-semibold transition ${
+                            n === page
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-card text-foreground border-border hover:border-primary/50"
+                          }`}
+                        >
+                          {n}
+                        </button>
+                      ),
                     )}
-                  </button>
-                </div>
+                    <button
+                      type="button"
+                      onClick={() => goToPage(page + 1)}
+                      disabled={page >= totalPages || loadingList}
+                      className="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-border bg-card text-sm font-semibold hover:border-primary/50 disabled:opacity-40 disabled:hover:border-border"
+                    >
+                      Siguiente <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </nav>
               )}
+
             </>
           )}
         </div>

@@ -747,7 +747,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
                 {products.map((prod) => {
                   const nombre = prod.nombre ?? prod.id_interno;
                   const precio = Number(prod.precio_desde_mxn || 0);
-                  const imgUrl = getSafeImageUrl(prod.imagenes);
+                  const imgs = normalizeProductImages(prod.imagenes);
 
                   return (
                     <div
@@ -760,24 +760,16 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
                           {prod.categoria_nombre ?? "General"}
                           {prod.subcategoria_nombre ? ` · ${prod.subcategoria_nombre}` : ""}
                         </div>
-                        {imgUrl ? (
-                          <img
-                            src={imgUrl}
-                            alt={nombre ?? "Producto"}
-                            loading="lazy"
-                            decoding="async"
-                            className="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500"
-                            onError={(e) => {
-                              e.currentTarget.style.display = "none";
-                              (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove("hidden");
-                            }}
-                          />
-                        ) : null}
-                        <Package
-                          size={80}
-                          className={`opacity-40 group-hover:scale-110 transition-transform duration-500 text-muted-foreground absolute ${imgUrl ? "hidden" : ""}`}
+                        <SafeProductImage
+                          images={imgs}
+                          alt={nombre ?? "Producto"}
+                          loading="lazy"
+                          imgClassName="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500"
+                          placeholderClassName="w-full h-full flex items-center justify-center"
+                          placeholderSize={80}
                         />
                       </div>
+
                       <div className="p-5">
                         <h3 className="font-bold text-foreground mb-2 line-clamp-1">{nombre}</h3>
                         {precio > 0 && (

@@ -3,7 +3,6 @@ import { useSearchParams } from "react-router-dom";
 import {
   Search,
   Filter,
-  Package,
   Loader2,
   Leaf,
   X,
@@ -12,6 +11,7 @@ import {
   SlidersHorizontal,
   MoreHorizontal,
 } from "lucide-react";
+
 import { supabase } from "@/integrations/supabase/client";
 import {
   Sheet,
@@ -27,6 +27,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { normalizeProductImages } from "@/lib/product-images";
+import SafeProductImage from "@/components/catalog/SafeProductImage";
+
 
 
 interface RpcProduct {
@@ -64,38 +67,8 @@ const PAGE_SIZE = 24;
 const SEARCH_DEBOUNCE_MS = 300;
 const SCROLL_KEY_PREFIX = "catalog-scroll:";
 
-const isHttpUrl = (v: unknown): v is string => typeof v === "string" && /^https?:\/\//i.test(v);
 
-const pickUrlFromItem = (item: unknown): string | null => {
-  if (!item) return null;
-  if (isHttpUrl(item)) return item;
-  if (typeof item === "object") {
-    const url = (item as { url?: unknown }).url;
-    if (isHttpUrl(url)) return url;
-  }
-  return null;
-};
 
-const getSafeImageUrl = (imgData: unknown): string | null => {
-  if (!imgData) return null;
-  if (Array.isArray(imgData)) {
-    for (const item of imgData) {
-      const u = pickUrlFromItem(item);
-      if (u) return u;
-    }
-    return null;
-  }
-  if (typeof imgData === "string") {
-    if (isHttpUrl(imgData)) return imgData;
-    try {
-      return getSafeImageUrl(JSON.parse(imgData));
-    } catch {
-      return null;
-    }
-  }
-  if (typeof imgData === "object") return pickUrlFromItem(imgData);
-  return null;
-};
 
 interface CatalogViewProps {
   onViewChange: (view: string) => void;
@@ -774,7 +747,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
                 {products.map((prod) => {
                   const nombre = prod.nombre ?? prod.id_interno;
                   const precio = Number(prod.precio_desde_mxn || 0);
-                  const imgUrl = getSafeImageUrl(prod.imagenes);
+                  const imgs = normalizeProductImages(prod.imagenes);
 
                   return (
                     <div
@@ -787,24 +760,16 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
                           {prod.categoria_nombre ?? "General"}
                           {prod.subcategoria_nombre ? ` · ${prod.subcategoria_nombre}` : ""}
                         </div>
-                        {imgUrl ? (
-                          <img
-                            src={imgUrl}
-                            alt={nombre ?? "Producto"}
-                            loading="lazy"
-                            decoding="async"
-                            className="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500"
-                            onError={(e) => {
-                              e.currentTarget.style.display = "none";
-                              (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove("hidden");
-                            }}
-                          />
-                        ) : null}
-                        <Package
-                          size={80}
-                          className={`opacity-40 group-hover:scale-110 transition-transform duration-500 text-muted-foreground absolute ${imgUrl ? "hidden" : ""}`}
+                        <SafeProductImage
+                          images={imgs}
+                          alt={nombre ?? "Producto"}
+                          loading="lazy"
+                          imgClassName="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500"
+                          placeholderClassName="w-full h-full flex items-center justify-center"
+                          placeholderSize={80}
                         />
                       </div>
+
                       <div className="p-5">
                         <h3 className="font-bold text-foreground mb-2 line-clamp-1">{nombre}</h3>
                         {precio > 0 && (

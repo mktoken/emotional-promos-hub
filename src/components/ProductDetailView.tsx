@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Info,
   Palette,
+  ZoomIn,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type {
@@ -21,6 +22,10 @@ import type {
   PersonalizationOptionKey,
   PersonalizationOptionRule,
 } from "@/data/mockData";
+import { normalizeProductImages } from "@/lib/product-images";
+import SafeProductImage from "@/components/catalog/SafeProductImage";
+import ProductImageLightbox from "@/components/catalog/ProductImageLightbox";
+
 
 interface ProductDetailViewProps {
   productId: string | null;
@@ -147,6 +152,8 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   const [estimatedUnit, setEstimatedUnit] = useState(0);
   const [selectedPersonalization, setSelectedPersonalization] = useState<PersonalizationOptionKey>("logo_1_ink");
   const [includeEconomyAlternative, setIncludeEconomyAlternative] = useState(true);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
 
   useEffect(() => {
     async function fetchProduct() {
@@ -173,43 +180,8 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
     fetchProduct();
   }, [productId]);
 
-  const isHttpUrl = (v: unknown): v is string => typeof v === "string" && /^https?:\/\//i.test(v);
 
-  const pickUrlFromItem = (item: unknown): string | null => {
-    if (!item) return null;
-    if (isHttpUrl(item)) return item;
 
-    if (typeof item === "object") {
-      const url = (item as { url?: unknown; imagen_url?: unknown; src?: unknown }).url;
-      const imagenUrl = (item as { url?: unknown; imagen_url?: unknown; src?: unknown }).imagen_url;
-      const src = (item as { url?: unknown; imagen_url?: unknown; src?: unknown }).src;
-      if (isHttpUrl(url)) return url;
-      if (isHttpUrl(imagenUrl)) return imagenUrl;
-      if (isHttpUrl(src)) return src;
-    }
-
-    return null;
-  };
-
-  const getImageUrls = (imgData: unknown): string[] => {
-    if (!imgData) return [];
-
-    if (Array.isArray(imgData)) {
-      return imgData.map(pickUrlFromItem).filter((url): url is string => Boolean(url));
-    }
-
-    if (typeof imgData === "string") {
-      if (isHttpUrl(imgData)) return [imgData];
-      try {
-        return getImageUrls(JSON.parse(imgData));
-      } catch {
-        return [];
-      }
-    }
-
-    const url = pickUrlFromItem(imgData);
-    return url ? [url] : [];
-  };
 
   const formatMoney = (value: number) =>
     value.toLocaleString("es-MX", {
@@ -289,12 +261,25 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
     agregableToProposal: false,
   };
 
-  const productImages = getImageUrls(product?.imagenes);
-  const variantImages = colors.map((color) => color.imageUrl).filter((url): url is string => Boolean(url));
-  const galleryImages = Array.from(
-    new Set([currentColor.imageUrl, ...productImages, ...variantImages].filter(Boolean)),
-  ) as string[];
-  const mainImage = galleryImages[selectedImageIndex] || currentColor.imageUrl || productImages[0] || null;
+  const productImages = normalizeProductImages(product?.imagenes);
+  const variantImagesRaw = colors.map((color) => color.imageUrl).filter((url): url is string => Boolean(url));
+  const variantImages = normalizeProductImages(variantImagesRaw);
+  const currentVariantImages = currentColor.imageUrl ? normalizeProductImages([currentColor.imageUrl]) : [];
+  const galleryImages = normalizeProductImages([
+    ...currentVariantImages,
+    ...productImages,
+    ...variantImages,
+  ]);
+  const safeSelectedIndex =
+    galleryImages.length > 0
+      ? Math.min(Math.max(0, selectedImageIndex), galleryImages.length - 1)
+      : 0;
+  const mainImageFallbackList =
+    galleryImages.length > 0
+      ? [...galleryImages.slice(safeSelectedIndex), ...galleryImages.slice(0, safeSelectedIndex)]
+      : [];
+  const mainImage = galleryImages[safeSelectedIndex] ?? null;
+
   const material = currentColor.material?.trim() || "Por confirmar con asesor";
   const availableStock = Number(currentColor.stock ?? 0);
   const productAllowsProposal = Boolean(product?.datos_generales?.agregable_a_propuesta ?? true);
@@ -464,24 +449,31 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                   {stockLabel}
                 </div>
 
-                {mainImage ? (
-                  <img
-                    src={mainImage}
-                    alt={productName}
-                    decoding="async"
-                    fetchPriority="high"
-                    className="max-w-[82%] max-h-[82%] object-contain z-0"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                      (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove("hidden");
-                    }}
-                  />
-                ) : null}
-
-                <Package
-                  size={180}
-                  className={`opacity-30 text-muted-foreground absolute z-0 ${mainImage ? "hidden" : ""}`}
-                />
+                {galleryImages.length > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => setLightboxOpen(true)}
+                    aria-label={`Ampliar imagen de ${productName}`}
+                    className="w-full h-full flex items-center justify-center cursor-zoom-in group/main"
+                  >
+                    <SafeProductImage
+                      images={mainImageFallbackList}
+                      alt={productName}
+                      loading="eager"
+                      fetchPriority="high"
+                      imgClassName="max-w-[82%] max-h-[82%] object-contain z-0 transition-transform duration-300 group-hover/main:scale-[1.02]"
+                      placeholderClassName="w-full h-full flex items-center justify-center"
+                      placeholderSize={180}
+                    />
+                    <span className="absolute bottom-3 right-3 bg-foreground/70 text-background rounded-full p-2 opacity-0 group-hover/main:opacity-100 transition-opacity z-10">
+                      <ZoomIn size={16} />
+                    </span>
+                  </button>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Package size={180} className="opacity-30 text-muted-foreground" aria-hidden="true" />
+                  </div>
+                )}
               </div>
 
               {galleryImages.length > 1 && (
@@ -491,25 +483,37 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                       key={`${imageUrl}-${index}`}
                       type="button"
                       onClick={() => setSelectedImageIndex(index)}
+                      aria-label={`Ver imagen ${index + 1} de ${galleryImages.length}`}
+                      aria-current={safeSelectedIndex === index ? "true" : undefined}
                       className={`aspect-square rounded-xl border overflow-hidden bg-white transition ${
-                        selectedImageIndex === index
+                        safeSelectedIndex === index
                           ? "border-primary ring-2 ring-primary/20"
                           : "border-border hover:border-primary/40"
                       }`}
                     >
-                      <img
-                        src={imageUrl}
+                      <SafeProductImage
+                        images={[imageUrl]}
                         alt={`${productName} ${index + 1}`}
                         loading="lazy"
-                        decoding="async"
-                        className="w-full h-full object-contain p-1"
+                        imgClassName="w-full h-full object-contain p-1"
+                        placeholderClassName="w-full h-full flex items-center justify-center"
+                        placeholderSize={24}
                       />
                     </button>
                   ))}
                 </div>
               )}
+
+              <ProductImageLightbox
+                open={lightboxOpen}
+                onOpenChange={setLightboxOpen}
+                images={galleryImages}
+                initialIndex={safeSelectedIndex}
+                alt={productName}
+              />
             </div>
           </div>
+
 
           <div className="lg:col-span-7 flex flex-col gap-6">
             <section className="bg-card rounded-3xl border border-border shadow-sm p-6 sm:p-8">

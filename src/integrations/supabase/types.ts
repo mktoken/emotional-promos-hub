@@ -4515,6 +4515,16 @@ export type Database = {
           variantes: Json
         }[]
       }
+      get_catalog_subcategories_with_counts: {
+        Args: { p_category_slug?: string; p_collection_slug?: string }
+        Returns: {
+          category_name: string
+          category_slug: string
+          product_count: number
+          subcategory_name: string
+          subcategory_slug: string
+        }[]
+      }
       get_public_product_price_tiers: {
         Args: { p_id_interno?: string; p_producto_b2b_id?: string }
         Returns: {

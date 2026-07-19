@@ -3,7 +3,6 @@ import { useSearchParams } from "react-router-dom";
 import {
   Search,
   Filter,
-  Package,
   Loader2,
   Leaf,
   X,
@@ -12,6 +11,7 @@ import {
   SlidersHorizontal,
   MoreHorizontal,
 } from "lucide-react";
+
 import { supabase } from "@/integrations/supabase/client";
 import {
   Sheet,

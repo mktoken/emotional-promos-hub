@@ -449,24 +449,31 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                   {stockLabel}
                 </div>
 
-                {mainImage ? (
-                  <img
-                    src={mainImage}
-                    alt={productName}
-                    decoding="async"
-                    fetchPriority="high"
-                    className="max-w-[82%] max-h-[82%] object-contain z-0"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                      (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove("hidden");
-                    }}
-                  />
-                ) : null}
-
-                <Package
-                  size={180}
-                  className={`opacity-30 text-muted-foreground absolute z-0 ${mainImage ? "hidden" : ""}`}
-                />
+                {galleryImages.length > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => setLightboxOpen(true)}
+                    aria-label={`Ampliar imagen de ${productName}`}
+                    className="w-full h-full flex items-center justify-center cursor-zoom-in group/main"
+                  >
+                    <SafeProductImage
+                      images={mainImageFallbackList}
+                      alt={productName}
+                      loading="eager"
+                      fetchPriority="high"
+                      imgClassName="max-w-[82%] max-h-[82%] object-contain z-0 transition-transform duration-300 group-hover/main:scale-[1.02]"
+                      placeholderClassName="w-full h-full flex items-center justify-center"
+                      placeholderSize={180}
+                    />
+                    <span className="absolute bottom-3 right-3 bg-foreground/70 text-background rounded-full p-2 opacity-0 group-hover/main:opacity-100 transition-opacity z-10">
+                      <ZoomIn size={16} />
+                    </span>
+                  </button>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Package size={180} className="opacity-30 text-muted-foreground" aria-hidden="true" />
+                  </div>
+                )}
               </div>
 
               {galleryImages.length > 1 && (
@@ -476,25 +483,37 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                       key={`${imageUrl}-${index}`}
                       type="button"
                       onClick={() => setSelectedImageIndex(index)}
+                      aria-label={`Ver imagen ${index + 1} de ${galleryImages.length}`}
+                      aria-current={safeSelectedIndex === index ? "true" : undefined}
                       className={`aspect-square rounded-xl border overflow-hidden bg-white transition ${
-                        selectedImageIndex === index
+                        safeSelectedIndex === index
                           ? "border-primary ring-2 ring-primary/20"
                           : "border-border hover:border-primary/40"
                       }`}
                     >
-                      <img
-                        src={imageUrl}
+                      <SafeProductImage
+                        images={[imageUrl]}
                         alt={`${productName} ${index + 1}`}
                         loading="lazy"
-                        decoding="async"
-                        className="w-full h-full object-contain p-1"
+                        imgClassName="w-full h-full object-contain p-1"
+                        placeholderClassName="w-full h-full flex items-center justify-center"
+                        placeholderSize={24}
                       />
                     </button>
                   ))}
                 </div>
               )}
+
+              <ProductImageLightbox
+                open={lightboxOpen}
+                onOpenChange={setLightboxOpen}
+                images={galleryImages}
+                initialIndex={safeSelectedIndex}
+                alt={productName}
+              />
             </div>
           </div>
+
 
           <div className="lg:col-span-7 flex flex-col gap-6">
             <section className="bg-card rounded-3xl border border-border shadow-sm p-6 sm:p-8">

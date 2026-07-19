@@ -128,7 +128,9 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const catalogTopRef = useRef<HTMLDivElement | null>(null);
+  const productsTopRef = useRef<HTMLDivElement | null>(null);
   const prevSearchRef = useRef<string | null>(null);
+
 
   // Actualizar params conservando view=catalog
   const updateParams = useCallback(

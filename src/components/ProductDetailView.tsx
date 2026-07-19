@@ -180,43 +180,8 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
     fetchProduct();
   }, [productId]);
 
-  const isHttpUrl = (v: unknown): v is string => typeof v === "string" && /^https?:\/\//i.test(v);
 
-  const pickUrlFromItem = (item: unknown): string | null => {
-    if (!item) return null;
-    if (isHttpUrl(item)) return item;
 
-    if (typeof item === "object") {
-      const url = (item as { url?: unknown; imagen_url?: unknown; src?: unknown }).url;
-      const imagenUrl = (item as { url?: unknown; imagen_url?: unknown; src?: unknown }).imagen_url;
-      const src = (item as { url?: unknown; imagen_url?: unknown; src?: unknown }).src;
-      if (isHttpUrl(url)) return url;
-      if (isHttpUrl(imagenUrl)) return imagenUrl;
-      if (isHttpUrl(src)) return src;
-    }
-
-    return null;
-  };
-
-  const getImageUrls = (imgData: unknown): string[] => {
-    if (!imgData) return [];
-
-    if (Array.isArray(imgData)) {
-      return imgData.map(pickUrlFromItem).filter((url): url is string => Boolean(url));
-    }
-
-    if (typeof imgData === "string") {
-      if (isHttpUrl(imgData)) return [imgData];
-      try {
-        return getImageUrls(JSON.parse(imgData));
-      } catch {
-        return [];
-      }
-    }
-
-    const url = pickUrlFromItem(imgData);
-    return url ? [url] : [];
-  };
 
   const formatMoney = (value: number) =>
     value.toLocaleString("es-MX", {

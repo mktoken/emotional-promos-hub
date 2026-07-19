@@ -249,7 +249,8 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
     fetchProducts();
   }, [fetchProducts]);
 
-  // Scroll restore / scroll top al cambiar filtros
+  // Scroll: restaurar posición si volvemos con la misma URL,
+  // o llevar al inicio del listado al cambiar filtros/página.
   useEffect(() => {
     if (loadingList) return;
     const currentSearch = window.location.search;
@@ -264,11 +265,36 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
       });
     } else if (prevSearchRef.current !== null && prevSearchRef.current !== currentSearch) {
       requestAnimationFrame(() => {
-        catalogTopRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+        (productsTopRef.current ?? catalogTopRef.current)?.scrollIntoView({
+          block: "start",
+          behavior: "smooth",
+        });
       });
     }
     prevSearchRef.current = currentSearch;
   }, [loadingList, products]);
+
+  // Cálculos de paginación
+  const totalPages = totalCount && totalCount > 0 ? Math.max(1, Math.ceil(totalCount / PAGE_SIZE)) : 1;
+
+  // Si la página actual quedó fuera de rango tras un filtro, corregir en URL.
+  useEffect(() => {
+    if (loadingList) return;
+    if (totalCount === null) return;
+    if (page > totalPages) {
+      updateParams({ page: totalPages > 1 ? totalPages : null });
+    }
+  }, [loadingList, totalCount, totalPages, page, updateParams]);
+
+  // Si la subcategoría seleccionada ya no existe para la categoría/colección actual, limpiarla.
+  useEffect(() => {
+    if (!selectedSubcategorySlug) return;
+    if (subcategories.length === 0) return;
+    const stillExists = subcategories.some((s) => s.subcategory_slug === selectedSubcategorySlug);
+    if (!stillExists) {
+      updateParams({ subcategory: null, page: null });
+    }
+  }, [subcategories, selectedSubcategorySlug, updateParams]);
 
   // Handlers
   const selectCategory = (slug: string | null) => {
@@ -289,11 +315,12 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
     setInputValue("");
     setMobileFiltersOpen(false);
   };
-  const loadMore = () => {
-    updateParams({ page: page + 1 });
+  const goToPage = (target: number) => {
+    const clamped = Math.max(1, Math.min(totalPages, target));
+    if (clamped === page) return;
+    updateParams({ page: clamped === 1 ? null : clamped });
   };
 
-  const hasMore = totalCount !== null && products.length < totalCount;
   const activeCategory = categories.find((c) => c.slug === selectedCategorySlug) ?? null;
   const activeSubcategory = subcategories.find((s) => s.subcategory_slug === selectedSubcategorySlug) ?? null;
 
@@ -304,6 +331,47 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
     () => [{ slug: null as string | null, name: "Todos" }, ...categories.map((c) => ({ slug: c.slug, name: c.name }))],
     [categories],
   );
+
+  // División de subcategorías: primeras N como chips + resto en dropdown "Más subcategorías".
+  const MAX_VISIBLE_SUBS = 6;
+  const { visibleSubs, overflowSubs } = useMemo(() => {
+    if (subcategories.length <= MAX_VISIBLE_SUBS) {
+      return { visibleSubs: subcategories, overflowSubs: [] as SubcategoryRow[] };
+    }
+    const base = subcategories.slice(0, MAX_VISIBLE_SUBS);
+    const rest = subcategories.slice(MAX_VISIBLE_SUBS);
+    // Si la subcategoría activa está en el overflow, promoverla al visible.
+    if (
+      selectedSubcategorySlug &&
+      !base.some((s) => s.subcategory_slug === selectedSubcategorySlug) &&
+      rest.some((s) => s.subcategory_slug === selectedSubcategorySlug)
+    ) {
+      const active = rest.find((s) => s.subcategory_slug === selectedSubcategorySlug)!;
+      const newBase = [active, ...base.slice(0, MAX_VISIBLE_SUBS - 1)];
+      const newRest = subcategories.filter((s) => !newBase.some((b) => b.subcategory_slug === s.subcategory_slug));
+      return { visibleSubs: newBase, overflowSubs: newRest };
+    }
+    return { visibleSubs: base, overflowSubs: rest };
+  }, [subcategories, selectedSubcategorySlug]);
+
+  // Números de página visibles estilo Google (máx ~7 items incluyendo ellipsis).
+  const pageNumbers = useMemo<Array<number | "…">>(() => {
+    const items: Array<number | "…"> = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) items.push(i);
+      return items;
+    }
+    const add = (n: number | "…") => items.push(n);
+    add(1);
+    const left = Math.max(2, page - 1);
+    const right = Math.min(totalPages - 1, page + 1);
+    if (left > 2) add("…");
+    for (let i = left; i <= right; i++) add(i);
+    if (right < totalPages - 1) add("…");
+    add(totalPages);
+    return items;
+  }, [page, totalPages]);
+
 
   // Panel de filtros reutilizable (desktop sidebar + mobile sheet)
   const FiltersPanel = (

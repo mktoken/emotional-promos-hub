@@ -1,6 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, Filter, Package, Loader2, Leaf, X, ChevronRight, SlidersHorizontal } from "lucide-react";
+import {
+  Search,
+  Filter,
+  Package,
+  Loader2,
+  Leaf,
+  X,
+  ChevronRight,
+  ChevronLeft,
+  SlidersHorizontal,
+  MoreHorizontal,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Sheet,
@@ -10,6 +21,13 @@ import {
   SheetTrigger,
   SheetFooter,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 
 interface RpcProduct {
   id: string;

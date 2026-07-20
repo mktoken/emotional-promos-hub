@@ -4543,6 +4543,10 @@ export type Database = {
       is_staff: { Args: { _uid: string }; Returns: boolean }
       next_formal_quote_folio: { Args: never; Returns: string }
       normalize_catalog_text: { Args: { input_text: string }; Returns: string }
+      product_has_available_stock: {
+        Args: { p_variantes: Json }
+        Returns: boolean
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
     }

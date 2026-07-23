@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Search,
-  Filter,
   Loader2,
   Leaf,
   X,
@@ -14,14 +13,6 @@ import {
 
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetFooter,
-} from "@/components/ui/sheet";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -30,6 +21,7 @@ import {
 import { normalizeProductImages } from "@/lib/product-images";
 import SafeProductImage from "@/components/catalog/SafeProductImage";
 import MobileFiltersDrawer from "@/components/catalog/MobileFiltersDrawer";
+
 
 
 

@@ -84,7 +84,6 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
   const ecoOnly = searchParams.get("eco") === "1";
   const page = Math.max(1, Number.parseInt(searchParams.get("page") ?? "1", 10) || 1);
   const choose = searchParams.get("choose");
-  const isMobile = useIsMobile();
 
   const [inputValue, setInputValue] = useState(q);
   const [categories, setCategories] = useState<CategoryOption[]>([]);

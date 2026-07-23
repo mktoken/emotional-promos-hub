@@ -98,12 +98,17 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
   const [errorList, setErrorList] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState<number | null>(null);
   const [hasEcoCollection, setHasEcoCollection] = useState(false);
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    if (searchParams.get("choose") !== "categories") return false;
+    return window.matchMedia("(max-width: 767px)").matches;
+  });
 
 
   const catalogTopRef = useRef<HTMLDivElement | null>(null);
   const productsTopRef = useRef<HTMLDivElement | null>(null);
   const prevSearchRef = useRef<string | null>(null);
+  const autoOpenedCategoriesRef = useRef(false);
 
 
   // Actualizar params conservando view=catalog

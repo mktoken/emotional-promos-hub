@@ -315,6 +315,32 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
     setInputValue("");
     setMobileFiltersOpen(false);
   };
+
+  // Reabrir el drawer de categorías en móvil al quitar el último chip de
+  // navegación (categoría/subcategoría/colección). La búsqueda no cuenta.
+  const isMobileViewport = () =>
+    typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
+  const openDrawerIfEmpty = (
+    afterCat: string | null,
+    afterSub: string | null,
+    afterEco: boolean,
+  ) => {
+    if (afterCat || afterSub || afterEco) return;
+    if (!isMobileViewport()) return;
+    setMobileFiltersOpen(true);
+  };
+  const removeCategoryChip = () => {
+    updateParams({ category: null, subcategory: null, page: null });
+    openDrawerIfEmpty(null, null, ecoOnly);
+  };
+  const removeSubcategoryChip = () => {
+    updateParams({ subcategory: null, page: null });
+  };
+  const removeEcoChip = () => {
+    updateParams({ eco: null, page: null });
+    openDrawerIfEmpty(selectedCategorySlug, selectedSubcategorySlug, false);
+  };
+
   const goToPage = (target: number) => {
     const clamped = Math.max(1, Math.min(totalPages, target));
     if (clamped === page) return;

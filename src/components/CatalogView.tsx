@@ -517,39 +517,34 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
 
         {/* Barra móvil: botón filtros + chips activos */}
         <div className="md:hidden mb-4 flex items-center gap-2 flex-wrap">
-          <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
-            <SheetTrigger asChild>
+          <MobileFiltersDrawer
+            open={mobileFiltersOpen}
+            onOpenChange={setMobileFiltersOpen}
+            trigger={
               <button
                 type="button"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold shadow-sm"
+                className="inline-flex items-center gap-2 min-h-11 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <SlidersHorizontal size={16} />
-                Filtros
-                {activeFilterCount > 0 && (
-                  <span className="bg-primary-foreground text-primary text-[10px] font-bold rounded-full px-1.5 py-0.5">
-                    {activeFilterCount}
-                  </span>
-                )}
+                {activeFilterCount > 0 ? `Filtros · ${activeFilterCount}` : "Filtros"}
               </button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-[85vw] sm:w-96 overflow-y-auto">
-              <SheetHeader>
-                <SheetTitle className="flex items-center gap-2">
-                  <Filter size={18} /> Filtros
-                </SheetTitle>
-              </SheetHeader>
-              <div className="mt-6">{FiltersPanel}</div>
-              <SheetFooter className="mt-6">
-                <button
-                  type="button"
-                  onClick={() => setMobileFiltersOpen(false)}
-                  className="w-full bg-primary text-primary-foreground font-bold py-3 rounded-lg"
-                >
-                  Aplicar filtros
-                </button>
-              </SheetFooter>
-            </SheetContent>
-          </Sheet>
+            }
+            appliedCategorySlug={selectedCategorySlug}
+            appliedSubcategorySlug={selectedSubcategorySlug}
+            ecoOnly={ecoOnly}
+            hasEcoCollection={hasEcoCollection}
+            totalCount={totalCount}
+            categories={categories}
+            categoriesLoading={categoriesLoading}
+            categoriesError={categoriesError}
+            onRetryCategories={() => setCategoriesReloadKey((k) => k + 1)}
+            onApply={({ category, subcategory }) => {
+              updateParams({ category, subcategory, page: null });
+            }}
+            onToggleEco={toggleEco}
+            onClearAll={clearAll}
+          />
+
 
           {activeCategory && (
             <button

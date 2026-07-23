@@ -34,10 +34,10 @@ interface MobileFiltersDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   trigger: React.ReactNode;
-  // Estado aplicado actualmente
+  // Estado APLICADO actualmente (fuente de verdad = URL)
   appliedCategorySlug: string | null;
   appliedSubcategorySlug: string | null;
-  ecoOnly: boolean;
+  appliedEcoOnly: boolean;
   hasEcoCollection: boolean;
   totalCount: number | null;
   // Datos
@@ -45,10 +45,12 @@ interface MobileFiltersDrawerProps {
   categoriesLoading: boolean;
   categoriesError: boolean;
   onRetryCategories: () => void;
-  // Acciones
-  onApply: (patch: { category: string | null; subcategory: string | null }) => void;
-  onToggleEco: () => void;
-  onClearAll: () => void;
+  // Acción: aplicar selección pendiente (única forma de tocar la URL desde aquí)
+  onApply: (patch: {
+    category: string | null;
+    subcategory: string | null;
+    ecoOnly: boolean;
+  }) => void;
 }
 
 export default function MobileFiltersDrawer({
@@ -57,7 +59,7 @@ export default function MobileFiltersDrawer({
   trigger,
   appliedCategorySlug,
   appliedSubcategorySlug,
-  ecoOnly,
+  appliedEcoOnly,
   hasEcoCollection,
   totalCount,
   categories,
@@ -65,29 +67,29 @@ export default function MobileFiltersDrawer({
   categoriesError,
   onRetryCategories,
   onApply,
-  onToggleEco,
-  onClearAll,
 }: MobileFiltersDrawerProps) {
-  // Estado pendiente (se aplica al pulsar CTA)
+  // Estado PENDIENTE (solo se materializa al pulsar el CTA)
   const [pendingCategory, setPendingCategory] = useState<string | null>(appliedCategorySlug);
   const [pendingSubcategory, setPendingSubcategory] = useState<string | null>(appliedSubcategorySlug);
+  const [pendingEcoOnly, setPendingEcoOnly] = useState<boolean>(appliedEcoOnly);
   const [expandedSlug, setExpandedSlug] = useState<string | null>(appliedCategorySlug);
   const [applying, setApplying] = useState(false);
 
-  // Subcategorías del nodo expandido (independiente del filtro aplicado)
+  // Subcategorías del nodo expandido
   const [expandedSubs, setExpandedSubs] = useState<SubcategoryRow[]>([]);
   const [expandedLoading, setExpandedLoading] = useState(false);
   const [expandedError, setExpandedError] = useState(false);
 
-  // Al abrir el drawer, sincronizamos el estado pendiente con el aplicado
+  // Al abrir el drawer: pending := applied (descarta cualquier pendiente previo).
   useEffect(() => {
     if (open) {
       setPendingCategory(appliedCategorySlug);
       setPendingSubcategory(appliedSubcategorySlug);
+      setPendingEcoOnly(appliedEcoOnly);
       setExpandedSlug(appliedCategorySlug);
       setApplying(false);
     }
-  }, [open, appliedCategorySlug, appliedSubcategorySlug]);
+  }, [open, appliedCategorySlug, appliedSubcategorySlug, appliedEcoOnly]);
 
   const loadSubcategories = useCallback(
     async (slug: string) => {
@@ -97,7 +99,7 @@ export default function MobileFiltersDrawer({
         const rpc = supabase.rpc.bind(supabase) as unknown as RpcCaller;
         const { data, error } = await rpc("get_catalog_subcategories_with_counts", {
           p_category_slug: slug,
-          p_collection_slug: ecoOnly ? "ecologicos" : null,
+          p_collection_slug: pendingEcoOnly ? "ecologicos" : null,
         });
         if (error) throw new Error(error.message);
         const rows = ((data as SubcategoryRow[] | null) ?? []).filter(
@@ -111,7 +113,7 @@ export default function MobileFiltersDrawer({
         setExpandedLoading(false);
       }
     },
-    [ecoOnly],
+    [pendingEcoOnly],
   );
 
   useEffect(() => {
@@ -130,6 +132,7 @@ export default function MobileFiltersDrawer({
   const selectAllProducts = () => {
     setPendingCategory(null);
     setPendingSubcategory(null);
+    setPendingEcoOnly(false);
     setExpandedSlug(null);
   };
 
@@ -143,28 +146,44 @@ export default function MobileFiltersDrawer({
     setPendingSubcategory(subSlug);
   };
 
+  const togglePendingEco = () => {
+    setPendingEcoOnly((v) => !v);
+  };
+
   const handleApply = () => {
+    if (applying) return;
     setApplying(true);
-    onApply({ category: pendingCategory, subcategory: pendingSubcategory });
+    onApply({
+      category: pendingCategory,
+      subcategory: pendingSubcategory,
+      ecoOnly: pendingEcoOnly,
+    });
     onOpenChange(false);
   };
 
-  const handleClear = () => {
+  // "Limpiar" NO cierra el drawer, NO toca la URL, NO ejecuta búsqueda.
+  // Solo limpia el estado pendiente para permitir elegir otra cosa.
+  const handleClearPending = () => {
     setPendingCategory(null);
     setPendingSubcategory(null);
+    setPendingEcoOnly(false);
     setExpandedSlug(null);
-    onClearAll();
   };
 
   const pendingMatchesApplied =
-    pendingCategory === appliedCategorySlug && pendingSubcategory === appliedSubcategorySlug;
+    pendingCategory === appliedCategorySlug &&
+    pendingSubcategory === appliedSubcategorySlug &&
+    pendingEcoOnly === appliedEcoOnly;
+
+  const pendingIsEmpty =
+    pendingCategory === null && pendingSubcategory === null && !pendingEcoOnly;
 
   const ctaLabel =
     pendingMatchesApplied && totalCount !== null && totalCount > 0
       ? `Ver ${totalCount.toLocaleString("es-MX")} productos`
       : "Aplicar filtros";
 
-  const isAllSelected = pendingCategory === null && pendingSubcategory === null;
+  const isAllSelected = pendingIsEmpty;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -359,17 +378,17 @@ export default function MobileFiltersDrawer({
               </h3>
               <button
                 type="button"
-                onClick={onToggleEco}
-                aria-pressed={ecoOnly}
+                onClick={togglePendingEco}
+                aria-pressed={pendingEcoOnly}
                 className={`w-full min-h-11 flex items-center gap-2 px-3 py-3 rounded-lg text-sm font-semibold border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                  ecoOnly
+                  pendingEcoOnly
                     ? "bg-success/10 text-success border-success/30"
                     : "bg-secondary text-secondary-foreground border-transparent hover:border-success/30"
                 }`}
               >
                 <Leaf size={16} />
                 <span className="flex-1 text-left">Ecológicos</span>
-                {ecoOnly && <X size={14} aria-hidden />}
+                {pendingEcoOnly && <X size={14} aria-hidden />}
               </button>
             </section>
           )}
@@ -379,8 +398,9 @@ export default function MobileFiltersDrawer({
         <div className="shrink-0 border-t border-border bg-card px-4 py-3 flex items-center gap-3">
           <button
             type="button"
-            onClick={handleClear}
-            className="min-h-11 px-4 text-sm font-semibold text-muted-foreground hover:text-destructive underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+            onClick={handleClearPending}
+            disabled={pendingIsEmpty}
+            className="min-h-11 px-4 text-sm font-semibold text-muted-foreground hover:text-destructive underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded disabled:opacity-40 disabled:cursor-not-allowed disabled:no-underline"
           >
             Limpiar
           </button>

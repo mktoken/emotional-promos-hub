@@ -94,6 +94,9 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
 
   const [inputValue, setInputValue] = useState(q);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesError, setCategoriesError] = useState(false);
+  const [categoriesReloadKey, setCategoriesReloadKey] = useState(0);
   const [subcategories, setSubcategories] = useState<SubcategoryRow[]>([]);
   const [products, setProducts] = useState<RpcProduct[]>([]);
   const [loadingList, setLoadingList] = useState(true);
@@ -101,6 +104,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
   const [totalCount, setTotalCount] = useState<number | null>(null);
   const [hasEcoCollection, setHasEcoCollection] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
 
   const catalogTopRef = useRef<HTMLDivElement | null>(null);
   const productsTopRef = useRef<HTMLDivElement | null>(null);

@@ -1,713 +1,392 @@
-# Plan — Reparar RPC pública de escalas de precio (`get_public_product_price_tiers`)
+# Abrir drawer de categorías al entrar al catálogo desde Home (móvil)
 
-## 1. Estado actual verificado
+## Causa raíz
 
-- La RPC `public.get_public_product_price_tiers` existe y expone únicamente el whitelist correcto (`min_qty`, `max_qty`, `precio_unitario_mxn`, `currency`, `tax_included`, `price_status`). No hay filtración de campos internos.
-- `catalog_price_cache` tiene 1524 filas con dos estados reales: `valid` (1506) y `manual_review` (18). **No existe ninguna fila con `price_valid**`.
-- La única fuente que escribe la caché es la Edge Function `supabase/functions/promote-provider-products-to-catalog/index.ts`, que emite exactamente `'valid' | 'manual_review' | 'unavailable'` (líneas 431–557).
-- No hay trigger SQL ni función auxiliar que llene la caché.
-- La RPC compara contra `price_status = 'price_valid'` y además hace `coalesce(cache_price_status, 'price_valid')` para el pass-through.
-- Frontend: `src/components/ProductDetailView.tsx` aún **no consume** esta RPC (no aparece en el archivo). Todo el consumo debe diseñarse.
+`LandingView` navega a `?view=catalog` sin ninguna señal de intención. `CatalogView` renderiza el listado general y el drawer móvil solo se abre al pulsar "Filtros". Falta un parámetro efímero que indique "entra mostrando categorías" y lógica de auto-apertura acotada a móvil.
 
-## 2. Evidencia encontrada
+## Archivos a modificar
 
-- Query directo: `SELECT count(*) FROM catalog_price_cache WHERE price_status='price_valid'` → **0**.
-- Query directo: `SELECT price_status, count(*) FROM catalog_price_cache GROUP BY 1` → `valid=1506`, `manual_review=18`.
-- Join real: `productos_publicos` × `catalog_price_cache` con `price_status='valid'` → 1057 productos con precio válido (coincide con el conteo QA previo).
-- Fuente de escritura confirmada en `promote-provider-products-to-catalog/index.ts` (usa vocabulario `valid|manual_review|unavailable`).
+- `src/pages/Index.tsx`
+- `src/components/CatalogView.tsx`
+- `LandingView.tsx`: no se toca (el contrato `onViewChange("catalog")` se mantiene; la intención se agrega dentro de `Index.tsx`).
 
-## 3. Causa raíz
+## Cambios
 
-**Escenario A + C simultáneos:**
+### 1. `src/pages/Index.tsx`
 
-- **A (vocabulario roto):** La RPC filtra por `'price_valid'` pero el vocabulario real emitido por el proceso de caché es `'valid'`. La CTE `cache` nunca encuentra filas, por lo que la RPC **siempre** opera en modo fallback.
-- **C (fallback inseguro):** Sin caché coincidente, la RPC ejecuta `raw_tiers` desde `producto_precio_escalas` (costos crudos por proveedor) y aplica multiplicador. Cuando `precio_desde_mxn` del producto público existe, el multiplicador queda razonable; cuando no, cae al literal **1.35**, publicando esencialmente el costo del proveedor + 35% plano. Esto contradice las reglas específicas por proveedor (G4, ForPromotional, CDO) y expone márgenes internos.
-- **Adicional (D parcial):** El `coalesce(cache_price_status, 'price_valid')` etiqueta como “válido” cualquier precio derivado por fallback, ocultando su origen no certificado.
+- Añadir un handler específico para la Home:
+  ```ts
+  const openCatalogFromLanding = (v: string) => {
+    if (v === "catalog") {
+      setSearchParams(new URLSearchParams({ view: "catalog", choose: "categories" }));
+    } else {
+      setView(v as ViewType);
+    }
+  };
+  ```
+- Pasar `openCatalogFromLanding` a `<LandingView onViewChange={...} />`.
+- No modificar `setView` ni las entradas desde PDP, carrito o el botón "Catálogo +10k" del nav (esas conservan comportamiento actual sin `choose`).
 
-Las 467 filas de caché sin producto público corresponden a productos B2B despublicados o inactivos; no son un bug de la RPC y **no se tocan** en este plan.
+### 2. `src/components/CatalogView.tsx`
 
-## 4. Riesgos
+- Importar `useIsMobile` desde `@/hooks/use-mobile`.
+- Leer `const choose = searchParams.get("choose")`.
+- Añadir `useRef<boolean>(false)` (p. ej. `autoOpenedRef`) para asegurar una sola auto-apertura por montaje.
+- `useEffect` que dependa de `[choose, isMobile]`:
+  - Si `choose === "categories"` y `autoOpenedRef.current === false`:
+    - Si `isMobile === true`: `setMobileFiltersOpen(true)`.
+    - En cualquier caso (móvil o desktop, siempre que `isMobile !== undefined`): construir `new URLSearchParams(searchParams)`, hacer `next.delete("choose")` y `setSearchParams(next, { replace: true })`.
+    - Marcar `autoOpenedRef.current = true`.
+  - Nota: esperar a que `isMobile` deje de ser `undefined` (evita decidir con estado sin resolver y evita loops); mientras tanto no se limpia el parámetro. El drawer es overlay, por lo que abrirlo tapa el listado y no hay "flash" perceptible.
+- No tocar el resto de la lógica (paginación, filtros desktop, chips, carga de categorías, etc.).
 
-- Publicar precios cercanos al costo del proveedor si la RPC se conecta al frontend antes de corregirla.
-- Romper productos que hoy no tienen caché válida si el fallback se elimina sin UX de “sujeto a cotización”.
-- Divergencia futura si el writer cambia el vocabulario nuevamente y la RPC vuelve a quedar desincronizada.
-- Cambiar el contrato de `price_status` que ya devuelve la RPC (aunque no lo consuma el frontend público) podría afectar cualquier consumidor no documentado.
+### 3. Persistencia del cierre
 
-## 5. Solución mínima recomendada
+- Al cerrar el drawer (`onOpenChange(false)`), no se toca `choose` porque ya fue eliminado en el efecto. `autoOpenedRef` impide reapertura durante la sesión de montaje.
+- Al recargar: la URL ya no contiene `choose`, por lo que el efecto no dispara. No hay reapertura.
 
-Migración única, quirúrgica, sobre la RPC. No se toca la Edge Function, ni el writer, ni las reglas por proveedor, ni la estructura de la caché.
+## Comportamiento resultante
 
-Cambios dentro de `get_public_product_price_tiers`:
+- Home → "Explorar Catálogo" (móvil) → URL `?view=catalog&choose=categories` → drawer abierto en el primer render → URL se limpia a `?view=catalog`.
+- Cerrar sin aplicar → catálogo general visible, no reabre.
+- Aplicar categoría/subcategoría/"Todos los productos" → flujo actual del drawer intacto.
+- Desktop → `choose` se ignora (drawer no se abre) y se limpia de la URL.
+- Nav interno "Catálogo +10k", PDP back, carrito back → sin cambios.
+- Browser Back desde catálogo → Home (la limpieza usa `replace`, así que no crea entrada extra en el historial).
 
-1. Filtrar `cache` por `price_status = 'valid'` (vocabulario real). Opcional aceptar también `'manual_review'` **solo si** se decide explícitamente; por defecto **NO**.
-2. Reemplazar `coalesce(cache_price_status, 'price_valid')` por `cache_price_status` estricto; si es NULL, no se emite escala.
-3. **Eliminar el fallback 1.35.** Si no hay `cache` con `price_status='valid'` para el producto, la RPC devuelve **cero filas**.
-4. Requerir además que exista `min_price_before_tax_mxn > 0` en la caché válida para que la escala sea emitida.
-5. Mantener el resto de la lógica (selección de oferta, escalas desde `producto_precio_escalas`, orden, whitelist de columnas, `SECURITY DEFINER`, `search_path`).
+## Pruebas
 
-Con esto: **producto sin caché válida → sin escalas → frontend muestra “Precio sujeto a cotización”**, sin exponer costos ni márgenes.
+- Manual móvil 375/390px: Home → CTA → drawer abierto de inmediato; cerrar no reabre; recargar no reabre.
+- Manual desktop: catálogo carga normal, sin drawer, sin `choose` en la URL.
+- `bunx tsgo --noEmit` limpio.
 
-Se agrega además un `COMMENT ON FUNCTION` documentando el vocabulario esperado (`valid`) y su alineación con `promote-provider-products-to-catalog`.
+## Restricciones respetadas
 
-## 6. Alternativa descartada y motivo
-
-- **Renombrar `valid` → `price_valid` en la caché y writer.** Descartada: requiere migración de 1524 filas, cambios en Edge Function activa, y no aporta valor semántico. El nombre real `valid` es correcto.
-- **Aplicar reglas por proveedor dentro de la RPC pública.** Descartada: violaría el aislamiento (motor de precios vive en promoción a caché) y expondría lógica de márgenes en el path público.
-- **Borrar las 467 filas huérfanas.** Descartada: fuera de alcance y sin evidencia de daño.
-
-## 7. Migraciones necesarias
-
-Una sola migración SQL (`CREATE OR REPLACE FUNCTION public.get_public_product_price_tiers ...`) con la misma firma y grants existentes. No se crean tablas, no se agregan índices, no se modifica RLS. Rollback = re-aplicar la versión anterior (guardada en el propio archivo de migración como comentario).
-
-Se verifica que los grants actuales (`anon`, `authenticated`) sobre la función se preserven; `CREATE OR REPLACE` los mantiene.
-
-## 8. Archivos que cambiaría el futuro Build
-
-Backend:
-
-- Migración nueva bajo `supabase/migrations/` con el `CREATE OR REPLACE FUNCTION`.
-
-Frontend (Fase 2, tras validar RPC):
-
-- `src/components/ProductDetailView.tsx` — agregar consumo de la RPC y estados UI.
-- Opcional: nuevo hook `src/features/catalog/hooks/usePublicPriceTiers.ts` para React Query.
-
-No se tocan: `CatalogView.tsx`, `catalog_search_products`, CRM, cotizador, impresión, email, sincronizaciones.
-
-## 9. Contrato TypeScript/RPC
-
-```ts
-type PublicPriceTier = {
-  min_qty: number;
-  max_qty: number | null;
-  precio_unitario_mxn: number; // > 0
-  currency: "MXN";
-  tax_included: boolean;
-  price_status: "valid";
-};
-
-// supabase.rpc("get_public_product_price_tiers", {
-//   p_producto_b2b_id?: string; p_id_interno?: string;
-// }): Promise<{ data: PublicPriceTier[] | null; error: ... }>
-```
-
-Regla: si `data` es `[]` → “Precio sujeto a cotización”. Nunca se exponen otros campos.
-
-## 10. Estados de UI (`ProductDetailView`)
-
-- **loading**: skeleton en el bloque de precio (no bloquear resto de página).
-- **success con escalas**: tabla o lista compacta de tramos con leyenda “Precio preliminar; no incluye impresión, IVA ni logística.” Si `tax_included=false` mostrar “Precio sin IVA”.
-- **success sin escalas**: “Precio sujeto a cotización” + CTA existente de propuesta.
-- **error**: mensaje breve + botón Reintentar (React Query `refetch`).
-- **cantidad fuera de escala**: destacar el tramo aplicable y advertir “Cantidad fuera de escalas publicadas; se cotizará bajo pedido.”
-- **producto no público / no autorizado**: mismo tratamiento que sin escalas.
-- Cancelación de queries obsoletas vía `queryKey` con `productId`; `staleTime` razonable (~5 min).
-- Mobile-first: bloque colapsable, contraste AA, roles ARIA para la tabla.
-
-Reglas duras: no mostrar costos, ni proveedor, ni margen; nunca afirmar precio definitivo; nunca bloquear el CTA por ausencia de escalas.
-
-## 11. Pruebas
-
-SQL/RPC (ejecutables como `psql -c`):
-
-- Producto con caché `valid` → devuelve N filas, todas con `precio_unitario_mxn > 0`.
-- Producto sólo con caché `manual_review` → devuelve 0 filas.
-- Producto sin caché → 0 filas (verificación de que ya no hay fallback 1.35).
-- Producto no público → 0 filas (por CTE `visible_product`).
-- UUID inexistente / `id_interno` inexistente → 0 filas.
-- Producto con múltiples cachés → toma la más reciente por `calculated_at`.
-- Verificación de whitelist: `\df+ get_public_product_price_tiers` confirma columnas.
-- `SET ROLE anon; SELECT ... FROM catalog_price_cache;` sigue prohibido; RPC sigue accesible.
-
-Frontend (Vitest / RTL o manual guiado):
-
-- Loading skeleton visible ≤ 300 ms.
-- Escalas renderizan con formato MXN y leyenda.
-- Estado “sin escalas” muestra CTA.
-- Error muestra Reintentar y recupera.
-- Cambiar de producto cancela query anterior.
-- Mobile 375 px sin overflow.
-
-Regresión:
-
-- `CatalogView`: orden ascendente y exclusión de stock cero intactos.
-- `ProductDetailView` sigue montando para productos sin escalas.
-- Carrito / propuesta sin cambios.
-
-## 12. Criterios de aceptación
-
-- `SELECT count(*) FROM get_public_product_price_tiers(p_producto_b2b_id => <uuid válido>)` devuelve > 0 para al menos 1000 de los 1057 productos con caché `valid`.
-- Para productos sin caché `valid`, la RPC devuelve exactamente 0 filas.
-- No aparece el literal `1.35` ni ningún multiplicador en el cuerpo de la nueva RPC.
-- Ningún cambio en `catalog_price_cache`, ni en `promote-provider-products-to-catalog`, ni en RLS.
-- Frontend público muestra “Precio sujeto a cotización” cuando corresponde y nunca expone campos internos.
-
-## 13. Rollback
-
-- Guardar el `CREATE OR REPLACE FUNCTION` anterior íntegro como comentario al inicio de la nueva migración.
-- Rollback = ejecutar ese bloque anterior en una migración inversa. No hay datos que revertir.
-- Frontend: si Fase 2 se despliega, revertir el commit del hook y de `ProductDetailView.tsx`; la RPC corregida puede quedarse sin consumidor sin efectos secundarios.
-
-## 14. Verificación posterior
-
-- Correr las queries SQL de la sección 11 en producción.
-- Revisar 10 productos aleatorios en la UI pública: 8 con precio, 2 sin precio esperados según muestreo.
-- Revisar Network en preview: la RPC responde `200` y sólo con el whitelist.
-- Confirmar en `pg_proc` que `search_path` y `SECURITY DEFINER` no cambiaron.
-
-## 15. Estimación relativa
-
-- Fase 1 (RPC): muy pequeña. 1 migración, ~40 líneas SQL efectivas, bajo consumo de créditos.
-- Fase 2 (frontend): pequeña. 1 hook + edición de un componente, sin nuevas dependencias.
-- Riesgo operativo: bajo, siempre que Fase 2 espere validación de Fase 1.
-
-## 16. Recomendación final
-
-**Combinación en dos Builds separados:**
-
-1. **Build A — SQL (migración RPC).** Ejecutar primero, validar con las pruebas SQL de la sección 11 antes de tocar UI.
-2. **Build B — Frontend (`ProductDetailView` + hook).** Sólo después de que Build A esté certificado en producción.
-
-No hacer trabajo manual fuera de migración: todo el cambio debe quedar versionado.  
+- Solo `Index.tsx` y `CatalogView.tsx` modificados.
+- `MobileFiltersDrawer.tsx`, backend, taxonomía, filtros desktop, Home, WhatsApp y publish no se tocan.
+- Sin dependencias nuevas ni refactors.  
   
-PROYECTO: Emotional Promos Hub / Promocionales Emocionales
-
-MODO OBLIGATORIO: BUILD CONTROLADO — FASE A / BACKEND
-
-OBJETIVO ÚNICO
-
-Corregir mediante una migración incremental la función:
-
-public.get_public_product_price_tiers
-
-para que solamente genere escalas públicas cuando exista una fila válida en:
-
-public.catalog_price_cache
-
-No conectar todavía esta RPC al frontend.
-
-No modificar ProductDetailView.
-
-No publicar.
-
-============================================================
-
-REGLA DE ALCANCE OBLIGATORIA
-
-============================================================
-
-No cambies, edites, refactorices, elimines, renombres ni reorganices ningún archivo, componente, tabla, función, política, ruta, estilo, dependencia o comportamiento que no haya sido solicitado explícitamente.
-
-No hagas mejoras “aprovechando el cambio”.
-
-No corrijas problemas fuera del alcance.
-
-No apliques refactors preventivos.
-
-No cambies diseño, copy, navegación, arquitectura o lógica existente sin autorización.
-
-Si detectas otro problema:
-
-1. No lo modifiques.
-
-2. Repórtalo por separado.
-
-3. Explica su riesgo.
-
-4. Espera autorización explícita.
-
-Mantén intactos todos los módulos no mencionados.
-
-============================================================
-
-ESTADO ACTUAL VERIFICADO
-
-============================================================
-
-La RPC pública:
-
-public.get_public_product_price_tiers
-
-tiene un problema de vocabulario y fallback.
-
-Estado real de catalog_price_cache:
-
-- 1524 filas totales.
-
-- 1506 filas con price_status = 'valid'.
-
-- 18 filas con price_status = 'manual_review'.
-
-- 0 filas con price_status = 'price_valid'.
-
-La Edge Function:
-
-supabase/functions/promote-provider-products-to-catalog/index.ts
-
-escribe los estados:
-
-- valid
-
-- manual_review
-
-- unavailable
-
-La RPC actualmente compara contra:
-
-price_status = 'price_valid'
-
-y además utiliza un fallback inseguro que puede:
-
-- continuar sin caché válida;
-
-- usar coalesce(cache_price_status, 'price_valid');
-
-- aplicar el multiplicador histórico 1.35.
-
-El factor universal 1.35 está superado y no debe utilizarse en ninguna ruta pública.
-
-Las reglas reales de precio son específicas por proveedor y ya se procesan antes de guardar catalog_price_cache.
-
-============================================================
-
-ARCHIVO AUTORIZADO
-
-============================================================
-
-Crear exactamente una migración nueva en:
-
-supabase/migrations/
-
-Usar un nombre descriptivo similar a:
-
-YYYYMMDDHHMMSS_fix_public_price_tiers_valid_cache.sql
-
-No reescribir una migración existente.
-
-No editar migraciones ya aplicadas.
-
-Salvo que sea estrictamente imprescindible para crear esta migración, no modificar ningún otro archivo.
-
-============================================================
-
-IMPLEMENTACIÓN REQUERIDA
-
-============================================================
-
-Antes de escribir la migración:
-
-1. Inspecciona la definición actual completa de
-
-   public.get_public_product_price_tiers.
-
-2. Conserva exactamente:
-
-   - nombre;
-
-   - firma;
-
-   - parámetros;
-
-   - defaults;
-
-   - tipos de retorno;
-
-   - nombres de columnas;
-
-   - orden de columnas;
-
-   - grants existentes;
-
-   - SECURITY DEFINER;
-
-   - SET search_path = public, pg_temp;
-
-   - orden actual de las escalas;
-
-   - selección actual del producto público;
-
-   - compatibilidad por producto_b2b_id e id_interno.
-
-3. No inventes columnas ni estados.
-
-La nueva versión debe aplicar únicamente estos cambios:
-
-A. Caché válida
-
-La RPC solo puede usar filas de catalog_price_cache cuando:
-
-price_status = 'valid'
-
-No aceptar manual_review.
-
-No aceptar unavailable.
-
-No aceptar NULL.
-
-No aceptar strings vacíos.
-
-No aceptar price_valid.
-
-B. Precio público válido
-
-La fila de caché utilizada debe tener:
-
-min_price_before_tax_mxn > 0
-
-Si no cumple, la RPC debe devolver cero filas.
-
-C. Sin fallback
-
-Eliminar completamente:
-
-- el literal 1.35;
-
-- cualquier multiplicador por defecto;
-
-- cualquier cálculo ejecutado sin caché válida;
-
-- cualquier coalesce que convierta un estado ausente en válido.
-
-Si no existe una caché válida para el producto, devolver cero filas.
-
-D. Estado devuelto
-
-price_status debe provenir de la fila real de caché.
-
-No usar:
-
-coalesce(cache_price_status, 'price_valid')
-
-No declarar un precio como válido cuando no existe una fuente válida.
-
-E. Múltiples filas de caché
-
-Si existen varias filas válidas para un producto, conservar o implementar una selección determinista de la más reciente según el timestamp real disponible en la tabla, preferentemente calculated_at y con un desempate estable.
-
-No inventar el nombre de la columna: inspeccionar primero el esquema real.
-
-F. Contrato público
-
-La RPC debe continuar devolviendo exclusivamente:
-
-- min_qty
-
-- max_qty
-
-- precio_unitario_mxn
-
-- currency
-
-- tax_included
-
-- price_status
-
-Nunca devolver:
-
-- costos;
-
-- costo unitario;
-
-- margen;
-
-- markup;
-
-- proveedor;
-
-- proveedor_id;
-
-- oferta_id;
-
-- source_oferta_id;
-
-- raw_payload;
-
-- reglas internas;
-
-- multiplicadores;
-
-- logística.
-
-G. Documentación SQL
-
-Añadir COMMENT ON FUNCTION documentando:
-
-- que el estado público aceptado es 'valid';
-
-- que sin caché válida la función devuelve cero filas;
-
-- que las reglas comerciales por proveedor se calculan fuera de esta RPC.
-
-============================================================
-
-ROLLBACK OBLIGATORIO
-
-============================================================
-
-Antes de reemplazar la función:
-
-- conserva la definición anterior completa;
-
-- incluye una estrategia de rollback explícita;
-
-- no borres datos;
-
-- no actualices filas de catalog_price_cache;
-
-- no cambies la Edge Function.
-
-El rollback debe consistir en restaurar la definición anterior de la función mediante una migración inversa o un bloque SQL completo claramente documentado.
-
-No dejes el rollback como una descripción vaga.
-
-============================================================
-
-NO TOCAR
-
-============================================================
-
-No modificar:
-
-- catalog_price_cache;
-
-- datos existentes;
-
-- constraints;
-
-- índices;
-
-- RLS;
-
-- grants salvo que accidentalmente cambien y deban preservarse;
-
-- promote-provider-products-to-catalog;
-
-- otras Edge Functions;
-
-- reglas por proveedor;
-
-- provider_pricing_rules;
-
-- pricing_rule_sets;
-
-- purchase_levels;
-
-- margin_tiers;
-
-- producto_precio_escalas;
-
-- catalog_search_products;
-
-- product_has_available_stock;
-
-- productos_publicos;
-
-- ProductDetailView.tsx;
-
-- CatalogView.tsx;
-
-- hooks frontend;
-
-- tipos TypeScript;
-
-- categorías;
-
-- subcategorías;
-
-- stock;
-
-- CRM;
-
-- cotizaciones;
-
-- impresión;
-
-- email;
-
-- pagos;
-
-- rutas;
-
-- estilos;
-
-- dependencias.
-
-No crear tablas.
-
-No crear columnas.
-
-No añadir librerías.
-
-No hacer backfills.
-
-No borrar las 467 filas de caché sin producto público coincidente.
-
-============================================================
-
-PRUEBAS SQL OBLIGATORIAS
-
-============================================================
-
-Después de crear la migración, ejecutar o preparar consultas completas para verificar:
-
-1. Producto público con caché valid:
-
-   - devuelve una o más escalas;
-
-   - todos los precios son mayores que cero;
-
-   - price_status = 'valid'.
-
-2. Producto con solamente manual_review:
-
-   - devuelve cero filas.
-
-3. Producto sin caché:
-
-   - devuelve cero filas.
-
-4. Producto no público:
-
-   - devuelve cero filas.
-
-5. UUID inexistente:
-
-   - devuelve cero filas.
-
-6. id_interno inexistente:
-
-   - devuelve cero filas.
-
-7. Producto con varias cachés valid:
-
-   - selecciona determinísticamente la más reciente.
-
-8. Seguridad:
-
-   - anon puede ejecutar la RPC;
-
-   - anon no obtiene acceso directo a catalog_price_cache;
-
-   - la RPC mantiene SECURITY DEFINER;
-
-   - search_path permanece public, pg_temp.
-
-9. Contrato:
-
-   - solo se devuelven las seis columnas públicas autorizadas.
-
-10. Regresión:
-
-   - catalog_search_products no cambia;
-
-   - el filtro de stock no cambia;
-
-   - no cambia ninguna tabla ni fila.
-
-Incluye una consulta global que muestre:
-
-- productos públicos;
-
-- productos con caché valid;
-
-- productos para los que la RPC devuelve escalas;
-
-- productos con caché valid pero sin escalas;
-
-- productos sin caché valid que incorrectamente devuelvan escalas.
-
-El último conteo debe ser cero.
-
-============================================================
-
-CRITERIOS DE ACEPTACIÓN
-
-============================================================
-
-El Build se acepta únicamente si:
-
-- existe una sola migración nueva;
-
-- la firma de la RPC no cambió;
-
-- el whitelist de retorno no cambió;
-
-- no aparece el literal 1.35 en la nueva función;
-
-- no existe fallback cuando falta caché válida;
-
-- manual_review no genera escalas;
-
-- sin caché valid se devuelven cero filas;
-
-- price_status proviene de la caché real;
-
-- no se modificaron datos;
-
-- no se modificó RLS;
-
-- no se modificaron Edge Functions;
-
-- no se modificó frontend;
-
-- typecheck y build del proyecto continúan pasando;
-
-- no hubo cambios fuera del alcance;
-
-- no se publicó.
-
-============================================================
-
-CIERRE OBLIGATORIO
-
-============================================================
-
-Al terminar, detente.
-
-No continúes con la integración frontend.
-
-Entrega:
-
-1. nombre exacto de la migración creada;
-
-2. lista completa de archivos modificados;
-
-3. diff resumido de la función;
-
-4. confirmación de que eliminaste el fallback 1.35;
-
-5. confirmación de que manual_review no se publica;
-
-6. resultados de las pruebas SQL;
-
-7. resultado de typecheck;
-
-8. resultado de build;
-
-9. rollback completo;
-
-10. riesgos o pendientes encontrados sin modificarlos.
-
-PROHIBICIONES FINALES
-
-- No Publish.
-
-- No “Try to fix”.
-
-- No frontend.
-
-- No cambios fuera del alcance.
-
-- No refactors.
-
-- No cambios visuales.
-
-- No nuevas dependencias.
-
-- No alterar datos existentes.
-
-- No debilitar RLS.
-
-- No usar service_role en el navegador.
-
-- No exponer costos ni lógica interna.
+IMPLEMENTA ÚNICAMENTE EL SIGUIENTE CAMBIO LOCALIZADO.
+  OBJETIVO
+  Cuando un usuario entre al catálogo desde la Home mediante el CTA “Explorar Catálogo” o cualquier CTA principal de la Home que use onViewChange("catalog"), en móvil debe abrirse automáticamente el drawer existente de categorías.
+  El usuario no debe tener que:
+  1. Entrar al catálogo general.
+  2. Ver primero los 1,059 productos.
+  3. Pulsar manualmente el botón “Filtros”.
+  El flujo esperado es:
+  Home
+  → Explorar Catálogo
+  → vista del catálogo
+  → drawer de categorías abierto automáticamente
+  → usuario elige categoría, subcategoría o “Todos los productos”
+  → aplica la selección
+  → se muestra el catálogo correspondiente
+  MODO
+  Build localizado.
+  ALCANCE PERMITIDO
+  Modificar únicamente:
+  - src/pages/Index.tsx
+  - src/components/CatalogView.tsx
+  No modificar LandingView.tsx, salvo que sea técnicamente imprescindible y antes de hacerlo debes justificarlo en el resultado final.
+  ESTADO ACTUAL
+  - LandingView llama onViewChange("catalog").
+  - Index.tsx recibe ese callback y navega al catálogo.
+  - Actualmente la URL queda como:
+    ?view=catalog
+  - CatalogView renderiza inmediatamente el catálogo general.
+  - MobileFiltersDrawer ya existe y funciona correctamente.
+  - MobileFiltersDrawer ya muestra:
+    - Categorías primero.
+    - “Todos los productos”.
+    - Categorías expandibles.
+    - Subcategorías inline.
+    - Botón Limpiar.
+    - CTA para aplicar.
+  - El drawer móvil actualmente solo se abre cuando el usuario pulsa “Filtros”.
+  CAUSA RAÍZ
+  No existe una señal que permita distinguir:
+  A. Entrada al catálogo desde la Home, donde queremos abrir categorías automáticamente.
+  B. Entrada al catálogo desde navegación interna, PDP, carrito, botón del header o regreso, donde el comportamiento actual debe mantenerse.
+  SOLUCIÓN REQUERIDA
+  Usar un parámetro temporal en la URL:
+  choose=categories
+  La navegación inicial desde la Home debe producir temporalmente:
+  ?view=catalog&choose=categories
+  CatalogView debe detectar ese parámetro, abrir el drawer móvil una sola vez y después eliminar choose=categories de la URL usando replace.
+  No debe quedar choose=categories visible permanentemente en la URL.
+  ==================================================
+  CAMBIO 1 — src/pages/Index.tsx
+  ==================================================
+  1. Identifica el tipo real usado para las vistas, por ejemplo ViewType.
+  2. Crea un handler específico para LandingView.
+  Usa una implementación equivalente a esta, adaptada a los nombres reales del archivo:
+  const openCatalogFromLanding = (nextView: ViewType) => {
+    if (nextView === "catalog") {
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.set("view", "catalog");
+      nextParams.set("choose", "categories");
+      setSearchParams(nextParams);
+      return;
+    }
+    setView(nextView);
+  };
+  3. Pasa este handler únicamente a LandingView:
+  <LandingView onViewChange={openCatalogFromLanding} />
+  4. No reemplaces el handler general setView.
+  5. No agregues choose=categories en estos flujos:
+  - regreso desde PDP;
+  - regreso desde carrito;
+  - navegación interna;
+  - botón del header;
+  - botón “Catálogo +10k”;
+  - enlaces internos;
+  - recarga directa del catálogo.
+  6. Conserva cualquier parámetro existente que sea necesario.
+  No construyas una URL nueva eliminando accidentalmente otros parámetros.
+  7. No uses string + cast innecesario como:
+  v as ViewType
+  Usa el tipo real del callback siempre que sea compatible con LandingView.
+  ==================================================
+  CAMBIO 2 — src/components/CatalogView.tsx
+  ==================================================
+  1. Reutiliza el estado existente que controla MobileFiltersDrawer.
+  Ejemplo esperado:
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  No crees un segundo drawer ni un segundo estado duplicado.
+  2. Lee el parámetro temporal:
+  const choose = searchParams.get("choose");
+  3. Usa el hook móvil existente del proyecto:
+  import { useIsMobile } from "@/hooks/use-mobile";
+  const isMobile = useIsMobile();
+  Antes de implementar, revisa el tipo real devuelto por useIsMobile.
+  No asumas que devuelve undefined si su implementación devuelve solamente boolean.
+  4. Crea una referencia para impedir aperturas repetidas:
+  const autoOpenedCategoriesRef = useRef(false);
+  5. Implementa una apertura automática de una sola vez.
+  Preferencia técnica:
+  - Usa useLayoutEffect para evitar que el catálogo general se pinte visiblemente antes de abrir el drawer.
+  - Si useLayoutEffect produce un problema con el entorno actual, usa useEffect y bloquea temporalmente el contenido del catálogo mientras se resuelve la intención inicial.
+  - No debe existir un flash visible del listado general antes de abrir el drawer.
+  Implementación orientativa:
+  useLayoutEffect(() => {
+    if (choose !== "categories") return;
+    if (autoOpenedCategoriesRef.current) return;
+    // Si useIsMobile puede ser undefined, esperar hasta que se resuelva.
+    // Si devuelve solo boolean, no agregar esta condición.
+    if (isMobile === undefined) return;
+    autoOpenedCategoriesRef.current = true;
+    if (isMobile) {
+      setMobileFiltersOpen(true);
+    }
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete("choose");
+    setSearchParams(nextParams, {
+      replace: true,
+    });
+  }, [
+    choose,
+    isMobile,
+    searchParams,
+    setSearchParams,
+  ]);
+  Adapta el código a la API y tipos reales del proyecto.
+  6. Comportamiento móvil:
+  Cuando:
+  choose === "categories"
+  y el viewport es móvil
+  Entonces:
+  - abrir MobileFiltersDrawer automáticamente;
+  - abrirlo una sola vez;
+  - eliminar choose de la URL con replace;
+  - conservar view=catalog;
+  - conservar otros parámetros existentes;
+  - no crear una entrada adicional en el historial.
+  7. Comportamiento desktop:
+  Cuando:
+  choose === "categories"
+  y no es móvil
+  Entonces:
+  - no abrir el drawer;
+  - eliminar choose=categories de la URL usando replace;
+  - mantener el catálogo desktop exactamente como está.
+  8. Al cerrar el drawer con X:
+  - debe quedar cerrado;
+  - no debe volver a abrirse;
+  - debe mostrarse el catálogo general;
+  - no debe reaparecer choose=categories en la URL.
+  9. Al aplicar una categoría o subcategoría:
+  - debe usarse la lógica actual;
+  - debe cerrar el drawer;
+  - debe actualizar el catálogo;
+  - no debe modificar la lógica del RPC;
+  - no debe duplicar llamadas innecesarias.
+  10. Al elegir “Todos los productos”:
+  - debe mostrarse el catálogo general;
+  - debe conservarse el comportamiento actual del drawer;
+  - no debe reabrirse automáticamente.
+  11. Al recargar después de cerrar o aplicar:
+  - el drawer no debe abrirse automáticamente;
+  - choose ya no debe estar en la URL.
+  12. Browser Back:
+  La secuencia debe ser:
+  Home
+  → catálogo con drawer abierto
+  → Browser Back
+  → Home
+  La limpieza del parámetro choose debe usar replace para no crear una pantalla intermedia en el historial.
+  ==================================================
+  EVITAR FLASH VISUAL
+  ==================================================
+  No aceptes una implementación donde se vea durante un instante:
+  “Mostrando 1–24 de 1,059 productos”
+  y después aparezca el drawer.
+  La apertura debe ocurrir antes de que el usuario perciba el catálogo general.
+  Opción preferida:
+  - useLayoutEffect.
+  Opción alternativa:
+  - mientras choose === "categories" y todavía no se haya resuelto isMobile, renderizar un contenedor neutro o skeleton mínimo;
+  - después abrir el drawer;
+  - no crear un loading permanente.
+  ==================================================
+  NO MODIFICAR
+  ==================================================
+  No modificar:
+  - MobileFiltersDrawer.tsx.
+  - Supabase.
+  - tablas.
+  - vistas.
+  - funciones SQL.
+  - RPC.
+  - RLS.
+  - permisos.
+  - stock.
+  - precios.
+  - taxonomía.
+  - búsqueda.
+  - paginación.
+  - tarjetas de producto.
+  - filtros desktop.
+  - chips existentes.
+  - diseño de la Home.
+  - CTA de WhatsApp.
+  - botón flotante de Asesoría.
+  - PDP.
+  - carrito.
+  - header.
+  - navegación interna.
+  - estilos no relacionados.
+  - dependencias.
+  - configuración de producción.
+  No instalar nuevas librerías.
+  No crear un segundo drawer.
+  No duplicar CatalogView.
+  No hacer refactors no relacionados.
+  No hacer Publish.
+  ==================================================
+  PRUEBAS OBLIGATORIAS
+  ==================================================
+  Realiza y reporta estas pruebas:
+  1. Móvil 375px:
+  Home
+  → pulsar “Explorar Catálogo”
+  → el drawer aparece abierto automáticamente.
+  Resultado esperado:
+  PASS.
+  2. Móvil 390px:
+  Mismo flujo.
+  Resultado esperado:
+  PASS.
+  3. Flash visual:
+  No debe verse el listado general antes de aparecer el drawer.
+  Resultado esperado:
+  PASS.
+  4. Cerrar con X:
+  - drawer se cierra;
+  - aparece catálogo general;
+  - no vuelve a abrirse.
+  Resultado esperado:
+  PASS.
+  5. Elegir categoría:
+  - seleccionar una categoría;
+  - aplicar;
+  - drawer se cierra;
+  - catálogo queda filtrado.
+  Resultado esperado:
+  PASS.
+  6. Elegir subcategoría:
+  - expandir una categoría;
+  - seleccionar una subcategoría;
+  - aplicar;
+  - catálogo queda filtrado por la subcategoría.
+  Resultado esperado:
+  PASS.
+  7. Elegir “Todos los productos”:
+  - debe mostrar el catálogo general;
+  - no debe volver a abrir el drawer.
+  Resultado esperado:
+  PASS.
+  8. URL:
+  Después de abrir automáticamente el drawer, la URL debe quedar sin:
+  choose=categories
+  Debe conservar:
+  view=catalog
+  Resultado esperado:
+  PASS.
+  9. Recarga:
+  Después de cerrar el drawer, recargar la página.
+  El drawer no debe reabrirse automáticamente.
+  Resultado esperado:
+  PASS.
+  10. Browser Back:
+  Desde el catálogo, pulsar Back.
+  Debe regresar directamente a Home.
+  No debe existir una entrada intermedia provocada por la limpieza de choose.
+  Resultado esperado:
+  PASS.
+  11. Desktop:
+  Home
+  → Explorar Catálogo.
+  El catálogo debe abrir normalmente sin drawer.
+  choose debe eliminarse de la URL.
+  Resultado esperado:
+  PASS.
+  12. Navegación interna:
+  PDP, carrito, header y navegación interna deben conservar su comportamiento actual.
+  Resultado esperado:
+  PASS.
+  13. Typecheck:
+  Ejecutar:
+  bunx tsgo --noEmit
+  Resultado esperado:
+  sin errores.
+  ==================================================
+  CRITERIOS DE ACEPTACIÓN
+  ==================================================
+  El trabajo está terminado únicamente cuando:
+  - entrar desde Home en móvil abre automáticamente categorías;
+  - no se necesita pulsar “Filtros”;
+  - no existe flash visible del catálogo general;
+  - el drawer no se reabre después de cerrarlo;
+  - recargar no reabre el drawer;
+  - desktop no cambia;
+  - navegación interna no cambia;
+  - la URL queda limpia;
+  - Browser Back vuelve directamente a Home;
+  - TypeScript no presenta errores;
+  - solo se modifican los archivos permitidos;
+  - no se realiza Publish.
+  ==================================================
+  RESULTADO FINAL
+  ==================================================
+  Al terminar, responde únicamente con:
+  1. Archivos modificados.
+  2. Causa raíz confirmada.
+  3. Cambios realizados por archivo.
+  4. Cómo se evitó el flash visual.
+  5. Pruebas ejecutadas con PASS o FAIL.
+  6. Resultado de bunx tsgo --noEmit.
+  7. Confirmación explícita:
+     - Supabase no modificado.
+     - RPC no modificado.
+     - Desktop no modificado.
+     - No Publish.

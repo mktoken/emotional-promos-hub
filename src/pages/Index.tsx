@@ -159,7 +159,20 @@ export default function Index() {
       </nav>
 
       {/* VIEWS */}
-      {currentView === "landing" && <LandingView onViewChange={(v) => setView(v as ViewType)} />}
+      {currentView === "landing" && (
+        <LandingView
+          onViewChange={(v) => {
+            if (v === "catalog") {
+              const next = new URLSearchParams();
+              next.set("view", "catalog");
+              next.set("choose", "categories");
+              setSearchParams(next);
+              return;
+            }
+            setView(v as ViewType);
+          }}
+        />
+      )}
       {currentView === "catalog" && (
         <CatalogView onViewChange={(v) => setView(v as ViewType)} onOpenProduct={openProduct} />
       )}

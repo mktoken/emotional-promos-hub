@@ -473,25 +473,28 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
             }
             appliedCategorySlug={selectedCategorySlug}
             appliedSubcategorySlug={selectedSubcategorySlug}
-            ecoOnly={ecoOnly}
+            appliedEcoOnly={ecoOnly}
             hasEcoCollection={hasEcoCollection}
             totalCount={totalCount}
             categories={categories}
             categoriesLoading={categoriesLoading}
             categoriesError={categoriesError}
             onRetryCategories={() => setCategoriesReloadKey((k) => k + 1)}
-            onApply={({ category, subcategory }) => {
-              updateParams({ category, subcategory, page: null });
+            onApply={({ category, subcategory, ecoOnly: applyEco }) => {
+              updateParams({
+                category,
+                subcategory,
+                eco: applyEco ? "1" : null,
+                page: null,
+              });
             }}
-            onToggleEco={toggleEco}
-            onClearAll={clearAll}
           />
 
 
           {activeCategory && (
             <button
               type="button"
-              onClick={() => selectCategory(null)}
+              onClick={removeCategoryChip}
               className="inline-flex items-center gap-1 text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-full font-semibold"
             >
               {activeCategory.name} <X size={12} />
@@ -500,7 +503,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
           {activeSubcategory && (
             <button
               type="button"
-              onClick={() => selectSubcategory(null)}
+              onClick={removeSubcategoryChip}
               className="inline-flex items-center gap-1 text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-full font-semibold"
             >
               {activeSubcategory.subcategory_name} <X size={12} />
@@ -509,7 +512,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
           {ecoOnly && (
             <button
               type="button"
-              onClick={toggleEco}
+              onClick={removeEcoChip}
               className="inline-flex items-center gap-1 text-xs bg-success/10 text-success px-3 py-1.5 rounded-full font-semibold"
             >
               Ecológicos <X size={12} />

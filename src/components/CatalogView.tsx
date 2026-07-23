@@ -148,24 +148,35 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
   // Carga inicial: categorías y colección Ecológicos
   useEffect(() => {
     let cancelled = false;
+    setCategoriesLoading(true);
+    setCategoriesError(false);
     (async () => {
-      const [catsRes, ecoColRes] = await Promise.all([
-        supabase
-          .from("product_categories")
-          .select("id,name,slug,sort_order")
-          .eq("is_active", true)
-          .order("sort_order", { ascending: true })
-          .order("name", { ascending: true }),
-        supabase.from("product_collections").select("id").eq("slug", "ecologicos").maybeSingle(),
-      ]);
-      if (cancelled) return;
-      setCategories((catsRes.data ?? []) as CategoryOption[]);
-      setHasEcoCollection(!!ecoColRes.data);
+      try {
+        const [catsRes, ecoColRes] = await Promise.all([
+          supabase
+            .from("product_categories")
+            .select("id,name,slug,sort_order")
+            .eq("is_active", true)
+            .order("sort_order", { ascending: true })
+            .order("name", { ascending: true }),
+          supabase.from("product_collections").select("id").eq("slug", "ecologicos").maybeSingle(),
+        ]);
+        if (cancelled) return;
+        if (catsRes.error) throw new Error(catsRes.error.message);
+        setCategories((catsRes.data ?? []) as CategoryOption[]);
+        setHasEcoCollection(!!ecoColRes.data);
+      } catch {
+        if (cancelled) return;
+        setCategoriesError(true);
+      } finally {
+        if (!cancelled) setCategoriesLoading(false);
+      }
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [categoriesReloadKey]);
+
 
   // Subcategorías dinámicas vía RPC
   useEffect(() => {

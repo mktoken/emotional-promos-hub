@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Search,
@@ -83,6 +83,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
   const selectedSubcategorySlug = searchParams.get("subcategory");
   const ecoOnly = searchParams.get("eco") === "1";
   const page = Math.max(1, Number.parseInt(searchParams.get("page") ?? "1", 10) || 1);
+  const choose = searchParams.get("choose");
 
   const [inputValue, setInputValue] = useState(q);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
@@ -95,12 +96,17 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
   const [errorList, setErrorList] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState<number | null>(null);
   const [hasEcoCollection, setHasEcoCollection] = useState(false);
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    if (searchParams.get("choose") !== "categories") return false;
+    return window.matchMedia("(max-width: 767px)").matches;
+  });
 
 
   const catalogTopRef = useRef<HTMLDivElement | null>(null);
   const productsTopRef = useRef<HTMLDivElement | null>(null);
   const prevSearchRef = useRef<string | null>(null);
+  const autoOpenedCategoriesRef = useRef(false);
 
 
   // Actualizar params conservando view=catalog
@@ -119,6 +125,18 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
     },
     [searchParams, setSearchParams],
   );
+
+  // Auto-abrir drawer de categorías cuando se entra al catálogo desde la Home.
+  // La apertura real se hace en el initializer de useState (sin flash);
+  // aquí solo limpiamos el parámetro efímero de la URL una única vez.
+  useLayoutEffect(() => {
+    if (choose !== "categories") return;
+    if (autoOpenedCategoriesRef.current) return;
+    autoOpenedCategoriesRef.current = true;
+    const next = new URLSearchParams(searchParams);
+    next.delete("choose");
+    setSearchParams(next, { replace: true });
+  }, [choose, searchParams, setSearchParams]);
 
   // Sync input local con URL cuando cambia externamente
   useEffect(() => {

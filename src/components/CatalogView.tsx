@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { normalizeProductImages } from "@/lib/product-images";
 import SafeProductImage from "@/components/catalog/SafeProductImage";
+import MobileFiltersDrawer from "@/components/catalog/MobileFiltersDrawer";
+
 
 
 

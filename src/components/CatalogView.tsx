@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Search,
-  Filter,
   Loader2,
   Leaf,
   X,
@@ -14,14 +13,6 @@ import {
 
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetFooter,
-} from "@/components/ui/sheet";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -29,6 +20,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { normalizeProductImages } from "@/lib/product-images";
 import SafeProductImage from "@/components/catalog/SafeProductImage";
+import MobileFiltersDrawer from "@/components/catalog/MobileFiltersDrawer";
+
+
 
 
 
@@ -92,6 +86,9 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
 
   const [inputValue, setInputValue] = useState(q);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesError, setCategoriesError] = useState(false);
+  const [categoriesReloadKey, setCategoriesReloadKey] = useState(0);
   const [subcategories, setSubcategories] = useState<SubcategoryRow[]>([]);
   const [products, setProducts] = useState<RpcProduct[]>([]);
   const [loadingList, setLoadingList] = useState(true);
@@ -99,6 +96,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
   const [totalCount, setTotalCount] = useState<number | null>(null);
   const [hasEcoCollection, setHasEcoCollection] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
 
   const catalogTopRef = useRef<HTMLDivElement | null>(null);
   const productsTopRef = useRef<HTMLDivElement | null>(null);
@@ -142,24 +140,35 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
   // Carga inicial: categorías y colección Ecológicos
   useEffect(() => {
     let cancelled = false;
+    setCategoriesLoading(true);
+    setCategoriesError(false);
     (async () => {
-      const [catsRes, ecoColRes] = await Promise.all([
-        supabase
-          .from("product_categories")
-          .select("id,name,slug,sort_order")
-          .eq("is_active", true)
-          .order("sort_order", { ascending: true })
-          .order("name", { ascending: true }),
-        supabase.from("product_collections").select("id").eq("slug", "ecologicos").maybeSingle(),
-      ]);
-      if (cancelled) return;
-      setCategories((catsRes.data ?? []) as CategoryOption[]);
-      setHasEcoCollection(!!ecoColRes.data);
+      try {
+        const [catsRes, ecoColRes] = await Promise.all([
+          supabase
+            .from("product_categories")
+            .select("id,name,slug,sort_order")
+            .eq("is_active", true)
+            .order("sort_order", { ascending: true })
+            .order("name", { ascending: true }),
+          supabase.from("product_collections").select("id").eq("slug", "ecologicos").maybeSingle(),
+        ]);
+        if (cancelled) return;
+        if (catsRes.error) throw new Error(catsRes.error.message);
+        setCategories((catsRes.data ?? []) as CategoryOption[]);
+        setHasEcoCollection(!!ecoColRes.data);
+      } catch {
+        if (cancelled) return;
+        setCategoriesError(true);
+      } finally {
+        if (!cancelled) setCategoriesLoading(false);
+      }
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [categoriesReloadKey]);
+
 
   // Subcategorías dinámicas vía RPC
   useEffect(() => {
@@ -346,101 +355,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
   }, [page, totalPages]);
 
 
-  // Panel de filtros reutilizable (desktop sidebar + mobile sheet)
-  const FiltersPanel = (
-    <div className="space-y-6">
-      {hasEcoCollection && (
-        <div>
-          <h4 className="text-sm font-semibold text-foreground mb-3">Colecciones</h4>
-          <button
-            type="button"
-            onClick={toggleEco}
-            className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold border transition ${
-              ecoOnly
-                ? "bg-success/10 text-success border-success/30"
-                : "bg-secondary text-secondary-foreground border-transparent hover:border-success/30"
-            }`}
-          >
-            <Leaf size={16} />
-            Ecológicos
-          </button>
-        </div>
-      )}
 
-      <div>
-        <h4 className="text-sm font-semibold text-foreground mb-3">Categorías</h4>
-        <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
-          {categoryButtons.map((cat) => {
-            const active = selectedCategorySlug === cat.slug;
-            return (
-              <button
-                key={cat.slug ?? "todos"}
-                type="button"
-                onClick={() => selectCategory(cat.slug)}
-                className={`w-full text-left text-sm px-3 py-2 rounded-lg transition flex items-center justify-between ${
-                  active
-                    ? "bg-primary/10 text-primary font-semibold"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                }`}
-              >
-                <span>{cat.name}</span>
-                {active && <ChevronRight size={14} />}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {selectedCategorySlug && subcategories.length > 0 && (
-        <div>
-          <h4 className="text-sm font-semibold text-foreground mb-3">Subcategorías</h4>
-          <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
-            <button
-              type="button"
-              onClick={() => selectSubcategory(null)}
-              className={`w-full text-left text-sm px-3 py-2 rounded-lg transition ${
-                !selectedSubcategorySlug
-                  ? "bg-primary/10 text-primary font-semibold"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
-            >
-              Todas
-            </button>
-            {subcategories.map((sub) => {
-              const active = selectedSubcategorySlug === sub.subcategory_slug;
-              return (
-                <button
-                  key={sub.subcategory_slug}
-                  type="button"
-                  onClick={() => selectSubcategory(sub.subcategory_slug)}
-                  className={`w-full text-left text-sm px-3 py-2 rounded-lg transition flex items-center justify-between ${
-                    active
-                      ? "bg-primary/10 text-primary font-semibold"
-                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  }`}
-                >
-                  <span>{sub.subcategory_name}</span>
-                  <span className={`text-xs ${active ? "text-primary" : "text-muted-foreground/70"}`}>
-                    ({Number(sub.product_count).toLocaleString("es-MX")})
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {activeFilterCount > 0 && (
-        <button
-          type="button"
-          onClick={clearAll}
-          className="w-full text-sm font-semibold text-muted-foreground hover:text-destructive border border-border rounded-lg py-2 transition"
-        >
-          Limpiar filtros
-        </button>
-      )}
-    </div>
-  );
 
   return (
     <div className="pb-20 bg-surface min-h-screen">
@@ -500,39 +415,34 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
 
         {/* Barra móvil: botón filtros + chips activos */}
         <div className="md:hidden mb-4 flex items-center gap-2 flex-wrap">
-          <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
-            <SheetTrigger asChild>
+          <MobileFiltersDrawer
+            open={mobileFiltersOpen}
+            onOpenChange={setMobileFiltersOpen}
+            trigger={
               <button
                 type="button"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold shadow-sm"
+                className="inline-flex items-center gap-2 min-h-11 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <SlidersHorizontal size={16} />
-                Filtros
-                {activeFilterCount > 0 && (
-                  <span className="bg-primary-foreground text-primary text-[10px] font-bold rounded-full px-1.5 py-0.5">
-                    {activeFilterCount}
-                  </span>
-                )}
+                {activeFilterCount > 0 ? `Filtros · ${activeFilterCount}` : "Filtros"}
               </button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-[85vw] sm:w-96 overflow-y-auto">
-              <SheetHeader>
-                <SheetTitle className="flex items-center gap-2">
-                  <Filter size={18} /> Filtros
-                </SheetTitle>
-              </SheetHeader>
-              <div className="mt-6">{FiltersPanel}</div>
-              <SheetFooter className="mt-6">
-                <button
-                  type="button"
-                  onClick={() => setMobileFiltersOpen(false)}
-                  className="w-full bg-primary text-primary-foreground font-bold py-3 rounded-lg"
-                >
-                  Aplicar filtros
-                </button>
-              </SheetFooter>
-            </SheetContent>
-          </Sheet>
+            }
+            appliedCategorySlug={selectedCategorySlug}
+            appliedSubcategorySlug={selectedSubcategorySlug}
+            ecoOnly={ecoOnly}
+            hasEcoCollection={hasEcoCollection}
+            totalCount={totalCount}
+            categories={categories}
+            categoriesLoading={categoriesLoading}
+            categoriesError={categoriesError}
+            onRetryCategories={() => setCategoriesReloadKey((k) => k + 1)}
+            onApply={({ category, subcategory }) => {
+              updateParams({ category, subcategory, page: null });
+            }}
+            onToggleEco={toggleEco}
+            onClearAll={clearAll}
+          />
+
 
           {activeCategory && (
             <button

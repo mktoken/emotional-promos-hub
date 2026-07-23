@@ -128,6 +128,18 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
     [searchParams, setSearchParams],
   );
 
+  // Auto-abrir drawer de categorías cuando se entra al catálogo desde la Home.
+  // La apertura real se hace en el initializer de useState (sin flash);
+  // aquí solo limpiamos el parámetro efímero de la URL una única vez.
+  useLayoutEffect(() => {
+    if (choose !== "categories") return;
+    if (autoOpenedCategoriesRef.current) return;
+    autoOpenedCategoriesRef.current = true;
+    const next = new URLSearchParams(searchParams);
+    next.delete("choose");
+    setSearchParams(next, { replace: true });
+  }, [choose, searchParams, setSearchParams]);
+
   // Sync input local con URL cuando cambia externamente
   useEffect(() => {
     setInputValue(q);

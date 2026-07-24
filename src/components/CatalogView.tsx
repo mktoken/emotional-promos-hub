@@ -89,6 +89,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
   const catalogTopRef = useRef<HTMLDivElement | null>(null);
   const productsTopRef = useRef<HTMLDivElement | null>(null);
   const prevSearchRef = useRef<string | null>(null);
+  const loadedSearchRef = useRef<string | null>(null);
   const autoOpenedCategoriesRef = useRef(false);
 
   // Actualizar params conservando view=catalog
@@ -197,6 +198,8 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
 
   // Fetch productos con paginación numerada
   const fetchProducts = useCallback(async () => {
+    const requestSearch = window.location.search;
+
     setLoadingList(true);
     setErrorList(null);
     try {
@@ -221,6 +224,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
       setProducts([]);
       setTotalCount(0);
     } finally {
+      loadedSearchRef.current = requestSearch;
       setLoadingList(false);
     }
   }, [q, selectedCategorySlug, selectedSubcategorySlug, ecoOnly, page]);
@@ -243,6 +247,12 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
     if (loadingList) return;
 
     const currentSearch = window.location.search;
+
+    // Evita desplazar con los productos de la página anterior.
+    // El scroll se ejecuta únicamente cuando la consulta que terminó
+    // corresponde exactamente a la URL actual.
+    if (loadedSearchRef.current !== currentSearch) return;
+
     const previousSearch = prevSearchRef.current;
     const scrollKey = `${SCROLL_KEY_PREFIX}${window.location.pathname}${currentSearch}`;
     const saved = typeof window !== "undefined" ? sessionStorage.getItem(scrollKey) : null;

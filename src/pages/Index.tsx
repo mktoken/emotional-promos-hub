@@ -177,11 +177,7 @@ export default function Index() {
         <CatalogView onViewChange={(v) => setView(v as ViewType)} onOpenProduct={openProduct} />
       )}
       {currentView === "pdp" && (
-        <ProductDetailView
-          productId={selectedProductId}
-          onBack={backFromProduct}
-          onAddToQuote={addToQuote}
-        />
+        <ProductDetailView productId={selectedProductId} onBack={backFromProduct} onAddToQuote={addToQuote} />
       )}
       {currentView === "cart" && (
         <QuoteCartView cart={quoteCart} onRemove={removeFromQuote} onBack={() => setView("catalog")} />

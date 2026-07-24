@@ -1,15 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import {
-  Search,
-  Loader2,
-  Leaf,
-  X,
-  ChevronRight,
-  ChevronLeft,
-  SlidersHorizontal,
-  MoreHorizontal,
-} from "lucide-react";
+import { Search, Loader2, Leaf, X, ChevronRight, ChevronLeft, SlidersHorizontal, MoreHorizontal } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -21,10 +12,6 @@ import {
 import { normalizeProductImages } from "@/lib/product-images";
 import SafeProductImage from "@/components/catalog/SafeProductImage";
 import MobileFiltersDrawer from "@/components/catalog/MobileFiltersDrawer";
-
-
-
-
 
 interface RpcProduct {
   id: string;
@@ -60,9 +47,6 @@ interface SubcategoryRow {
 const PAGE_SIZE = 24;
 const SEARCH_DEBOUNCE_MS = 300;
 const SCROLL_KEY_PREFIX = "catalog-scroll:";
-
-
-
 
 interface CatalogViewProps {
   onViewChange: (view: string) => void;
@@ -102,12 +86,10 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
     return window.matchMedia("(max-width: 767px)").matches;
   });
 
-
   const catalogTopRef = useRef<HTMLDivElement | null>(null);
   const productsTopRef = useRef<HTMLDivElement | null>(null);
   const prevSearchRef = useRef<string | null>(null);
   const autoOpenedCategoriesRef = useRef(false);
-
 
   // Actualizar params conservando view=catalog
   const updateParams = useCallback(
@@ -187,7 +169,6 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
     };
   }, [categoriesReloadKey]);
 
-
   // Subcategorías dinámicas vía RPC
   useEffect(() => {
     let cancelled = false;
@@ -231,7 +212,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
         p_subcategory_slug: selectedSubcategorySlug || null,
       });
       if (error) throw new Error(error.message);
-      const rows = ((data as RpcProduct[] | null) ?? []);
+      const rows = (data as RpcProduct[] | null) ?? [];
       const total = rows.length > 0 ? Number(rows[0].total_count ?? 0) : 0;
       setTotalCount(total);
       setProducts(rows);
@@ -244,33 +225,57 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
     }
   }, [q, selectedCategorySlug, selectedSubcategorySlug, ecoOnly, page]);
 
-
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
-  // Scroll: restaurar posición si volvemos con la misma URL,
-  // o llevar al inicio del listado al cambiar filtros/página.
+  // Scroll: restaurar posición si volvemos con la misma URL.
+  //
+  // En desktop:
+  // - cambiar categoría lleva al bloque de navegación para que
+  //   las subcategorías recién abiertas permanezcan visibles;
+  // - cambiar subcategoría, búsqueda, colección o página lleva
+  //   al inicio del listado de resultados.
+  //
+  // En móvil se conserva el comportamiento existente:
+  // cualquier cambio aplicado lleva al inicio de los resultados.
   useEffect(() => {
     if (loadingList) return;
+
     const currentSearch = window.location.search;
+    const previousSearch = prevSearchRef.current;
     const scrollKey = `${SCROLL_KEY_PREFIX}${window.location.pathname}${currentSearch}`;
     const saved = typeof window !== "undefined" ? sessionStorage.getItem(scrollKey) : null;
 
     if (saved != null) {
       sessionStorage.removeItem(scrollKey);
       const y = Number.parseInt(saved, 10);
+
       requestAnimationFrame(() => {
-        window.scrollTo({ top: Number.isFinite(y) ? y : 0, behavior: "instant" as ScrollBehavior });
+        window.scrollTo({
+          top: Number.isFinite(y) ? y : 0,
+          behavior: "instant" as ScrollBehavior,
+        });
       });
-    } else if (prevSearchRef.current !== null && prevSearchRef.current !== currentSearch) {
+    } else if (previousSearch !== null && previousSearch !== currentSearch) {
+      const previousParams = new URLSearchParams(previousSearch);
+      const currentParams = new URLSearchParams(currentSearch);
+
+      const categoryChanged = previousParams.get("category") !== currentParams.get("category");
+
+      const isDesktop = typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches;
+
+      const target =
+        isDesktop && categoryChanged ? catalogTopRef.current : (productsTopRef.current ?? catalogTopRef.current);
+
       requestAnimationFrame(() => {
-        (productsTopRef.current ?? catalogTopRef.current)?.scrollIntoView({
+        target?.scrollIntoView({
           block: "start",
           behavior: "smooth",
         });
       });
     }
+
     prevSearchRef.current = currentSearch;
   }, [loadingList, products]);
 
@@ -318,13 +323,8 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
 
   // Reabrir el drawer de categorías en móvil al quitar el último chip de
   // navegación (categoría/subcategoría/colección). La búsqueda no cuenta.
-  const isMobileViewport = () =>
-    typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
-  const openDrawerIfEmpty = (
-    afterCat: string | null,
-    afterSub: string | null,
-    afterEco: boolean,
-  ) => {
+  const isMobileViewport = () => typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
+  const openDrawerIfEmpty = (afterCat: string | null, afterSub: string | null, afterEco: boolean) => {
     if (afterCat || afterSub || afterEco) return;
     if (!isMobileViewport()) return;
     setMobileFiltersOpen(true);
@@ -398,9 +398,6 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
     return items;
   }, [page, totalPages]);
 
-
-
-
   return (
     <div className="pb-20 bg-surface min-h-screen">
       <div className="bg-dark-section text-dark-section-foreground py-12 px-4">
@@ -424,27 +421,16 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
         </div>
       </div>
 
-      <div
-        ref={catalogTopRef}
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 scroll-mt-24"
-      >
+      <div ref={catalogTopRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 scroll-mt-24">
         {/* Breadcrumb */}
         <nav className="text-xs sm:text-sm text-muted-foreground mb-4 flex items-center gap-2 flex-wrap">
-          <button
-            type="button"
-            onClick={clearAll}
-            className="hover:text-foreground font-semibold"
-          >
+          <button type="button" onClick={clearAll} className="hover:text-foreground font-semibold">
             Catálogo
           </button>
           {activeCategory && (
             <>
               <ChevronRight size={14} />
-              <button
-                type="button"
-                onClick={() => selectSubcategory(null)}
-                className="hover:text-foreground"
-              >
+              <button type="button" onClick={() => selectSubcategory(null)} className="hover:text-foreground">
                 {activeCategory.name}
               </button>
             </>
@@ -489,7 +475,6 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
               });
             }}
           />
-
 
           {activeCategory && (
             <button
@@ -624,7 +609,6 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
           </div>
         )}
 
-
         {activeFilterCount > 0 && (
           <div className="hidden md:flex items-center gap-2 mb-6">
             <span className="text-xs text-muted-foreground">Filtros activos:</span>
@@ -672,11 +656,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
                 No encontramos productos con esos filtros. Prueba cambiar la subcategoría o limpiar filtros.
               </p>
               {activeFilterCount > 0 && (
-                <button
-                  type="button"
-                  onClick={clearAll}
-                  className="text-primary font-semibold underline text-sm"
-                >
+                <button type="button" onClick={clearAll} className="text-primary font-semibold underline text-sm">
                   Limpiar filtros
                 </button>
               )}
@@ -687,8 +667,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
                 <p className="text-sm text-muted-foreground mb-4">
                   Mostrando{" "}
                   <strong className="text-foreground">
-                    {((page - 1) * PAGE_SIZE + 1).toLocaleString("es-MX")}
-                    –
+                    {((page - 1) * PAGE_SIZE + 1).toLocaleString("es-MX")}–
                     {Math.min(page * PAGE_SIZE, totalCount).toLocaleString("es-MX")}
                   </strong>{" "}
                   de {totalCount.toLocaleString("es-MX")} productos
@@ -748,10 +727,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
               </div>
 
               {totalPages > 1 && (
-                <nav
-                  className="mt-10 flex flex-col items-center gap-3"
-                  aria-label="Paginación de catálogo"
-                >
+                <nav className="mt-10 flex flex-col items-center gap-3" aria-label="Paginación de catálogo">
                   {/* Mobile compacto */}
                   <div className="flex items-center gap-2 md:hidden">
                     <button
@@ -818,7 +794,6 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
                   </div>
                 </nav>
               )}
-
             </>
           )}
         </div>

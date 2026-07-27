@@ -4456,6 +4456,64 @@ export type Database = {
       }
     }
     Functions: {
+      admin_preview_product_price_v2: {
+        Args: {
+          p_producto_b2b_id: string
+          p_quantity: number
+          p_rule_set_id?: string
+        }
+        Returns: {
+          adjusted_unit_cost: number
+          applied_cost_factor: number
+          applied_level: number
+          applied_multiplier: number
+          applied_provider_code: string
+          applied_unit_cost: number
+          currency: string
+          is_valid_quantity: boolean
+          lower_valid_quantity: number
+          minimum_quantity: number
+          requested_quantity: number
+          rule_set_id: string
+          rule_set_version: string
+          source_oferta_id: string
+          status: string
+          subtotal_mxn: number
+          suggested: Json
+          tax_included: boolean
+          unit_price_mxn: number
+          upper_valid_quantity: number
+          warning_code: string
+        }[]
+      }
+      calculate_product_price_v2: {
+        Args: {
+          p_producto_b2b_id: string
+          p_quantity: number
+          p_rule_set_id: string
+        }
+        Returns: {
+          adjusted_unit_cost: number
+          applied_cost_factor: number
+          applied_level: number
+          applied_multiplier: number
+          applied_provider_code: string
+          applied_unit_cost: number
+          currency: string
+          is_valid_quantity: boolean
+          lower_valid_quantity: number
+          minimum_quantity: number
+          requested_quantity: number
+          source_oferta_id: string
+          status: string
+          subtotal_mxn: number
+          suggested: Json
+          tax_included: boolean
+          unit_price_mxn: number
+          upper_valid_quantity: number
+          warning_code: string
+        }[]
+      }
       can_access_campaign: { Args: { _campaign_id: string }; Returns: boolean }
       can_access_chat_session: {
         Args: { _session_id: string }

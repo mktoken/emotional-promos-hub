@@ -87,6 +87,78 @@ export type Database = {
           },
         ]
       }
+      catalog_price_cache_shadow: {
+        Row: {
+          applied_minimum_quantity: number | null
+          applied_multiplier: number | null
+          applied_unit_cost: number | null
+          calculated_at: string | null
+          created_at: string
+          currency: string
+          fallback_reason: string | null
+          id: string
+          id_interno: string | null
+          min_price_before_tax_mxn: number | null
+          price_status: string
+          pricing_rule_set_id: string | null
+          pricing_warning: string | null
+          producto_b2b_id: string | null
+          provider_code: string | null
+          requested_quantity: number | null
+          resolved_via_moq: boolean
+          shadow_run_id: string | null
+          source_oferta_id: string | null
+          tax_included: boolean
+          updated_at: string
+        }
+        Insert: {
+          applied_minimum_quantity?: number | null
+          applied_multiplier?: number | null
+          applied_unit_cost?: number | null
+          calculated_at?: string | null
+          created_at?: string
+          currency?: string
+          fallback_reason?: string | null
+          id?: string
+          id_interno?: string | null
+          min_price_before_tax_mxn?: number | null
+          price_status?: string
+          pricing_rule_set_id?: string | null
+          pricing_warning?: string | null
+          producto_b2b_id?: string | null
+          provider_code?: string | null
+          requested_quantity?: number | null
+          resolved_via_moq?: boolean
+          shadow_run_id?: string | null
+          source_oferta_id?: string | null
+          tax_included?: boolean
+          updated_at?: string
+        }
+        Update: {
+          applied_minimum_quantity?: number | null
+          applied_multiplier?: number | null
+          applied_unit_cost?: number | null
+          calculated_at?: string | null
+          created_at?: string
+          currency?: string
+          fallback_reason?: string | null
+          id?: string
+          id_interno?: string | null
+          min_price_before_tax_mxn?: number | null
+          price_status?: string
+          pricing_rule_set_id?: string | null
+          pricing_warning?: string | null
+          producto_b2b_id?: string | null
+          provider_code?: string | null
+          requested_quantity?: number | null
+          resolved_via_moq?: boolean
+          shadow_run_id?: string | null
+          source_oferta_id?: string | null
+          tax_included?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       company_bank_accounts: {
         Row: {
           account_holder: string

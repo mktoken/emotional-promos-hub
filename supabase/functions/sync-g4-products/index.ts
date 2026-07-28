@@ -637,29 +637,76 @@ Deno.serve(async (req) => {
           }
           const oferta_id = ofertaRow.id as string;
 
-          // 3.3 reemplazar escalas
-          await supabase
-            .from("producto_precio_escalas")
-            .delete()
-            .eq("oferta_id", oferta_id);
-
-          const escalasRows = p.escalas
+          // 3.3 reemplazar escalas — con validación anti-duplicados por min_qty.
+          // - dedupe exacto (mismo min_qty + mismo unit_cost) es seguro.
+          // - más de un unit_cost distinto por min_qty => manual_review:
+          //     no borrar, no insertar, mantener datos anteriores intactos.
+          const priced = p.escalas
             .filter((e) => e.precio !== null && e.precio > 0)
-            .map((e) => ({
+            .map((e) => ({ min_qty: e.min_qty ?? 1, unit_cost: e.precio as number }));
+
+          // Detectar conflictos por min_qty.
+          const byMin = new Map<number, Set<number>>();
+          for (const row of priced) {
+            const set = byMin.get(row.min_qty) ?? new Set<number>();
+            set.add(row.unit_cost);
+            byMin.set(row.min_qty, set);
+          }
+          const conflicts: Array<{ min_qty: number; unit_costs: number[] }> = [];
+          for (const [min_qty, costs] of byMin) {
+            if (costs.size > 1) {
+              conflicts.push({ min_qty, unit_costs: Array.from(costs).sort((a, b) => a - b) });
+            }
+          }
+
+          if (conflicts.length > 0) {
+            // Bloqueo: preservar snapshot anterior, registrar y continuar.
+            escalas_manual_review++;
+            if (escalas_manual_review_sample.length < 20) {
+              escalas_manual_review_sample.push({
+                provider_raw_product_id,
+                codigo_producto: p.codigo_producto,
+                modelo: p.model,
+                conflicts,
+              });
+            }
+            console.log("g4_escalas_manual_review", {
+              provider_raw_product_id,
+              codigo_producto: p.codigo_producto,
+              modelo: p.model,
+              conflicts,
+            });
+          } else {
+            // Reemplazo atómico: eliminar sólo las filas g4_precios_escala de la oferta
+            // e insertar la escalera actual deduplicada por (min_qty, unit_cost).
+            const dedupMap = new Map<string, { min_qty: number; unit_cost: number }>();
+            for (const row of priced) {
+              const key = `${row.min_qty}|${row.unit_cost}`;
+              if (!dedupMap.has(key)) dedupMap.set(key, row);
+            }
+            const escalasRows = Array.from(dedupMap.values()).map((row) => ({
               oferta_id,
               proveedor_id,
-              min_qty: e.min_qty ?? 1,
-              max_qty: null,
-              unit_cost: e.precio as number,
+              min_qty: row.min_qty,
+              max_qty: null as number | null,
+              unit_cost: row.unit_cost,
               currency: "MXN",
               source_field: "g4_precios_escala",
             }));
 
-          if (escalasRows.length > 0) {
-            const { error: escErr } = await supabase
+            const { error: delErr } = await supabase
               .from("producto_precio_escalas")
-              .insert(escalasRows);
-            if (escErr) throw new Error(`escalas insert: ${escErr.message}`);
+              .delete()
+              .eq("oferta_id", oferta_id)
+              .eq("source_field", "g4_precios_escala");
+            if (delErr) throw new Error(`escalas delete: ${delErr.message}`);
+
+            if (escalasRows.length > 0) {
+              const { error: escErr } = await supabase
+                .from("producto_precio_escalas")
+                .insert(escalasRows);
+              if (escErr) throw new Error(`escalas insert: ${escErr.message}`);
+            }
           }
 
           // 3.4 stock (opcional)

@@ -78,11 +78,38 @@ function pickFirstImage(p: Record<string, unknown>): string | null {
   return null;
 }
 
-function pickPrice(p: Record<string, unknown>): { unit_cost: number; source: string } | null {
-  const desc = toNum(p["precio_desc"]);
-  if (desc !== null && desc > 0) return { unit_cost: desc, source: "precio_desc" };
-  const base = toNum(p["precio"]);
-  if (base !== null && base > 0) return { unit_cost: base, source: "precio" };
+// Regla ForPromotional (Sprint precio base):
+// 1. Si opc_promo='S' o opc_unico='S' y precio_desc>0 y precio_desc<=precio (o precio inválido):
+//    usar precio_desc con fuente 'forpromotional.precio_unico' (si opc_unico='S')
+//    o 'forpromotional.precio_promocion'.
+// 2. Si opc_promo='S'/opc_unico='S' pero precio_desc > precio: manual_review, no persistir escala.
+// 3. Si no hay tipo promocional: usar precio (precio lista) con 'forpromotional.precio_lista'.
+// 4. Si nada válido: request_quote (null).
+// 5. desc_promo (%) es informativo. producto_nuevo por sí solo NO activa promoción.
+function pickPrice(
+  p: Record<string, unknown>,
+): { unit_cost: number; source: string; manual_review?: boolean } | null {
+  const listPrice = toNum(p["precio"]);
+  const promoPrice = toNum(p["precio_desc"]);
+  const opcPromo = String(p["opc_promo"] ?? "").trim().toUpperCase() === "S";
+  const opcUnico = String(p["opc_unico"] ?? "").trim().toUpperCase() === "S";
+  const hasPromoType = opcPromo || opcUnico;
+
+  if (hasPromoType && promoPrice !== null && promoPrice > 0) {
+    const source = opcUnico
+      ? "forpromotional.precio_unico"
+      : "forpromotional.precio_promocion";
+    if (listPrice !== null && listPrice > 0 && promoPrice > listPrice) {
+      // promoción mayor que lista → requiere revisión manual, no persistir escala
+      return { unit_cost: 0, source, manual_review: true };
+    }
+    return { unit_cost: promoPrice, source };
+  }
+
+  if (listPrice !== null && listPrice > 0) {
+    return { unit_cost: listPrice, source: "forpromotional.precio_lista" };
+  }
+
   return null;
 }
 
@@ -437,9 +464,9 @@ Deno.serve(async (req) => {
         if (ofertaErr || !ofertaRow?.id) throw new Error(ofertaErr?.message ?? "oferta upsert failed");
         const ofertaId = ofertaRow.id as string;
 
-        // 3. escala (solo si existe precio válido)
+        // 3. escala (solo si existe precio válido y no es manual_review)
         const priceInfo = pickPrice(p);
-        if (priceInfo) {
+        if (priceInfo && !priceInfo.manual_review && priceInfo.unit_cost > 0) {
           const { data: existingTiers, error: tiersErr } = await supabase
             .from("producto_precio_escalas")
             .select("id, min_qty, max_qty, source_field")

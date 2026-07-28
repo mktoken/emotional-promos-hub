@@ -845,6 +845,8 @@ Deno.serve(async (req) => {
       stock_failed,
       stock_failed_sample,
       failed_sample,
+      escalas_manual_review,
+      escalas_manual_review_sample,
       coverage,
       next_offset,
       has_more: next_offset !== null,

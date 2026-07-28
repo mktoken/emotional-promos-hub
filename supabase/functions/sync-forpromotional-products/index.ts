@@ -464,9 +464,9 @@ Deno.serve(async (req) => {
         if (ofertaErr || !ofertaRow?.id) throw new Error(ofertaErr?.message ?? "oferta upsert failed");
         const ofertaId = ofertaRow.id as string;
 
-        // 3. escala (solo si existe precio válido)
+        // 3. escala (solo si existe precio válido y no es manual_review)
         const priceInfo = pickPrice(p);
-        if (priceInfo) {
+        if (priceInfo && !priceInfo.manual_review && priceInfo.unit_cost > 0) {
           const { data: existingTiers, error: tiersErr } = await supabase
             .from("producto_precio_escalas")
             .select("id, min_qty, max_qty, source_field")

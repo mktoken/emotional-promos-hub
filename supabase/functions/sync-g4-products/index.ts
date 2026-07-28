@@ -542,6 +542,13 @@ Deno.serve(async (req) => {
     let stock_failed = 0;
     const failed_sample: Array<{ codigo_producto: string; error: string }> = [];
     const stock_failed_sample: Array<{ codigo_producto: string; codigo_color: string; error: string }> = [];
+    let escalas_manual_review = 0;
+    const escalas_manual_review_sample: Array<{
+      provider_raw_product_id: string | null;
+      codigo_producto: string;
+      modelo: string | null;
+      conflicts: Array<{ min_qty: number; unit_costs: number[] }>;
+    }> = [];
 
     try {
       for (const p of block) {

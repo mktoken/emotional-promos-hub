@@ -87,77 +87,143 @@ export type Database = {
           },
         ]
       }
-      catalog_price_cache_shadow: {
+      catalog_price_cache_v2_generations: {
         Row: {
-          applied_minimum_quantity: number | null
-          applied_multiplier: number | null
-          applied_unit_cost: number | null
-          calculated_at: string | null
+          candidate_count: number
+          completed_at: string | null
           created_at: string
-          currency: string
-          fallback_reason: string | null
+          created_by: string | null
+          error_count: number
           id: string
-          id_interno: string | null
-          min_price_before_tax_mxn: number | null
-          price_status: string
-          pricing_rule_set_id: string | null
-          pricing_warning: string | null
-          producto_b2b_id: string | null
-          provider_code: string | null
-          requested_quantity: number | null
-          resolved_via_moq: boolean
-          shadow_run_id: string | null
-          source_oferta_id: string | null
-          tax_included: boolean
+          idempotency_key: string
+          mode: string
+          priced_count: number
+          processed_count: number
+          request_id: string | null
+          request_quote_count: number
+          rule_set_id: string
+          started_at: string
+          status: string
+          unavailable_count: number
+          unresolved_count: number
           updated_at: string
         }
         Insert: {
-          applied_minimum_quantity?: number | null
-          applied_multiplier?: number | null
-          applied_unit_cost?: number | null
-          calculated_at?: string | null
+          candidate_count?: number
+          completed_at?: string | null
           created_at?: string
-          currency?: string
-          fallback_reason?: string | null
+          created_by?: string | null
+          error_count?: number
           id?: string
-          id_interno?: string | null
-          min_price_before_tax_mxn?: number | null
-          price_status?: string
-          pricing_rule_set_id?: string | null
-          pricing_warning?: string | null
-          producto_b2b_id?: string | null
-          provider_code?: string | null
-          requested_quantity?: number | null
-          resolved_via_moq?: boolean
-          shadow_run_id?: string | null
-          source_oferta_id?: string | null
-          tax_included?: boolean
+          idempotency_key: string
+          mode: string
+          priced_count?: number
+          processed_count?: number
+          request_id?: string | null
+          request_quote_count?: number
+          rule_set_id: string
+          started_at?: string
+          status: string
+          unavailable_count?: number
+          unresolved_count?: number
           updated_at?: string
         }
         Update: {
-          applied_minimum_quantity?: number | null
-          applied_multiplier?: number | null
-          applied_unit_cost?: number | null
-          calculated_at?: string | null
+          candidate_count?: number
+          completed_at?: string | null
           created_at?: string
-          currency?: string
-          fallback_reason?: string | null
+          created_by?: string | null
+          error_count?: number
           id?: string
-          id_interno?: string | null
-          min_price_before_tax_mxn?: number | null
-          price_status?: string
-          pricing_rule_set_id?: string | null
-          pricing_warning?: string | null
-          producto_b2b_id?: string | null
-          provider_code?: string | null
-          requested_quantity?: number | null
-          resolved_via_moq?: boolean
-          shadow_run_id?: string | null
-          source_oferta_id?: string | null
-          tax_included?: boolean
+          idempotency_key?: string
+          mode?: string
+          priced_count?: number
+          processed_count?: number
+          request_id?: string | null
+          request_quote_count?: number
+          rule_set_id?: string
+          started_at?: string
+          status?: string
+          unavailable_count?: number
+          unresolved_count?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "catalog_price_cache_v2_generations_rule_set_id_fkey"
+            columns: ["rule_set_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_rule_sets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_price_cache_v2_shadow: {
+        Row: {
+          calculation_version: string
+          computed_at: string
+          created_at: string
+          currency: string
+          generation_id: string
+          id: string
+          minimum_quantity: number | null
+          price_before_tax_mxn: number | null
+          product_id: string
+          public_price_status: string
+          rule_set_id: string
+          updated_at: string
+        }
+        Insert: {
+          calculation_version: string
+          computed_at?: string
+          created_at?: string
+          currency?: string
+          generation_id: string
+          id?: string
+          minimum_quantity?: number | null
+          price_before_tax_mxn?: number | null
+          product_id: string
+          public_price_status: string
+          rule_set_id: string
+          updated_at?: string
+        }
+        Update: {
+          calculation_version?: string
+          computed_at?: string
+          created_at?: string
+          currency?: string
+          generation_id?: string
+          id?: string
+          minimum_quantity?: number | null
+          price_before_tax_mxn?: number | null
+          product_id?: string
+          public_price_status?: string
+          rule_set_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_price_cache_v2_shadow_generation_fk"
+            columns: ["generation_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_price_cache_v2_generations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_price_cache_v2_shadow_product_fk"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_price_cache_v2_shadow_rule_set_fk"
+            columns: ["rule_set_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_rule_sets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       company_bank_accounts: {
         Row: {

@@ -155,8 +155,11 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(100);
-  const [estimatedTotal, setEstimatedTotal] = useState(0);
-  const [estimatedUnit, setEstimatedUnit] = useState(0);
+  const [priceQuote, setPriceQuote] = useState<PublicPriceQuote | null>(null);
+  const [priceLoading, setPriceLoading] = useState(false);
+  const [priceError, setPriceError] = useState(false);
+  const [priceReloadToken, setPriceReloadToken] = useState(0);
+  const priceRequestRef = useRef(0);
   const [selectedPersonalization, setSelectedPersonalization] = useState<PersonalizationOptionKey>("logo_1_ink");
   const [includeEconomyAlternative, setIncludeEconomyAlternative] = useState(true);
   const [lightboxOpen, setLightboxOpen] = useState(false);

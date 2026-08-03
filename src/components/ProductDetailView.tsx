@@ -297,24 +297,65 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   const allVariantsOutOfStock =
     colors.length === 0 || colors.every((c) => !c.agregableToProposal || Number(c.stock ?? 0) <= 0);
   const currentVariantOutOfStock = availableStock <= 0 || !currentColor.agregableToProposal;
+  const productDbId = product?.id ?? null;
+
+  // Precio autoritativo del servidor (debounce + protección contra respuestas viejas).
+  useEffect(() => {
+    if (!productDbId) return;
+    if (!isValidQuoteQuantity(quantity)) {
+      setPriceQuote(null);
+      setPriceError(false);
+      setPriceLoading(false);
+      return;
+    }
+
+    const requestSeq = priceRequestRef.current + 1;
+    priceRequestRef.current = requestSeq;
+    setPriceLoading(true);
+    setPriceError(false);
+
+    const timer = setTimeout(() => {
+      fetchPublicProductPriceQuote(productDbId, quantity)
+        .then((quote) => {
+          if (priceRequestRef.current !== requestSeq) return;
+          setPriceQuote(quote);
+          setPriceLoading(false);
+        })
+        .catch(() => {
+          if (priceRequestRef.current !== requestSeq) return;
+          setPriceQuote(null);
+          setPriceError(true);
+          setPriceLoading(false);
+        });
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [productDbId, quantity, priceReloadToken]);
+
+  const priceStatus = priceQuote?.status ?? null;
+  const unitPrice = priceQuote?.unitPriceBeforeTaxMxn ?? null;
+  const estimatedTotal = estimatedLineTotal(priceQuote, quantity);
+  const priceBlocked = priceStatus === "below_minimum" || priceStatus === "unavailable";
+  const priceReady = priceStatus === "priced" || priceStatus === "request_quote";
+  const minimumQuantity = priceQuote?.minimumQuantity ?? null;
+
   const ctaLabel: string = !productAllowsProposal
     ? "Consultar por WhatsApp"
     : allVariantsOutOfStock
       ? "Sin stock disponible"
       : currentVariantOutOfStock && !allVariantsOutOfStock
         ? "Elige un color disponible"
-        : canAddToProposal
-          ? "Agregar a propuesta"
-          : "Consultar disponibilidad";
+        : priceStatus === "unavailable"
+          ? "No disponible para cotización"
+          : priceStatus === "below_minimum"
+            ? "Ajusta la cantidad mínima"
+            : canAddToProposal
+              ? "Agregar a la cotización"
+              : "Consultar disponibilidad";
   const stockLabel = canAddToProposal
     ? `${availableStock.toLocaleString("es-MX")} piezas disponibles`
     : "Consultar disponibilidad";
-
-  useEffect(() => {
-    const subtotal = basePrice * quantity;
-    setEstimatedTotal(subtotal);
-    setEstimatedUnit(quantity > 0 ? basePrice : 0);
-  }, [quantity, basePrice]);
+  const canSubmitSelection = canAddToProposal && priceReady && !priceLoading && !priceError && !priceBlocked;
 
   useEffect(() => {
     if (availableStock > 0 && quantity > availableStock) {

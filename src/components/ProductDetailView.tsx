@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ChevronLeft,
   CheckCircle2,
@@ -25,12 +25,19 @@ import type {
 import { normalizeProductImages } from "@/lib/product-images";
 import SafeProductImage from "@/components/catalog/SafeProductImage";
 import ProductImageLightbox from "@/components/catalog/ProductImageLightbox";
+import {
+  fetchPublicProductPriceQuote,
+  estimatedLineTotal,
+  isValidQuoteQuantity,
+  type PublicPriceQuote,
+} from "@/features/catalog/lib/public-product-price";
+import type { NewQuoteSelectionItem } from "@/features/quotes/lib/quote-selection";
 
 
 interface ProductDetailViewProps {
   productId: string | null;
   onBack: () => void;
-  onAddToQuote: (item: Omit<QuoteItem, "cartId">) => void;
+  onAddToQuote: (item: NewQuoteSelectionItem) => void;
 }
 
 interface ProductoB2B {
@@ -148,8 +155,11 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(100);
-  const [estimatedTotal, setEstimatedTotal] = useState(0);
-  const [estimatedUnit, setEstimatedUnit] = useState(0);
+  const [priceQuote, setPriceQuote] = useState<PublicPriceQuote | null>(null);
+  const [priceLoading, setPriceLoading] = useState(false);
+  const [priceError, setPriceError] = useState(false);
+  const [priceReloadToken, setPriceReloadToken] = useState(0);
+  const priceRequestRef = useRef(0);
   const [selectedPersonalization, setSelectedPersonalization] = useState<PersonalizationOptionKey>("logo_1_ink");
   const [includeEconomyAlternative, setIncludeEconomyAlternative] = useState(true);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -211,7 +221,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
 
   const productDesc = product?.datos_generales?.descripcion?.trim() || "";
   const productClave = (product?.datos_generales?.clave_producto?.trim() || product?.sku_base?.trim() || "").trim();
-  const basePrice = Number(product?.precio_desde_mxn ?? 0);
+  // El precio autoritativo proviene del servidor; `precio_desde_mxn` ya no se usa como precio.
   const deliveryEstimate =
     product?.datos_generales?.entrega_estimada || "10 a 15 días hábiles después de aprobación de arte";
   const deliveryNote =
@@ -287,24 +297,65 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   const allVariantsOutOfStock =
     colors.length === 0 || colors.every((c) => !c.agregableToProposal || Number(c.stock ?? 0) <= 0);
   const currentVariantOutOfStock = availableStock <= 0 || !currentColor.agregableToProposal;
+  const productDbId = product?.id ?? null;
+
+  // Precio autoritativo del servidor (debounce + protección contra respuestas viejas).
+  useEffect(() => {
+    if (!productDbId) return;
+    if (!isValidQuoteQuantity(quantity)) {
+      setPriceQuote(null);
+      setPriceError(false);
+      setPriceLoading(false);
+      return;
+    }
+
+    const requestSeq = priceRequestRef.current + 1;
+    priceRequestRef.current = requestSeq;
+    setPriceLoading(true);
+    setPriceError(false);
+
+    const timer = setTimeout(() => {
+      fetchPublicProductPriceQuote(productDbId, quantity)
+        .then((quote) => {
+          if (priceRequestRef.current !== requestSeq) return;
+          setPriceQuote(quote);
+          setPriceLoading(false);
+        })
+        .catch(() => {
+          if (priceRequestRef.current !== requestSeq) return;
+          setPriceQuote(null);
+          setPriceError(true);
+          setPriceLoading(false);
+        });
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [productDbId, quantity, priceReloadToken]);
+
+  const priceStatus = priceQuote?.status ?? null;
+  const unitPrice = priceQuote?.unitPriceBeforeTaxMxn ?? null;
+  const estimatedTotal = estimatedLineTotal(priceQuote, quantity);
+  const priceBlocked = priceStatus === "below_minimum" || priceStatus === "unavailable";
+  const priceReady = priceStatus === "priced" || priceStatus === "request_quote";
+  const minimumQuantity = priceQuote?.minimumQuantity ?? null;
+
   const ctaLabel: string = !productAllowsProposal
     ? "Consultar por WhatsApp"
     : allVariantsOutOfStock
       ? "Sin stock disponible"
       : currentVariantOutOfStock && !allVariantsOutOfStock
         ? "Elige un color disponible"
-        : canAddToProposal
-          ? "Agregar a propuesta"
-          : "Consultar disponibilidad";
+        : priceStatus === "unavailable"
+          ? "No disponible para cotización"
+          : priceStatus === "below_minimum"
+            ? "Ajusta la cantidad mínima"
+            : canAddToProposal
+              ? "Agregar a la cotización"
+              : "Consultar disponibilidad";
   const stockLabel = canAddToProposal
     ? `${availableStock.toLocaleString("es-MX")} piezas disponibles`
     : "Consultar disponibilidad";
-
-  useEffect(() => {
-    const subtotal = basePrice * quantity;
-    setEstimatedTotal(subtotal);
-    setEstimatedUnit(quantity > 0 ? basePrice : 0);
-  }, [quantity, basePrice]);
+  const canSubmitSelection = canAddToProposal && priceReady && !priceLoading && !priceError && !priceBlocked;
 
   useEffect(() => {
     if (availableStock > 0 && quantity > availableStock) {
@@ -339,7 +390,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   const decreaseQuantity = () => setSafeQuantity(quantity - 1);
 
   const handleAddToProposal = () => {
-    if (!product || !canAddToProposal) return;
+    if (!product || !canSubmitSelection) return;
 
     const economySuggestion =
       shouldShowEconomyAlternative && includeEconomyAlternative
@@ -351,7 +402,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
           }
         : null;
 
-    const quoteItem = {
+    const quoteItem: NewQuoteSelectionItem = {
       productId: product.id,
       name: productName,
       sku: productClave,
@@ -371,8 +422,10 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
       personalizacionSugeridaEconomica: economySuggestion,
       requiereRevisionTecnica: requiresTechnicalReview,
       personalizationCompatibilityNote: selectedPersonalizationRule.message,
-      estimatedTotal,
-      estimatedUnit,
+      // Estimaciones visuales; el servidor recalcula al enviar la solicitud.
+      estimatedTotal: estimatedTotal ?? 0,
+      estimatedUnit: unitPrice ?? 0,
+      pricing: priceQuote,
       hasVirtualSample: false,
       imageUrl: mainImage ?? undefined,
       entregaEstimada: deliveryEstimate,
@@ -393,7 +446,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
       productClave || "Por confirmar"
     }\nModelo: ${productName}\nColor: ${currentColor.name}\nCantidad estimada: ${quantity.toLocaleString(
       "es-MX",
-    )} piezas\nPersonalización solicitada: ${selectedPersonalizationRule.label}${economyText}\n\nPrecio desde: $${formatMoney(basePrice)} MXN + IVA, antes de impresión.\n\nQuedo atento a su asesoría.`;
+    )} piezas\nPersonalización solicitada: ${selectedPersonalizationRule.label}${economyText}\n\nQuedo atento a su asesoría.`;
 
     window.open(`https://wa.me/5215530311686?text=${encodeURIComponent(message)}`, "_blank");
   };
@@ -537,10 +590,20 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
               ) : null}
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-surface rounded-2xl p-4 border border-border">
-                  <p className="text-xs text-muted-foreground font-semibold mb-1">Precio desde</p>
-                  <p className="text-2xl font-black text-success">${formatMoney(basePrice)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">MXN · antes de IVA e impresión</p>
+                <div className="bg-surface rounded-2xl p-4 border border-border" aria-live="polite">
+                  <p className="text-xs text-muted-foreground font-semibold mb-1">Precio unitario</p>
+                  <p className="text-2xl font-black text-success">
+                    {priceLoading
+                      ? "Consultando..."
+                      : priceStatus === "priced" && unitPrice !== null
+                        ? `$${formatMoney(unitPrice)}`
+                        : priceStatus === "unavailable"
+                          ? "No disponible"
+                          : "Por confirmar"}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {priceQuote?.currency ?? "MXN"} · antes de IVA e impresión
+                  </p>
                 </div>
                 <div className="bg-surface rounded-2xl p-4 border border-border">
                   <p className="text-xs text-muted-foreground font-semibold mb-1">Disponibilidad</p>
@@ -742,22 +805,71 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                 </div>
 
                 <div className="lg:border-l lg:border-dark-section-foreground/10 lg:pl-6">
-                  <p className="text-sm text-dark-section-foreground/60 mb-1">Precio desde estimado</p>
-                  <div className="flex items-end gap-2">
-                    <span className="text-4xl font-black text-success">${formatMoney(estimatedUnit)}</span>
-                    <span className="text-sm text-dark-section-foreground/60 mb-1.5">
-                      MXN · antes de IVA e impresión
-                    </span>
-                  </div>
-
-                  <div className="mt-4 pt-4 border-t border-dark-section-foreground/10">
-                    <p className="text-xs text-dark-section-foreground/50 mb-1">Subtotal preliminar</p>
-                    <p className="text-2xl font-black text-dark-section-foreground">
-                      ${formatMoney(estimatedTotal)} MXN
-                    </p>
-                    <p className="text-[11px] text-dark-section-foreground/50 mt-1">
-                      + IVA 16% · sin impresión/personalización
-                    </p>
+                  <p className="text-sm text-dark-section-foreground/60 mb-1">Precio unitario para esta cantidad</p>
+                  <div aria-live="polite" aria-atomic="true">
+                    {priceLoading ? (
+                      <p className="flex items-center gap-2 text-dark-section-foreground/70 text-sm py-3">
+                        <Loader2 size={18} className="animate-spin text-primary" /> Consultando precio...
+                      </p>
+                    ) : priceError ? (
+                      <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3">
+                        <p className="text-sm font-bold text-destructive">No pudimos obtener el precio.</p>
+                        <button
+                          type="button"
+                          onClick={() => setPriceReloadToken((token) => token + 1)}
+                          className="mt-2 text-xs font-bold text-dark-section-foreground underline underline-offset-4"
+                        >
+                          Reintentar
+                        </button>
+                      </div>
+                    ) : priceStatus === "priced" && unitPrice !== null ? (
+                      <>
+                        <div className="flex items-end gap-2">
+                          <span className="text-4xl font-black text-success">${formatMoney(unitPrice)}</span>
+                          <span className="text-sm text-dark-section-foreground/60 mb-1.5">
+                            {priceQuote?.currency ?? "MXN"} · antes de IVA e impresión
+                          </span>
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-dark-section-foreground/10">
+                          <p className="text-xs text-dark-section-foreground/50 mb-1">Subtotal estimado</p>
+                          <p className="text-2xl font-black text-dark-section-foreground">
+                            ${formatMoney(estimatedTotal ?? 0)} {priceQuote?.currency ?? "MXN"}
+                          </p>
+                          <p className="text-[11px] text-dark-section-foreground/50 mt-1">
+                            Estimación antes de IVA e impresión. Se recalculará al enviar.
+                          </p>
+                        </div>
+                      </>
+                    ) : priceStatus === "request_quote" ? (
+                      <div className="rounded-xl border border-primary/30 bg-primary/10 p-3">
+                        <p className="text-lg font-black text-dark-section-foreground">Precio por confirmar</p>
+                        <p className="text-xs text-dark-section-foreground/60 mt-1">
+                          Puedes agregarlo a la solicitud; tu asesor confirmará el precio.
+                        </p>
+                      </div>
+                    ) : priceStatus === "below_minimum" ? (
+                      <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3">
+                        <p className="text-sm font-bold text-dark-section-foreground">
+                          Cantidad mínima: {minimumQuantity ? minimumQuantity.toLocaleString("es-MX") : "mayor"}{" "}
+                          piezas
+                        </p>
+                        {minimumQuantity ? (
+                          <button
+                            type="button"
+                            onClick={() => setSafeQuantity(minimumQuantity)}
+                            className="mt-2 text-xs font-bold text-primary underline underline-offset-4"
+                          >
+                            Ajustar a la cantidad mínima
+                          </button>
+                        ) : null}
+                      </div>
+                    ) : priceStatus === "unavailable" ? (
+                      <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3">
+                        <p className="text-sm font-bold text-destructive">No disponible para cotización</p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-dark-section-foreground/60 py-3">Indica una cantidad para consultar el precio.</p>
+                    )}
                   </div>
 
                   <p className="text-xs text-dark-section-foreground/50 mt-3">{priceNote}</p>
@@ -767,10 +879,10 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   onClick={!productAllowsProposal ? handleWhatsAppConsult : handleAddToProposal}
-                  disabled={productAllowsProposal && !canAddToProposal}
+                  disabled={productAllowsProposal && !canSubmitSelection}
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 rounded-xl transition-all shadow-glow-primary flex justify-center items-center gap-2 text-lg hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  {canAddToProposal ? (
+                  {canSubmitSelection ? (
                     <>
                       {ctaLabel} <ShoppingCart size={20} />
                     </>

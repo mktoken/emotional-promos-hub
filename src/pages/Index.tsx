@@ -7,6 +7,7 @@ import ProductDetailView from "@/components/ProductDetailView";
 import QuoteCartView from "@/components/QuoteCartView";
 import AssistantWidget from "@/features/assistant/components/AssistantWidget";
 import type { QuoteItem } from "@/data/mockData";
+import type { QuoteSelectionItem, NewQuoteSelectionItem } from "@/features/quotes/lib/quote-selection";
 
 type ViewType = "landing" | "catalog" | "pdp" | "cart";
 
@@ -26,7 +27,7 @@ const SCROLL_KEY_PREFIX = "catalog-scroll:";
 export default function Index() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [quoteCart, setQuoteCart] = useState<QuoteItem[]>([]);
+  const [quoteCart, setQuoteCart] = useState<QuoteSelectionItem[]>([]);
 
   const viewParam = searchParams.get("view");
   const currentView: ViewType =
@@ -42,9 +43,9 @@ export default function Index() {
     [setSearchParams],
   );
 
-  const addToQuote = (item: Omit<QuoteItem, "cartId">) => {
+  const addToQuote = (item: NewQuoteSelectionItem) => {
     setQuoteCart((prev) => {
-      const newItem: QuoteItem = { ...item, cartId: createCartId() };
+      const newItem: QuoteSelectionItem = { ...item, cartId: createCartId() };
       const newItemKey = getQuoteLineKey(newItem);
       const existingIndex = prev.findIndex((existingItem) => getQuoteLineKey(existingItem) === newItemKey);
 
@@ -63,6 +64,8 @@ export default function Index() {
           quantity: combinedQuantity,
           estimatedUnit,
           estimatedTotal: estimatedUnit * combinedQuantity,
+          // La cantidad combinada invalida el precio previo: se reconsulta al servidor.
+          pricing: null,
           imageUrl: item.imageUrl ?? existingItem.imageUrl,
           entregaEstimada: item.entregaEstimada ?? existingItem.entregaEstimada,
           personalizacionPublica: item.personalizacionPublica ?? existingItem.personalizacionPublica,
@@ -180,8 +183,14 @@ export default function Index() {
         <ProductDetailView productId={selectedProductId} onBack={backFromProduct} onAddToQuote={addToQuote} />
       )}
       {currentView === "cart" && (
-        <QuoteCartView cart={quoteCart} onRemove={removeFromQuote} onBack={() => setView("catalog")} />
+        <QuoteCartView
+          cart={quoteCart}
+          onRemove={removeFromQuote}
+          onBack={() => setView("catalog")}
+          onSubmitted={() => setQuoteCart([])}
+        />
       )}
+
 
       {/* Footer Corporativo */}
       <footer className="bg-foreground text-background py-8 px-4">

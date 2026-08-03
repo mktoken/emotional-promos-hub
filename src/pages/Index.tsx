@@ -183,8 +183,14 @@ export default function Index() {
         <ProductDetailView productId={selectedProductId} onBack={backFromProduct} onAddToQuote={addToQuote} />
       )}
       {currentView === "cart" && (
-        <QuoteCartView cart={quoteCart} onRemove={removeFromQuote} onBack={() => setView("catalog")} />
+        <QuoteCartView
+          cart={quoteCart}
+          onRemove={removeFromQuote}
+          onBack={() => setView("catalog")}
+          onSubmitted={() => setQuoteCart([])}
+        />
       )}
+
 
       {/* Footer Corporativo */}
       <footer className="bg-foreground text-background py-8 px-4">

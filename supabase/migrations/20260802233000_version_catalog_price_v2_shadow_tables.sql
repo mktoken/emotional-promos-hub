@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS public.catalog_price_cache_v2_generations (
   unresolved_count integer NOT NULL DEFAULT 0,
   started_at timestamptz NOT NULL DEFAULT now(),
   completed_at timestamptz,
-  request_id text,
+  request_id uuid,
   created_by uuid,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
@@ -149,7 +149,7 @@ DECLARE
 BEGIN
   SELECT array_agg(
     format('%s:%s:%s', column_name, udt_name, is_nullable)
-    ORDER BY ordinal_position
+    ORDER BY column_name
   )
   INTO v_generation_columns
   FROM information_schema.columns
@@ -157,23 +157,23 @@ BEGIN
     AND table_name = 'catalog_price_cache_v2_generations';
 
   IF v_generation_columns IS DISTINCT FROM ARRAY[
+    'candidate_count:int4:NO',
+    'completed_at:timestamptz:YES',
+    'created_at:timestamptz:NO',
+    'created_by:uuid:YES',
+    'error_count:int4:NO',
     'id:uuid:NO',
     'idempotency_key:text:NO',
     'mode:text:NO',
-    'status:text:NO',
-    'rule_set_id:uuid:NO',
-    'candidate_count:int4:NO',
-    'processed_count:int4:NO',
     'priced_count:int4:NO',
+    'processed_count:int4:NO',
+    'request_id:uuid:YES',
     'request_quote_count:int4:NO',
-    'unavailable_count:int4:NO',
-    'error_count:int4:NO',
-    'unresolved_count:int4:NO',
+    'rule_set_id:uuid:NO',
     'started_at:timestamptz:NO',
-    'completed_at:timestamptz:YES',
-    'request_id:text:YES',
-    'created_by:uuid:YES',
-    'created_at:timestamptz:NO',
+    'status:text:NO',
+    'unavailable_count:int4:NO',
+    'unresolved_count:int4:NO',
     'updated_at:timestamptz:NO'
   ]::text[] THEN
     RAISE EXCEPTION
@@ -182,7 +182,7 @@ BEGIN
 
   SELECT array_agg(
     format('%s:%s:%s', column_name, udt_name, is_nullable)
-    ORDER BY ordinal_position
+    ORDER BY column_name
   )
   INTO v_shadow_columns
   FROM information_schema.columns
@@ -190,17 +190,17 @@ BEGIN
     AND table_name = 'catalog_price_cache_v2_shadow';
 
   IF v_shadow_columns IS DISTINCT FROM ARRAY[
-    'id:uuid:NO',
-    'generation_id:uuid:NO',
-    'product_id:uuid:NO',
-    'rule_set_id:uuid:NO',
-    'public_price_status:text:NO',
-    'price_before_tax_mxn:numeric:YES',
-    'currency:text:NO',
-    'minimum_quantity:int4:YES',
-    'computed_at:timestamptz:NO',
     'calculation_version:text:NO',
+    'computed_at:timestamptz:NO',
     'created_at:timestamptz:NO',
+    'currency:text:NO',
+    'generation_id:uuid:NO',
+    'id:uuid:NO',
+    'minimum_quantity:int4:YES',
+    'price_before_tax_mxn:numeric:YES',
+    'product_id:uuid:NO',
+    'public_price_status:text:NO',
+    'rule_set_id:uuid:NO',
     'updated_at:timestamptz:NO'
   ]::text[] THEN
     RAISE EXCEPTION

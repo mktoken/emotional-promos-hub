@@ -2,7 +2,7 @@
 // NO contiene reglas de negocio de precios: la única autoridad es
 // public.calculate_product_price_v2.
 
-import { z } from "npm:zod@3.23.8";
+import { z } from "https://esm.sh/zod@3.23.8";
 
 export const CALCULATION_VERSION = "v2-shadow-1";
 export const DRAFT_RULE_SET_VERSION = "2026-01-v2-draft";

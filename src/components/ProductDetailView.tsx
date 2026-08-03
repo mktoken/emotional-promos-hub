@@ -590,10 +590,20 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
               ) : null}
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-surface rounded-2xl p-4 border border-border">
-                  <p className="text-xs text-muted-foreground font-semibold mb-1">Precio desde</p>
-                  <p className="text-2xl font-black text-success">${formatMoney(basePrice)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">MXN · antes de IVA e impresión</p>
+                <div className="bg-surface rounded-2xl p-4 border border-border" aria-live="polite">
+                  <p className="text-xs text-muted-foreground font-semibold mb-1">Precio unitario</p>
+                  <p className="text-2xl font-black text-success">
+                    {priceLoading
+                      ? "Consultando..."
+                      : priceStatus === "priced" && unitPrice !== null
+                        ? `$${formatMoney(unitPrice)}`
+                        : priceStatus === "unavailable"
+                          ? "No disponible"
+                          : "Por confirmar"}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {priceQuote?.currency ?? "MXN"} · antes de IVA e impresión
+                  </p>
                 </div>
                 <div className="bg-surface rounded-2xl p-4 border border-border">
                   <p className="text-xs text-muted-foreground font-semibold mb-1">Disponibilidad</p>

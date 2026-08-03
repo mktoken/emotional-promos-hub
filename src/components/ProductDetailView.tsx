@@ -5,7 +5,7 @@ import {
   Package,
   Minus,
   Plus,
-  ShoppingCart,
+  ClipboardList,
   Loader2,
   Clock,
   MessageSquare,
@@ -17,7 +17,6 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import type {
   ProductColor,
-  QuoteItem,
   PersonalizationCapabilities,
   PersonalizationOptionKey,
   PersonalizationOptionRule,
@@ -73,7 +72,6 @@ interface ProductoB2B {
   motor_de_personalizacion: Record<string, unknown> | null;
   activo: boolean | null;
   updated_at: string | null;
-  precio_desde_mxn: number | null;
 }
 
 const QUICK_QUANTITIES = [100, 250, 500, 1000];
@@ -172,7 +170,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
       const { data, error } = await supabase
         .from("productos_publicos")
         .select(
-          "id,id_interno,sku_base,categoria_principal,datos_generales,variantes,imagenes,motor_de_personalizacion,activo,updated_at,precio_desde_mxn",
+          "id,id_interno,sku_base,categoria_principal,datos_generales,variantes,imagenes,motor_de_personalizacion,activo,updated_at",
         )
         .eq("id", productId)
         .maybeSingle();
@@ -221,7 +219,6 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
 
   const productDesc = product?.datos_generales?.descripcion?.trim() || "";
   const productClave = (product?.datos_generales?.clave_producto?.trim() || product?.sku_base?.trim() || "").trim();
-  // El precio autoritativo proviene del servidor; `precio_desde_mxn` ya no se usa como precio.
   const deliveryEstimate =
     product?.datos_generales?.entrega_estimada || "10 a 15 días hábiles después de aprobación de arte";
   const deliveryNote =
@@ -314,29 +311,36 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
     setPriceLoading(true);
     setPriceError(false);
 
+    let cancelled = false;
     const timer = setTimeout(() => {
       fetchPublicProductPriceQuote(productDbId, quantity)
         .then((quote) => {
-          if (priceRequestRef.current !== requestSeq) return;
+          if (cancelled || priceRequestRef.current !== requestSeq) return;
           setPriceQuote(quote);
           setPriceLoading(false);
         })
         .catch(() => {
-          if (priceRequestRef.current !== requestSeq) return;
+          if (cancelled || priceRequestRef.current !== requestSeq) return;
           setPriceQuote(null);
           setPriceError(true);
           setPriceLoading(false);
         });
     }, 400);
 
-    return () => clearTimeout(timer);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [productDbId, quantity, priceReloadToken]);
 
   const priceStatus = priceQuote?.status ?? null;
   const unitPrice = priceQuote?.unitPriceBeforeTaxMxn ?? null;
   const estimatedTotal = estimatedLineTotal(priceQuote, quantity);
   const priceBlocked = priceStatus === "below_minimum" || priceStatus === "unavailable";
-  const priceReady = priceStatus === "priced" || priceStatus === "request_quote";
+  const priceReady =
+    (priceStatus === "priced" || priceStatus === "request_quote") &&
+    priceQuote?.requestedQuantity === quantity &&
+    priceQuote.isValidQuantity === true;
   const minimumQuantity = priceQuote?.minimumQuantity ?? null;
 
   const ctaLabel: string = !productAllowsProposal
@@ -345,23 +349,22 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
       ? "Sin stock disponible"
       : currentVariantOutOfStock && !allVariantsOutOfStock
         ? "Elige un color disponible"
-        : priceStatus === "unavailable"
-          ? "No disponible para cotización"
-          : priceStatus === "below_minimum"
-            ? "Ajusta la cantidad mínima"
-            : canAddToProposal
-              ? "Agregar a la cotización"
-              : "Consultar disponibilidad";
+        : priceLoading
+          ? "Consultando precio..."
+          : priceError
+            ? "Reintenta la consulta de precio"
+            : priceStatus === "unavailable"
+              ? "No disponible para cotización"
+              : priceStatus === "below_minimum"
+                ? "Ajusta la cantidad mínima"
+                : canAddToProposal && priceReady
+                  ? "Agregar a la cotización"
+                  : "Consultar disponibilidad";
   const stockLabel = canAddToProposal
     ? `${availableStock.toLocaleString("es-MX")} piezas disponibles`
     : "Consultar disponibilidad";
   const canSubmitSelection = canAddToProposal && priceReady && !priceLoading && !priceError && !priceBlocked;
-
-  useEffect(() => {
-    if (availableStock > 0 && quantity > availableStock) {
-      setQuantity(availableStock);
-    }
-  }, [availableStock, quantity]);
+  const canRetryPrice = canAddToProposal && priceError;
 
   useEffect(() => {
     setSelectedImageIndex(0);
@@ -373,12 +376,11 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
     const nextDefault = product.datos_generales?.personalizacion_capacidades?.economy_recommendation || "logo_1_ink";
     setSelectedPersonalization(FALLBACK_PERSONALIZATION_RULES[nextDefault] ? nextDefault : "logo_1_ink");
     setIncludeEconomyAlternative(true);
-  }, [product?.id]);
+  }, [product]);
 
   const setSafeQuantity = (value: number) => {
-    const maxStock = availableStock > 0 ? availableStock : Number.MAX_SAFE_INTEGER;
     const normalizedValue = Number.isFinite(value) ? value : 1;
-    setQuantity(Math.max(1, Math.min(Math.trunc(normalizedValue), maxStock)));
+    setQuantity(Math.max(1, Math.min(Math.trunc(normalizedValue), 1_000_000)));
   };
 
   const handleQuantityInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -388,6 +390,18 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
 
   const increaseQuantity = () => setSafeQuantity(quantity + 1);
   const decreaseQuantity = () => setSafeQuantity(quantity - 1);
+
+  const handlePrimaryAction = () => {
+    if (!productAllowsProposal) {
+      handleWhatsAppConsult();
+      return;
+    }
+    if (canRetryPrice) {
+      setPriceReloadToken((token) => token + 1);
+      return;
+    }
+    handleAddToProposal();
+  };
 
   const handleAddToProposal = () => {
     if (!product || !canSubmitSelection) return;
@@ -422,9 +436,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
       personalizacionSugeridaEconomica: economySuggestion,
       requiereRevisionTecnica: requiresTechnicalReview,
       personalizationCompatibilityNote: selectedPersonalizationRule.message,
-      // Estimaciones visuales; el servidor recalcula al enviar la solicitud.
-      estimatedTotal: estimatedTotal ?? 0,
-      estimatedUnit: unitPrice ?? 0,
+      // Última estimación autoritativa conocida; el servidor recalcula al enviar.
       pricing: priceQuote,
       hasVirtualSample: false,
       imageUrl: mainImage ?? undefined,
@@ -766,7 +778,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                     <input
                       type="number"
                       min={1}
-                      max={availableStock > 0 ? availableStock : undefined}
+                      max={1_000_000}
                       inputMode="numeric"
                       value={quantity}
                       onChange={handleQuantityInputChange}
@@ -783,24 +795,20 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                   </div>
 
                   <div className="grid grid-cols-4 gap-2">
-                    {QUICK_QUANTITIES.map((quickQty) => {
-                      const disabled = availableStock > 0 && quickQty > availableStock;
-                      return (
-                        <button
-                          key={quickQty}
-                          type="button"
-                          disabled={disabled}
-                          onClick={() => setSafeQuantity(quickQty)}
-                          className={`rounded-lg border px-2 py-2 text-xs font-bold transition ${
-                            quantity === quickQty
-                              ? "bg-primary text-primary-foreground border-primary"
-                              : "border-dark-section-foreground/10 text-dark-section-foreground/70 hover:bg-dark-section-foreground/10"
-                          } disabled:opacity-30 disabled:cursor-not-allowed`}
-                        >
-                          {quickQty.toLocaleString("es-MX")}
-                        </button>
-                      );
-                    })}
+                    {QUICK_QUANTITIES.map((quickQty) => (
+                      <button
+                        key={quickQty}
+                        type="button"
+                        onClick={() => setSafeQuantity(quickQty)}
+                        className={`rounded-lg border px-2 py-2 text-xs font-bold transition ${
+                          quantity === quickQty
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "border-dark-section-foreground/10 text-dark-section-foreground/70 hover:bg-dark-section-foreground/10"
+                        }`}
+                      >
+                        {quickQty.toLocaleString("es-MX")}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -833,7 +841,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                         <div className="mt-4 pt-4 border-t border-dark-section-foreground/10">
                           <p className="text-xs text-dark-section-foreground/50 mb-1">Subtotal estimado</p>
                           <p className="text-2xl font-black text-dark-section-foreground">
-                            ${formatMoney(estimatedTotal ?? 0)} {priceQuote?.currency ?? "MXN"}
+                            {estimatedTotal !== null ? `$${formatMoney(estimatedTotal)} ${priceQuote?.currency ?? "MXN"}` : "Por confirmar"}
                           </p>
                           <p className="text-[11px] text-dark-section-foreground/50 mt-1">
                             Estimación antes de IVA e impresión. Se recalculará al enviar.
@@ -878,17 +886,12 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
-                  onClick={!productAllowsProposal ? handleWhatsAppConsult : handleAddToProposal}
-                  disabled={productAllowsProposal && !canSubmitSelection}
+                  onClick={handlePrimaryAction}
+                  disabled={productAllowsProposal && !canSubmitSelection && !canRetryPrice}
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 rounded-xl transition-all shadow-glow-primary flex justify-center items-center gap-2 text-lg hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  {canSubmitSelection ? (
-                    <>
-                      {ctaLabel} <ShoppingCart size={20} />
-                    </>
-                  ) : (
-                    ctaLabel
-                  )}
+                  <span>{ctaLabel}</span>
+                  {canSubmitSelection ? <ClipboardList size={20} aria-hidden="true" /> : null}
                 </button>
 
                 <button

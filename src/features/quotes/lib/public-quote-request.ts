@@ -72,7 +72,7 @@ export function validateContact(contact: QuoteContact): ContactErrors {
 
   if (name.length < 2 || name.length > 120) errors.name = "Ingresa un nombre válido (2 a 120 caracteres).";
   if (company.length < 2 || company.length > 160) errors.company = "Ingresa una empresa válida (2 a 160 caracteres).";
-  if (!EMAIL_PATTERN.test(email) || email.length > 255) errors.email = "Ingresa un correo válido.";
+  if (!EMAIL_PATTERN.test(email) || email.length > 254) errors.email = "Ingresa un correo válido.";
   if (phoneDigits.length < 10 || phoneDigits.length > 15) errors.phone = "Ingresa un teléfono válido (10 a 15 dígitos).";
 
   return errors;

@@ -1,19 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ShoppingCart, MessageCircle } from "lucide-react";
+import { ClipboardList, MessageCircle } from "lucide-react";
 import LandingView from "@/components/LandingView";
 import CatalogView from "@/components/CatalogView";
 import ProductDetailView from "@/components/ProductDetailView";
 import QuoteCartView from "@/components/QuoteCartView";
 import AssistantWidget from "@/features/assistant/components/AssistantWidget";
-import type { QuoteItem } from "@/data/mockData";
 import type { QuoteSelectionItem, NewQuoteSelectionItem } from "@/features/quotes/lib/quote-selection";
 
 type ViewType = "landing" | "catalog" | "pdp" | "cart";
 
 const createCartId = () => Date.now() + Math.floor(Math.random() * 1_000_000);
 
-const getQuoteLineKey = (item: Omit<QuoteItem, "cartId"> | QuoteItem) =>
+const getQuoteLineKey = (item: NewQuoteSelectionItem | QuoteSelectionItem) =>
   [
     item.productId,
     item.claveProducto || item.sku || "",
@@ -56,14 +55,11 @@ export default function Index() {
       return prev.map((existingItem, index) => {
         if (index !== existingIndex) return existingItem;
 
-        const combinedQuantity = existingItem.quantity + item.quantity;
-        const estimatedUnit = item.estimatedUnit || existingItem.estimatedUnit || 0;
+        const combinedQuantity = Math.min(existingItem.quantity + item.quantity, 1_000_000);
 
         return {
           ...existingItem,
           quantity: combinedQuantity,
-          estimatedUnit,
-          estimatedTotal: estimatedUnit * combinedQuantity,
           // La cantidad combinada invalida el precio previo: se reconsulta al servidor.
           pricing: null,
           imageUrl: item.imageUrl ?? existingItem.imageUrl,
@@ -148,8 +144,8 @@ export default function Index() {
                 onClick={() => setView("cart")}
                 className="relative flex items-center gap-2 text-sm font-bold text-foreground hover:text-primary transition px-3 py-2 bg-secondary hover:bg-muted rounded-lg"
               >
-                <ShoppingCart size={20} />
-                <span className="hidden sm:inline">Mi Propuesta</span>
+                <ClipboardList size={20} />
+                <span className="hidden sm:inline">Mi solicitud</span>
                 {quoteCart.length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-card shadow-sm">
                     {quoteCart.length}

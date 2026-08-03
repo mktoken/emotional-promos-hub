@@ -99,6 +99,8 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
       return next;
     });
 
+    let cancelled = false;
+
     void Promise.all(
       cart.map(async (item) => {
         if (!isValidQuoteQuantity(item.quantity)) {
@@ -112,11 +114,15 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
         }
       }),
     ).then((entries) => {
-      if (pricingRequestRef.current !== requestSeq) return;
+      if (cancelled || pricingRequestRef.current !== requestSeq) return;
       const next: Record<number, LinePricingState> = {};
       for (const [cartId, state] of entries) next[cartId] = state;
       setPricingByLine(next);
     });
+
+    return () => {
+      cancelled = true;
+    };
   }, [pricingKey, pricingReloadToken, cart]);
 
   const lineStates = cart.map((item) => ({
@@ -130,12 +136,11 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
     (line) => line.pricing.quote?.status === "below_minimum" || line.pricing.quote?.status === "unavailable",
   );
   const hasRequestQuoteLine = lineStates.some((line) => line.pricing.quote?.status === "request_quote");
-  const allPriced =
-    lineStates.length > 0 &&
-    lineStates.every((line) => line.pricing.quote?.status === "priced" && line.pricing.quote.unitPriceBeforeTaxMxn !== null);
+  const lineTotals = lineStates.map((line) => estimatedLineTotal(line.pricing.quote, line.item.quantity));
+  const allPriced = lineTotals.length > 0 && lineTotals.every((lineTotal) => lineTotal !== null);
 
   const estimatedTotal = allPriced
-    ? lineStates.reduce((sum, line) => sum + (estimatedLineTotal(line.pricing.quote, line.item.quantity) ?? 0), 0)
+    ? lineTotals.reduce<number>((sum, lineTotal) => sum + (lineTotal ?? 0), 0)
     : null;
 
   const canSubmit =
@@ -410,11 +415,11 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-success">
-                        {pricing.quote?.status === "priced"
-                          ? `$${formatMoney(estimatedLineTotal(pricing.quote, item.quantity) ?? 0)}`
-                          : pricing.loading
-                            ? "—"
-                            : "Por confirmar"}
+                        {(() => {
+                          const lineTotal = estimatedLineTotal(pricing.quote, item.quantity);
+                          if (lineTotal !== null) return `$${formatMoney(lineTotal)}`;
+                          return pricing.loading ? "—" : "Por confirmar";
+                        })()}
                       </p>
                       <button
                         onClick={() => onRemove(item.cartId)}
@@ -639,9 +644,10 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
                             {item.quantity}x {item.modeloComercial || item.name}
                           </span>
                           <span className="font-medium text-foreground">
-                            {pricing.quote?.status === "priced"
-                              ? `$${formatMoney(estimatedLineTotal(pricing.quote, item.quantity) ?? 0)}`
-                              : "Por confirmar"}
+                            {(() => {
+                              const lineTotal = estimatedLineTotal(pricing.quote, item.quantity);
+                              return lineTotal !== null ? `$${formatMoney(lineTotal)}` : "Por confirmar";
+                            })()}
                           </span>
                         </li>
                       ))}

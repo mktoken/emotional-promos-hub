@@ -94,7 +94,18 @@ export function isValidQuoteQuantity(quantity: number): boolean {
 
 /** Subtotal visual. Solo existe cuando el servidor entregó precio autoritativo. */
 export function estimatedLineTotal(quote: PublicPriceQuote | null, quantity: number): number | null {
-  if (!quote || quote.status !== "priced" || quote.unitPriceBeforeTaxMxn === null) return null;
+  if (
+    !quote ||
+    quote.status !== "priced" ||
+    quote.unitPriceBeforeTaxMxn === null ||
+    quote.unitPriceBeforeTaxMxn <= 0 ||
+    quote.isValidQuantity !== true ||
+    quote.requestedQuantity !== quantity ||
+    !isValidQuoteQuantity(quantity)
+  ) {
+    return null;
+  }
+
   return quote.unitPriceBeforeTaxMxn * quantity;
 }
 
@@ -131,5 +142,10 @@ export async function fetchPublicProductPriceQuote(
     };
   }
 
-  return normalizePublicPriceQuoteRow(rows[0], quantity);
+  const quote = normalizePublicPriceQuoteRow(rows[0], quantity);
+  if (quote.requestedQuantity !== quantity) {
+    throw new PublicPriceContractError("La respuesta de precio no corresponde a la cantidad solicitada.");
+  }
+
+  return quote;
 }

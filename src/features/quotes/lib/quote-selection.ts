@@ -7,7 +7,7 @@ import type { QuoteRequestItem } from "@/features/quotes/lib/public-quote-reques
  * Los datos visuales (nombre, imagen, clave, último precio consultado) no son
  * autoridad y nunca se envían al backend como precio.
  */
-export type QuoteSelectionItem = QuoteItem & {
+export type QuoteSelectionItem = Omit<QuoteItem, "estimatedUnit" | "estimatedTotal"> & {
   /** Último resultado autoritativo conocido. Solo estimación visual. */
   pricing?: PublicPriceQuote | null;
 };

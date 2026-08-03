@@ -390,7 +390,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   const decreaseQuantity = () => setSafeQuantity(quantity - 1);
 
   const handleAddToProposal = () => {
-    if (!product || !canAddToProposal) return;
+    if (!product || !canSubmitSelection) return;
 
     const economySuggestion =
       shouldShowEconomyAlternative && includeEconomyAlternative
@@ -402,7 +402,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
           }
         : null;
 
-    const quoteItem = {
+    const quoteItem: NewQuoteSelectionItem = {
       productId: product.id,
       name: productName,
       sku: productClave,
@@ -422,8 +422,10 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
       personalizacionSugeridaEconomica: economySuggestion,
       requiereRevisionTecnica: requiresTechnicalReview,
       personalizationCompatibilityNote: selectedPersonalizationRule.message,
-      estimatedTotal,
-      estimatedUnit,
+      // Estimaciones visuales; el servidor recalcula al enviar la solicitud.
+      estimatedTotal: estimatedTotal ?? 0,
+      estimatedUnit: unitPrice ?? 0,
+      pricing: priceQuote,
       hasVirtualSample: false,
       imageUrl: mainImage ?? undefined,
       entregaEstimada: deliveryEstimate,

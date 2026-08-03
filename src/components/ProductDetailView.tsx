@@ -446,7 +446,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
       productClave || "Por confirmar"
     }\nModelo: ${productName}\nColor: ${currentColor.name}\nCantidad estimada: ${quantity.toLocaleString(
       "es-MX",
-    )} piezas\nPersonalización solicitada: ${selectedPersonalizationRule.label}${economyText}\n\nPrecio desde: $${formatMoney(basePrice)} MXN + IVA, antes de impresión.\n\nQuedo atento a su asesoría.`;
+    )} piezas\nPersonalización solicitada: ${selectedPersonalizationRule.label}${economyText}\n\nQuedo atento a su asesoría.`;
 
     window.open(`https://wa.me/5215530311686?text=${encodeURIComponent(message)}`, "_blank");
   };

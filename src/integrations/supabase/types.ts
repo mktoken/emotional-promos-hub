@@ -225,6 +225,50 @@ export type Database = {
           },
         ]
       }
+      catalog_price_v2_releases: {
+        Row: {
+          created_at: string
+          generation_id: string
+          id: string
+          is_current: boolean
+          published_at: string | null
+          published_by: string | null
+          superseded_at: string | null
+          superseded_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          generation_id: string
+          id?: string
+          is_current?: boolean
+          published_at?: string | null
+          published_by?: string | null
+          superseded_at?: string | null
+          superseded_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          generation_id?: string
+          id?: string
+          is_current?: boolean
+          published_at?: string | null
+          published_by?: string | null
+          superseded_at?: string | null
+          superseded_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_price_v2_releases_generation_id_fkey"
+            columns: ["generation_id"]
+            isOneToOne: true
+            referencedRelation: "catalog_price_cache_v2_generations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_bank_accounts: {
         Row: {
           account_holder: string
@@ -389,6 +433,11 @@ export type Database = {
           id: string
           last_contacted_at: string | null
           lost_reason: string | null
+          public_email_hash: string | null
+          public_phone_hash: string | null
+          public_request_fingerprint: string | null
+          public_request_id: string | null
+          public_submission: boolean
           total_estimado: number | null
           updated_at: string | null
         }
@@ -401,6 +450,11 @@ export type Database = {
           id?: string
           last_contacted_at?: string | null
           lost_reason?: string | null
+          public_email_hash?: string | null
+          public_phone_hash?: string | null
+          public_request_fingerprint?: string | null
+          public_request_id?: string | null
+          public_submission?: boolean
           total_estimado?: number | null
           updated_at?: string | null
         }
@@ -413,6 +467,11 @@ export type Database = {
           id?: string
           last_contacted_at?: string | null
           lost_reason?: string | null
+          public_email_hash?: string | null
+          public_phone_hash?: string | null
+          public_request_fingerprint?: string | null
+          public_request_id?: string | null
+          public_submission?: boolean
           total_estimado?: number | null
           updated_at?: string | null
         }
@@ -4576,6 +4635,41 @@ export type Database = {
       }
     }
     Views: {
+      catalog_price_v2_current_prices: {
+        Row: {
+          computed_at: string | null
+          currency: string | null
+          generation_id: string | null
+          minimum_quantity: number | null
+          price_before_tax_mxn: number | null
+          product_id: string | null
+          public_price_status: string | null
+          rule_set_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_price_cache_v2_shadow_generation_fk"
+            columns: ["generation_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_price_cache_v2_generations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_price_cache_v2_shadow_product_fk"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_price_cache_v2_shadow_rule_set_fk"
+            columns: ["rule_set_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_rule_sets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       productos_publicos: {
         Row: {
           activo: boolean | null
@@ -4688,6 +4782,37 @@ export type Database = {
           total_count: number
         }[]
       }
+      catalog_search_products_v2: {
+        Args: {
+          p_category_slug?: string
+          p_collection_slug?: string
+          p_limit?: number
+          p_max_price?: number
+          p_min_price?: number
+          p_offset?: number
+          p_query?: string
+          p_subcategory_slug?: string
+        }
+        Returns: {
+          categoria_nombre: string
+          categoria_slug: string
+          currency: string
+          descripcion: string
+          id: string
+          id_interno: string
+          imagenes: Json
+          minimum_quantity: number
+          nombre: string
+          precio_desde_mxn: number
+          pricing_generation_id: string
+          public_price_status: string
+          relevance: number
+          sku_base: string
+          subcategoria_nombre: string
+          subcategoria_slug: string
+          total_count: number
+        }[]
+      }
       crm_make_lead_dedupe_hash: {
         Args: {
           p_company: string
@@ -4721,6 +4846,18 @@ export type Database = {
           subcategory_slug: string
         }[]
       }
+      get_public_product_price_quote: {
+        Args: { p_producto_b2b_id: string; p_quantity: number }
+        Returns: {
+          currency: string
+          is_valid_quantity: boolean
+          minimum_quantity: number
+          price_before_tax_mxn: number
+          pricing_generation_id: string
+          public_price_status: string
+          requested_quantity: number
+        }[]
+      }
       get_public_product_price_tiers: {
         Args: { p_id_interno?: string; p_producto_b2b_id?: string }
         Returns: {
@@ -4743,8 +4880,43 @@ export type Database = {
         Args: { p_variantes: Json }
         Returns: boolean
       }
+      publish_catalog_price_v2_generation: {
+        Args: { p_generation_id: string }
+        Returns: {
+          generation_id: string
+          is_current: boolean
+          published_at: string
+          release_id: string
+          reused: boolean
+        }[]
+      }
+      rollback_catalog_price_v2_to_legacy: {
+        Args: never
+        Returns: {
+          generation_id: string
+          release_id: string
+          rolled_back: boolean
+          superseded_at: string
+        }[]
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      submit_public_quote_request: {
+        Args: {
+          p_contact: Json
+          p_items: Json
+          p_quote_format: string
+          p_request_id: string
+        }
+        Returns: {
+          item_count: number
+          pricing_mode: string
+          quote_id: string
+          request_quote_item_count: number
+          reused: boolean
+          total_estimated: number
+        }[]
+      }
     }
     Enums: {
       activity_outcome:

@@ -25,6 +25,13 @@ import type {
 import { normalizeProductImages } from "@/lib/product-images";
 import SafeProductImage from "@/components/catalog/SafeProductImage";
 import ProductImageLightbox from "@/components/catalog/ProductImageLightbox";
+import {
+  fetchPublicProductPriceQuote,
+  estimatedLineTotal,
+  isValidQuoteQuantity,
+  type PublicPriceQuote,
+} from "@/features/catalog/lib/public-product-price";
+import type { NewQuoteSelectionItem } from "@/features/quotes/lib/quote-selection";
 
 
 interface ProductDetailViewProps {

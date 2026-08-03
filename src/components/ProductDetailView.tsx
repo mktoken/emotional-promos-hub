@@ -37,7 +37,7 @@ import type { NewQuoteSelectionItem } from "@/features/quotes/lib/quote-selectio
 interface ProductDetailViewProps {
   productId: string | null;
   onBack: () => void;
-  onAddToQuote: (item: Omit<QuoteItem, "cartId">) => void;
+  onAddToQuote: (item: NewQuoteSelectionItem) => void;
 }
 
 interface ProductoB2B {

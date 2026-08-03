@@ -795,22 +795,71 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
                 </div>
 
                 <div className="lg:border-l lg:border-dark-section-foreground/10 lg:pl-6">
-                  <p className="text-sm text-dark-section-foreground/60 mb-1">Precio desde estimado</p>
-                  <div className="flex items-end gap-2">
-                    <span className="text-4xl font-black text-success">${formatMoney(estimatedUnit)}</span>
-                    <span className="text-sm text-dark-section-foreground/60 mb-1.5">
-                      MXN · antes de IVA e impresión
-                    </span>
-                  </div>
-
-                  <div className="mt-4 pt-4 border-t border-dark-section-foreground/10">
-                    <p className="text-xs text-dark-section-foreground/50 mb-1">Subtotal preliminar</p>
-                    <p className="text-2xl font-black text-dark-section-foreground">
-                      ${formatMoney(estimatedTotal)} MXN
-                    </p>
-                    <p className="text-[11px] text-dark-section-foreground/50 mt-1">
-                      + IVA 16% · sin impresión/personalización
-                    </p>
+                  <p className="text-sm text-dark-section-foreground/60 mb-1">Precio unitario para esta cantidad</p>
+                  <div aria-live="polite" aria-atomic="true">
+                    {priceLoading ? (
+                      <p className="flex items-center gap-2 text-dark-section-foreground/70 text-sm py-3">
+                        <Loader2 size={18} className="animate-spin text-primary" /> Consultando precio...
+                      </p>
+                    ) : priceError ? (
+                      <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3">
+                        <p className="text-sm font-bold text-destructive">No pudimos obtener el precio.</p>
+                        <button
+                          type="button"
+                          onClick={() => setPriceReloadToken((token) => token + 1)}
+                          className="mt-2 text-xs font-bold text-dark-section-foreground underline underline-offset-4"
+                        >
+                          Reintentar
+                        </button>
+                      </div>
+                    ) : priceStatus === "priced" && unitPrice !== null ? (
+                      <>
+                        <div className="flex items-end gap-2">
+                          <span className="text-4xl font-black text-success">${formatMoney(unitPrice)}</span>
+                          <span className="text-sm text-dark-section-foreground/60 mb-1.5">
+                            {priceQuote?.currency ?? "MXN"} · antes de IVA e impresión
+                          </span>
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-dark-section-foreground/10">
+                          <p className="text-xs text-dark-section-foreground/50 mb-1">Subtotal estimado</p>
+                          <p className="text-2xl font-black text-dark-section-foreground">
+                            ${formatMoney(estimatedTotal ?? 0)} {priceQuote?.currency ?? "MXN"}
+                          </p>
+                          <p className="text-[11px] text-dark-section-foreground/50 mt-1">
+                            Estimación antes de IVA e impresión. Se recalculará al enviar.
+                          </p>
+                        </div>
+                      </>
+                    ) : priceStatus === "request_quote" ? (
+                      <div className="rounded-xl border border-primary/30 bg-primary/10 p-3">
+                        <p className="text-lg font-black text-dark-section-foreground">Precio por confirmar</p>
+                        <p className="text-xs text-dark-section-foreground/60 mt-1">
+                          Puedes agregarlo a la solicitud; tu asesor confirmará el precio.
+                        </p>
+                      </div>
+                    ) : priceStatus === "below_minimum" ? (
+                      <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3">
+                        <p className="text-sm font-bold text-dark-section-foreground">
+                          Cantidad mínima: {minimumQuantity ? minimumQuantity.toLocaleString("es-MX") : "mayor"}{" "}
+                          piezas
+                        </p>
+                        {minimumQuantity ? (
+                          <button
+                            type="button"
+                            onClick={() => setSafeQuantity(minimumQuantity)}
+                            className="mt-2 text-xs font-bold text-primary underline underline-offset-4"
+                          >
+                            Ajustar a la cantidad mínima
+                          </button>
+                        ) : null}
+                      </div>
+                    ) : priceStatus === "unavailable" ? (
+                      <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3">
+                        <p className="text-sm font-bold text-destructive">No disponible para cotización</p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-dark-section-foreground/60 py-3">Indica una cantidad para consultar el precio.</p>
+                    )}
                   </div>
 
                   <p className="text-xs text-dark-section-foreground/50 mt-3">{priceNote}</p>
@@ -820,10 +869,10 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   onClick={!productAllowsProposal ? handleWhatsAppConsult : handleAddToProposal}
-                  disabled={productAllowsProposal && !canAddToProposal}
+                  disabled={productAllowsProposal && !canSubmitSelection}
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 rounded-xl transition-all shadow-glow-primary flex justify-center items-center gap-2 text-lg hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  {canAddToProposal ? (
+                  {canSubmitSelection ? (
                     <>
                       {ctaLabel} <ShoppingCart size={20} />
                     </>

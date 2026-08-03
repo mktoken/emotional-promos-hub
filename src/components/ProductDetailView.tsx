@@ -221,7 +221,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
 
   const productDesc = product?.datos_generales?.descripcion?.trim() || "";
   const productClave = (product?.datos_generales?.clave_producto?.trim() || product?.sku_base?.trim() || "").trim();
-  const basePrice = Number(product?.precio_desde_mxn ?? 0);
+  // El precio autoritativo proviene del servidor; `precio_desde_mxn` ya no se usa como precio.
   const deliveryEstimate =
     product?.datos_generales?.entrega_estimada || "10 a 15 días hábiles después de aprobación de arte";
   const deliveryNote =

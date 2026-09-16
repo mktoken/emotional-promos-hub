@@ -262,3 +262,39 @@ Checkpoint documental Fase 4:
 
 - QA pre-merge aprobado.
 - Siguiente paso autorizado, después de cerrar este checkpoint documental: preparar merge controlado a `main`.
+
+# Checkpoint merge controlado a main
+
+**Estado: CERRADO / APROBADO.**
+
+## Evidencia
+
+- Rama destino: `main`.
+- Rama origen: `feat/v2-cutover-preparation`.
+- Merge realizado como fast-forward.
+- `main` avanzó de `f71934a` a `930f36d`.
+- Push a `origin/main` exitoso.
+- Sync final `origin/main...main`: `0 0`.
+- Working tree limpio.
+- HEAD final de `main`: `930f36d`.
+
+## Resultado
+
+- Pricing V2 backend versionado quedó integrado en `main`.
+- Release V2 activa queda documentada.
+- CatalogView V2 quedó integrado en `main`.
+- Ficha y carrito V2 quedaron integrados en `main`.
+- QA funcional Fase 4 quedó integrado en `main`.
+- QA pre-merge quedó integrado en `main`.
+- Legacy permanece disponible como respaldo.
+- Rollback permanece disponible y no ejecutado.
+- No se retiró Legacy.
+- No se hizo deploy manual.
+- No se modificó Supabase durante el merge.
+- No se inició nueva funcionalidad.
+
+## Estado posterior
+
+- `main` es ahora la rama oficial con Pricing V2 + CatalogView V2.
+- `feat/v2-cutover-preparation` puede conservarse temporalmente como referencia histórica.
+- Cualquier siguiente cambio requiere un checkpoint nuevo.

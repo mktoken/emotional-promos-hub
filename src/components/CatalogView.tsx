@@ -723,14 +723,21 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
 
                       <div className="p-5">
                         <h3 className="font-bold text-foreground mb-2 line-clamp-1">{nombre}</h3>
-                        {precio > 0 && (
+                        {conPrecio ? (
                           <p className="text-muted-foreground text-sm mb-4">
                             Desde{" "}
                             <strong className="text-foreground">
                               {precio.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
                             </strong>{" "}
                             c/u
+                            {minimo > 1 && (
+                              <>
+                                {" · "}Mínimo {minimo.toLocaleString("es-MX")} pzas
+                              </>
+                            )}
                           </p>
+                        ) : (
+                          <p className="text-muted-foreground text-sm mb-4">Precio a cotizar</p>
                         )}
                         <button className="w-full bg-secondary hover:bg-primary/10 text-secondary-foreground hover:text-primary font-semibold py-2 rounded-lg transition-colors border border-transparent hover:border-primary/20 text-sm">
                           Ver Detalles

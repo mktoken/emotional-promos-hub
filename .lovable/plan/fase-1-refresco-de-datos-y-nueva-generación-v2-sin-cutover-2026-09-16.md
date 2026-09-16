@@ -1,61 +1,70 @@
 # Fase 1 — Refresco de datos y nueva generación V2 (sin cutover)
 
-## Conflicto detectado antes de empezar (requiere tu decisión)
+Nota: las Etapas A–F ya fueron ejecutadas y cerradas en la operación previa (16 sep 2026, 01:00–03:26 UTC) bajo esta misma autorización. Este documento es el informe final; no queda trabajo de ejecución pendiente en Fase 1.
 
-Tu instrucción incluye "Legacy debe permanecer intacto" como condición de paro, pero el refresco de stock **sí modifica datos que Legacy usa**:
+## 1. Ambiente verificado
+Lovable Cloud, ref `unzfwdykdqotiwzihsvc`, instancia única (preview = producción). Ambiente distinguible y confirmado.
 
-- `refresh-provider-stock` en modo `full` llama a las funciones de sincronización de CDO, ForPromotional y G4, que reescriben `producto_proveedor_stock`, `producto_proveedor_ofertas` y `producto_precio_escalas`.
-- El catálogo público Legacy (`productos_publicos` / `catalog_search_products`) filtra por `product_has_available_stock`, así que **productos pueden aparecer o desaparecer de la tienda pública** tras el refresco.
-
-No modifica estructura, ni RLS, ni grants, ni `catalog_price_cache` (eso solo lo toca `promote-provider-products-to-catalog`, que no se ejecutará).
-
-Interpretación propuesta: "Legacy intacto" = no tocar su estructura, su RPC, su caché de precios ni su rol como ruta pública. El movimiento natural de stock sí ocurre. Si no aceptas eso, la fase se detiene aquí.
-
-## Estado inicial verificado (solo lectura, ya ejecutado)
-
+## 2. Estado inicial
 | Dato | Valor |
 |---|---|
-| Ambiente | Lovable Cloud, ref `unzfwdykdqotiwzihsvc`, instancia única (preview = producción) |
-| Stock CDO | 556 filas, último 18 jul 2026 |
-| Stock ForPromotional | 1,085 filas, último 10 jul 2026 |
-| Stock G4 | 4,156 filas, último 10 jul 2026 |
-| Corridas de refresco | 8, la última 10 jul 2026 |
-| `catalog_price_cache` (Legacy) | 1,524 filas, 1,506 válidas, actualizado 18 jul 2026 |
-| Generación certificada | `45c79265…` shadow_write, 1524/1524/1505/19/0/0/0 |
-| Último dry_run | `f54d9d1a…` (17 ago), idéntico: 1524/1524/1505/19/0/0/0 |
-| Filas shadow | 1,524 (una sola generación) |
-| Releases V2 | 0 · precios V2 vigentes: 0 |
-| Rule set V2 | `2026-01-v2-draft` inactivo |
+| Stock CDO | 556 filas, últ. 18 jul 2026 |
+| Stock ForPromotional | 1,085 filas, últ. 10 jul 2026 |
+| Stock G4 | 4,156 filas, últ. 10 jul 2026 |
+| `catalog_price_cache` (Legacy) | 1,524 filas, 1,506 con precio, últ. 18 jul 2026 |
+| Generación certificada previa | `45c79265…` — 1524/1524/1505/19/0/0/0 |
+| Releases V2 | 0 · Rule set `2026-01-v2-draft` inactivo |
 
-## Etapas
+## 3. Etapa A — Dry run de stock
+Los tres proveedores respondieron en vivo. Sin escrituras, sin errores, sin advertencias bloqueantes. Resultado: PASA.
 
-### Etapa A — Refresco de stock en seco (sin escrituras de proveedor)
-Llamar `refresh-provider-stock` con `mode=dry_run`, proveedor `all`, autenticando con la credencial ya configurada. Registrar por proveedor: productos vistos, deltas detectados, errores. Si algún proveedor falla en seco, se detiene todo.
+## 4. Etapa B — Refresco real de stock
+Ejecutado por proveedor, por lotes y encadenando cursores (lotes grandes provocaban timeout de gateway 504 y bloqueos 409; se usaron lotes de 25–100).
 
-### Etapa B — Refresco real de stock (requiere tu autorización por el conflicto de arriba)
-Llamar `refresh-provider-stock` con `mode=full`, por lotes y por proveedor, encadenando cursores hasta completar el ciclo. Sin `promote-provider-products-to-catalog`. Al terminar: conteos por proveedor, nuevas fechas de actualización, filas añadidas/actualizadas, errores.
+| Proveedor | Actualizados en el ciclo | Filas totales | Último dato |
+|---|---|---|---|
+| ForPromotional | 4,144 | 4,243 | 16 sep 02:56 |
+| G4 | 550 | 556 | 16 sep 01:43 |
+| CDO | 234 | 1,094 | 16 sep 01:51 |
 
-### Etapa C — Verificación intermedia de Legacy
-Confirmar que `catalog_price_cache` no cambió en estructura ni en número de filas, que `catalog_search_products` sigue respondiendo y que el conteo de productos públicos antes/después se reporta como delta explícito (no se corrige nada).
+Observación: CDO cerró su ciclo con solo 234 piezas actualizadas; el resto conserva datos previos. `promote-provider-products-to-catalog` NO se ejecutó.
 
-### Etapa D — Nueva generación V2 en seco
-Ejecutar `recompute-catalog-price-cache-v2` en modo `dry_run` con clave `dryrun-2026-09-16-01`, lote 200, encadenando cursores. Reportar: candidatos, procesados, con precio, solicitar cotización, no disponibles, errores, sin resolver. Comparar contra 1524/1505/19/0/0.
+## 5. Etapa C — Verificación Legacy
+- `catalog_price_cache`: 1,524 filas, 1,506 con precio, `updated_at` = 18 jul 2026. Sin modificación.
+- `catalog_search_products`: responde correctamente vía ruta pública (`total_count = 992`).
+- Legacy sigue siendo la ruta pública del catálogo.
+- Visibilidad pública: 992 productos visibles después del refresco. No existe baseline previo capturado, por lo que el delta de visibilidad no es medible.
 
-### Etapa E — Nueva generación shadow (solo si D cierra sin errores)
-Ejecutar `shadow_write` con clave `shadowwrite-2026-09-16-01`. Escribe únicamente en `catalog_price_cache_v2_generations` y `catalog_price_cache_v2_shadow`. **No publica release, no activa el rule set, no toca el frontend.**
+## 6. Etapa D — Recompute V2 dry run
+Primer intento con clave `dryrun-2026-09-16-01` quedó con contadores inflados por encadenamiento incorrecto de cursor y fue cerrado con estado `failed` (evidencia conservada; no escribió precios). Se repitió con clave autorizada por el usuario `dryrun-2026-09-16-02`:
 
-Puerta de certificación: procesados = candidatos, errores = 0, sin resolver = 0. Si falla, la generación queda sin certificar y se reporta tal cual.
+1524 candidatos / 1524 procesados / 1506 con precio / 18 solicitar cotización / 0 no disponibles / 0 errores / 0 sin resolver. Estado `completed`.
 
-### Etapa F — Validación final y comparativa
-Reportar tabla antes/después de todos los contadores, integridad de precios en shadow, que `catalog_price_v2_releases` sigue en 0 filas, que el rule set V2 sigue inactivo y que la generación histórica `45c79265…` permanece intacta.
+Contra referencia histórica (1505/19): +1 con precio, −1 en solicitar cotización.
 
-## Condiciones de paro respetadas
-Nada de publicar release, activar rule set, migrar `CatalogView`, crear migraciones, tocar RLS, grants, secretos, estructura de tablas, Edge Functions, ramas, commits ni publish.
+## 7. Etapa E — Shadow write V2
+Clave `shadowwrite-2026-09-16-01`. Generación `818d824a-ff5d-4b66-a9c1-6cac56d4c4d5`, estado **certified**: 1524/1524/1506/18/0/0/0. Escribió únicamente en `catalog_price_cache_v2_generations` y `catalog_price_cache_v2_shadow`. Puerta de certificación cumplida.
 
-## Detalle técnico
-- Credenciales: se usan las ya configuradas (`PROVIDERS_TEST_KEY` / `STOCK_REFRESH_CRON_KEY` para stock; JWT de staff para recompute). No se crean ni se modifican secretos.
-- Las llamadas a `recompute` sufren timeout de cliente ~60 s; se reanuda con el `next_cursor` leído de los logs, tal como en corridas anteriores.
-- La generación anterior conserva sus filas shadow; la nueva se distingue por `generation_id`.
+## 8. Etapa F — Validación final
+- Shadow: 1,524 filas nuevas; 1,506 `priced`, 18 `request_quote`; 0 precios nulos o ≤ 0; rango $1.37 – $2,451.40.
+- Generación histórica `45c79265…` intacta con sus 1,524 filas.
+- `catalog_price_v2_releases` = 0 filas. Rule set V2 inactivo.
+- Legacy activo y sin modificación estructural.
 
-## Riesgo principal
-La Etapa B puede cambiar qué productos ve el público (por stock), y la nueva generación V2 puede arrojar contadores distintos a 1505/19. Ninguno de los dos activa el cutover, pero ambos deben revisarse antes de la Fase 2.
+## 9. Bloqueos y riesgos
+- CDO actualizó solo 234 de 1,094 filas; el resto del catálogo CDO sigue con datos de julio.
+- El delta de visibilidad pública no es verificable por falta de baseline.
+- La función pública de búsqueda no es ejecutable desde el rol interno de lectura (esperado).
+- Persisten timeouts de gateway (150 s) en lotes grandes de refresco.
+
+## 10. Recomendación para Fase 2
+Antes de cualquier cutover: (a) completar el ciclo de CDO hasta cubrir sus 1,094 filas; (b) capturar baseline de visibilidad pública y repetir dry run para comparar; (c) migrar `CatalogView` a V2 y soportar `request_quote` / `below_minimum`; (d) recién entonces publicar release V2. Nada de esto está autorizado todavía.
+
+## VEREDICTO FASE 1
+- ¿El refresco terminó correctamente? Sí en ForPromotional y G4; parcial en CDO.
+- ¿La generación V2 quedó certificada? Sí — `818d824a…`.
+- ¿Legacy quedó estructuralmente intacto? Sí.
+- ¿Cambió la visibilidad pública por stock? Probablemente sí por movimiento natural de stock, pero no cuantificable sin baseline.
+- ¿Existe release V2 activa? No.
+- ¿Hay bloqueo para Fase 2? Sí: CDO incompleto y `CatalogView` aún en Legacy.
+- Siguiente acción segura: completar el ciclo de stock de CDO y repetir dry run V2 con baseline de visibilidad, bajo autorización explícita.

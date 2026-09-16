@@ -21,6 +21,9 @@ interface RpcProduct {
   descripcion: string | null;
   imagenes: unknown;
   precio_desde_mxn: number | null;
+  public_price_status: string | null;
+  currency: string | null;
+  minimum_quantity: number | null;
   categoria_slug: string | null;
   categoria_nombre: string | null;
   subcategoria_slug: string | null;
@@ -204,7 +207,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
     setErrorList(null);
     try {
       const rpc = supabase.rpc.bind(supabase) as unknown as RpcCaller;
-      const { data, error } = await rpc("catalog_search_products", {
+      const { data, error } = await rpc("catalog_search_products_v2", {
         p_query: q,
         p_category_slug: selectedCategorySlug || null,
         p_collection_slug: ecoOnly ? "ecologicos" : null,

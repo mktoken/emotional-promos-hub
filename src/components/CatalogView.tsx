@@ -697,6 +697,8 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
                   const nombre = prod.nombre ?? prod.id_interno;
                   const precio = Number(prod.precio_desde_mxn || 0);
                   const imgs = normalizeProductImages(prod.imagenes);
+                  const conPrecio = prod.public_price_status === "priced" && precio > 0;
+                  const minimo = Number(prod.minimum_quantity ?? 0);
 
                   return (
                     <div

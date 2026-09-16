@@ -4,8 +4,8 @@
 
 - Repositorio: `mktoken/emotional-promos-hub`
 - Rama maestra de continuación: `feat/v2-cutover-preparation`
-- Commit maestro actual: `4c32c60` — `fix: limpiar cambios fuera de alcance en fase 3`
-- Working tree: limpio al cierre de Fase 3.
+- Commit maestro actual: `94ed71f` — `fix: limpiar artefactos lovable fuera de alcance`
+- Working tree: limpio al cierre de Fase 4 documental.
 - Push: realizado a `origin/feat/v2-cutover-preparation`.
 
 Este documento es la fuente de verdad de reentrada del proceso Pricing V2 / CatalogView V2. Consolida la historia verificable en Git, los reportes históricos versionados y el estado operativo reportado desde Lovable/Supabase interno. No sustituye las pruebas funcionales pendientes ni convierte documentación histórica en evidencia de producción actual.
@@ -15,14 +15,14 @@ Este documento es la fuente de verdad de reentrada del proceso Pricing V2 / Cata
 - **Confirmado por Git:** ramas, commits, archivos, diffs y código presente en este checkout.
 - **Confirmado por Lovable/Supabase interno:** resultados operativos registrados en planes versionados; requieren nueva consulta en Lovable si se necesita certificar el estado actual.
 - **Reporte histórico versionado:** dry run, shadow write y validaciones documentadas en `supabase/qa/`.
-- **Pendiente de validación futura:** comportamiento funcional post-migración, estado remoto actual y cualquier cambio posterior a este checkpoint.
+- **Pendiente de validación futura:** cualquier cambio posterior a este checkpoint; la QA funcional post-migración quedó cerrada en Fase 4.
 
 ## Estado Git y alcance
 
 - Base histórica relevante: `4084872`.
-- Commit de limpieza funcional: `4c32c60`.
+- Commit de limpieza funcional: `94ed71f`.
 - Commit documental local inicial: `5ad44a7`.
-- El remoto permanece en `4c32c60`; los commits documentales locales todavía están pendientes de push.
+- El remoto está sincronizado en `94ed71f`.
 - Hay 69 commits desde `main` hasta el estado local actual.
 - Muchos commits intermedios son internos de Lovable y usan mensajes genéricos como `Changes`, `Update plan` o `Work in progress`.
 - El historial contiene evidencia de Pricing V2 y CatalogView.
@@ -37,8 +37,8 @@ Este documento es la fuente de verdad de reentrada del proceso Pricing V2 / Cata
 5. **Refresco de datos y nueva generación.** La secuencia posterior de commits de Lovable documentó refresco de stock/caché, auditoría backend y generación shadow nueva: `b0b726c`, `0230e05` y `6cf6d5f`.
 6. **Publicación de release V2.** La documentación versionada de Fase 2 registró la publicación de la release `2738c0e4-308e-45cd-ba7e-32f2f37c9c6b` desde la generación `818d824a…`.
 7. **Migración de CatalogView.** La secuencia `8cbd114`, `724543a`, `052c100` y `c82e8f1` preparó y aplicó el cambio de catálogo a `catalog_search_products_v2`.
-8. **Limpieza de cambios fuera de alcance.** Se detectaron cambios en `client.ts`, `types.ts` y `previewAuthStorage.ts`; la limpieza los retiró del alcance funcional de Fase 3 y dejó únicamente `CatalogView.tsx`. El resultado remoto quedó en `4c32c60`.
-9. **Estado maestro.** `5ad44a7` creó este documento; el presente cambio amplía su cronología y matriz de evidencia. Estos commits documentales aún no están en GitHub.
+8. **Limpieza de cambios fuera de alcance.** Se detectaron cambios en `client.ts`, `types.ts` y `previewAuthStorage.ts`; la limpieza los retiró del alcance funcional de Fase 3 y dejó únicamente `CatalogView.tsx`. El resultado quedó registrado en `94ed71f`.
+9. **Estado maestro y QA final.** `5ad44a7` creó este documento; los commits posteriores consolidaron la cronología y el cierre documentado de la QA funcional Fase 4. El estado actual está sincronizado en GitHub.
 
 ## Fase 1 — Cerrada / certificada
 
@@ -69,7 +69,7 @@ Este documento es la fuente de verdad de reentrada del proceso Pricing V2 / Cata
 - Cambio final aceptado contra la base `4084872`: únicamente `src/components/CatalogView.tsx`.
 - Diff final: 1 archivo, 14 inserciones y 2 eliminaciones.
 - Push realizado a `origin/feat/v2-cutover-preparation`.
-- Commit de limpieza: `4c32c60` — `fix: limpiar cambios fuera de alcance en fase 3`.
+- Commit de limpieza: `94ed71f` — `fix: limpiar artefactos lovable fuera de alcance`.
 - Working tree limpio.
 
 ## Matriz de evidencia por fase
@@ -78,7 +78,8 @@ Este documento es la fuente de verdad de reentrada del proceso Pricing V2 / Cata
 |---|---|---|---|---|---|
 | Fase 1 — generación shadow | Cerrada / certificada | Código de recomputación, tablas shadow y commits V2 versionados | Reporte histórico de generación `818d824a…`: 1,524 / 1,506 / 18 / 0 / 0 / 0 | Bajo mientras no se publique | Mantener como baseline histórico |
 | Fase 2 — release backend | Cerrada / certificada | RPC de publish/rollback, vista de precios actuales y contratos V2 versionados | Reporte operativo de release: 1,524 filas, 1,506 con precio, 18 a cotizar, 0 no disponibles, sin errores | Legacy y V2 coexistieron temporalmente | Mantener rollback y validar comportamiento post-migración |
-| Fase 3 — CatalogView V2 | Cerrada / verificada | `CatalogView.tsx` llama `catalog_search_products_v2`; diff autorizado de 14 inserciones y 2 eliminaciones | Estado de release y alineación reportado desde Lovable; no sustituye QA funcional | Posibles regresiones visuales/funcionales aún no probadas | Ejecutar QA funcional final |
+| Fase 3 — CatalogView V2 | Cerrada / verificada | `CatalogView.tsx` llama `catalog_search_products_v2`; diff autorizado de 14 inserciones y 2 eliminaciones | Estado de release y alineación reportado desde Lovable | Riesgos funcionales cubiertos por Fase 4 | Mantener checkpoint documental |
+| Fase 4 — QA funcional final | Cerrada / aprobada | Sin cambios de código ni estructura durante QA | Informe Lovable: 20/20 PASS, cero leads, release vigente y Legacy intacto | Solo observaciones no bloqueantes documentadas | No iniciar nueva funcionalidad |
 
 ## Registro de reversiones y limpieza
 
@@ -88,7 +89,7 @@ Durante Fase 3 se detectaron cambios fuera de alcance en:
 - `src/integrations/supabase/types.ts`;
 - `src/integrations/supabase/previewAuthStorage.ts`.
 
-Esos cambios fueron revertidos o excluidos del resultado funcional final. No forman parte del cambio autorizado de Fase 3. La limpieza quedó registrada en `4c32c60`; el diff funcional aceptado frente a `4084872` conserva únicamente `src/components/CatalogView.tsx`.
+Esos cambios fueron revertidos o excluidos del resultado funcional final. No forman parte del cambio autorizado de Fase 3. La limpieza quedó registrada en `94ed71f`; el diff funcional aceptado frente a `4084872` conserva únicamente `src/components/CatalogView.tsx`.
 
 ## Estado actual
 
@@ -98,7 +99,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional final. No for
 | Release V2 | Activa |
 | Frontend del catálogo | Alineado a V2 |
 | Legacy | No retirado; disponible como respaldo backend |
-| QA funcional final post-migración | Pendiente |
+| QA funcional final post-migración | Cerrada / aprobada: 20/20 PASS |
 | Nueva funcionalidad | No iniciar todavía |
 
 ## Pendientes de control
@@ -106,9 +107,9 @@ Esos cambios fueron revertidos o excluidos del resultado funcional final. No for
 ### Pendiente inmediato
 
 - Cerrar la consolidación documental mediante revisión del diff de este archivo.
-- Crear el commit documental de ampliación.
-- Autorizar posteriormente el push de los commits documentales locales.
-- Después del checkpoint documental, ejecutar QA funcional final post-migración.
+- Crear el commit documental de cierre de Fase 4.
+- Autorizar posteriormente el push si el commit aún no está sincronizado.
+- Mantener Legacy y no iniciar nueva funcionalidad.
 
 ### No hacer todavía
 
@@ -121,15 +122,15 @@ Esos cambios fueron revertidos o excluidos del resultado funcional final. No for
 
 ## Próximo checkpoint autorizado
 
-El checkpoint documental consiste en revisar y aceptar esta ampliación del estado maestro. Hasta cerrarlo no se debe avanzar a QA funcional. Una vez autorizado el paso siguiente, el checkpoint operativo será el QA funcional final post-migración de `CatalogView` V2.
+El checkpoint documental consiste en revisar y aceptar el cierre de Fase 4 en este archivo. Una vez cerrado, no se debe avanzar a nueva funcionalidad; cualquier merge a `main`, QA adicional en producción o deuda técnica requiere una decisión separada.
 
 ## Alcance y límites
 
-El cierre registrado aquí cubre la preparación, activación y alineación descritas para las Fases 1, 2 y 3. No implica que se hayan ejecutado pruebas funcionales finales post-migración ni autoriza cambios adicionales en código, Supabase, Lovable, configuración, despliegues o publicaciones.
+El cierre registrado aquí cubre la preparación, activación, alineación y QA final descritos para las Fases 1 a 4. No autoriza cambios adicionales en código, Supabase, Lovable, configuración, despliegues o publicaciones.
 
 ## Siguiente checkpoint recomendado
 
-Después de cerrar este checkpoint documental, ejecutar QA funcional final post-migración de `CatalogView` V2.
+Después de cerrar este checkpoint documental, decidir por separado entre merge controlado a `main`, QA adicional en producción o backlog de deuda técnica no bloqueante.
 
 Hasta completar ambos checkpoints no se debe avanzar a nueva funcionalidad ni retirar el backend Legacy.
 

@@ -298,3 +298,33 @@ Checkpoint documental Fase 4:
 - `main` es ahora la rama oficial con Pricing V2 + CatalogView V2.
 - `feat/v2-cutover-preparation` puede conservarse temporalmente como referencia histórica.
 - Cualquier siguiente cambio requiere un checkpoint nuevo.
+
+# Checkpoint QA post-merge en main
+
+**Estado: CERRADO / APROBADO.**
+
+## Evidencia
+
+- Rama validada: `main`.
+- HEAD validado: `f0f1cdc`.
+- Sync `origin/main...main`: `0 0`.
+- Working tree: limpio.
+- Git local configurado como `mktoken <mktoken@users.noreply.github.com>`.
+- `CatalogView` usa `catalog_search_products_v2`.
+- `docs/MASTER-STATE.md` contiene el cierre del merge controlado a `main`.
+
+## Resultado
+
+- `main` quedó estable después del merge y del commit documental.
+- Pricing V2 + CatalogView V2 permanecen integrados en `main`.
+- Legacy permanece disponible como respaldo.
+- Rollback permanece disponible y no ejecutado.
+- No se tocó Supabase.
+- No se hizo deploy.
+- No se inició nueva funcionalidad.
+
+## Estado posterior
+
+- `main` es la rama oficial vigente.
+- HEAD oficial documentado: `f0f1cdc`.
+- Cualquier cambio posterior requiere checkpoint nuevo.

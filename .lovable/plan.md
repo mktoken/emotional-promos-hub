@@ -1,101 +1,129 @@
-# Auditoría Preflight V2 — Solo lectura
+# Auditoría de solo lectura — Estado Lovable/Supabase vs repositorio (16 sep 2026)
 
-## 1. Entorno inspeccionado
-- Workspace del proyecto Lovable (checkout Git local) + backend Lovable Cloud (Postgres), únicamente `SELECT` sobre datos y catálogos del sistema.
-- Sin escrituras, sin migraciones, sin Edge Functions, sin publish/rollback.
+Cero escrituras: 0 archivos de proyecto modificados, 0 migraciones, 0 RPC de escritura, 0 deploys, 0 publish/rollback/cutover, 0 recompute, 0 shadow write.
 
-## 2. Rama activa del proyecto
-- `feat/v2-cutover-preparation` (existe local y en `origin/feat/v2-cutover-preparation`).
+## 1. Identidad Lovable verificada
+- Backend: Lovable Cloud gestionado (ref `unzfwdykdqotiwzihsvc`), instancia Tiny, no pausada. Una sola instancia sirve preview y producción.
+- URLs: preview `id-preview--406ed62b…lovable.app`; publicado `promocionalesemocionales.lovable.app`; dominios `articulospromocionales.vip` y `www.articulospromocionales.vip`.
+- Conexión a `mktoken/emotional-promos-hub`: **no visible** desde las herramientas disponibles; Lovable no expone remoto ni commit desplegado.
+- Rama del workspace: `edit/edt-ff33d4eb-…` (rama interna de Lovable), HEAD `da34fda "Work in progress"`, no `feat/v2-cutover-preparation` ni `4084872`.
 
-## 3. Rama temporal del workspace
-- `edit/edt-7b7416a2-4870-409f-b58c-4b7d40d1a1d7` (rama interna de Lovable, no se marca como blocker).
+## 2. Estado real del deploy vs commit 4084872
+- `4084872` **sí existe** como ancestro del HEAD actual del workspace.
+- Diff `4084872..HEAD` = 3 archivos, todos autogenerados por Lovable: `src/integrations/supabase/client.ts`, `previewAuthStorage.ts`, `types.ts` (+101/−12).
+- Clasificación: **Coincide funcionalmente** (sin divergencia de lógica de negocio); **No determinable** para "qué commit exacto está publicado".
 
-## 4. HEAD y verificación Git
+## 3. Migraciones aplicadas — DIVERGENCIA
+Última fila del registro de migraciones: `20260728223513`. Las cuatro migraciones V2 del repo **no figuran en el registro**:
+`20260802233000`, `20260802235500`, `20260803002000`, `20260803133000`.
+Sin embargo, **todos los objetos que declaran existen en Live** (tablas, vista, RPCs). Conclusión: se aplicaron por vía directa (SQL ejecutado), no como migración versionada. Riesgo: un entorno nuevo reproducido desde el registro quedaría incompleto → **P1**.
 
-| Comprobación | Resultado |
+## 4. Pricing Legacy real
+| Objeto | Estado |
 |---|---|
-| HEAD | `9e40570b416e6562449847602d0cd66f2300220c` |
-| Existe `9e40570` | Sí (objeto tipo commit) |
-| Ancestry `9e40570` vs HEAD | OK — HEAD es exactamente `9e40570` |
-| Ancestry `f71934a` | OK (`docs: registrar shadow write V2 certificado`) |
-| Árbol de trabajo | limpio (`git status --porcelain` vacío) |
+| `catalog_price_cache` | Existe, 1,524 filas, 1,506 `valid`, último `updated_at` **18 jul 2026** (2 meses de antigüedad) |
+| `productos_publicos` | Existe (vista, **sin** `security_invoker`, sin `security_barrier`) |
+| `catalog_search_products` | Existe, SECURITY DEFINER, ejecutable por anon |
+| `get_public_product_price_tiers` | Existe, ejecutable por anon |
+| `productos_b2b` | 1,815 filas |
+| `producto_proveedor_stock` | último refresh **18 jul 2026** |
 
-Diff `f71934a..9e40570` — exactamente 5 archivos, todos altas (`A`), 1953 inserciones, 0 borrados:
+**Legacy sigue siendo la ruta real del catálogo público.**
 
-```text
-A supabase/migrations/20260802233000_version_catalog_price_v2_shadow_tables.sql
-A supabase/migrations/20260802235500_prepare_catalog_price_v2_releases.sql
-A supabase/migrations/20260803002000_add_public_product_price_quote.sql
-A supabase/qa/catalog_price_v2_release_preparation_assertions.sql
-A supabase/qa/public_product_price_quote_assertions.sql
-```
+## 5. Pricing V2 real
+| Objeto | Existe | Datos | vs repo | Riesgo |
+|---|---|---|---|---|
+| `pricing_rule_sets` | Sí | `2026-01` activo; `2026-01-v2-draft` **inactivo** | Coincide | — |
+| `purchase_levels` / `margin_tiers` / `provider_pricing_rules` | Sí | 12 / 24 / 6 | Coincide | — |
+| `catalog_price_cache_v2_generations` | Sí | 3 generaciones | Coincide | — |
+| `catalog_price_cache_v2_shadow` | Sí | **1,524 filas**, 1 generación | Coincide | — |
+| `catalog_price_v2_releases` | Sí | **0 filas** | Coincide | — |
+| `catalog_price_v2_current_prices` | Sí (vista, `security_barrier=true`) | **0 filas** | Coincide | — |
+| `get_public_product_price_quote` | Sí | anon+auth EXECUTE | Coincide | — |
+| `catalog_search_products_v2` | Sí | anon+auth EXECUTE, **sin consumidor en frontend** | Coincide | P1 |
+| `submit_public_quote_request` | Sí | anon+auth EXECUTE | Coincide | — |
+| `publish_catalog_price_v2_generation` | Sí | solo `authenticated` | Coincide | — |
+| `rollback_catalog_price_v2_to_legacy` | Sí | solo `authenticated` | Coincide | — |
+| `calculate_product_price_v2` | Sí | anon y auth **sin** EXECUTE | Coincide | — |
 
-## 5. Tabla de verificación
+## 6. Dry run / shadow / releases
+| Generación | Modo | Estado | Cand. | Proc. | Priced | Quote | Unavail. | Err |
+|---|---|---|---|---|---|---|---|---|
+| `f54d9d1a…` (`dryrun-2026-08-17-01`) | dry_run | completed | 1524 | 1524 | 1505 | 19 | 0 | 0 |
+| `45c79265…` (`shadowwrite-2026-08-02-v2-01`) | shadow_write | **certified** | 1524 | 1524 | 1505 | 19 | 0 | 0 |
+| `d8cfbb76…` (`dryrun-2026-08-02-subbuild-b-01`) | dry_run | completed | 1524 | 1524 | 1505 | 19 | 0 | 0 |
 
-| ID | Objeto | Esperado | Encontrado | Estado | Evidencia |
-|---|---|---|---|---|---|
-| G1 | Git commits/ancestros | 9e40570 = HEAD, f71934a ancestro | Coincide | PASS | `git rev-parse HEAD`, `merge-base --is-ancestor` |
-| G2 | Diff autorizado | Solo los 5 archivos | Solo los 5 archivos | PASS | `git diff --name-status` |
-| B1 | `catalog_price_cache_v2_generations` existe, RLS on | Tabla con RLS | `relkind=r`, `relrowsecurity=t` | PASS | `pg_class` |
-| B2 | Gate 1 orden/tipos de columnas de `..._generations` | Orden: id, idempotency_key, mode, status, rule_set_id…; `request_id text` | Orden real: id, rule_set_id, status, mode, idempotency_key…; `request_id uuid` | **BLOCKER** | `information_schema.columns` (ordinal_position) |
-| B3 | Gate 1 orden de columnas de `..._shadow` | id, generation_id, product_id, rule_set_id, public_price_status… | id, product_id, price_before_tax_mxn, currency, rule_set_id, public_price_status, computed_at, minimum_quantity, generation_id… | **BLOCKER** | `information_schema.columns` |
-| B4 | Gate 2 constraints semánticos (UNIQUE, FK RESTRICT, mode/status/price contract) | Presentes | Todos presentes con nombres distintos pero definiciones equivalentes | PASS | `pg_constraint` (18 constraints) |
-| B5 | Datos shadow preservados | 1524 filas / 1524 productos | 1524 / 1524 | PASS | `count(*)` |
-| B6 | Generación certificada intacta | 45c79265… certified 1524/1505/19/0/0 | Idéntico | PASS | `catalog_price_cache_v2_generations` |
-| B7 | Grants mínimos tablas internas | anon/authenticated sin SELECT | `false` en ambas | PASS | `has_table_privilege` |
-| C1 | `catalog_price_v2_releases` | No existe aún (la crea la migración 2) | No existe | PASS | `pg_class` |
-| C2 | Índice parcial única release current | `UNIQUE (is_current) WHERE is_current` | Definido en migración | PASS | migración 2, líneas 84-87 |
-| C3 | Constraints de releases | current exige published_at/by y no superseded; par superseded coherente | Definidos | PASS | migración 2, líneas 34-50 |
-| C4 | RLS/grants releases | RLS on, REVOKE anon/authenticated, GRANT service_role, 0 policies | Definido + gate de 0 policies | PASS | migración 2, líneas 116-138 |
-| C5 | Vista `catalog_price_v2_current_prices` | security_barrier, solo 8 columnas públicas | Coincide con la lista que valida A5 | PASS | migración 2, líneas 147-168 |
-| C6 | `publish_catalog_price_v2_generation(uuid)` | SECURITY DEFINER, `search_path=public, pg_temp`, staff, advisory lock, idempotente, EXECUTE solo authenticated | Todo presente (`pg_advisory_xact_lock`, revalidación de integridad shadow, retorno `reused=true`) | PASS | migración 2, líneas 177-380 |
-| C7 | `rollback_catalog_price_v2_to_legacy()` | Igual criterio, no-op seguro sin release current | Presente, retorna `rolled_back=false` si no hay puntero | PASS | migración 2, líneas 391-459 |
-| D1 | `get_public_product_price_quote(uuid,integer)` existe en Live | No existe aún (la crea la migración 3) | No existe | PASS | `pg_proc` |
-| D2 | Dependencia `productos_publicos(id, precio_desde_mxn)` | Ambas columnas | Presentes | PASS | `information_schema.columns` |
-| D3 | Dependencia `calculate_product_price_v2(uuid,integer,uuid)` | Firma exacta | Existe, SECURITY DEFINER, `search_path=public, pg_temp` | PASS | `pg_proc` |
-| D4 | Cobertura de status del motor | valid / below_minimum / manual_review / request_quote / unavailable | Los 5 aparecen en el cuerpo y todos están cubiertos por el `CASE` + `ELSE` seguro | PASS | `prosrc` + prueba `SELECT` (`status=valid`, MOQ 83, 18.17 MXN) |
-| D5 | Dependencia `is_staff(uuid)` | Existe SECURITY DEFINER | Existe (`search_path=public`, sin `pg_temp`) | WARNING | `pg_proc` |
-| D6 | Validación de cantidad | 1..1000000 y product_id NOT NULL | `22023` / `22004` | PASS | migración 3, líneas 36-44 |
-| D7 | Fallback legacy sin release current | Precio legacy redondeado, MOQ 1, `pricing_generation_id NULL` | Coincide con lo que valida Q3 | PASS | migración 3, líneas 71-115 |
-| D8 | No exposición de internos | Sin costos, multiplicadores, proveedor, oferta, warning | Retorno solo 7 campos públicos | PASS | migración 3, líneas 11-19 |
-| D9 | Status devuelto `below_minimum` | Fuera del contrato de 3 estados de shadow | Se devuelve como cuarto estado público | WARNING | migración 3, líneas 196-205 |
-| E1 | Assertions preparación de releases | READ ONLY + ROLLBACK, sin escrituras | `BEGIN; SET TRANSACTION READ ONLY; … ROLLBACK;` | PASS | archivo QA 1, líneas 8-10, 410 |
-| E2 | A3 contra datos reales | generación 45c79265 con 1524/1505/19 y 1524 filas shadow | Coincide con Live | PASS | consulta a Live |
-| E3 | A4 `search_path` esperado | `search_path=public, pg_temp` | Igual al de las migraciones | PASS | archivo QA 1, líneas 305-312 |
-| E4 | A6 contra datos reales | 1524 filas de caché, 1 rule set activo, draft inactivo | 1524 / `2026-01` activo / `2026-01-v2-draft` inactivo | PASS | consulta a Live |
-| E5 | Assertions del precio público | READ ONLY + ROLLBACK, firmas y roles correctos | Correcto; Q5 valida 22023/22004 | PASS | archivo QA 2 |
-| F1 | Migraciones no publican ni activan V2 | Sin INSERT en releases, sin UPDATE de `pricing_rule_sets` | Confirmado por lectura completa de los 3 archivos | PASS | grep/lectura |
-| F2 | No tocan legacy ni borran datos | Sin DELETE/TRUNCATE/DROP, sin tocar `catalog_price_cache` ni `productos_publicos` | Confirmado | PASS | lectura |
-| F3 | Aplicabilidad incremental | Las 3 migraciones aplicables sobre el estado actual | La migración 1 aborta en Gate 1 | **BLOCKER** | ver B2/B3 |
+- Filas shadow: 1,524 (todas de `45c79265…`).
+- Releases: **0**. `is_current` inexistente. Precios V2 actuales: **0 filas**.
+- **No hay cutover. No hay release publicada. V2 sigue apagado.**
 
-## 6. Blockers
+## 7. Edge Functions desplegadas
+Las 11 del repo responden preflight 200: `recompute-catalog-price-cache-v2`, `capture-assistant-lead`, `promote-provider-products-to-catalog`, `refresh-provider-stock`, `send-proposal-summary-email`, `sync-cdo-products`, `sync-forpromotional-products`, `sync-g4-products`, `test-cdo-connection`, `test-g4-connection`, `test-forpromotional-connection`. Sin faltantes ni extras detectados.
 
-**BLOCKER-1 — Gate 1 de columnas de `catalog_price_cache_v2_generations`**
-- Archivo: `supabase/migrations/20260802233000_version_catalog_price_v2_shadow_tables.sql`
-- Bloque: `DO $$ … Gate 1` (líneas 145-181), arreglo esperado en 159-178.
-- Causa: el gate compara `column_name:udt_name:is_nullable` **ordenado por `ordinal_position`**. En Live el orden físico es `id, rule_set_id, status, mode, idempotency_key, …` y además `request_id` es **`uuid`**, no `text`. La comparación con `IS DISTINCT FROM` falla y la migración aborta con `catalog_price_cache_v2_generations_schema_drift`, dejando también sin aplicar las migraciones 2 y 3.
-- Cambio mínimo requerido (no aplicado): comparar el conjunto de columnas sin depender del orden físico (p. ej. `ORDER BY column_name`, o `array_agg` sobre un conjunto ordenado alfabéticamente en ambos lados) y declarar `request_id:uuid:YES`.
+## 8. RLS / seguridad (estado efectivo)
+| Tabla | RLS | Políticas | anon SELECT | auth SELECT |
+|---|---|---|---|---|
+| `catalog_price_cache_v2_generations` | on | 0 | no | no |
+| `catalog_price_cache_v2_shadow` | on | 0 | no | no |
+| `catalog_price_v2_releases` | on | 0 | no | no |
+| `catalog_price_v2_current_prices` (vista) | n/a | — | sí | sí |
+| `catalog_price_cache` | on | 2 | sí | sí |
+| `productos_b2b` | on | **0** | sí | sí |
+| `pricing_rule_sets` | on | 2 | sí | sí |
+| `cotizaciones_leads` | on | 4 | sí | sí |
+| `crm_leads` / `profiles` / `user_roles` | on | 3 / 6 / 4 | no | sí |
 
-**BLOCKER-2 — Gate 1 de columnas de `catalog_price_cache_v2_shadow`**
-- Archivo: el mismo, líneas 183-208.
-- Causa: mismo problema de orden físico. Live: `id, product_id, price_before_tax_mxn, currency, rule_set_id, public_price_status, computed_at, minimum_quantity, generation_id, created_at, updated_at, calculation_version`; el gate espera otro orden. Aborta con `catalog_price_cache_v2_shadow_schema_drift`.
-- Cambio mínimo requerido (no aplicado): comparación independiente del orden.
+Linter: 64 hallazgos — 2 ERROR (vistas SECURITY DEFINER), 3 funciones con `search_path` mutable, 11 tablas con RLS y 0 políticas, 21 funciones SECURITY DEFINER ejecutables por anon, 24 por authenticated, protección de contraseñas filtradas desactivada.
 
-Nota: los tipos, nullability, constraints, FKs, RLS y grants reales sí coinciden semánticamente con lo declarado; el único desajuste es el **orden de columnas** y el **tipo de `request_id`**.
+Riesgos:
+- **P0** — ninguno confirmado con explotación directa.
+- **P1** — `productos_publicos` sin `security_invoker` y 2 vistas marcadas SECURITY DEFINER por el linter: la vista aplica permisos del creador.
+- **P1** — 21 funciones SECURITY DEFINER ejecutables por anon: requiere revisión caso por caso.
+- **P2** — `is_staff(uuid)` con `search_path=public` sin `pg_temp`.
+- **P2** — `productos_b2b` con RLS activo y 0 políticas + GRANT SELECT a anon (acceso efectivo bloqueado por RLS, pero configuración contradictoria).
+- **P3** — protección de contraseñas filtradas desactivada.
 
-## 7. Warnings no bloqueantes
+## 9. Estado funcional visible
+- `CatalogView.tsx` llama `catalog_search_products` (**Legacy**) — verificado en línea 207.
+- `ProductDetailView` / adaptador de precio usan `get_public_product_price_quote` (**V2**).
+- Carrito usa `submit_public_quote_request` (**V2**). 20 leads en `cotizaciones_leads`, el último del 9 jul 2026.
+- No se ejecutaron pruebas de envío ni navegación con datos reales en esta auditoría.
 
-1. `public.is_staff(uuid)` tiene `search_path=public` (sin `pg_temp`), a diferencia del estándar usado en las funciones nuevas. Preexistente, fuera del alcance de estos 5 archivos.
-2. `get_public_product_price_quote` puede devolver `public_price_status = 'below_minimum'`, un cuarto estado que no existe en el contrato de 3 estados de `catalog_price_cache_v2_shadow`. El frontend deberá manejarlo antes del cutover.
-3. Los nombres de constraints en Live difieren de los declarados en la migración (`..._idempotency_key_unique` vs `..._idempotency_key_key`, etc.). No bloquea porque Gate 2 valida por semántica y los `CREATE TABLE` son `IF NOT EXISTS`.
-4. `productos_publicos` sigue siendo una vista sin `security_invoker`, punto ya reportado en la auditoría anterior y ajeno a estos archivos.
+## 10. Divergencias contra el repositorio
+| Elemento | Repositorio | Lovable/Supabase real | Coincide | Riesgo |
+|---|---|---|---|---|
+| Commit | `4084872` | HEAD `da34fda`, solo archivos autogenerados de diferencia | Sí (funcional) | P3 |
+| Registro de migraciones | 4 migraciones V2 | No registradas, objetos sí presentes | **No** | P1 |
+| Tablas V2 | 4 | 4 | Sí | — |
+| RPC V2 | 5 | 5 | Sí | — |
+| Edge Functions | 11 | 11 desplegadas | Sí | — |
+| Releases | preparado, vacío | 0 filas | Sí | — |
+| Shadow | 1,524 certificadas | 1,524 | Sí | — |
+| Legacy | activo | activo, datos de 18 jul | Sí | P1 (datos viejos) |
+| CatalogView | Legacy | Legacy | Sí | P0 si se publica release |
+| RLS | tablas V2 cerradas | cerradas | Sí | — |
+| Secrets | proveedores + Resend + AI | `CDO_MEXICO_API_TOKEN`, `FORPROMOTIONAL_API_TOKEN`, `G4_KEY`, `G4_WSDL_URL`, `RESEND_API_KEY`, `LOVABLE_API_KEY`, `STOCK_REFRESH_CRON_KEY` presentes | Sí | — |
 
-## 8. Veredicto
-**NO-GO**
+## 11. Bloqueadores reales antes del cutover
+1. **BLOCKER-1 (P0 si se publica release)** — `CatalogView` sigue en Legacy con factor 1.35 mientras el detalle usa V2: publicar una release provoca precios distintos entre rejilla y ficha.
+2. **BLOCKER-2 (P1)** — datos de origen obsoletos: caché y stock del 18 jul 2026 (60 días). La generación certificada refleja ese estado.
+3. **BLOCKER-3 (P1)** — migraciones V2 aplicadas fuera del registro: no hay reproducibilidad del entorno.
 
-## 9. Confirmación explícita
-- archivos modificados: 0
-- base de datos modificada: no
-- migraciones aplicadas: 0
-- publish ejecutado: no
-- rollback ejecutado: no
+## 12. Cerrado vs abierto
+Cerrado: infraestructura V2 en base, RPC públicos, funciones publish/rollback, cierre de RLS en tablas internas V2, despliegue de Edge Functions, certificación shadow (1524/1505/19/0/0), migración de ficha de producto y carrito a V2.
+
+Abierto: migración de `CatalogView` a `catalog_search_products_v2`; refresco de stock y caché; registro formal de las migraciones V2; endurecimiento de vistas y funciones SECURITY DEFINER; publicación de release y retiro de Legacy.
+
+## VEREDICTO LOVABLE
+| Decisión | Sí/No/No determinable | Evidencia | Riesgo | Acción |
+|---|---|---|---|---|
+| ¿El entorno coincide con `feat/v2-cutover-preparation @ 4084872`? | Sí funcionalmente / No determinable en despliegue | Diff limitado a 3 archivos autogenerados; Lovable no expone commit publicado | P3 | Confirmar commit publicado desde la pantalla de publicación |
+| ¿Pricing V2 preparado en Supabase interno? | Sí | Tablas, vista, 5 RPC y shadow 1,524 certificadas presentes | — | Ninguna |
+| ¿Existe release V2 activa? | No | `catalog_price_v2_releases` = 0 filas; vista de precios actuales = 0 | — | Ninguna |
+| ¿Se puede hacer cutover de CatalogView ahora? | No | `CatalogView.tsx:207` usa `catalog_search_products`; datos de origen del 18 jul | P0 | Migrar rejilla a V2 y refrescar datos primero — REQUIERE AUTORIZACIÓN EXPLÍCITA DEL USUARIO |
+| ¿Debe mantenerse Legacy? | Sí | Es la única ruta que alimenta la rejilla pública | P1 | Mantener hasta cutover completo |
+| Siguiente acción técnica segura | Refrescar stock y caché, luego nuevo `dry_run` de control | Última actualización 18 jul 2026 | P2 | REQUIERE AUTORIZACIÓN EXPLÍCITA DEL USUARIO |
+
+**Veredicto global: NO-GO para cutover. GO para preparación (refresco de datos + migración de CatalogView) bajo autorización explícita.**
+
+Confirmación: archivos de proyecto modificados 0 · base de datos modificada no · migraciones aplicadas 0 · Edge Functions desplegadas 0 · dry_run 0 · shadow_write 0 · release publicada no · rollback no · publish no.

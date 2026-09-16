@@ -225,3 +225,40 @@ Checkpoint documental Fase 4:
    - merge controlado a `main`;
    - QA adicional en producción;
    - backlog de deuda técnica no bloqueante.
+
+# Checkpoint QA pre-merge
+
+**Estado: CERRADO / APROBADO.**
+
+## Evidencia
+
+- Rama validada: `feat/v2-cutover-preparation`.
+- HEAD validado: `02c3f00`.
+- Sync remoto/local: `0 0`.
+- Working tree: limpio.
+- `CatalogView` usa `catalog_search_products_v2`.
+- `docs/MASTER-STATE.md` contiene Fase 4, QA funcional 20/20, release V2, generación, Legacy y rollback.
+- Diff contra base `4084872`:
+  - `A docs/MASTER-STATE.md`
+  - `M src/components/CatalogView.tsx`
+- Diff contra `main` revisado:
+  - cambios esperados de Pricing V2 backend;
+  - cambios esperados de ficha, carrito y solicitud;
+  - cambios esperados de CatalogView V2;
+  - migraciones y QA SQL versionados;
+  - estado maestro documental.
+
+## Restricciones confirmadas
+
+- No se hicieron cambios de código.
+- No se tocó Supabase.
+- No se hizo rollback.
+- No se hizo deploy.
+- No se hizo merge.
+- No se hizo push.
+- No se inició nueva funcionalidad.
+
+## Resultado
+
+- QA pre-merge aprobado.
+- Siguiente paso autorizado, después de cerrar este checkpoint documental: preparar merge controlado a `main`.

@@ -61,7 +61,8 @@ const formatMoney = (value: number) =>
   value.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: QuoteCartViewProps) {
-  const [step, setStep] = useState<"selection" | "form" | "success">("selection");
+  type QuoteStep = "selection" | "form" | "preview" | "success";
+  const [step, setStep] = useState<QuoteStep>("selection");
   const [quoteFormat, setQuoteFormat] = useState<QuoteFormat | null>(null);
   const [contact, setContact] = useState<QuoteContact>({ name: "", company: "", email: "", phone: "" });
   const [contactErrors, setContactErrors] = useState<ContactErrors>({});
@@ -197,14 +198,11 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
     if (firstField) fieldRefs.current[firstField]?.focus();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (submittingRef.current) return;
-
+  const validateBeforeContinue = () => {
     if (!quoteFormat) {
       setSubmitError("Selecciona un formato de cotización válido.");
       setStep("selection");
-      return;
+      return false;
     }
 
     const errors = validateContact(contact);
@@ -212,13 +210,26 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
     if (Object.keys(errors).length > 0) {
       setSubmitError(null);
       focusFirstError(errors);
-      return;
+      return false;
     }
 
     if (!canSubmit) {
       setSubmitError("Revisa los productos seleccionados antes de enviar la solicitud.");
-      return;
+      return false;
     }
+
+    setSubmitError(null);
+    return true;
+  };
+
+  const handleContactContinue = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateBeforeContinue()) setStep("preview");
+  };
+
+  const handleFinalSubmit = async () => {
+    if (submittingRef.current) return;
+    if (!validateBeforeContinue() || !quoteFormat) return;
 
     submittingRef.current = true;
     setSubmitting(true);
@@ -291,11 +302,17 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
       <div className="bg-dark-section text-dark-section-foreground py-10 px-4">
         <div className="max-w-4xl mx-auto">
           <button
-            onClick={step === "form" ? () => setStep("selection") : onBack}
+            onClick={
+              step === "preview" ? () => setStep("form") : step === "form" ? () => setStep("selection") : onBack
+            }
             className="flex items-center gap-2 text-dark-section-foreground/60 hover:text-dark-section-foreground transition font-medium text-sm mb-6"
           >
             <ChevronLeft size={16} />{" "}
-            {step === "form" ? "Volver a los productos seleccionados" : "Seguir explorando catálogo"}
+            {step === "preview"
+              ? "Volver a editar datos"
+              : step === "form"
+                ? "Volver a los productos seleccionados"
+                : "Seguir explorando catálogo"}
           </button>
           <h1 className="text-3xl sm:text-4xl font-extrabold flex items-center gap-3">
             {step === "form" ? (
@@ -303,11 +320,13 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
             ) : (
               <FileText className="text-primary" size={36} />
             )}
-            {step === "form" ? "Datos de contacto" : "Solicitud de cotización"}
+            {step === "form" ? "Datos de contacto" : step === "preview" ? "Previsualización de solicitud" : "Solicitud de cotización"}
           </h1>
           <p className="mt-3 text-sm text-dark-section-foreground/70 max-w-2xl">
             {step === "form"
               ? "Completa tus datos para que podamos validar personalización, disponibilidad y tiempos antes de emitir la propuesta."
+              : step === "preview"
+                ? "Confirma los productos y tus datos antes de enviar la solicitud de cotización."
               : "Revisa los productos seleccionados antes de enviar tu solicitud de cotización."}
           </p>
         </div>
@@ -455,7 +474,7 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
                   <h3 className="text-xl font-bold text-foreground mb-6 border-b border-border pb-4">
                     Datos de contacto
                   </h3>
-                  <form id="quote-request-form" onSubmit={handleSubmit} noValidate className="space-y-5">
+                  <form id="quote-request-form" onSubmit={handleContactContinue} noValidate className="space-y-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div>
                         <label htmlFor="contact-name" className="text-sm font-medium text-foreground mb-1 flex items-center gap-2">
@@ -557,6 +576,72 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
                   )}
                 </div>
               )}
+
+              {step === "preview" && (
+                <div className="space-y-4">
+                  <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
+                    <div className="flex items-center justify-between gap-4 border-b border-border pb-4 mb-4">
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">Formato de cotización</p>
+                        <p className="font-bold text-foreground">{quoteFormat ? quoteFormatLabels[quoteFormat] : "No seleccionado"}</p>
+                      </div>
+                      <button type="button" onClick={() => setStep("form")} className="text-sm font-bold text-primary underline underline-offset-4">
+                        Editar datos
+                      </button>
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground mb-4">Productos seleccionados</h3>
+                    <div className="space-y-3">
+                      {lineStates.map(({ item, pricing }) => {
+                        const lineTotal = estimatedLineTotal(pricing.quote, item.quantity);
+                        return (
+                          <div key={item.cartId} className="rounded-xl border border-border p-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div>
+                                <p className="font-bold text-foreground">{item.name}</p>
+                                <p className="text-sm text-muted-foreground">Cantidad: {item.quantity}</p>
+                                <p className="text-sm text-muted-foreground">Color: {item.color.name}</p>
+                                <p className="text-sm text-muted-foreground">Personalización: {getPersonalizationLabel(item)}</p>
+                                {item.entregaEstimada && <p className="text-sm text-muted-foreground">Entrega estimada: {item.entregaEstimada}</p>}
+                                {item.requiereRevisionTecnica && <p className="text-sm font-medium text-amber-700">Requiere revisión técnica</p>}
+                              </div>
+                              <p className="font-bold text-success whitespace-nowrap">
+                                {pricing.loading ? "—" : lineTotal !== null ? `$${formatMoney(lineTotal)}` : "Precio por confirmar"}
+                              </p>
+                            </div>
+                            {pricing.quote?.status === "request_quote" && <p className="mt-2 text-sm font-medium text-muted-foreground">Precio por confirmar</p>}
+                            {(pricing.quote?.status === "below_minimum" || pricing.quote?.status === "unavailable") && (
+                              <p className="mt-2 text-sm font-bold text-destructive">
+                                {pricing.quote.status === "below_minimum" ? "Cantidad menor al mínimo requerido." : "No disponible para cotización."}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {hasRequestQuoteLine && (
+                      <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-foreground">
+                        Hay productos con precio por confirmar. El total final será confirmado por tu asesor.
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
+                    <div className="flex items-center justify-between gap-4 mb-4">
+                      <h3 className="text-xl font-bold text-foreground">Datos de contacto</h3>
+                      <button type="button" onClick={() => setStep("form")} className="text-sm font-bold text-primary underline underline-offset-4">
+                        Editar datos
+                      </button>
+                    </div>
+                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                      <div><dt className="text-muted-foreground">Nombre</dt><dd className="font-medium text-foreground">{contact.name}</dd></div>
+                      <div><dt className="text-muted-foreground">Empresa</dt><dd className="font-medium text-foreground">{contact.company}</dd></div>
+                      <div><dt className="text-muted-foreground">WhatsApp / Teléfono</dt><dd className="font-medium text-foreground">{contact.phone}</dd></div>
+                      <div><dt className="text-muted-foreground">Correo</dt><dd className="font-medium text-foreground break-all">{contact.email}</dd></div>
+                    </dl>
+                    <p className="mt-5 text-xs text-muted-foreground">Estimación antes de IVA e impresión.</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Resumen */}
@@ -619,7 +704,7 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
                   </div>
                 )}
 
-                {step === "form" && (
+                {(step === "form" || step === "preview") && (
                   <div className="bg-surface p-6 border-b border-border">
                     <h3 className="font-bold text-foreground mb-4">Resumen de la solicitud</h3>
                     <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-3">
@@ -630,7 +715,7 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
                         </p>
                         <button
                           type="button"
-                          onClick={() => setStep("selection")}
+                          onClick={() => setStep(step === "preview" ? "form" : "selection")}
                           className="text-xs font-bold text-primary underline underline-offset-4"
                         >
                           Cambiar
@@ -710,10 +795,25 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
                         Agregar más productos
                       </button>
                     </div>
-                  ) : (
+                  ) : step === "form" ? (
                     <button
                       form="quote-request-form"
                       type="submit"
+                      disabled={submitting || !canSubmit}
+                      className="w-full bg-success hover:bg-success/90 text-success-foreground font-bold py-4 rounded-xl transition-all flex justify-center items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {submitting ? (
+                        <>
+                          <Loader2 size={20} className="animate-spin" /> Enviando solicitud...
+                        </>
+                      ) : (
+                        "Previsualizar solicitud"
+                      )}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => void handleFinalSubmit()}
                       disabled={submitting || !canSubmit}
                       className="w-full bg-success hover:bg-success/90 text-success-foreground font-bold py-4 rounded-xl transition-all flex justify-center items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                     >

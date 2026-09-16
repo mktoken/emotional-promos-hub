@@ -132,3 +132,95 @@ El cierre registrado aquí cubre la preparación, activación y alineación desc
 Después de cerrar este checkpoint documental, ejecutar QA funcional final post-migración de `CatalogView` V2.
 
 Hasta completar ambos checkpoints no se debe avanzar a nueva funcionalidad ni retirar el backend Legacy.
+
+# Fase 4 — QA funcional final post-migración CatalogView V2
+
+**Estado: CERRADA / APROBADA.**
+
+## Resultado de QA
+
+- QA aprobado: 20/20 pruebas PASS.
+- Cero leads creados.
+- Cero cambios estructurales.
+- Sin cambios en código.
+- Sin cambios en backend/Supabase estructural.
+- Sin cambios en migraciones.
+- Sin cambios en RLS.
+- Sin cambios en grants.
+- Sin cambios en secrets.
+- Sin cambios en Edge Functions.
+- Sin deploy.
+- Sin publish.
+- Sin rollback.
+
+## Release y generación
+
+- Release V2 vigente: `2738c0e4-308e-45cd-ba7e-32f2f37c9c6b`.
+- Generación origen: `818d824a…`.
+
+## Catálogo
+
+- 992 productos visibles.
+- 24 tarjetas iniciales.
+- 42 páginas.
+- Búsqueda funcionando.
+- Categorías funcionando.
+- Subcategorías funcionando.
+- Filtro ecológico funcionando.
+- Paginación funcionando.
+
+## Precios
+
+- El listado usa V2.
+- La ficha usa V2.
+- El carrito usa V2.
+- El precio de listado, ficha y carrito es consistente.
+- La cantidad mínima es visible.
+- Los productos sin precio muestran “Precio a cotizar”.
+
+## Estado Supabase validado en QA
+
+- `catalog_price_cache` Legacy intacto con 1,524 filas.
+- La release V2 sigue `is_current`.
+- `catalog_price_v2_current_prices`: 1,524 filas.
+- Shadow: 3,048 filas.
+- Releases: 1.
+
+## Legacy y rollback
+
+- Legacy sigue disponible como respaldo.
+- Legacy no debe retirarse todavía.
+- Rollback disponible.
+- Rollback no ejecutado.
+
+## Observaciones no bloqueantes
+
+1. Los 18 productos `request_quote` de V2 no son visibles públicamente por falta de stock; el estado público real expuesto es `unavailable`.
+2. Algunas imágenes externas de G4 devuelven 403 por hotlink; el fallback de imagen funciona.
+3. Persisten warnings React preexistentes:
+   - `forwardRef` en `AssistantWidget`.
+   - `fetchPriority` en `SafeProductImage`.
+
+## Estado después de Fase 4
+
+- Pricing V2 backend activo.
+- Release V2 activa.
+- `CatalogView` alineado a V2.
+- Ficha y carrito alineados a V2.
+- QA funcional final aprobado.
+- Legacy conservado como respaldo.
+- No hacer merge a `main` todavía.
+- No retirar Legacy todavía.
+- No iniciar nuevas funcionalidades hasta cerrar el checkpoint documental de Fase 4.
+
+## Siguiente checkpoint recomendado
+
+Checkpoint documental Fase 4:
+
+1. Revisar el diff de `docs/MASTER-STATE.md`.
+2. Crear el commit documental.
+3. Autorizar el push.
+4. Después decidir entre:
+   - merge controlado a `main`;
+   - QA adicional en producción;
+   - backlog de deuda técnica no bloqueante.

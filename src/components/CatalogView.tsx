@@ -21,6 +21,9 @@ interface RpcProduct {
   descripcion: string | null;
   imagenes: unknown;
   precio_desde_mxn: number | null;
+  public_price_status: string | null;
+  currency: string | null;
+  minimum_quantity: number | null;
   categoria_slug: string | null;
   categoria_nombre: string | null;
   subcategoria_slug: string | null;
@@ -204,7 +207,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
     setErrorList(null);
     try {
       const rpc = supabase.rpc.bind(supabase) as unknown as RpcCaller;
-      const { data, error } = await rpc("catalog_search_products", {
+      const { data, error } = await rpc("catalog_search_products_v2", {
         p_query: q,
         p_category_slug: selectedCategorySlug || null,
         p_collection_slug: ecoOnly ? "ecologicos" : null,
@@ -694,6 +697,8 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
                   const nombre = prod.nombre ?? prod.id_interno;
                   const precio = Number(prod.precio_desde_mxn || 0);
                   const imgs = normalizeProductImages(prod.imagenes);
+                  const conPrecio = prod.public_price_status === "priced" && precio > 0;
+                  const minimo = Number(prod.minimum_quantity ?? 0);
 
                   return (
                     <div
@@ -718,14 +723,21 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
 
                       <div className="p-5">
                         <h3 className="font-bold text-foreground mb-2 line-clamp-1">{nombre}</h3>
-                        {precio > 0 && (
+                        {conPrecio ? (
                           <p className="text-muted-foreground text-sm mb-4">
                             Desde{" "}
                             <strong className="text-foreground">
                               {precio.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
                             </strong>{" "}
                             c/u
+                            {minimo > 1 && (
+                              <>
+                                {" · "}Mínimo {minimo.toLocaleString("es-MX")} pzas
+                              </>
+                            )}
                           </p>
+                        ) : (
+                          <p className="text-muted-foreground text-sm mb-4">Precio a cotizar</p>
                         )}
                         <button className="w-full bg-secondary hover:bg-primary/10 text-secondary-foreground hover:text-primary font-semibold py-2 rounded-lg transition-colors border border-transparent hover:border-primary/20 text-sm">
                           Ver Detalles

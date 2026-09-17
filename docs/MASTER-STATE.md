@@ -610,3 +610,71 @@ Notas:
 
 Veredicto:
 PASS. Sub-checkpoint 1 validado y listo para cierre documental. La rama todavía no debe considerarse integrada a main hasta completar commit documental, push y merge controlado.
+
+# QA post-merge main — observaciones backend compatible
+
+Estado: VALIDADO / PASS.
+
+Fecha: 2026-09-17
+Rama: main
+HEAD validado: 71ef148
+
+Evidencia Git:
+
+- `origin/main...main: 0 0`.
+- Working tree limpio.
+- `git diff --check`: PASS.
+
+Evidencia documental:
+
+- MASTER-STATE contiene Sub-checkpoint 1 observaciones por producto.
+- MASTER-STATE contiene Estado: VALIDADO / PASS.
+- MASTER-STATE contiene Commit build: 4aee0af.
+- MASTER-STATE contiene Regla operativa Lovable / GitHub.
+
+Evidencia técnica:
+
+- Migración presente: `supabase/migrations/20260917090000_persist_quote_item_observations.sql`.
+- La migración contiene `CREATE OR REPLACE FUNCTION public.submit_public_quote_request`.
+- La migración contiene `observation_must_be_string`.
+- La migración contiene `observation_too_long`.
+- La migración persiste `observacion` dentro de `articulos_cotizados`.
+- QA SQL contiene pruebas de `observation`, `observacion` e `idempotency_key_conflict`.
+
+Resultado previo de validación SQL real:
+
+- Migración: PASS.
+- QA transaccional: PASS.
+- Conteo `cotizaciones_leads`: 20 → 20.
+- Correos `qa+%@example.test`: 0 → 0.
+- Release V2 vigente conservada: `2738c0e4-308e-45cd-ba7e-32f2f37c9c6b`.
+- Rollback requerido: no.
+
+Nota de control:
+Durante la validación, Lovable empujó commits fuera de alcance a la misma rama. Se creó respaldo local `backup/lovable-observations-backend-0dfb9e1`, se verificó que la migración de Lovable era funcionalmente igual salvo salto de línea final, y se restauró la rama remota controlada con `--force-with-lease`.
+
+Veredicto:
+PASS. Main queda sincronizado y estable después del merge del Sub-checkpoint 1 backend compatible.
+
+# Regla operativa Lovable — commits automáticos
+
+Estado: VIGENTE.
+
+Fecha: 2026-09-17
+
+Regla:
+Lovable puede generar commits, registros, planes o cambios aun cuando el prompt indique “no modificar”, “no hacer commit” o “solo plan”.
+
+Implicación:
+No se debe asumir que Lovable respetó el alcance únicamente por el texto del prompt. Después de usar Lovable siempre se debe revisar Git antes de continuar.
+
+Verificación obligatoria después de usar Lovable:
+
+- `git fetch origin`
+- `git status --short`
+- `git rev-list --left-right --count origin/<rama>...<rama>`
+- `git log` comparativo si aparece divergencia
+- Revisar archivos modificados antes de pull, merge, rebase o push
+
+Regla crítica:
+Si Lovable empuja commits fuera de alcance, no hacer pull automático. Primero auditar, respaldar si aplica y decidir reconciliación controlada.

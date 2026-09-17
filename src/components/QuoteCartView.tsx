@@ -71,6 +71,7 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
   const [result, setResult] = useState<QuoteSubmissionResult | null>(null);
   const [pricingByLine, setPricingByLine] = useState<Record<number, LinePricingState>>({});
   const [pricingReloadToken, setPricingReloadToken] = useState(0);
+  const [observationsByCartId, setObservationsByCartId] = useState<Record<number, string>>({});
 
   const requestIdManagerRef = useRef(new QuoteRequestIdManager());
   const submittingRef = useRef(false);
@@ -187,6 +188,23 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
 
   const getEconomySuggestionLabel = (item: QuoteSelectionItem) =>
     item.personalizacionSugeridaEconomica?.incluida ? item.personalizacionSugeridaEconomica.label : "";
+
+  const handleObservationChange = (cartId: number, value: string) => {
+    setObservationsByCartId((prev) => ({ ...prev, [cartId]: value.slice(0, 500) }));
+  };
+
+  const handleRemoveLine = useCallback(
+    (cartId: number) => {
+      setObservationsByCartId((prev) => {
+        if (!(cartId in prev)) return prev;
+        const next = { ...prev };
+        delete next[cartId];
+        return next;
+      });
+      onRemove(cartId);
+    },
+    [onRemove],
+  );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -431,6 +449,24 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
                           <span className="text-muted-foreground font-medium">Precio por confirmar</span>
                         ) : null}
                       </div>
+
+                      <div className="mt-4">
+                        <label
+                          htmlFor={`observation-${item.cartId}`}
+                          className="text-sm font-medium text-foreground"
+                        >
+                          Observaciones del producto
+                        </label>
+                        <textarea
+                          id={`observation-${item.cartId}`}
+                          value={observationsByCartId[item.cartId] ?? ""}
+                          onChange={(e) => handleObservationChange(item.cartId, e.target.value)}
+                          maxLength={500}
+                          rows={3}
+                          placeholder="Ej. requerimientos de logo, empaque o entrega"
+                          className="mt-1 w-full px-3 py-2 rounded-xl border border-border focus:ring-2 focus:ring-primary outline-none bg-surface focus:bg-card resize-y"
+                        />
+                      </div>
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-success">
@@ -441,7 +477,7 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
                         })()}
                       </p>
                       <button
-                        onClick={() => onRemove(item.cartId)}
+                        onClick={() => handleRemoveLine(item.cartId)}
                         aria-label={`Quitar ${item.name} de la solicitud`}
                         className="text-destructive/60 hover:text-destructive p-1 bg-destructive/10 hover:bg-destructive/20 rounded transition-colors mt-2"
                       >
@@ -601,6 +637,11 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
                                 <p className="text-sm text-muted-foreground">Cantidad: {item.quantity}</p>
                                 <p className="text-sm text-muted-foreground">Color: {item.color.name}</p>
                                 <p className="text-sm text-muted-foreground">Personalización: {getPersonalizationLabel(item)}</p>
+                                {observationsByCartId[item.cartId]?.trim() && (
+                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                    Observaciones: {observationsByCartId[item.cartId].trim()}
+                                  </p>
+                                )}
                                 {item.entregaEstimada && <p className="text-sm text-muted-foreground">Entrega estimada: {item.entregaEstimada}</p>}
                                 {item.requiereRevisionTecnica && <p className="text-sm font-medium text-amber-700">Requiere revisión técnica</p>}
                               </div>

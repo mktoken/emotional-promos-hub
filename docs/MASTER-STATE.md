@@ -395,3 +395,44 @@ No se modificó Supabase.
 No hubo deploy, publish ni merge adicional.
 
 Veredicto: PASS. Main queda estable después del merge del checkpoint preview frontend-only.
+
+# Checkpoint observaciones por producto frontend-only
+
+Estado: CERRADO / APROBADO.
+
+Fecha: 2026-09-16
+Rama: feat/quote-item-observations-frontend-only
+Commit validado: 6480dd6
+
+Alcance:
+Se agregó un campo frontend-only de observaciones por producto en el flujo público de cotización.
+
+Validación técnica:
+
+- bun run test: PASS, 37 tests.
+- bunx eslint src/components/QuoteCartView.tsx: PASS.
+- bun run build: PASS.
+- git diff --check: PASS.
+- bun run lint global: FAIL por errores/advertencias preexistentes fuera del archivo trabajado; QuoteCartView.tsx sin errores.
+
+Validación visual:
+
+- La observación apareció en preview.
+- La observación se conservó al volver a editar.
+- Al eliminar GOMA del carrito local, GOMA ya no apareció.
+- La observación asociada ya no apareció.
+- No se presionó “Enviar solicitud de cotización”.
+- No se creó ningún lead real.
+
+Restricciones cumplidas:
+
+- No se modificó Supabase.
+- No se modificaron migraciones.
+- No se modificó RLS, grants, secrets ni Edge Functions.
+- No se modificó QuoteRequestItem.
+- No se modificó buildQuoteRequestItems.
+- No se modificó submitPublicQuoteRequest.
+- No se modificó src/pages/Index.tsx.
+- No hubo deploy, publish ni merge.
+
+Veredicto: PASS. Checkpoint validado y cerrado en rama, pendiente de commit documental y posterior merge controlado a main.

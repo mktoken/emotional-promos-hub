@@ -558,3 +558,55 @@ El prompt no cambia la rama de Lovable. El selector de rama de Lovable manda.
 
 Motivo:
 Se detectó que GitHub/Terminal estaban en `feat/quote-item-observations-backend`, pero Lovable seguía apuntando a `feat/v2-cutover-preparation`. Por lo tanto, desde ahora queda prohibido asumir sincronía entre GitHub y Lovable sin verificación visual.
+
+# Sub-checkpoint 1 observaciones por producto — validación SQL real
+
+Estado: VALIDADO / PASS.
+
+Fecha: 2026-09-17
+Rama: feat/quote-item-observations-backend
+Commit build: 4aee0af
+Commit documental previo: e15e67d
+Commit regla operativa Lovable/GitHub: 47236e1
+
+Validación ejecutada:
+Se aplicó la migración `supabase/migrations/20260917090000_persist_quote_item_observations.sql` en la base actual del proyecto.
+
+Resultado:
+
+- Migración: PASS.
+- RPC activa: `public.submit_public_quote_request(uuid, jsonb, text, jsonb)`.
+- La RPC compila.
+- La RPC contiene validación `observation`.
+- La RPC persiste observación válida como `observacion` dentro de `articulos_cotizados`.
+- QA transaccional: PASS.
+- Resultado QA: PASS / `transaction_will_rollback`.
+- El QA terminó con `ROLLBACK`.
+- Conteo `cotizaciones_leads`: inicial 20, final 20.
+- Correos `qa+%@example.test`: inicial 0, final 0.
+- Release V2 vigente conservada: `2738c0e4-308e-45cd-ba7e-32f2f37c9c6b`.
+- Generación V2 vigente: `818d824a-ff5d-4b66-a9c1-6cac56d4c4d5`.
+- Rollback requerido: no.
+- Errores: ninguno.
+
+Restricciones cumplidas:
+
+- No se modificaron tablas.
+- No se modificaron columnas.
+- No se modificó RLS.
+- No se modificaron grants.
+- No se modificó frontend.
+- No hubo deploy.
+- No hubo publish.
+- No hubo merge.
+- No se crearon datos persistentes de QA.
+
+Notas:
+
+- La validación se ejecutó sobre la base actual del proyecto porque Lovable confirmó que no existe entorno staging/preview separado.
+- La web no está en uso real ni comercial, por lo que el riesgo operativo fue aceptado como bajo.
+- El respaldo de la RPC anterior fue capturado antes de aplicar la migración.
+- No fue necesario restaurar rollback.
+
+Veredicto:
+PASS. Sub-checkpoint 1 validado y listo para cierre documental. La rama todavía no debe considerarse integrada a main hasta completar commit documental, push y merge controlado.

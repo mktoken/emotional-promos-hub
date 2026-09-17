@@ -534,3 +534,27 @@ Restricciones cumplidas:
 - No leads reales.
 
 Veredicto: no cerrar como PASS todavía. El sub-checkpoint queda pausado hasta contar con entorno SQL seguro.
+
+# Regla operativa Lovable / GitHub
+
+Estado: VIGENTE.
+
+Fecha: 2026-09-17
+
+Regla:
+Nunca asumir que Lovable está en la rama correcta solo porque la rama existe en GitHub o porque fue mencionada en un prompt.
+
+Antes de usar Lovable para analizar, construir, validar o ejecutar algo:
+
+1. Verificar la rama activa en Terminal/GitHub.
+2. Verificar visualmente la rama seleccionada dentro de Lovable.
+3. Confirmar que ambas coinciden exactamente.
+4. Presionar Re-check en Lovable.
+5. Solo entonces usar Lovable.
+6. Si Lovable no muestra la rama correcta, no usar Lovable para ese checkpoint.
+
+Regla crítica:
+El prompt no cambia la rama de Lovable. El selector de rama de Lovable manda.
+
+Motivo:
+Se detectó que GitHub/Terminal estaban en `feat/quote-item-observations-backend`, pero Lovable seguía apuntando a `feat/v2-cutover-preparation`. Por lo tanto, desde ahora queda prohibido asumir sincronía entre GitHub y Lovable sin verificación visual.

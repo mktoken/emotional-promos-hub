@@ -436,3 +436,42 @@ Restricciones cumplidas:
 - No hubo deploy, publish ni merge.
 
 Veredicto: PASS. Checkpoint validado y cerrado en rama, pendiente de commit documental y posterior merge controlado a main.
+
+# QA post-merge main observaciones por producto frontend-only
+
+Estado: VALIDADO / PASS.
+
+Fecha: 2026-09-16
+Rama: main
+HEAD validado: 0023f97
+
+Se validó que main quedó sincronizada después del merge del checkpoint observaciones por producto frontend-only.
+
+Evidencia:
+
+- origin/main...main: 0 0
+- working tree limpio
+- docs/MASTER-STATE.md contiene el checkpoint observaciones por producto frontend-only y su cierre CERRADO / APROBADO
+- QuoteCartView contiene observationsByCartId
+- QuoteCartView contiene “Observaciones del producto”
+- QuoteCartView contiene maxLength={500}
+- QuoteCartView contiene whitespace-pre-wrap
+- QuoteCartView conserva el botón “Enviar solicitud de cotización”
+- bun run test: PASS, 37 tests
+- bunx eslint src/components/QuoteCartView.tsx: PASS
+- bun run build: PASS
+- git diff --check: PASS
+
+Advertencias no bloqueantes:
+
+- Browserslist desactualizado
+- Chunk JS mayor a 500 kB
+
+Restricciones cumplidas:
+
+- No se presionó envío final
+- No se crearon leads reales
+- No se modificó Supabase/backend
+- No hubo deploy, publish ni merge adicional
+
+Veredicto: PASS. Main queda estable después del merge del checkpoint observaciones por producto frontend-only.

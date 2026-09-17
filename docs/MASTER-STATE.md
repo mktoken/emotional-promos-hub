@@ -475,3 +475,62 @@ Restricciones cumplidas:
 - No hubo deploy, publish ni merge adicional
 
 Veredicto: PASS. Main queda estable después del merge del checkpoint observaciones por producto frontend-only.
+
+# Sub-checkpoint 1 observaciones por producto — persistencia backend compatible
+
+Estado: BUILD COMPLETADO / VALIDACIÓN SQL REAL PENDIENTE.
+
+Fecha: 2026-09-17
+Rama: feat/quote-item-observations-backend
+Commit build: 4aee0af
+
+Alcance construido:
+
+- Nueva migración: `supabase/migrations/20260917090000_persist_quote_item_observations.sql`
+- QA SQL actualizado: `supabase/qa/public_quote_v2_backend_expand_integration.sql`
+
+Cambios previstos:
+
+- RPC `submit_public_quote_request` acepta `observation` opcional dentro de `p_items`.
+- `observation` ausente, `null` o string válido.
+- Tipos inválidos se rechazan con `observation_must_be_string`.
+- Más de 500 caracteres se rechaza con `observation_too_long`.
+- El string se normaliza con `btrim`.
+- El string vacío se trata como ausente.
+- La observación válida se persiste como `observacion` dentro de `articulos_cotizados`.
+- No se cambia la firma RPC.
+- No se cambian tablas, columnas, RLS ni grants.
+
+Validación realizada:
+
+- `git diff --check`: PASS.
+- Revisión estática de migración: PASS.
+- Revisión estática de QA SQL: PASS.
+- Rama sincronizada con `origin/feat/quote-item-observations-backend`.
+
+Validación pendiente:
+
+- Aplicar migración en PostgreSQL/Supabase seguro.
+- Ejecutar QA SQL transaccional.
+- Confirmar compilación de RPC.
+- Confirmar persistencia real en `articulos_cotizados`.
+- Confirmar idempotencia.
+- Confirmar rollback.
+
+Bloqueo:
+No existen actualmente Supabase CLI, `psql`, Docker ni base PostgreSQL local disponible. No se debe ejecutar contra producción.
+
+Ruta segura recomendada:
+Validar en Supabase local con Docker/CLI o en proyecto Supabase staging/descartable.
+
+Restricciones cumplidas:
+
+- No frontend.
+- No CRM.
+- No deploy.
+- No publish.
+- No merge.
+- No producción.
+- No leads reales.
+
+Veredicto: no cerrar como PASS todavía. El sub-checkpoint queda pausado hasta contar con entorno SQL seguro.

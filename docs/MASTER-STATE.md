@@ -352,3 +352,18 @@ Sin cambios en Supabase, migraciones, RLS, grants, secrets, Edge Functions, depl
 Consola sin fallos funcionales. Advertencias no bloqueantes: React Router future flags, Radix Dialog accessibility warning y React fetchPriority.
 
 Veredicto: PASS. Checkpoint validado y listo para cierre documental.
+
+## Cierre formal
+
+Estado: CERRADO / APROBADO.
+
+Fecha: 2026-09-16
+Rama: feat/quote-preview-frontend-only
+HEAD de cierre previo: cc5da36
+
+El checkpoint preview frontend-only cumplió el ciclo: Construido → validado → estado maestro actualizado → commit documental → push sincronizado.
+
+No se presionó el botón final.
+No se crearon leads reales.
+No se modificó Supabase.
+No hubo deploy, publish ni merge.

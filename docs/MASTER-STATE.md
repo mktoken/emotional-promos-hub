@@ -367,3 +367,31 @@ No se presionó el botón final.
 No se crearon leads reales.
 No se modificó Supabase.
 No hubo deploy, publish ni merge.
+
+# QA post-merge main preview frontend-only
+
+Estado: VALIDADO / PASS.
+
+Fecha: 2026-09-16
+Rama: main
+HEAD validado: ea26c89
+
+Se validó que main quedó sincronizada después del merge del checkpoint preview frontend-only.
+
+Evidencia:
+
+- origin/main...main: 0 0
+- working tree limpio
+- docs/MASTER-STATE.md contiene el checkpoint QA visual preview frontend-only y su cierre CERRADO / APROBADO
+- QuoteCartView contiene `type QuoteStep = "selection" | "form" | "preview" | "success"`
+- QuoteCartView contiene “Previsualización de solicitud”
+- QuoteCartView contiene “Previsualizar solicitud”
+- QuoteCartView contiene “Enviar solicitud de cotización”
+- git diff --check sin errores
+
+No se ejecutó envío final.
+No se crearon leads reales.
+No se modificó Supabase.
+No hubo deploy, publish ni merge adicional.
+
+Veredicto: PASS. Main queda estable después del merge del checkpoint preview frontend-only.

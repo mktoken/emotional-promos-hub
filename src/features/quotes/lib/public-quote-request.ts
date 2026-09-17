@@ -39,6 +39,7 @@ export interface QuoteRequestItem {
   quantity: number;
   color?: string | QuoteRequestItemColor;
   personalization?: QuoteRequestItemPersonalization;
+  observation?: string;
 }
 
 export interface QuoteSubmissionResult {

@@ -678,3 +678,62 @@ Verificación obligatoria después de usar Lovable:
 
 Regla crítica:
 Si Lovable empuja commits fuera de alcance, no hacer pull automático. Primero auditar, respaldar si aplica y decidir reconciliación controlada.
+
+# Sub-checkpoint 2 observaciones por producto — transporte frontend hacia RPC
+
+Estado: VALIDADO / PASS.
+
+Fecha: 2026-09-17
+Rama: feat/quote-item-observations-frontend-transport
+Base: main 5a67f18
+
+Objetivo:
+Transportar la observación capturada por producto desde QuoteCartView hacia el payload real enviado a la RPC como observation dentro de p\_items.
+
+Cambios:
+
+- QuoteRequestItem ahora acepta observation?: string.
+- buildQuoteRequestItems acepta observationsByCartId opcional.
+- La observación se asocia por cartId.
+- Se aplica trim().
+- Se limita defensivamente a 500 caracteres.
+- Se omiten observaciones vacías o compuestas solo por espacios.
+- Se conserva whitelist estricta del builder.
+- No se transportan notes, note ni comment.
+- QuoteCartView construye requestItems usando buildQuoteRequestItems(cart, observationsByCartId).
+- useMemo incluye observationsByCartId en dependencias.
+- submitPublicQuoteRequest no requirió cambio funcional.
+- quote-request-id.ts no requirió cambio funcional.
+
+Validación automatizada:
+
+- bun run test: PASS.
+- Test dirigido de fingerprint: PASS.
+- ESLint selectivo: PASS.
+- bun run build: PASS.
+- git diff --check: PASS.
+
+QA visual local:
+
+- Observación multilinea aparece en preview: sí.
+- Persiste al volver a editar: sí.
+- Botón final correcto “Enviar solicitud de cotización”: sí.
+- No se presionó envío final: sí.
+- Producto eliminado: sí.
+- Observación desaparece al eliminar producto: sí.
+- Errores visibles: no.
+
+Restricciones cumplidas:
+
+- No Supabase.
+- No migraciones.
+- No SQL.
+- No CRM.
+- No Index.tsx.
+- No deploy.
+- No publish.
+- No Lovable.
+- No leads reales.
+
+Veredicto:
+PASS. El frontend ya transporta observation hacia el payload real de la RPC, sin crear datos reales durante QA.

@@ -143,4 +143,49 @@ describe("public-quote-request", () => {
     expect(error.message).toBe("rate_limit_exceeded");
     expect(error.userMessage).not.toContain("SQL");
   });
+
+  it("envía observation dentro de p_items sin agregar notes ni comment", async () => {
+    rpcMock.mockResolvedValue({
+      data: [
+        {
+          quote_id: "quote-observation-1",
+          reused: false,
+          pricing_mode: "priced",
+          total_estimated: 2500,
+          item_count: 1,
+          request_quote_item_count: 0,
+        },
+      ],
+      error: null,
+    });
+
+    await submitPublicQuoteRequest({
+      requestId: "22222222-2222-4222-8222-222222222222",
+      contact: validContact,
+      quoteFormat: "individual",
+      items: [
+        {
+          product_id: "product-1",
+          quantity: 100,
+          observation: "Logo centrado\nEmpaque individual",
+        },
+      ],
+    });
+
+    expect(rpcMock).toHaveBeenCalledWith(
+      "submit_public_quote_request",
+      expect.objectContaining({
+        p_items: [
+          {
+            product_id: "product-1",
+            quantity: 100,
+            observation: "Logo centrado\nEmpaque individual",
+          },
+        ],
+      }),
+    );
+    const [, rpcArgs] = rpcMock.mock.calls[0];
+    expect(rpcArgs.p_items[0]).not.toHaveProperty("notes");
+    expect(rpcArgs.p_items[0]).not.toHaveProperty("comment");
+  });
 });

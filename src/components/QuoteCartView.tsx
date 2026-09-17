@@ -153,7 +153,10 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
     blockingLines.length === 0 &&
     quoteFormat !== null;
 
-  const requestItems = useMemo(() => buildQuoteRequestItems(cart), [cart]);
+  const requestItems = useMemo(
+    () => buildQuoteRequestItems(cart, observationsByCartId),
+    [cart, observationsByCartId],
+  );
 
   const payloadFingerprint = useMemo(
     () =>

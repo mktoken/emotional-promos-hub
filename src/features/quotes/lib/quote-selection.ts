@@ -19,13 +19,24 @@ function normalizeColor(item: QuoteSelectionItem): string | undefined {
   return name && name.length > 0 ? name : undefined;
 }
 
+function normalizeObservation(value: string | undefined): string | undefined {
+  const observation = value?.trim().slice(0, 500);
+  return observation || undefined;
+}
+
 /** Whitelist estricta: solo los campos que el RPC admite. */
-export function buildQuoteRequestItems(items: QuoteSelectionItem[]): QuoteRequestItem[] {
+export function buildQuoteRequestItems(
+  items: QuoteSelectionItem[],
+  observationsByCartId?: Record<number, string>,
+): QuoteRequestItem[] {
   return items.map((item) => {
     const requestItem: QuoteRequestItem = {
       product_id: item.productId,
       quantity: Math.trunc(item.quantity),
     };
+
+    const observation = normalizeObservation(observationsByCartId?.[item.cartId]);
+    if (observation) requestItem.observation = observation;
 
     const color = normalizeColor(item);
     if (color) requestItem.color = color;

@@ -55,4 +55,22 @@ describe("QuoteRequestIdManager", () => {
     expect(left).toBe(right);
     expect(left).not.toMatch(/\b1[6-9]\d{11}\b/);
   });
+
+  it("mantiene fingerprint equivalente para observation normalizada y distinto si cambia", () => {
+    const left = computePayloadFingerprint({
+      quote_format: "individual",
+      items: [{ product_id: "p1", quantity: 100, observation: "Logo centrado" }],
+    });
+    const equivalent = computePayloadFingerprint({
+      quote_format: "individual",
+      items: [{ product_id: "p1", quantity: 100, observation: "Logo centrado" }],
+    });
+    const changed = computePayloadFingerprint({
+      quote_format: "individual",
+      items: [{ product_id: "p1", quantity: 100, observation: "Logo lateral" }],
+    });
+
+    expect(left).toBe(equivalent);
+    expect(left).not.toBe(changed);
+  });
 });

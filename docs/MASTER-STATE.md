@@ -328,3 +328,27 @@ Checkpoint documental Fase 4:
 - `main` es la rama oficial vigente.
 - HEAD oficial documentado: `f0f1cdc`.
 - Cualquier cambio posterior requiere checkpoint nuevo.
+
+---
+
+# Checkpoint QA visual preview frontend-only
+
+Estado: VALIDADO / PASS.
+
+Fecha: 2026-09-16
+Rama: feat/quote-preview-frontend-only
+Commit validado: 8fb08fdcc0282d2f2284acf0b719f38742d18650
+
+QA visual local aprobado en http://127.0.0.1:5174.
+
+Evidencia: catálogo 992 productos; producto GOMA; cantidad 834; color Blanco; personalización Logo a 1 tinta; precio $1,501.20; formato Cotizar productos por separado.
+
+La preview mostró el aviso “Estimación antes de IVA e impresión”, conservó datos al volver a editar y mostró el botón final “Enviar solicitud de cotización”.
+
+Restricción crítica: el botón final no fue presionado y no se crearon leads reales.
+
+Sin cambios en Supabase, migraciones, RLS, grants, secrets, Edge Functions, deploy, publish ni merge.
+
+Consola sin fallos funcionales. Advertencias no bloqueantes: React Router future flags, Radix Dialog accessibility warning y React fetchPriority.
+
+Veredicto: PASS. Checkpoint validado y listo para cierre documental.

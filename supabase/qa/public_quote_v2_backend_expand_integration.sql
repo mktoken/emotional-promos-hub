@@ -11,17 +11,39 @@ DECLARE
   v_second_request_id uuid := gen_random_uuid();
   v_third_request_id uuid := gen_random_uuid();
   v_blocked_request_id uuid := gen_random_uuid();
+  v_observation_request_id uuid := gen_random_uuid();
+  v_null_empty_request_id uuid := gen_random_uuid();
+  v_invalid_type_request_id uuid := gen_random_uuid();
+  v_too_long_request_id uuid := gen_random_uuid();
   v_unique_suffix text := replace(gen_random_uuid()::text, '-', '');
+  v_observation_unique_suffix text;
+  v_null_empty_unique_suffix text;
   v_numeric_suffix text;
+  v_observation_numeric_suffix text;
+  v_null_empty_numeric_suffix text;
   v_contact jsonb;
+  v_observation_contact jsonb;
+  v_null_empty_contact jsonb;
   v_items jsonb;
+  v_observation_items jsonb;
+  v_null_empty_items jsonb;
+  v_invalid_type_items jsonb;
+  v_too_long_items jsonb;
+  v_observation_conflicting_items jsonb;
   v_conflicting_items jsonb;
   v_first record;
   v_second record;
   v_rate_second record;
   v_rate_third record;
+  v_observation_first record;
+  v_observation_second record;
+  v_null_empty_first record;
   v_saved public.cotizaciones_leads%ROWTYPE;
+  v_observation_saved public.cotizaciones_leads%ROWTYPE;
+  v_null_empty_saved public.cotizaciones_leads%ROWTYPE;
   v_saved_line jsonb;
+  v_observation_saved_line jsonb;
+  v_null_empty_saved_line jsonb;
   v_before_count bigint;
   v_after_count bigint;
 BEGIN
@@ -51,6 +73,32 @@ BEGIN
     'phone', '+52 55 ' || v_numeric_suffix
   );
 
+  v_observation_unique_suffix := replace(gen_random_uuid()::text, '-', '');
+  v_observation_numeric_suffix := substr(
+    regexp_replace(v_observation_unique_suffix, '[^0-9]', '', 'g') || '00000000',
+    1,
+    8
+  );
+  v_observation_contact := jsonb_build_object(
+    'name', 'QA Observation Quote',
+    'company', 'QA Observation Transaction',
+    'email', 'qa+obs-' || v_observation_unique_suffix || '@example.test',
+    'phone', '+52 55 ' || v_observation_numeric_suffix
+  );
+
+  v_null_empty_unique_suffix := replace(gen_random_uuid()::text, '-', '');
+  v_null_empty_numeric_suffix := substr(
+    regexp_replace(v_null_empty_unique_suffix, '[^0-9]', '', 'g') || '00000000',
+    1,
+    8
+  );
+  v_null_empty_contact := jsonb_build_object(
+    'name', 'QA Empty Observation Quote',
+    'company', 'QA Empty Observation Transaction',
+    'email', 'qa+empty-' || v_null_empty_unique_suffix || '@example.test',
+    'phone', '+52 55 ' || v_null_empty_numeric_suffix
+  );
+
   v_items := jsonb_build_array(
     jsonb_build_object(
       'product_id', v_product_id,
@@ -62,6 +110,27 @@ BEGIN
         'message', 'Prueba transaccional',
         'requires_review', true
       )
+    )
+  );
+
+  v_observation_items := jsonb_build_array(
+    jsonb_build_object(
+      'product_id', v_product_id,
+      'quantity', 100,
+      'observation', E'  Logo centrado\nEmpaque individual  '
+    )
+  );
+
+  v_null_empty_items := jsonb_build_array(
+    jsonb_build_object(
+      'product_id', v_product_id,
+      'quantity', 100,
+      'observation', NULL
+    ),
+    jsonb_build_object(
+      'product_id', v_product_id,
+      'quantity', 100,
+      'observation', '   '
     )
   );
 
@@ -164,10 +233,164 @@ BEGIN
         IS DISTINCT FROM v_first.total_estimated
      OR v_saved_line ? 'precio_cliente'
      OR v_saved_line ? 'subtotal_cliente'
+     OR v_saved_line ? 'observacion'
   THEN
     RAISE EXCEPTION
       'I5_FAIL: server-derived line contract mismatch';
   END IF;
+
+  SELECT *
+  INTO v_observation_first
+  FROM public.submit_public_quote_request(
+    v_observation_request_id,
+    v_observation_contact,
+    'individual',
+    v_observation_items
+  );
+
+  IF v_observation_first.quote_id IS NULL
+     OR v_observation_first.reused IS DISTINCT FROM false
+     OR v_observation_first.item_count IS DISTINCT FROM 1
+  THEN
+    RAISE EXCEPTION
+      'I8_FAIL: valid observation submission contract mismatch';
+  END IF;
+
+  SELECT *
+  INTO v_observation_saved
+  FROM public.cotizaciones_leads
+  WHERE id = v_observation_first.quote_id;
+
+  v_observation_saved_line := v_observation_saved.articulos_cotizados -> 0;
+
+  IF v_observation_saved_line ->> 'observacion'
+       IS DISTINCT FROM E'Logo centrado\nEmpaque individual'
+  THEN
+    RAISE EXCEPTION
+      'I9_FAIL: observation was not trimmed and persisted with newline';
+  END IF;
+
+  SELECT *
+  INTO v_observation_second
+  FROM public.submit_public_quote_request(
+    v_observation_request_id,
+    v_observation_contact,
+    'individual',
+    jsonb_set(
+      v_observation_items,
+      '{0,observation}',
+      to_jsonb(E'Logo centrado\nEmpaque individual'::text)
+    )
+  );
+
+  IF v_observation_second.quote_id IS DISTINCT FROM v_observation_first.quote_id
+     OR v_observation_second.reused IS DISTINCT FROM true
+  THEN
+    RAISE EXCEPTION
+      'I10_FAIL: normalized equivalent observation was not idempotent';
+  END IF;
+
+  v_observation_conflicting_items := jsonb_set(
+    v_observation_items,
+    '{0,observation}',
+    to_jsonb('Logo lateral'::text)
+  );
+
+  BEGIN
+    PERFORM *
+    FROM public.submit_public_quote_request(
+      v_observation_request_id,
+      v_observation_contact,
+      'individual',
+      v_observation_conflicting_items
+    );
+
+    RAISE EXCEPTION
+      'I11_FAIL: different observation bypassed idempotency conflict';
+  EXCEPTION
+    WHEN SQLSTATE 'P0001' THEN
+      IF SQLERRM <> 'idempotency_key_conflict' THEN
+        RAISE;
+      END IF;
+  END;
+
+  SELECT *
+  INTO v_null_empty_first
+  FROM public.submit_public_quote_request(
+    v_null_empty_request_id,
+    v_null_empty_contact,
+    'individual',
+    v_null_empty_items
+  );
+
+  IF v_null_empty_first.quote_id IS NULL
+     OR v_null_empty_first.reused IS DISTINCT FROM false
+     OR v_null_empty_first.item_count IS DISTINCT FROM 2
+  THEN
+    RAISE EXCEPTION
+      'I12_FAIL: null and empty observation payload was not accepted';
+  END IF;
+
+  SELECT *
+  INTO v_null_empty_saved
+  FROM public.cotizaciones_leads
+  WHERE id = v_null_empty_first.quote_id;
+
+  IF jsonb_array_length(v_null_empty_saved.articulos_cotizados) <> 2
+     OR (v_null_empty_saved.articulos_cotizados -> 0) ? 'observacion'
+     OR (v_null_empty_saved.articulos_cotizados -> 1) ? 'observacion'
+  THEN
+    RAISE EXCEPTION
+      'I13_FAIL: null or empty observation was persisted';
+  END IF;
+
+  v_invalid_type_items := jsonb_set(
+    v_items,
+    '{0,observation}',
+    to_jsonb(123)
+  );
+
+  BEGIN
+    PERFORM *
+    FROM public.submit_public_quote_request(
+      v_invalid_type_request_id,
+      v_observation_contact,
+      'individual',
+      v_invalid_type_items
+    );
+
+    RAISE EXCEPTION
+      'I14_FAIL: invalid observation type was accepted';
+  EXCEPTION
+    WHEN SQLSTATE '22023' THEN
+      IF SQLERRM <> 'observation_must_be_string' THEN
+        RAISE;
+      END IF;
+  END;
+
+  v_too_long_items := jsonb_set(
+    v_items,
+    '{0,observation}',
+    to_jsonb(repeat('x', 501))
+  );
+
+  BEGIN
+    PERFORM *
+    FROM public.submit_public_quote_request(
+      v_too_long_request_id,
+      v_observation_contact,
+      'individual',
+      v_too_long_items
+    );
+
+    RAISE EXCEPTION
+      'I15_FAIL: observation over 500 characters was accepted';
+  EXCEPTION
+    WHEN SQLSTATE '22023' THEN
+      IF SQLERRM <> 'observation_too_long' THEN
+        RAISE;
+      END IF;
+  END;
 
   -- La primera solicitud ya consume 1 de 3. Dos solicitudes nuevas deben
   -- aceptarse y la cuarta debe ser bloqueada.
@@ -217,9 +440,9 @@ BEGIN
   INTO v_after_count
   FROM public.cotizaciones_leads;
 
-  IF v_after_count <> v_before_count + 3 THEN
+  IF v_after_count <> v_before_count + 5 THEN
     RAISE EXCEPTION
-      'I7_FAIL: expected exactly three transactional test rows';
+      'I16_FAIL: expected exactly five transactional test rows';
   END IF;
 END;
 $$;

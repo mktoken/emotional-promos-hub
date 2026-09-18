@@ -791,3 +791,60 @@ Restricciones cumplidas:
 
 Veredicto:
 PASS. El Sub-checkpoint 2 queda integrado en main, validado y listo para cierre documental final.
+
+# Sub-checkpoint 3 observaciones por producto — validación E2E real controlada
+
+Estado: VALIDADO / PASS.
+
+Fecha: 2026-09-17
+Rama: main
+HEAD validado: 18aaf36
+
+Objetivo:
+Validar extremo a extremo que la observación capturada en frontend viaja como observation hacia la RPC y queda persistida como observacion dentro de cotizaciones_leads.articulos_cotizados.
+
+Lead QA:
+
+- Lead id: 7ac53ce1-f35b-4fc9-8f8c-0d1813da9be2
+- public_request_id: af21d112-2756-4c7e-8c7d-c34c9c49794c
+- Email QA: qa.subcheckpoint3.20260917@example.test
+- Nombre: QA Sub-checkpoint 3
+- Teléfono: 5550000003
+- Producto enviado: GOMA
+- Productos enviados: 1
+- Lead QA conservado como evidencia.
+
+Observación validada:
+QA-SC3-20260917 | Observación E2E: guardar en cotizaciones_leads.articulos_cotizados.observacion.
+
+Evidencia funcional:
+
+- La observación apareció en previsualización antes del envío.
+- Se presionó una sola vez “Enviar solicitud de cotización”.
+- El lead fue creado desde main HEAD 18aaf36.
+- La referencia visible correspondió al lead id.
+
+Evidencia SQL read-only:
+
+- SELECT de lectura confirmó el registro QA.
+- articulos_cotizados->0->>'observacion' contiene exactamente la observación esperada.
+- COUNT por email QA devolvió total = 1.
+- No hay duplicados para el email QA.
+
+Restricciones cumplidas:
+
+- No SQL de escritura.
+- No UPDATE.
+- No DELETE.
+- No INSERT manual.
+- No migraciones.
+- No modificación de RPC.
+- No modificación de frontend.
+- No releases alteradas.
+- No deploy.
+- No publish.
+- No commits automáticos de Lovable.
+- Lead QA no borrado.
+
+Veredicto:
+PASS. El flujo E2E queda validado: textarea frontend → requestItems[].observation → RPC → cotizaciones_leads.articulos_cotizados[0].observacion.

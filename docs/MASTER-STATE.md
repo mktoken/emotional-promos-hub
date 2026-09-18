@@ -848,3 +848,52 @@ Restricciones cumplidas:
 
 Veredicto:
 PASS. El flujo E2E queda validado: textarea frontend → requestItems[].observation → RPC → cotizaciones_leads.articulos_cotizados[0].observacion.
+
+# AUTH-1 — cambio de contraseña desde Mi perfil
+
+Estado: VALIDADO / PASS.
+
+Fecha: 2026-09-18
+Rama: main
+Commit funcional: 2dd399a
+
+Objetivo:
+Permitir que el usuario autenticado cambie su propia contraseña desde CRM > Mi perfil usando Supabase Auth.
+
+Cambios:
+
+- Se agregó tarjeta “Cambiar contraseña” en Mi perfil.
+- Se agregaron campos Nueva contraseña y Confirmar nueva contraseña.
+- Se agregó validación de requeridos, mínimo 8 caracteres y coincidencia.
+- Se usa supabase.auth.updateUser({ password }).
+- Se limpia el formulario al éxito.
+- Se muestran mensajes de éxito/error sin exponer contraseñas.
+- No se modifican perfiles, roles ni usuarios manualmente.
+
+Validación técnica:
+
+- bun run test: PASS.
+- password-validation.test.ts: 7/7 PASS.
+- bun run build: PASS.
+- git diff --check: PASS.
+
+Validación funcional publicada:
+
+- AUTH-1 fue publicado en el CRM.
+- El usuario admin accedió a Mi perfil.
+- El usuario definió una nueva contraseña.
+- El usuario cerró sesión e inició sesión nuevamente con la nueva contraseña.
+- Login posterior: PASS.
+
+Restricciones cumplidas:
+
+- No SQL.
+- No migraciones.
+- No roles.
+- No creación de usuarios.
+- No service role.
+- No exposición de contraseña.
+- No cambios de contraseña de otros usuarios.
+
+Veredicto:
+PASS. AUTH-1 queda cerrado y permite recuperar acceso local/CRM mediante una contraseña conocida por el usuario.

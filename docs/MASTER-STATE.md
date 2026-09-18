@@ -897,3 +897,69 @@ Restricciones cumplidas:
 
 Veredicto:
 PASS. AUTH-1 queda cerrado y permite recuperar acceso local/CRM mediante una contraseña conocida por el usuario.
+
+# Sub-checkpoint 4 observaciones por producto — visualización en CRM
+
+Estado: VALIDADO / PASS.
+
+Fecha: 2026-09-18
+Rama: main
+Commit funcional: 1886234
+
+Objetivo:
+Mostrar en el detalle interno del CRM la observación capturada por producto y persistida como articulos_cotizados[].observacion.
+
+Cambios:
+
+- ArticuloSafe ahora incluye observation: string | null.
+- parseArticulos lee primero el campo canónico observacion.
+- parseArticulos acepta observation como compatibilidad si falta observacion.
+- parseArticulos normaliza valores vacíos o no string a null.
+- CotizacionDetail muestra “Observación del cliente” solo cuando existe.
+- El texto usa whitespace-pre-wrap para conservar saltos de línea.
+- La observación aparece dentro de la tarjeta del producto.
+- No se modificó PDF formal.
+- No se modificó CSV.
+- No se modificaron rutas públicas.
+- No se modificó Supabase, RPC ni migraciones.
+
+Validación técnica:
+
+- bun run test: PASS.
+- Tests generales: 35/35 PASS.
+- cotizacion-format.test.ts: 7/7 PASS.
+- bun run build: PASS.
+- git diff --check: PASS.
+
+QA visual:
+
+- Detalle del lead QA abre: sí.
+- Producto GOMA visible: sí.
+- Etiqueta “Observación del cliente” visible: sí.
+- Texto coincide exactamente con la observación E2E SC3: sí.
+- Ubicación correcta dentro de la tarjeta del producto GOMA y antes de Notas internas: sí.
+- Errores visibles: no.
+- Consola: sin errores, solo warnings informativos de React Router.
+- No se modificaron archivos ni datos durante QA.
+
+Lead QA usado:
+
+- Lead id: 7ac53ce1-f35b-4fc9-8f8c-0d1813da9be2.
+- Email QA: qa.subcheckpoint3.20260917@example.test.
+- Producto: GOMA.
+- Observación: QA-SC3-20260917 | Observación E2E: guardar en cotizaciones_leads.articulos_cotizados.observacion.
+
+Restricciones cumplidas:
+
+- No SQL.
+- No leads nuevos.
+- No deploy.
+- No publish.
+- No Lovable.
+- No migraciones.
+- No RPC.
+- No PDF formal.
+- No CSV.
+
+Veredicto:
+PASS. El CRM interno ya muestra la observación del cliente por producto usando el dato persistido en articulos_cotizados[].observacion.

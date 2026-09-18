@@ -49,6 +49,7 @@ export interface ArticuloSafe {
   precio_unitario: number | null;
   subtotal: number | null;
   personalizacion: string | null;
+  observation: string | null;
   imagen_url: string | null;
 }
 
@@ -62,6 +63,12 @@ function toStr(v: unknown): string | null {
   if (v === null || v === undefined) return null;
   const s = typeof v === "string" ? v : JSON.stringify(v);
   return s.trim() === "" ? null : s;
+}
+
+function toOptionalString(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const s = v.trim();
+  return s === "" ? null : s;
 }
 
 export function parseArticulos(raw: unknown): ArticuloSafe[] {
@@ -82,6 +89,9 @@ export function parseArticulos(raw: unknown): ArticuloSafe[] {
     } else {
       personalizacion = toStr(personalizacionRaw);
     }
+    const observation = Object.prototype.hasOwnProperty.call(o, "observacion")
+      ? toOptionalString(o["observacion"])
+      : toOptionalString(o["observation"]);
     return {
       nombre: toStr(o["nombre"] ?? o["name"] ?? o["titulo"] ?? o["title"]),
       cantidad: toNum(o["cantidad"] ?? o["quantity"] ?? o["qty"]),
@@ -90,6 +100,7 @@ export function parseArticulos(raw: unknown): ArticuloSafe[] {
       ),
       subtotal: toNum(o["subtotal"] ?? o["total"] ?? o["importe"]),
       personalizacion,
+      observation,
       imagen_url: toStr(o["imagen_url"] ?? o["image"] ?? o["image_url"] ?? o["imagen"]),
     };
   });

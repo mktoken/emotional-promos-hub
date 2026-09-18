@@ -454,6 +454,12 @@ export default function CotizacionDetail() {
                   {it.personalizacion && (
                     <p className="text-xs text-muted-foreground mt-0.5 truncate">{it.personalizacion}</p>
                   )}
+                  {it.observation && (
+                    <div className="mt-1 text-xs">
+                      <p className="font-medium text-muted-foreground">Observación del cliente</p>
+                      <p className="whitespace-pre-wrap text-foreground">{it.observation}</p>
+                    </div>
+                  )}
                 </div>
                 <div className="text-sm font-medium whitespace-nowrap">{formatMoney(it.subtotal)}</div>
               </div>

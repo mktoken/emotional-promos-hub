@@ -737,3 +737,57 @@ Restricciones cumplidas:
 
 Veredicto:
 PASS. El frontend ya transporta observation hacia el payload real de la RPC, sin crear datos reales durante QA.
+
+# QA post-merge main — observaciones frontend transport
+
+Estado: VALIDADO / PASS.
+
+Fecha: 2026-09-17
+Rama: main
+HEAD validado: 9de4d24
+
+Evidencia Git:
+
+- origin/main...main: 0 0.
+- Working tree limpio.
+- git diff --check: PASS.
+
+Evidencia automatizada:
+
+- bun run test: PASS.
+- Tests: 35/35 PASS.
+- bun run build: PASS.
+- Advertencias build conocidas: Browserslist desactualizado y chunk mayor a 500 kB.
+
+Evidencia funcional:
+
+- QuoteRequestItem incluye observation?: string.
+- QuoteCartView construye requestItems usando buildQuoteRequestItems(cart, observationsByCartId).
+- MASTER-STATE contiene Sub-checkpoint 2 observaciones por producto.
+- MASTER-STATE contiene Estado: VALIDADO / PASS.
+- El frontend transporta observation hacia el payload real de la RPC.
+
+QA visual previo:
+
+- Observación multilinea aparece en preview: sí.
+- Persiste al volver a editar: sí.
+- Botón final correcto: sí.
+- No se presionó envío final: sí.
+- Producto eliminado: sí.
+- Observación desaparece al eliminar producto: sí.
+- Errores visibles: no.
+
+Restricciones cumplidas:
+
+- No Supabase.
+- No migraciones.
+- No SQL.
+- No CRM.
+- No Index.tsx.
+- No deploy.
+- No publish.
+- No Lovable.
+- No leads reales.
+
+Veredicto:
+PASS. El Sub-checkpoint 2 queda integrado en main, validado y listo para cierre documental final.

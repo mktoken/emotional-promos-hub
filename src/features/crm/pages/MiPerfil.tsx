@@ -6,7 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
 import { useCrmAuth } from "@/features/crm/hooks/useCrmAuth";
+import { validatePasswordChange } from "@/features/crm/lib/password-validation";
 import {
   useMyProfile,
   useUpdateMyProfile,
@@ -31,6 +33,9 @@ export default function MiPerfil() {
   const updater = useUpdateMyProfile(auth.user?.id);
 
   const [form, setForm] = useState<Required<MyProfileUpdate>>(emptyForm);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     if (profile.data) {
@@ -86,6 +91,28 @@ export default function MiPerfil() {
       toast.success("Perfil actualizado");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "No se pudo guardar");
+    }
+  };
+
+  const onPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const validation = validatePasswordChange(newPassword, confirmPassword);
+    if (!validation.valid) {
+      toast.error(validation.error ?? "Revisa los datos de la contraseña.");
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      setNewPassword("");
+      setConfirmPassword("");
+      toast.success("Contraseña actualizada");
+    } catch {
+      toast.error("No se pudo actualizar la contraseña. Intenta nuevamente.");
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -181,6 +208,53 @@ export default function MiPerfil() {
           </form>
         </CardContent>
       </Card>
+
+      {auth.session && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Cambiar contraseña</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={onPasswordSubmit} className="space-y-4" noValidate>
+              <div className="space-y-1.5">
+                <Label htmlFor="new-password">Nueva contraseña</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  minLength={8}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="confirm-password">Confirmar nueva contraseña</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  minLength={8}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+              </div>
+              <div className="flex justify-end">
+                <Button type="submit" disabled={changingPassword} aria-label="Actualizar contraseña">
+                  {changingPassword ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Actualizando…
+                    </>
+                  ) : (
+                    "Actualizar contraseña"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

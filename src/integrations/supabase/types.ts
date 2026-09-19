@@ -433,6 +433,7 @@ export type Database = {
           id: string
           last_contacted_at: string | null
           lost_reason: string | null
+          next_follow_up_at: string | null
           public_email_hash: string | null
           public_phone_hash: string | null
           public_request_fingerprint: string | null
@@ -450,6 +451,7 @@ export type Database = {
           id?: string
           last_contacted_at?: string | null
           lost_reason?: string | null
+          next_follow_up_at?: string | null
           public_email_hash?: string | null
           public_phone_hash?: string | null
           public_request_fingerprint?: string | null
@@ -467,6 +469,7 @@ export type Database = {
           id?: string
           last_contacted_at?: string | null
           lost_reason?: string | null
+          next_follow_up_at?: string | null
           public_email_hash?: string | null
           public_phone_hash?: string | null
           public_request_fingerprint?: string | null
@@ -4874,6 +4877,10 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _uid: string }; Returns: boolean }
+      set_cotizacion_lead_follow_up: {
+        Args: { p_cotizacion_lead_id: string; p_next_follow_up_at: string | null }
+        Returns: undefined
+      }
       next_formal_quote_folio: { Args: never; Returns: string }
       normalize_catalog_text: { Args: { input_text: string }; Returns: string }
       product_has_available_stock: {

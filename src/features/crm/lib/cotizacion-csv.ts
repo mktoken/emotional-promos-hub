@@ -25,6 +25,7 @@ export function buildCotizacionesCsv(
     "whatsapp",
     "estado",
     "asesor",
+    "proximo_seguimiento",
     "total",
     "id",
   ];
@@ -46,6 +47,7 @@ export function buildCotizacionesCsv(
         safeCell(c.whatsapp),
         safeCell(estado),
         safeCell(asesor),
+        safeCell(formatDate(r.next_follow_up_at)),
         safeCell(r.total_estimado ?? ""),
         safeCell(r.id),
       ].join(","),

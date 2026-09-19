@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -15,12 +15,14 @@ import {
   History,
   Package,
   FileCheck2,
+  CalendarClock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
@@ -78,6 +80,20 @@ export default function CotizacionDetail() {
   const [savingNote, setSavingNote] = useState(false);
   const [copied, setCopied] = useState(false);
   const [creatingFormal, setCreatingFormal] = useState(false);
+  const [nextFollowUpAt, setNextFollowUpAt] = useState("");
+  const [savingFollowUp, setSavingFollowUp] = useState(false);
+
+  const toDateTimeLocal = (value: string | null | undefined) => {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  };
+
+  useEffect(() => {
+    setNextFollowUpAt(toDateTimeLocal(cot.data?.next_follow_up_at));
+  }, [cot.data?.next_follow_up_at]);
 
   if (auth.loading || cot.isLoading) {
     return (
@@ -190,6 +206,25 @@ export default function CotizacionDetail() {
     setNote("");
     toast.success("Nota agregada");
     qc.invalidateQueries({ queryKey: ["cotizacion_lead_notes", row.id] });
+  };
+
+  const handleSaveFollowUp = async (value = nextFollowUpAt) => {
+    if (!row.id) return;
+    setSavingFollowUp(true);
+    const nextIso = value ? new Date(value).toISOString() : null;
+    const { error } = await supabase.rpc("set_cotizacion_lead_follow_up", {
+      p_cotizacion_lead_id: row.id,
+      p_next_follow_up_at: nextIso,
+    });
+    setSavingFollowUp(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setNextFollowUpAt(value);
+    toast.success(nextIso ? "Próximo seguimiento guardado" : "Próximo seguimiento eliminado");
+    qc.invalidateQueries({ queryKey: ["cotizaciones_leads", id] });
+    qc.invalidateQueries({ queryKey: ["cotizaciones_leads", "list"] });
   };
 
   const handleCopyEmail = async () => {
@@ -399,6 +434,41 @@ export default function CotizacionDetail() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <CalendarClock className="w-4 h-4" /> Próximo seguimiento
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col sm:flex-row sm:items-end gap-3">
+          <div className="space-y-1.5 flex-1">
+            <Label htmlFor="next-follow-up-at">Fecha y hora</Label>
+            <Input
+              id="next-follow-up-at"
+              type="datetime-local"
+              value={nextFollowUpAt}
+              onChange={(e) => setNextFollowUpAt(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={() => void handleSaveFollowUp()} disabled={savingFollowUp} size="sm">
+              {savingFollowUp ? "Guardando…" : "Guardar seguimiento"}
+            </Button>
+            <Button
+              onClick={() => {
+                setNextFollowUpAt("");
+                void handleSaveFollowUp("");
+              }}
+              disabled={savingFollowUp || !nextFollowUpAt}
+              variant="outline"
+              size="sm"
+            >
+              Limpiar
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Datos + Artículos */}
       <div className="grid lg:grid-cols-2 gap-4">

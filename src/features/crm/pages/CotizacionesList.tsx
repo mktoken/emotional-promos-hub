@@ -262,6 +262,7 @@ export default function CotizacionesList() {
                   <th className="px-3 py-2 font-medium">Contacto</th>
                   <th className="px-3 py-2 font-medium">Estado</th>
                   <th className="px-3 py-2 font-medium">Asesor</th>
+                  <th className="px-3 py-2 font-medium">Próx. seguimiento</th>
                   <th className="px-3 py-2 font-medium text-right">Total</th>
                   <th className="px-3 py-2 font-medium text-center">Prod.</th>
                   <th className="px-3 py-2 font-medium text-center">WA</th>
@@ -322,6 +323,9 @@ function RowDesktop({
         <Badge variant={ESTADO_BADGE[est]}>{ESTADO_LABEL[est]}</Badge>
       </td>
       <td className="px-3 py-2 text-xs">{asesor}</td>
+      <td className="px-3 py-2 text-xs whitespace-nowrap">
+        {row.next_follow_up_at ? formatShortDate(row.next_follow_up_at) : "—"}
+      </td>
       <td className="px-3 py-2 text-right whitespace-nowrap">
         {formatMoney(row.total_estimado)}
       </td>
@@ -381,6 +385,9 @@ function RowMobile({
           <div className="font-medium">{formatMoney(row.total_estimado)}</div>
           <div className="text-muted-foreground">
             {items.length} producto{items.length === 1 ? "" : "s"}
+          </div>
+          <div className="text-muted-foreground">
+            Próx.: {row.next_follow_up_at ? formatShortDate(row.next_follow_up_at) : "—"}
           </div>
         </div>
       </div>

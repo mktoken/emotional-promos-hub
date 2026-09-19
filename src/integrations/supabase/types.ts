@@ -433,6 +433,7 @@ export type Database = {
           id: string
           last_contacted_at: string | null
           lost_reason: string | null
+          next_follow_up_at: string | null
           public_email_hash: string | null
           public_phone_hash: string | null
           public_request_fingerprint: string | null
@@ -450,6 +451,7 @@ export type Database = {
           id?: string
           last_contacted_at?: string | null
           lost_reason?: string | null
+          next_follow_up_at?: string | null
           public_email_hash?: string | null
           public_phone_hash?: string | null
           public_request_fingerprint?: string | null
@@ -467,6 +469,7 @@ export type Database = {
           id?: string
           last_contacted_at?: string | null
           lost_reason?: string | null
+          next_follow_up_at?: string | null
           public_email_hash?: string | null
           public_phone_hash?: string | null
           public_request_fingerprint?: string | null
@@ -4898,6 +4901,10 @@ export type Database = {
           rolled_back: boolean
           superseded_at: string
         }[]
+      }
+      set_cotizacion_lead_follow_up: {
+        Args: { p_cotizacion_lead_id: string; p_next_follow_up_at: string }
+        Returns: undefined
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }

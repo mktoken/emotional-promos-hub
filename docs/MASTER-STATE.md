@@ -963,3 +963,27 @@ Restricciones cumplidas:
 
 Veredicto:
 PASS. El CRM interno ya muestra la observación del cliente por producto usando el dato persistido en articulos_cotizados[].observacion.
+
+# Regla operativa Supabase / Lovable
+
+Estado: VIGENTE.
+
+Fecha: 2026-09-18
+
+Regla:
+En este proyecto, Supabase debe tratarse como integrado/interno dentro de Lovable.
+
+Implicaciones:
+
+- No asumir acceso externo directo a supabase.com/dashboard.
+- No asumir Supabase CLI.
+- No pedir service role.
+- No pedir credenciales externas de Supabase.
+- No ejecutar acciones fuera de Lovable salvo que Lovable abra explícitamente un acceso integrado.
+- Para Auth, Database, SQL o configuración, primero buscar dentro de Lovable: Emotional Promos Hub → Cloud / Database / Auth / Settings.
+
+Regla crítica:
+Si Lovable no expone una configuración de Supabase, se debe documentar el bloqueo antes de proponer rutas externas o cambios de arquitectura.
+
+Motivo:
+Durante AUTH-2 se asumió incorrectamente acceso externo directo a Supabase dashboard para revisar Auth URL Configuration. Esa suposición no aplica como ruta principal en este proyecto.

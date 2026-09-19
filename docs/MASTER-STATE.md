@@ -3,10 +3,20 @@
 ## Identidad de reentrada
 
 - Repositorio: `mktoken/emotional-promos-hub`
-- Rama maestra de continuación: `feat/v2-cutover-preparation`
-- Commit maestro actual: `94ed71f` — `fix: limpiar artefactos lovable fuera de alcance`
-- Working tree: limpio al cierre de Fase 4 documental.
-- Push: realizado a `origin/feat/v2-cutover-preparation`.
+- Rama maestra de continuación: `main`
+- Commit maestro actual: `f1101ce` — `docs: cerrar auth recuperacion contraseña e2e`
+- `origin/main`: `f1101ce` (sincronización `0 0`).
+- Working tree: limpio al cierre de `CHK-COM-0`.
+- Push: realizado a `origin/main`.
+
+## Estado de reentrada vigente — 2026-09-19
+
+- `AUTH-2`: **CERRADO / PASS**. Recuperación de contraseña validada en producción.
+- `CHK-COM-0`: **CERRADO / PASS**. Estado maestro alineado con `main` y `f1101ce`.
+- Checkpoint actual: **Auditoría del Flujo Comercial E2E V1**.
+- Fase actual: **AUDITORÍA SOLAMENTE**. No construir, corregir, desplegar ni actualizar Supabase hasta aprobar el alcance del siguiente subcheckpoint.
+- Hallazgo ejecutivo: el flujo público está funcional hasta la preparación de la solicitud; la recepción CRM, conversión a cotización formal y seguimiento aún requieren validación QA controlada.
+- Próximo subcheckpoint propuesto: `CHK-COM-1 — Solicitud pública QA controlada`.
 
 Este documento es la fuente de verdad de reentrada del proceso Pricing V2 / CatalogView V2. Consolida la historia verificable en Git, los reportes históricos versionados y el estado operativo reportado desde Lovable/Supabase interno. No sustituye las pruebas funcionales pendientes ni convierte documentación histórica en evidencia de producción actual.
 
@@ -16,6 +26,7 @@ Este documento es la fuente de verdad de reentrada del proceso Pricing V2 / Cata
 - **Confirmado por Lovable/Supabase interno:** resultados operativos registrados en planes versionados; requieren nueva consulta en Lovable si se necesita certificar el estado actual.
 - **Reporte histórico versionado:** dry run, shadow write y validaciones documentadas en `supabase/qa/`.
 - **Pendiente de validación futura:** cualquier cambio posterior a este checkpoint; la QA funcional post-migración quedó cerrada en Fase 4.
+- **Auditoría comercial 2026-09-19:** producción respondió; catálogo público comprobado con 992 productos, 15 categorías y precio autoritativo por cantidad. No se envió una solicitud QA ni se accedió al CRM durante esta auditoría.
 
 ## Estado Git y alcance
 
@@ -100,16 +111,17 @@ Esos cambios fueron revertidos o excluidos del resultado funcional final. No for
 | Frontend del catálogo | Alineado a V2 |
 | Legacy | No retirado; disponible como respaldo backend |
 | QA funcional final post-migración | Cerrada / aprobada: 20/20 PASS |
-| Nueva funcionalidad | No iniciar todavía |
+| AUTH-2 recuperación de contraseña | Cerrada / PASS |
+| Auditoría Flujo Comercial E2E V1 | Abierta / auditoría solamente |
+| Nueva funcionalidad | No iniciar durante la auditoría |
 
 ## Pendientes de control
 
 ### Pendiente inmediato
 
-- Cerrar la consolidación documental mediante revisión del diff de este archivo.
-- Crear el commit documental de cierre de Fase 4.
-- Autorizar posteriormente el push si el commit aún no está sincronizado.
-- Mantener Legacy y no iniciar nueva funcionalidad.
+- Completar la auditoría comercial E2E V1 sin crear solicitudes reales.
+- Obtener aprobación explícita para abrir `CHK-COM-1` con un caso QA controlado.
+- Mantener Legacy y no iniciar correcciones ni desarrollo durante la auditoría.
 
 ### No hacer todavía
 
@@ -122,7 +134,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional final. No for
 
 ## Próximo checkpoint autorizado
 
-El checkpoint documental consiste en revisar y aceptar el cierre de Fase 4 en este archivo. Una vez cerrado, no se debe avanzar a nueva funcionalidad; cualquier merge a `main`, QA adicional en producción o deuda técnica requiere una decisión separada.
+La auditoría comercial define el alcance, pero no autoriza todavía cambios funcionales. Después de aprobar el reporte, el siguiente checkpoint será `CHK-COM-1 — Solicitud pública QA controlada`, sujeto a datos QA autorizados y a la regla Construir → Validar → Estado maestro → Cerrar → Avanzar.
 
 ## Alcance y límites
 
@@ -130,9 +142,9 @@ El cierre registrado aquí cubre la preparación, activación, alineación y QA 
 
 ## Siguiente checkpoint recomendado
 
-Después de cerrar este checkpoint documental, decidir por separado entre merge controlado a `main`, QA adicional en producción o backlog de deuda técnica no bloqueante.
+`CHK-COM-1 — Solicitud pública QA controlada`.
 
-Hasta completar ambos checkpoints no se debe avanzar a nueva funcionalidad ni retirar el backend Legacy.
+Hasta completar la auditoría y aprobar el siguiente checkpoint no se debe retirar el backend Legacy ni iniciar trabajo funcional fuera del alcance comercial.
 
 # Fase 4 — QA funcional final post-migración CatalogView V2
 

@@ -1025,11 +1025,53 @@ Restricciones durante AUTH-2A:
 
 # AUTH-2B — Recuperación real por correo
 
-Estado: PENDIENTE.
+Estado: VALIDADO / PASS — E2E REAL EN PRODUCCIÓN.
 
-Pendiente:
-Validar E2E el correo real, el enlace de recuperación y el establecimiento de una nueva contraseña mediante Auth integrado en Lovable. Cualquier prueba que cambie realmente una contraseña requiere autorización explícita del usuario inmediatamente antes.
+Fecha: 2026-09-19
+Dominio validado: https://articulospromocionales.vip
 
-AUTH-2 completo permanece abierto hasta validar AUTH-2B.
+Validación E2E real:
+
+- La prueba se realizó sobre la versión publicada usando la cuenta real de administración autorizada.
+- La opción “¿Olvidaste tu contraseña?” estuvo visible en Login.
+- El primer intento mostró un error transitorio: “No se pudo procesar la solicitud. Intenta nuevamente.”
+- Un reintento posterior fue aceptado y mostró el mensaje neutral: “Si el correo existe, recibirás instrucciones para recuperar tu contraseña.”
+- Se recibió el correo real de recuperación de Emotional-Promos-Hub, enviado desde `no-reply@auth.lovable.cloud`, con asunto “Password Recovery” y botón “Reset Password”.
+- El enlace del correo redirigió correctamente a `https://articulospromocionales.vip/auth/update-password`.
+- El formulario de actualización permitió establecer una nueva contraseña sin exponerla en pantalla, mensajes ni URL.
+- Se confirmó “Contraseña actualizada. Ya puedes iniciar sesión.”
+- El inicio de sesión posterior con la nueva contraseña fue exitoso.
+- El acceso al CRM fue exitoso y el rol ADMIN se conservó.
+
+Configuración integrada observada en Lovable:
+
+- Email sign-in activo.
+- Site URL configurada como `https://promocionalesemocionales.lovable.app`.
+- Redirect URLs relevantes configuradas para `https://articulospromocionales.vip/**` y `https://www.articulospromocionales.vip/**`, además de las gestionadas por Lovable.
+
+Restricciones cumplidas:
+
+- No se usó Supabase externo.
+- No se usó Supabase CLI ni service role.
+- No se ejecutó SQL.
+- No se modificaron tablas, roles, profiles ni usuarios manualmente.
+- No se creó ningún usuario adicional.
+- No se generó código nuevo durante la validación.
+- No se hizo deploy ni publish durante la validación.
+- No se documentó ninguna contraseña ni secreto.
+
+Resultado:
+
+PASS. AUTH-2B queda validado mediante recuperación real por correo, actualización real de contraseña, reingreso exitoso y acceso confirmado al CRM.
+
+# AUTH-2 — Recuperación de contraseña
+
+Estado: CERRADO / PASS.
+
+- AUTH-2A: VALIDADO / PASS — implementación y QA local.
+- AUTH-2B: VALIDADO / PASS — E2E real en producción.
+- Flujo completo: Login → correo real → enlace de recuperación → actualización de contraseña → nuevo Login → CRM.
+- El rol ADMIN permaneció intacto.
+- La regla operativa Supabase / Lovable se mantiene vigente.
 
 La regla operativa vigente se conserva: Supabase se trata como integrado/interno dentro de Lovable; no se usa supabase.com, Supabase CLI ni service role como ruta operativa.

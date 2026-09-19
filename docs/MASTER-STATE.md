@@ -15,10 +15,11 @@
 - `CHK-COM-0`: **CERRADO / PASS**. Estado maestro alineado con `main` y `f1101ce`.
 - `CHK-COM-1`: **CERRADO / PASS**. Solicitud pública QA aceptada en producción; referencia `4ee88798-969f-4aaa-a0a6-f294d9753ef4`, un producto, total estimado `$1,800 MXN`, modo de precio `v2`.
 - `CHK-COM-2`: **CERRADO / PASS**. La oportunidad QA llegó al CRM con contacto, producto, cantidad, personalización, observación, modalidad, estado y total.
+- `CHK-COM-3`: **CERRADO / PASS**. La solicitud QA se convirtió en cotización formal `COT-2026-00008`, en borrador, con partida, subtotal, IVA y total calculados correctamente.
 - Checkpoint actual: **Auditoría del Flujo Comercial E2E V1**.
-- Fase actual: **VALIDACIÓN DE COTIZACIÓN FORMAL PENDIENTE**. No corregir, desplegar ni modificar datos hasta validar la conversión QA.
-- Hallazgo ejecutivo: el envío público y la recepción CRM funcionan; la conversión a cotización formal y el seguimiento aún requieren validación con sesión CRM autorizada.
-- Próximo subcheckpoint propuesto: `CHK-COM-3 — Conversión a cotización formal`.
+- Fase actual: **VALIDACIÓN DE SEGUIMIENTO PENDIENTE**. La cotización QA permanece en borrador y no fue emitida ni enviada.
+- Hallazgo ejecutivo: el envío público, la recepción CRM y la conversión a cotización formal funcionan; aún falta validar seguimiento y trazabilidad comercial.
+- Próximo subcheckpoint propuesto: `CHK-COM-4 — Seguimiento comercial`.
 
 Este documento es la fuente de verdad de reentrada del proceso Pricing V2 / CatalogView V2. Consolida la historia verificable en Git, los reportes históricos versionados y el estado operativo reportado desde Lovable/Supabase interno. No sustituye las pruebas funcionales pendientes ni convierte documentación histórica en evidencia de producción actual.
 
@@ -28,7 +29,7 @@ Este documento es la fuente de verdad de reentrada del proceso Pricing V2 / Cata
 - **Confirmado por Lovable/Supabase interno:** resultados operativos registrados en planes versionados; requieren nueva consulta en Lovable si se necesita certificar el estado actual.
 - **Reporte histórico versionado:** dry run, shadow write y validaciones documentadas en `supabase/qa/`.
 - **Pendiente de validación futura:** cualquier cambio posterior a este checkpoint; la QA funcional post-migración quedó cerrada en Fase 4.
-- **Auditoría comercial 2026-09-19:** producción respondió; catálogo público comprobado con 992 productos, 15 categorías y precio autoritativo por cantidad. La solicitud QA fue aceptada con referencia `4ee88798-969f-4aaa-a0a6-f294d9753ef4` y el CRM muestra sus datos completos en sesión autorizada.
+- **Auditoría comercial 2026-09-19:** producción respondió; catálogo público comprobado con 992 productos, 15 categorías y precio autoritativo por cantidad. La solicitud QA fue aceptada con referencia `4ee88798-969f-4aaa-a0a6-f294d9753ef4`, recibida completa en CRM y convertida a `COT-2026-00008` en borrador. No se emitió ni envió al cliente.
 
 ## Estado Git y alcance
 
@@ -114,15 +115,15 @@ Esos cambios fueron revertidos o excluidos del resultado funcional final. No for
 | Legacy | No retirado; disponible como respaldo backend |
 | QA funcional final post-migración | Cerrada / aprobada: 20/20 PASS |
 | AUTH-2 recuperación de contraseña | Cerrada / PASS |
-| Auditoría Flujo Comercial E2E V1 | Abierta / validación de cotización formal pendiente |
+| Auditoría Flujo Comercial E2E V1 | Abierta / validación de seguimiento pendiente |
 | Nueva funcionalidad | No iniciar durante la auditoría |
 
 ## Pendientes de control
 
 ### Pendiente inmediato
 
-- Validar la conversión de la referencia QA `4ee88798-969f-4aaa-a0a6-f294d9753ef4` a cotización formal.
-- Comprobar partidas, totales, impresión, documento imprimible y asociación con la oportunidad.
+- Validar el registro de seguimiento sobre la oportunidad QA y la cotización `COT-2026-00008`.
+- Comprobar estado, nota, próxima acción y trazabilidad sin contactar al dato QA.
 - Mantener Legacy y no iniciar correcciones ni desarrollo durante la auditoría.
 
 ### No hacer todavía
@@ -136,7 +137,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional final. No for
 
 ## Próximo checkpoint autorizado
 
-La auditoría comercial define el alcance, pero no autoriza todavía cambios funcionales. El siguiente checkpoint es `CHK-COM-3 — Conversión a cotización formal`, sujeto a la regla Construir → Validar → Estado maestro → Cerrar → Avanzar.
+La auditoría comercial define el alcance, pero no autoriza todavía cambios funcionales. El siguiente checkpoint es `CHK-COM-4 — Seguimiento comercial`, sujeto a la regla Construir → Validar → Estado maestro → Cerrar → Avanzar.
 
 ## Alcance y límites
 
@@ -144,7 +145,7 @@ El cierre registrado aquí cubre la preparación, activación, alineación y QA 
 
 ## Siguiente checkpoint recomendado
 
-`CHK-COM-3 — Conversión a cotización formal`.
+`CHK-COM-4 — Seguimiento comercial`.
 
 Hasta completar la auditoría y aprobar el siguiente checkpoint no se debe retirar el backend Legacy ni iniciar trabajo funcional fuera del alcance comercial.
 

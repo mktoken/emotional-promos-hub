@@ -17,10 +17,11 @@
 - `CHK-COM-2`: **CERRADO / PASS**. La oportunidad QA llegó al CRM con contacto, producto, cantidad, personalización, observación, modalidad, estado y total.
 - `CHK-COM-3`: **CERRADO / PASS**. La solicitud QA se convirtió en cotización formal `COT-2026-00008`, en borrador, con partida, subtotal, IVA y total calculados correctamente.
 - `CHK-COM-4`: **CERRADO / PARCIAL**. El vendedor puede ver contactos, cambiar estado y guardar notas internas; no hay próxima acción programable visible en esta oportunidad y no se registró historial de estado.
+- `CHK-COM-5`: **CERRADO / PARCIAL**. El seguimiento programable existe en `Prospectos`, pero la oportunidad pública QA permanece solo en `Cotizaciones` y no está conectada a ese módulo.
 - Checkpoint actual: **Auditoría del Flujo Comercial E2E V1**.
-- Fase actual: **DECISIÓN DE OPERABILIDAD V1 PENDIENTE**. La cotización QA permanece en borrador y no fue emitida ni enviada.
-- Hallazgo ejecutivo: el envío público, la recepción CRM, la conversión a cotización formal y la nota interna funcionan; el seguimiento programado/SLA requiere definición o trabajo adicional.
-- Próximo subcheckpoint propuesto: `CHK-COM-5 — Seguimiento programado y SLA`.
+- Fase actual: **AUDITORÍA COMPLETADA / DECISIÓN V1 PENDIENTE**. La cotización QA permanece en borrador y no fue emitida ni enviada.
+- Hallazgo ejecutivo: el flujo cliente → CRM → cotización formal funciona; el seguimiento programado de oportunidades públicas no está conectado al registro comercial recibido.
+- Próximo subcheckpoint propuesto: `CHK-COM-6 — Aprobación de alcance V1 y plan de corrección`.
 
 Este documento es la fuente de verdad de reentrada del proceso Pricing V2 / CatalogView V2. Consolida la historia verificable en Git, los reportes históricos versionados y el estado operativo reportado desde Lovable/Supabase interno. No sustituye las pruebas funcionales pendientes ni convierte documentación histórica en evidencia de producción actual.
 
@@ -30,7 +31,7 @@ Este documento es la fuente de verdad de reentrada del proceso Pricing V2 / Cata
 - **Confirmado por Lovable/Supabase interno:** resultados operativos registrados en planes versionados; requieren nueva consulta en Lovable si se necesita certificar el estado actual.
 - **Reporte histórico versionado:** dry run, shadow write y validaciones documentadas en `supabase/qa/`.
 - **Pendiente de validación futura:** cualquier cambio posterior a este checkpoint; la QA funcional post-migración quedó cerrada en Fase 4.
-- **Auditoría comercial 2026-09-19:** producción respondió; catálogo público comprobado con 992 productos, 15 categorías y precio autoritativo por cantidad. La solicitud QA fue aceptada con referencia `4ee88798-969f-4aaa-a0a6-f294d9753ef4`, recibida completa en CRM, convertida a `COT-2026-00008` en borrador y anotada internamente. No se emitió ni envió al cliente.
+- **Auditoría comercial 2026-09-19:** producción respondió; catálogo público comprobado con 992 productos, 15 categorías y precio autoritativo por cantidad. La solicitud QA fue aceptada con referencia `4ee88798-969f-4aaa-a0a6-f294d9753ef4`, recibida completa en CRM, convertida a `COT-2026-00008` en borrador y anotada internamente. El seguimiento programable está disponible en `Prospectos`, pero no conectado a esta oportunidad. No se emitió ni envió al cliente.
 
 ## Estado Git y alcance
 
@@ -116,15 +117,15 @@ Esos cambios fueron revertidos o excluidos del resultado funcional final. No for
 | Legacy | No retirado; disponible como respaldo backend |
 | QA funcional final post-migración | Cerrada / aprobada: 20/20 PASS |
 | AUTH-2 recuperación de contraseña | Cerrada / PASS |
-| Auditoría Flujo Comercial E2E V1 | Abierta / decisión de operabilidad V1 pendiente |
+| Auditoría Flujo Comercial E2E V1 | Completada / decisión V1 pendiente |
 | Nueva funcionalidad | No iniciar durante la auditoría |
 
 ## Pendientes de control
 
 ### Pendiente inmediato
 
-- Definir si el seguimiento programado/SLA existente en otro módulo cubre esta oportunidad.
-- Si no la cubre, abrir un subcheckpoint funcional específico; no corregir durante esta auditoría.
+- Revisar y aprobar el alcance de la corrección de seguimiento para oportunidades públicas.
+- Mantener la corrección fuera de esta auditoría; no construir hasta abrir el checkpoint aprobado.
 - Mantener Legacy y no iniciar correcciones ni desarrollo durante la auditoría.
 
 ### No hacer todavía
@@ -138,7 +139,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional final. No for
 
 ## Próximo checkpoint autorizado
 
-La auditoría comercial define el alcance, pero no autoriza todavía cambios funcionales. El siguiente checkpoint propuesto es `CHK-COM-5 — Seguimiento programado y SLA`, sujeto a la regla Construir → Validar → Estado maestro → Cerrar → Avanzar.
+La auditoría comercial está completada y no autoriza por sí sola cambios funcionales. El siguiente checkpoint propuesto es `CHK-COM-6 — Aprobación de alcance V1 y plan de corrección`, sujeto a la regla Construir → Validar → Estado maestro → Cerrar → Avanzar.
 
 ## Alcance y límites
 
@@ -146,7 +147,7 @@ El cierre registrado aquí cubre la preparación, activación, alineación y QA 
 
 ## Siguiente checkpoint recomendado
 
-`CHK-COM-5 — Seguimiento programado y SLA`.
+`CHK-COM-6 — Aprobación de alcance V1 y plan de corrección`.
 
 Hasta completar la auditoría y aprobar el siguiente checkpoint no se debe retirar el backend Legacy ni iniciar trabajo funcional fuera del alcance comercial.
 

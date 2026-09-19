@@ -987,3 +987,49 @@ Si Lovable no expone una configuración de Supabase, se debe documentar el bloqu
 
 Motivo:
 Durante AUTH-2 se asumió incorrectamente acceso externo directo a Supabase dashboard para revisar Auth URL Configuration. Esa suposición no aplica como ruta principal en este proyecto.
+
+# AUTH-2A — Recuperación de contraseña desde Login
+
+Estado: VALIDADO / PASS.
+
+Fecha: 2026-09-18
+Rama: main
+Commit funcional: c4df8f8
+
+Implementado:
+
+- Enlace “¿Olvidaste tu contraseña?” en /login.
+- Solicitud mediante supabase.auth.resetPasswordForEmail().
+- Respuesta neutral para evitar enumeración de cuentas.
+- Redirect a /auth/update-password.
+- Contraseña mínima de 8 caracteres y confirmación.
+- Actualización mediante supabase.auth.updateUser().
+- Acceso directo sin recuperación válida bloqueado.
+
+Validación:
+
+- QA local: PASS.
+- Tests generales: 35/35 PASS.
+- Tests específicos AUTH-2/AUTH-1: 12/12 PASS.
+- Build: PASS.
+- git diff --check: PASS.
+- Integración a main mediante fast-forward: PASS.
+
+Restricciones durante AUTH-2A:
+
+- No SQL, migraciones ni service role.
+- No cambios de roles ni usuarios.
+- No acceso externo directo a Supabase.
+- No correo real ni cambio real de contraseña.
+- No deploy/publish.
+
+# AUTH-2B — Recuperación real por correo
+
+Estado: PENDIENTE.
+
+Pendiente:
+Validar E2E el correo real, el enlace de recuperación y el establecimiento de una nueva contraseña mediante Auth integrado en Lovable. Cualquier prueba que cambie realmente una contraseña requiere autorización explícita del usuario inmediatamente antes.
+
+AUTH-2 completo permanece abierto hasta validar AUTH-2B.
+
+La regla operativa vigente se conserva: Supabase se trata como integrado/interno dentro de Lovable; no se usa supabase.com, Supabase CLI ni service role como ruta operativa.

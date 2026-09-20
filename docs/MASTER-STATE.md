@@ -5,6 +5,8 @@
 - Repositorio: `mktoken/emotional-promos-hub`
 - Rama maestra de continuación: `main`
 - Commit funcional de CHK-COM-6: `a16ce79` — `feat: programar seguimiento en cotizaciones publicas`.
+- Commit documental de cierre: `26f46b3` — `docs: cerrar seguimiento de oportunidades qa`.
+- Merge final con los cambios remotos de Lovable: `6ac668a`.
 - `main` y `origin/main`: sincronizados `0 0` al cierre documental de CHK-COM-6.
 - Working tree: limpio al cierre de `CHK-COM-6`.
 - Push: realizado a `origin/main`.
@@ -106,7 +108,7 @@ Durante Fase 3 se detectaron cambios fuera de alcance en:
 - `src/integrations/supabase/types.ts`;
 - `src/integrations/supabase/previewAuthStorage.ts`.
 
-Esos cambios fueron revertidos o excluidos del resultado funcional final. No forman parte del cambio autorizado de Fase 3. La limpieza quedó registrada en `94ed71f`; el diff funcional aceptado frente a `4084872` conserva únicamente `src/components/CatalogView.tsx`.
+Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Esta afirmación corresponde al corte histórico de Fase 3. La limpieza quedó registrada en `94ed71f`; el diff funcional aceptado frente a `4084872` conservó únicamente `src/components/CatalogView.tsx`. Posteriormente, durante CHK-COM-6, Lovable volvió a versionar cambios relacionados con la integración interna de Supabase (`types.ts`, `client.ts`, `previewAuthStorage.ts`) y agregó la migración de seguimiento; quedaron integrados en `65947b6`, `2905a11`, `1aaebee` y el merge `6ac668a`.
 
 ## Estado actual
 
@@ -132,7 +134,6 @@ Esos cambios fueron revertidos o excluidos del resultado funcional final. No for
 ### No hacer todavía
 
 - No retirar Legacy.
-- No hacer merge a `main`.
 - No iniciar nuevas funcionalidades.
 - No rediseñar el catálogo.
 - No modificar backend, Supabase, migraciones, RLS, grants, secrets o Edge Functions.
@@ -140,7 +141,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional final. No for
 
 ## Próximo checkpoint autorizado
 
-CHK-COM-6 quedó cerrado con PASS. No hay otro checkpoint iniciado; el siguiente deberá definirse y aprobarse explícitamente, sujeto a la regla Construir → Validar → Estado maestro → Cerrar → Avanzar.
+CHK-COM-6 quedó cerrado con PASS mediante el commit documental `26f46b3` y el merge `6ac668a`. No hay otro checkpoint iniciado; el siguiente deberá definirse y aprobarse explícitamente, sujeto a la regla Construir → Validar → Estado maestro → Cerrar → Avanzar.
 
 ## Alcance y límites
 
@@ -152,7 +153,7 @@ Definir el siguiente subcheckpoint mínimo para completar la operación comercia
 
 Hasta completar la auditoría y aprobar el siguiente checkpoint no se debe retirar el backend Legacy ni iniciar trabajo funcional fuera del alcance comercial.
 
-# Fase 4 — QA funcional final post-migración CatalogView V2
+# Fase 4 — QA funcional final post-migración CatalogView V2 (histórico)
 
 **Estado: CERRADA / APROBADA.**
 
@@ -228,11 +229,11 @@ Hasta completar la auditoría y aprobar el siguiente checkpoint no se debe retir
 - Ficha y carrito alineados a V2.
 - QA funcional final aprobado.
 - Legacy conservado como respaldo.
-- No hacer merge a `main` todavía.
+- En ese momento todavía no se debía hacer merge a `main`; esa decisión histórica quedó superada por el merge controlado `6ac668a`.
 - No retirar Legacy todavía.
-- No iniciar nuevas funcionalidades hasta cerrar el checkpoint documental de Fase 4.
+- En ese momento no se debían iniciar nuevas funcionalidades hasta cerrar el checkpoint documental de Fase 4; Fase 4 ya quedó cerrada y CHK-COM-6 es el checkpoint vigente más reciente.
 
-## Siguiente checkpoint recomendado
+## Siguiente checkpoint recomendado (histórico)
 
 Checkpoint documental Fase 4:
 

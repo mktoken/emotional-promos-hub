@@ -305,7 +305,14 @@ export default function CotizacionDetail() {
                   .from("formal_quotes")
                   .insert({
                     cotizacion_lead_id: row.id,
-                    cliente: row.datos_cliente as unknown as never,
+                    cliente: {
+                      ...(row.datos_cliente as Record<string, unknown>),
+                      nombre: c.nombre,
+                      empresa: c.empresa,
+                      email: c.email,
+                      telefono: c.telefono,
+                      whatsapp: c.whatsapp,
+                    } as unknown as never,
                     assigned_to: row.assigned_to ?? auth.user.id,
                     created_by: auth.user.id,
                   })

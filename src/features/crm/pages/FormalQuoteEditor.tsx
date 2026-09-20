@@ -16,6 +16,8 @@ import {
   Lightbulb,
   Search,
   Link2,
+  Mail,
+  MessageCircle,
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -55,6 +57,7 @@ import { calcPrintEngine, suggestPrintMethod, type PrintEngineResult } from "@/f
 import type { Json } from "@/integrations/supabase/types";
 import { FormalQuotePrintJobsSection } from "@/features/crm/components/FormalQuotePrintJobsSection";
 import { QuoteItemPrintConfigurator } from "@/features/crm/components/QuoteItemPrintConfigurator";
+import { buildGmailUrl, buildWaUrl } from "@/features/crm/lib/contact-defaults";
 import {
   searchProductByClave,
   pickPriceForQty,
@@ -72,6 +75,8 @@ interface ClienteShape {
   whatsapp?: string | null;
   rfc?: string | null;
 }
+
+const digits = (value?: string | null) => (value ?? "").replace(/\D+/g, "");
 
 export default function FormalQuoteEditor() {
   const { quoteId } = useParams<{ quoteId: string }>();
@@ -210,6 +215,21 @@ export default function FormalQuoteEditor() {
   const q = quote.data;
   const status = normalizeFormalStatus(q.status);
   const isLocked = status === "ACEPTADA" || status === "CANCELADA";
+  const recipientEmail = cliente.email?.trim() ?? "";
+  const recipientWhatsApp = digits(cliente.whatsapp || cliente.telefono);
+  const emailHref = recipientEmail
+    ? buildGmailUrl(
+        recipientEmail,
+        `Cotización ${q.folio} — Promocionales Emocionales`,
+        `Hola ${cliente.nombre?.trim() || ""},\n\nTe compartimos la cotización ${q.folio}. Adjunta el PDF descargado desde este CRM antes de enviarlo.\n\nSaludos,`,
+      )
+    : "#";
+  const whatsappHref = recipientWhatsApp
+    ? buildWaUrl(
+        recipientWhatsApp,
+        `Hola ${cliente.nombre?.trim() || ""}, te compartimos la cotización ${q.folio} de Promocionales Emocionales. Puedes adjuntar el PDF de la cotización en este chat.`,
+      )
+    : "#";
 
   // ===== Handlers Motor de impresión (INTERNO) =====
   const peSelectedItem = (items.data ?? []).find((it) => it.id === peItemId) ?? null;
@@ -581,6 +601,20 @@ export default function FormalQuoteEditor() {
             <Button size="sm" onClick={handleEmitir} disabled={updateQuote.isPending}>
               <Send className="w-4 h-4 mr-2" /> Marcar como emitida
             </Button>
+          )}
+          {status === "EMITIDA" && (
+            <>
+              <Button asChild size="sm" variant="outline" disabled={!recipientEmail}>
+                <a href={emailHref} target="_blank" rel="noopener noreferrer" aria-label="Abrir Gmail para enviar la cotización">
+                  <Mail className="w-4 h-4 mr-2" /> Abrir Gmail
+                </a>
+              </Button>
+              <Button asChild size="sm" variant="outline" disabled={!recipientWhatsApp}>
+                <a href={whatsappHref} target="_blank" rel="noopener noreferrer" aria-label="Abrir WhatsApp para enviar la cotización">
+                  <MessageCircle className="w-4 h-4 mr-2" /> Abrir WhatsApp
+                </a>
+              </Button>
+            </>
           )}
         </div>
       </div>

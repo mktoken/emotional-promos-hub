@@ -30,7 +30,8 @@
 
 ## Reconciliación Git ↔ Lovable ↔ Producción — 2026-09-26
 
-- **Git:** `main` y `origin/main` están en `c4d2195` (`feat: agregar acciones manuales de envio de cotizacion`), con divergencia `0 0` y working tree limpio.
+- **Git — estado inicial de la reconciliación:** `main` y `origin/main` estaban en `c4d2195` (`feat: agregar acciones manuales de envio de cotizacion`), con divergencia `0 0` y working tree limpio.
+- **Git — estado posterior a la reconciliación:** `main` y `origin/main` quedaron en `b4f2aab` (`docs: reconciliar estado envio cotizacion`), con divergencia `0 0` y working tree limpio.
 - **Lovable:** el proyecto `406ed62b-fa9a-4346-82b6-4b111a4193b3` contiene las acciones `Abrir Gmail` y `Abrir WhatsApp`; durante esta reconciliación no se realizaron modificaciones.
 - **Producción:** la cotización formal `COT-2026-00008`, en estado `Emitida`, mostró ambas acciones en `https://articulospromocionales.vip`; la QA fue visual y funcional, sin activar ninguna de ellas.
 - **Preparación validada:** Gmail mostró destinatario, asunto y cuerpo preparados; WhatsApp mostró teléfono y mensaje preparados.

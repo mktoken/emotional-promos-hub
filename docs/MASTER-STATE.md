@@ -11,7 +11,7 @@
 - Working tree: limpio al cierre de `CHK-COM-6`.
 - Push: realizado a `origin/main`.
 
-## Estado de reentrada vigente — 2026-09-19
+## Estado de reentrada vigente — 2026-09-26
 
 - `AUTH-2`: **CERRADO / PASS**. Recuperación de contraseña validada en producción.
 - `CHK-COM-0`: **CERRADO / PASS**. Estado maestro alineado con `main` y `f1101ce`.
@@ -22,10 +22,21 @@
 - `CHK-COM-5`: **CERRADO / PARCIAL**. El seguimiento programable existía en `Prospectos`, pero la oportunidad pública QA no estaba conectada a ese módulo.
 - `CHK-COM-6`: **CERRADO / PASS**. Se agregó el seguimiento programable directamente a la oportunidad pública; la migración interna de Lovable/Supabase quedó aplicada y la función restringida al personal autenticado.
 - Evidencia CHK-COM-6: en producción, la oportunidad QA `4ee88798-969f-4aaa-a0a6-f294d9753ef4` guardó el seguimiento para el 20/09/2026 a las 10:00, persistió después de recargar y posteriormente fue limpiado con PASS. La cotización formal `COT-2026-00008` permaneció en borrador y no se contactó al prospecto QA.
-- `CHK-COM-7`: **CERRADO / PARCIAL**. La cotización formal QA `COT-2026-00008` fue emitida en producción y mostró “Cotización emitida”, conservando datos, partida y totales; no existe una acción visible para enviarla al cliente ni se realizó ningún envío.
-- Checkpoint actual: **CHK-COM-7 CERRADO / PARCIAL**.
-- Fase actual: **EMISIÓN QA VALIDADA; ENVÍO AL CLIENTE PENDIENTE**. El flujo cliente → CRM → cotización formal → seguimiento → emisión está comprobado en producción; la operación comercial completa aún requiere resolver y validar el envío controlado de la cotización.
-- Próximo paso autorizado: definir `CHK-COM-8 — Envío controlado de cotización formal`, sin iniciar trabajo adicional automáticamente.
+- `CHK-COM-7`: **CERRADO / PARCIAL**. La cotización formal QA `COT-2026-00008` fue emitida en producción y mostró “Cotización emitida”, conservando datos, partida y totales. En el corte de cierre de CHK-COM-7 no se había probado el envío al cliente.
+- `CHK-COM-8`: **ABIERTO / IMPLEMENTACIÓN VALIDADA; ENVÍO REAL PENDIENTE**. Conserva la definición existente: **Envío controlado de cotización formal**. Las acciones manuales `Abrir Gmail` y `Abrir WhatsApp` están implementadas, presentes en Lovable y disponibles en producción dentro de `COT-2026-00008`; se validó visualmente la preparación de destinatario, asunto y mensaje, sin activar ningún envío.
+- Checkpoint actual: **CHK-COM-8 ABIERTO / IMPLEMENTACIÓN VALIDADA; ENVÍO REAL PENDIENTE**.
+- Fase actual: **ACCIONES MANUALES DE ENVÍO PRESENTES Y VALIDADAS; ENVÍO Y ENTREGA NO COMPROBADOS**. El flujo cliente → CRM → cotización formal → seguimiento → emisión y la presencia funcional de las acciones están comprobados en producción; no existe evidencia de envío real ni de entrega al cliente.
+- Próximo paso autorizado: completar, únicamente con aprobación explícita, la validación controlada del envío real dentro del alcance original de `CHK-COM-8`; no cerrar el checkpoint como PASS completo antes de contar con esa evidencia.
+
+## Reconciliación Git ↔ Lovable ↔ Producción — 2026-09-26
+
+- **Git:** `main` y `origin/main` están en `c4d2195` (`feat: agregar acciones manuales de envio de cotizacion`), con divergencia `0 0` y working tree limpio.
+- **Lovable:** el proyecto `406ed62b-fa9a-4346-82b6-4b111a4193b3` contiene las acciones `Abrir Gmail` y `Abrir WhatsApp`; durante esta reconciliación no se realizaron modificaciones.
+- **Producción:** la cotización formal `COT-2026-00008`, en estado `Emitida`, mostró ambas acciones en `https://articulospromocionales.vip`; la QA fue visual y funcional, sin activar ninguna de ellas.
+- **Preparación validada:** Gmail mostró destinatario, asunto y cuerpo preparados; WhatsApp mostró teléfono y mensaje preparados.
+- **Envío real:** **NO COMPROBADO**. No se abrió Gmail ni WhatsApp para enviar.
+- **Entrega al cliente:** **NO COMPROBADA**.
+- **Conclusión:** `c4d2195` queda conciliado entre Git, Lovable y Producción como **IMPLEMENTADO, PRESENTE Y CONFIRMADO FUNCIONALMENTE EN PRODUCCIÓN** mediante `COT-2026-00008`. Esta conciliación no equivale a validar envío ni entrega.
 
 Este documento es la fuente de verdad de reentrada del proceso Pricing V2 / CatalogView V2. Consolida la historia verificable en Git, los reportes históricos versionados y el estado operativo reportado desde Lovable/Supabase interno. No sustituye las pruebas funcionales pendientes ni convierte documentación histórica en evidencia de producción actual.
 
@@ -36,6 +47,7 @@ Este documento es la fuente de verdad de reentrada del proceso Pricing V2 / Cata
 - **Reporte histórico versionado:** dry run, shadow write y validaciones documentadas en `supabase/qa/`.
 - **Pendiente de validación futura:** cualquier cambio posterior a este checkpoint; la QA funcional post-migración quedó cerrada en Fase 4.
 - **Auditoría comercial 2026-09-19:** producción respondió; catálogo público comprobado con 992 productos, 15 categorías y precio autoritativo por cantidad. La solicitud QA fue aceptada con referencia `4ee88798-969f-4aaa-a0a6-f294d9753ef4`, recibida completa en CRM, convertida a `COT-2026-00008` inicialmente en borrador y anotada internamente. CHK-COM-6 validó el seguimiento directamente en la oportunidad: guardado, persistencia tras recarga y limpieza QA, todo PASS. CHK-COM-7 validó la emisión de la cotización, pero no se envió al cliente.
+- **QA continuidad de producción 2026-09-26:** confirmó el sitio público, catálogo, sesión/CRM y `COT-2026-00008`. Confirmó funcionalmente en producción las acciones manuales `Abrir Gmail` y `Abrir WhatsApp` asociadas a `c4d2195`, incluida la preparación visual de destinatario/asunto/mensaje, sin envío ni entrega comprobados.
 
 ## Estado Git y alcance
 
@@ -124,14 +136,15 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 | Auditoría Flujo Comercial E2E V1 | Completada |
 | Seguimiento de oportunidades públicas | Validado / PASS en producción |
 | Emisión de cotización formal QA | Validada / PASS en producción |
-| Envío de cotización formal | Pendiente / no comprobado |
+| Envío de cotización formal | Implementación manual validada / envío real y entrega no comprobados |
 | Nueva funcionalidad | No iniciar sin nuevo checkpoint autorizado |
 
 ## Pendientes de control
 
 ### Pendiente inmediato
 
-- Definir y aprobar `CHK-COM-8 — Envío controlado de cotización formal`.
+- Mantener `CHK-COM-8 — Envío controlado de cotización formal` **ABIERTO**, con implementación de acciones manuales validada y envío real pendiente.
+- Ejecutar la validación controlada del envío y comprobar la entrega solo después de contar con aprobación explícita.
 - Mantener Legacy y no iniciar correcciones ni desarrollo fuera del alcance aprobado.
 
 ### No hacer todavía
@@ -144,7 +157,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 
 ## Próximo checkpoint autorizado
 
-CHK-COM-6 quedó cerrado con PASS mediante el commit documental `26f46b3` y el merge `6ac668a`; CHK-COM-7 quedó cerrado como PARCIAL por la ausencia de envío visible de cotización. No hay otro checkpoint iniciado; `CHK-COM-8` deberá definirse y aprobarse explícitamente, sujeto a la regla Construir → Validar → Estado maestro → Cerrar → Avanzar.
+CHK-COM-6 quedó cerrado con PASS mediante el commit documental `26f46b3` y el merge `6ac668a`; CHK-COM-7 quedó cerrado como PARCIAL por la ausencia de envío probado. `CHK-COM-8` permanece ABIERTO conforme a su definición original de **Envío controlado de cotización formal**: la implementación de acciones manuales fue validada en producción, pero el envío real y la entrega al cliente siguen pendientes. Su cierre queda sujeto a la regla Construir → Validar → Estado maestro → Cerrar → Avanzar.
 
 ## Alcance y límites
 
@@ -152,7 +165,7 @@ El cierre registrado aquí cubre la preparación, activación, alineación y QA 
 
 ## Siguiente checkpoint recomendado
 
-`CHK-COM-8 — Envío controlado de cotización formal`, sin iniciar trabajo hasta contar con alcance aprobado.
+Completar `CHK-COM-8 — Envío controlado de cotización formal` mediante una validación real controlada, sin afirmar envío ni entrega antes de observar evidencia directa.
 
 Hasta completar la auditoría y aprobar el siguiente checkpoint no se debe retirar el backend Legacy ni iniciar trabajo funcional fuera del alcance comercial.
 

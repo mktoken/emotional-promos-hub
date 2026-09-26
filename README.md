@@ -1,8 +1,31 @@
-# Welcome to your Lovable project
+# Emotional Promos Hub / Promocionales Emocionales
+
+Plataforma B2B para catálogo de artículos promocionales, solicitudes de cotización, CRM y cotización formal.
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+- Repositorio: `mktoken/emotional-promos-hub`
+- Producción: <https://articulospromocionales.vip>
+- Proyecto Lovable: `406ed62b-fa9a-4346-82b6-4b111a4193b3`
+- Rama de continuación: `main`
+
+## Continuidad del proyecto
+
+La primera lectura obligatoria es [`docs/00_PROJECT_INDEX.md`](docs/00_PROJECT_INDEX.md).
+
+Para conocer el estado actual, el checkpoint vigente y el siguiente paso autorizado, consultar [`docs/MASTER-STATE.md`](docs/MASTER-STATE.md).
+
+El README es una guía de entrada y no es una segunda fuente de estado.
+
+Documentación canónica:
+
+- [`docs/00_PROJECT_INDEX.md`](docs/00_PROJECT_INDEX.md) — índice y autoridad documental.
+- [`docs/02_DECISION_LOG.md`](docs/02_DECISION_LOG.md) — decisiones.
+- [`docs/04_PRODUCT_SCOPE.md`](docs/04_PRODUCT_SCOPE.md) — producto.
+- [`docs/05_ARCHITECTURE.md`](docs/05_ARCHITECTURE.md) — arquitectura.
+- [`docs/08_OPERATIONS_RUNBOOK.md`](docs/08_OPERATIONS_RUNBOOK.md) — operación.
+- [`docs/09_PRICING_CATALOG_V2.md`](docs/09_PRICING_CATALOG_V2.md) — Pricing y catálogo V2.
+- [`docs/10_QA_EVIDENCE.md`](docs/10_QA_EVIDENCE.md) — evidencia QA.
 
 ## How can I edit this code?
 
@@ -10,7 +33,7 @@ There are several ways of editing your application.
 
 **Use Lovable**
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+Simply visit the [Lovable Project](https://lovable.dev/projects/406ed62b-fa9a-4346-82b6-4b111a4193b3) and start prompting.
 
 Changes made via Lovable will be committed automatically to this repo.
 
@@ -67,7 +90,7 @@ This project is built with:
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+Simply open [Lovable](https://lovable.dev/projects/406ed62b-fa9a-4346-82b6-4b111a4193b3) and click on Share -> Publish.
 
 ## Can I connect a custom domain to my Lovable project?
 

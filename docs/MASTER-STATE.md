@@ -4,6 +4,9 @@
 
 - Repositorio: `mktoken/emotional-promos-hub`
 - Rama maestra de continuación: `main`
+- Commit documental de entrada a `CHK-DOC-1B`: `bc13a15` — `docs: corregir referencia de estado final`.
+- Estado Git de entrada a `CHK-DOC-1B`: `main` y `origin/main` en `bc13a15`, sincronizados `0 0`; working tree limpio.
+- Validación actual registrada: tests `67/67 PASS`; build `PASS`.
 - Commit funcional de CHK-COM-6: `a16ce79` — `feat: programar seguimiento en cotizaciones publicas`.
 - Commit documental de cierre: `26f46b3` — `docs: cerrar seguimiento de oportunidades qa`.
 - Merge final con los cambios remotos de Lovable: `6ac668a`.
@@ -31,13 +34,40 @@
 ## Reconciliación Git ↔ Lovable ↔ Producción — 2026-09-26
 
 - **Git — estado inicial de la reconciliación:** `main` y `origin/main` estaban en `c4d2195` (`feat: agregar acciones manuales de envio de cotizacion`), con divergencia `0 0` y working tree limpio.
-- **Git — estado posterior a la reconciliación:** `main` y `origin/main` quedaron en `b4f2aab` (`docs: reconciliar estado envio cotizacion`), con divergencia `0 0` y working tree limpio.
+- **Git — estado posterior a la reconciliación:** `b4f2aab` (`docs: reconciliar estado envio cotizacion`) fue el commit documental rebasado; el estado final vigente quedó en `bc13a15` (`docs: corregir referencia de estado final`), con divergencia `0 0` y working tree limpio.
 - **Lovable:** el proyecto `406ed62b-fa9a-4346-82b6-4b111a4193b3` contiene las acciones `Abrir Gmail` y `Abrir WhatsApp`; durante esta reconciliación no se realizaron modificaciones.
 - **Producción:** la cotización formal `COT-2026-00008`, en estado `Emitida`, mostró ambas acciones en `https://articulospromocionales.vip`; la QA fue visual y funcional, sin activar ninguna de ellas.
 - **Preparación validada:** Gmail mostró destinatario, asunto y cuerpo preparados; WhatsApp mostró teléfono y mensaje preparados.
 - **Envío real:** **NO COMPROBADO**. No se abrió Gmail ni WhatsApp para enviar.
 - **Entrega al cliente:** **NO COMPROBADA**.
 - **Conclusión:** `c4d2195` queda conciliado entre Git, Lovable y Producción como **IMPLEMENTADO, PRESENTE Y CONFIRMADO FUNCIONALMENTE EN PRODUCCIÓN** mediante `COT-2026-00008`. Esta conciliación no equivale a validar envío ni entrega.
+
+## Jerarquía documental canónica
+
+- Entrada: `docs/00_PROJECT_INDEX.md`.
+- Estado vigente y checkpoint: este documento.
+- Decisiones: `docs/02_DECISION_LOG.md`.
+- Producto: `docs/04_PRODUCT_SCOPE.md`.
+- Arquitectura: `docs/05_ARCHITECTURE.md`.
+- Operación: `docs/08_OPERATIONS_RUNBOOK.md`.
+- Pricing y catálogo V2: `docs/09_PRICING_CATALOG_V2.md`.
+- Índice QA: `docs/10_QA_EVIDENCE.md`.
+- `supabase/qa/` y `.lovable/plan/`: evidencia detallada/histórica, no autoridad sobre el estado vigente.
+
+## CHK-DOC-1B — Construcción del sistema documental canónico
+
+Estado: **CERRADO / PASS**.
+
+Alcance: crear un índice, decisiones, alcance de producto, arquitectura, runbook operativo, consolidación Pricing/Catálogo V2 e índice QA, y corregir la continuidad actual sin modificar código o infraestructura.
+
+Evidencia de cierre:
+
+- Se crearon `docs/00_PROJECT_INDEX.md`, `docs/02_DECISION_LOG.md`, `docs/04_PRODUCT_SCOPE.md`, `docs/05_ARCHITECTURE.md`, `docs/08_OPERATIONS_RUNBOOK.md`, `docs/09_PRICING_CATALOG_V2.md` y `docs/10_QA_EVIDENCE.md`.
+- Se actualizaron únicamente `README.md` y este `docs/MASTER-STATE.md` dentro del alcance autorizado.
+- La reentrada documental permite identificar proyecto, repositorio, producción, autoridad, checkpoint abierto, evidencia, pendientes, pricing/catálogo, QA y reglas operativas sin depender de chats.
+- `git diff --check`: PASS; enlaces internos y rutas documentales verificadas; no quedaron placeholders de Lovable.
+- No se modificaron código, infraestructura, Supabase, Lovable, producción, datos, Auth, `.env`, stashes ni ramas históricas.
+- La verificación final de Git, commit y push queda registrada en el informe de cierre de este checkpoint.
 
 Este documento es la fuente de verdad de reentrada del proceso Pricing V2 / CatalogView V2. Consolida la historia verificable en Git, los reportes históricos versionados y el estado operativo reportado desde Lovable/Supabase interno. No sustituye las pruebas funcionales pendientes ni convierte documentación histórica en evidencia de producción actual.
 
@@ -55,7 +85,7 @@ Este documento es la fuente de verdad de reentrada del proceso Pricing V2 / Cata
 - Base histórica relevante: `4084872`.
 - Commit de limpieza funcional: `94ed71f`.
 - Commit documental local inicial: `5ad44a7`.
-- El remoto está sincronizado en `94ed71f`.
+- En el corte histórico de Fase 3, el remoto estaba sincronizado en `94ed71f`; el estado vigente se registra en la sección de reentrada actual.
 - Hay 69 commits desde `main` hasta el estado local actual.
 - Muchos commits intermedios son internos de Lovable y usan mensajes genéricos como `Changes`, `Update plan` o `Work in progress`.
 - El historial contiene evidencia de Pricing V2 y CatalogView.

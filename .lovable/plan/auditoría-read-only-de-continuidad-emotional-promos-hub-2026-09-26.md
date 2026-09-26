@@ -13,4 +13,7 @@ Objetivo: entregar el informe "AUDITORÍA LOVABLE — ESTADO REAL PROMOHUB" (sec
 7. **Informe final** A–L con discrepancias, NO COMPROBADOS, riesgos y siguiente paso recomendado; cierre exacto con "NO SE REALIZARON CAMBIOS — AUDITORÍA READ-ONLY".
 
 ## Garantías
-Sin escritura de código, datos, migraciones, Auth, Storage, secretos, dominios, commits, push ni publicación.
+
+Sin escritura de código, datos, migraciones, Auth, Storage, secretos, dominios, commits, push ni publicación.  
+  
+Adelante. Ejecuta la auditoría exactamente conforme al plan, exclusivamente read-only. No realices ninguna modificación ni corrección. Entrégame al finalizar el informe completo A–L y detente.

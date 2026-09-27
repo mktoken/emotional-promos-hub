@@ -24,7 +24,7 @@ Este documento indexa pruebas y reportes. No copia el contenido completo de los 
 | Auditoría comercial E2E | 2026-09-19 | `74b3098` y posteriores | Producción | Completada | `MASTER-STATE.md`, CHK-COM-0 a 7 |
 | Seguimiento de oportunidad | 2026-09-19 | `a16ce79` / `26f46b3` | Producción | PASS | `MASTER-STATE.md`, CHK-COM-6 |
 | Acciones Gmail/WhatsApp | 2026-09-19/26 | `c4d2195` | Lovable y producción | Presencia funcional PASS | `MASTER-STATE.md`, CHK-COM-8 |
-| Envío real de correo/WhatsApp | 2026-09-26 | — | Producción | NO COMPROBADO | `MASTER-STATE.md`, CHK-COM-8 |
+| CHK-COM-8 envío controlado Gmail + WhatsApp | 2026-09-26 | Evidencia QA versionada | Producción | PASS E2E real controlado | [Entrada CHK-COM-8](#chk-com-8--e2e-real-controlado) |
 | Reconciliación Git final | 2026-09-26 | `bc13a15` | GitHub | PASS, 0/0 | `MASTER-STATE.md` |
 | Suite actual | 2026-09-26 | `bc13a15` | Local | PASS, 67/67 | Validación documentada en CHK-DOC-1B |
 | Build actual | 2026-09-26 | `bc13a15` | Local | PASS | Validación documentada en CHK-DOC-1B |
@@ -35,6 +35,43 @@ Este documento indexa pruebas y reportes. No copia el contenido completo de los 
 - **Presencia funcional** no significa envío real ni entrega.
 - **Evidencia histórica** no equivale automáticamente a estado actual.
 - Una prueba que no tiene reporte, fecha, commit o entorno identificable debe considerarse **NO COMPROBADA**.
+
+## CHK-COM-8 — E2E real controlado
+
+**Fecha:** 2026-09-26
+**Cotización:** `COT-2026-00008`
+**Contexto:** QA controlada para `QA Automatizado` / `QA PromoHub - NO CONTACTAR`; la cotización mostraba vigencia hasta el 25/09/2026 y las pruebas del 26/09/2026 no representan una operación comercial real.
+
+### Gmail — E2E PASS
+
+- Destinatario controlado: `nwejebe@gmail.com`.
+- Hora aproximada: 17:35.
+- Envío realizado una sola vez y recepción comprobada.
+- Asunto: `Cotización COT-2026-00008 — Promocionales Emocionales`.
+- Cuerpo correspondiente a `COT-2026-00008`.
+- `COT-2026-00008.pdf` adjunto, recibido y abierto correctamente.
+- No se observaron errores, alteraciones ni datos de terceros.
+
+### WhatsApp — E2E PASS
+
+- Destino controlado: `+52 55 3031 1686`.
+- Hora aproximada: 20:14.
+- Mensaje correspondiente a `COT-2026-00008` y `Promocionales Emocionales`.
+- `COT-2026-00008.pdf` adjuntado como archivo real, mostrado como documento enviado y con tamaño visible aproximado de 217 kB.
+- Envío realizado una sola vez; recepción del mensaje y del PDF confirmada manualmente por el usuario.
+- Apertura del PDF recibido confirmada manualmente por el usuario.
+- No se observaron errores de envío.
+
+### Evidencia visual versionada
+
+- [Gmail recibido con PDF](qa/evidence/chk-com-8/gmail-received.png)
+- [PDF abierto desde Gmail](qa/evidence/chk-com-8/gmail-pdf-opened.png)
+- [WhatsApp con PDF preparado](qa/evidence/chk-com-8/whatsapp-pdf-prepared.png)
+- [WhatsApp con PDF enviado](qa/evidence/chk-com-8/whatsapp-pdf-sent.png)
+
+Las capturas demuestran el estado visual observado en cada momento. La recepción y apertura desde el dispositivo controlado de WhatsApp se distinguen explícitamente como confirmación manual del usuario; no se inventa una captura del dispositivo receptor.
+
+**Resultado final CHK-COM-8: PASS.**
 
 ## Evidencia no disponible como índice independiente
 

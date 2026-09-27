@@ -18,6 +18,7 @@ Cuando una decisión sea superada, se conserva el registro y se añade una nueva
 | D-006 | 2026-09-17 | Transportar y persistir observaciones por producto usando `observation`/`observacion` | La observación debe viajar del frontend a la RPC y quedar visible en CRM; los sub-checkpoints SC1–SC4 lo documentan | `MASTER-STATE.md`, commits `4aee0af`, `18aaf36`, `1886234`, tests y QA referenciados | VIGENTE |
 | D-007 | 2026-09-18/19 | Mantener Auth con recuperación por correo y actualización en `/auth/update-password` | AUTH-2A y AUTH-2B fueron validados, incluyendo recuperación real en producción | `MASTER-STATE.md`, secciones AUTH-2A, AUTH-2B y AUTH-2 | VIGENTE |
 | D-008 | 2026-09-19/26 | Mantener las acciones Gmail/WhatsApp como envío manual y no afirmar envío real sin prueba | `c4d2195` implementó las acciones; producción confirmó su presencia y preparación, pero no se realizó envío ni se comprobó entrega | `MASTER-STATE.md`, `COT-2026-00008`, `c4d2195`, `CHK-COM-8` | VIGENTE |
+| D-009 | 2026-09-26 | Cerrar CHK-COM-8 después de pruebas E2E reales controladas en Gmail y WhatsApp | Gmail tuvo envío, recepción y PDF verificados; WhatsApp tuvo mensaje y PDF enviados, recepción y apertura confirmadas. Este PASS no se extrapola a otros clientes o cotizaciones; futuras comunicaciones reales requieren autorización conforme a las reglas operativas | `MASTER-STATE.md`, `docs/10_QA_EVIDENCE.md`, `docs/qa/evidence/chk-com-8/` | VIGENTE |
 
 ## Decisiones que no deben inferirse
 

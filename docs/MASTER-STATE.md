@@ -26,10 +26,10 @@
 - `CHK-COM-6`: **CERRADO / PASS**. Se agregó el seguimiento programable directamente a la oportunidad pública; la migración interna de Lovable/Supabase quedó aplicada y la función restringida al personal autenticado.
 - Evidencia CHK-COM-6: en producción, la oportunidad QA `4ee88798-969f-4aaa-a0a6-f294d9753ef4` guardó el seguimiento para el 20/09/2026 a las 10:00, persistió después de recargar y posteriormente fue limpiado con PASS. La cotización formal `COT-2026-00008` permaneció en borrador y no se contactó al prospecto QA.
 - `CHK-COM-7`: **CERRADO / PARCIAL**. La cotización formal QA `COT-2026-00008` fue emitida en producción y mostró “Cotización emitida”, conservando datos, partida y totales. En el corte de cierre de CHK-COM-7 no se había probado el envío al cliente.
-- `CHK-COM-8`: **ABIERTO / IMPLEMENTACIÓN VALIDADA; ENVÍO REAL PENDIENTE**. Conserva la definición existente: **Envío controlado de cotización formal**. Las acciones manuales `Abrir Gmail` y `Abrir WhatsApp` están implementadas, presentes en Lovable y disponibles en producción dentro de `COT-2026-00008`; se validó visualmente la preparación de destinatario, asunto y mensaje, sin activar ningún envío.
-- Checkpoint actual: **CHK-COM-8 ABIERTO / IMPLEMENTACIÓN VALIDADA; ENVÍO REAL PENDIENTE**.
-- Fase actual: **ACCIONES MANUALES DE ENVÍO PRESENTES Y VALIDADAS; ENVÍO Y ENTREGA NO COMPROBADOS**. El flujo cliente → CRM → cotización formal → seguimiento → emisión y la presencia funcional de las acciones están comprobados en producción; no existe evidencia de envío real ni de entrega al cliente.
-- Próximo paso autorizado: completar, únicamente con aprobación explícita, la validación controlada del envío real dentro del alcance original de `CHK-COM-8`; no cerrar el checkpoint como PASS completo antes de contar con esa evidencia.
+- `CHK-COM-8`: **CERRADO / PASS**. La cotización QA `COT-2026-00008` completó E2E real controlado por Gmail y WhatsApp, con envío, recepción y verificación del PDF.
+- Checkpoint actual: **CHK-COM-8 CERRADO / PASS**.
+- Fase actual: **CIERRE DOCUMENTAL Y E2E DE COMUNICACIONES QA COMPLETADO**. Gmail y WhatsApp fueron probados contra destinatarios controlados; la evidencia visual está versionada en `docs/qa/evidence/chk-com-8/` y la recepción/apertura de WhatsApp queda además registrada como confirmación manual del usuario.
+- Próximo paso autorizado: **CHK-COM-8 cerrado. Antes de iniciar nuevo desarrollo debe definirse y autorizarse el siguiente checkpoint.**
 
 ## Reconciliación Git ↔ Lovable ↔ Producción — 2026-09-26
 
@@ -167,16 +167,15 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 | Auditoría Flujo Comercial E2E V1 | Completada |
 | Seguimiento de oportunidades públicas | Validado / PASS en producción |
 | Emisión de cotización formal QA | Validada / PASS en producción |
-| Envío de cotización formal | Implementación manual validada / envío real y entrega no comprobados |
+| Envío de cotización formal | Cerrado / PASS: Gmail y WhatsApp E2E controlados, con recepción y PDF verificados |
 | Nueva funcionalidad | No iniciar sin nuevo checkpoint autorizado |
 
 ## Pendientes de control
 
 ### Pendiente inmediato
 
-- Mantener `CHK-COM-8 — Envío controlado de cotización formal` **ABIERTO**, con implementación de acciones manuales validada y envío real pendiente.
-- Ejecutar la validación controlada del envío y comprobar la entrega solo después de contar con aprobación explícita.
 - Mantener Legacy y no iniciar correcciones ni desarrollo fuera del alcance aprobado.
+- Definir y autorizar formalmente el siguiente checkpoint antes de iniciar nuevo desarrollo.
 
 ### No hacer todavía
 
@@ -188,7 +187,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 
 ## Próximo checkpoint autorizado
 
-CHK-COM-6 quedó cerrado con PASS mediante el commit documental `26f46b3` y el merge `6ac668a`; CHK-COM-7 quedó cerrado como PARCIAL por la ausencia de envío probado. `CHK-COM-8` permanece ABIERTO conforme a su definición original de **Envío controlado de cotización formal**: la implementación de acciones manuales fue validada en producción, pero el envío real y la entrega al cliente siguen pendientes. Su cierre queda sujeto a la regla Construir → Validar → Estado maestro → Cerrar → Avanzar.
+`CHK-COM-8` quedó cerrado como **PASS** mediante pruebas E2E reales controladas en Gmail y WhatsApp, con recepción y PDF verificados. Antes de iniciar nuevo desarrollo debe definirse y autorizarse el siguiente checkpoint, conforme a la regla Construir → Validar → Estado maestro → Cerrar → Avanzar.
 
 ## Alcance y límites
 
@@ -196,9 +195,9 @@ El cierre registrado aquí cubre la preparación, activación, alineación y QA 
 
 ## Siguiente checkpoint recomendado
 
-Completar `CHK-COM-8 — Envío controlado de cotización formal` mediante una validación real controlada, sin afirmar envío ni entrega antes de observar evidencia directa.
+`CHK-COM-8` está cerrado. Antes de iniciar nuevo desarrollo debe definirse y autorizarse el siguiente checkpoint.
 
-Hasta completar la auditoría y aprobar el siguiente checkpoint no se debe retirar el backend Legacy ni iniciar trabajo funcional fuera del alcance comercial.
+Hasta contar con ese checkpoint no se debe retirar el backend Legacy ni iniciar trabajo funcional fuera del alcance comercial.
 
 # Fase 4 — QA funcional final post-migración CatalogView V2 (histórico)
 

@@ -77,8 +77,8 @@ Cliente
 ### Gmail y WhatsApp
 
 - **IMPLEMENTADO:** acciones manuales `Abrir Gmail` y `Abrir WhatsApp`.
-- **VALIDADO:** presencia en Lovable y producción; destinatario, asunto y mensaje preparados visualmente.
-- **NO COMPROBADO:** envío real y entrega al cliente.
+- **VALIDADO:** presencia en Lovable y producción; envío E2E real controlado, recepción y PDF verificados en Gmail y WhatsApp para `COT-2026-00008`.
+- **LÍMITE:** este PASS es exclusivo de QA controlada y no se extrapola a otros clientes o cotizaciones; futuras comunicaciones reales requieren autorización operativa.
 
 ### Pricing V2, proveedores y stock
 

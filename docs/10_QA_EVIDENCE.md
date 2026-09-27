@@ -25,6 +25,7 @@ Este documento indexa pruebas y reportes. No copia el contenido completo de los 
 | Seguimiento de oportunidad | 2026-09-19 | `a16ce79` / `26f46b3` | Producción | PASS | `MASTER-STATE.md`, CHK-COM-6 |
 | Acciones Gmail/WhatsApp | 2026-09-19/26 | `c4d2195` | Lovable y producción | Presencia funcional PASS | `MASTER-STATE.md`, CHK-COM-8 |
 | CHK-COM-8 envío controlado Gmail + WhatsApp | 2026-09-26 | Evidencia QA versionada | Producción | PASS E2E real controlado | [Entrada CHK-COM-8](#chk-com-8--e2e-real-controlado) |
+| CHK-CAT-1 catálogo, precios y stock | 2026-09-26 | `d290e99e` + evidencia read-only de producción | Repositorio y producción | CERRADO / PARCIAL | [Entrada CHK-CAT-1](#chk-cat-1--certificación-operativa-read-only) |
 | Reconciliación Git final | 2026-09-26 | `bc13a15` | GitHub | PASS, 0/0 | `MASTER-STATE.md` |
 | Suite actual | 2026-09-26 | `bc13a15` | Local | PASS, 67/67 | Validación documentada en CHK-DOC-1B |
 | Build actual | 2026-09-26 | `bc13a15` | Local | PASS | Validación documentada en CHK-DOC-1B |
@@ -73,14 +74,90 @@ Las capturas demuestran el estado visual observado en cada momento. La recepció
 
 **Resultado final CHK-COM-8: PASS.**
 
+## CHK-CAT-1 — Certificación operativa read-only
+
+**Fecha:** 2026-09-26
+**Alcance:** precios, stock, MOQ, proveedor, imágenes/fichas, Pricing V2 y consistencia catálogo → cotización pública → formal.
+**Restricciones cumplidas:** no se ejecutaron sincronizaciones, Edge Functions, migraciones, recomputaciones, publicaciones, rollbacks ni escrituras de datos.
+
+### Estado de proveedores, sincronizaciones y frescura
+
+El código y los tipos versionados confirman la existencia de tres proveedores (`cdo_mx`, `forpromotional`, `g4_mx`) y de los campos `proveedores.last_sync_at`, `provider_import_batches.started_at`, `finished_at`, `status`, `error_message` y contadores de items. También existen `producto_b2b_status.last_stock_sync_at`, `stock_qty`, `stock_status`, `image_available`, `price_valid` y `quote_mode`.
+
+No existe en el repositorio un valor runtime actual para esos campos por proveedor. La producción pública tampoco expone el timestamp, lote, error ni volumen de la última sincronización. Resultado: **NO COMPROBADO** para frescura, salud y cobertura operativa actual.
+
+### Pricing V2, release, caché y Legacy
+
+- Pricing V2 y sus contratos, generaciones, shadow, release y rollback están implementados.
+- La release y generación documentadas (`2738c0e4…` / `818d824a…`) son evidencia histórica versionada, no una lectura runtime nueva de este checkpoint.
+- Legacy sigue disponible como respaldo y no se modificó.
+- La producción mostró 992 productos visibles y 42 páginas en la primera carga observada.
+- En varias cargas posteriores read-only del catálogo, la pantalla permaneció en “Cargando catálogo…” durante más de 10 segundos sin mostrar error visible.
+- En una repetición posterior, una recarga recuperó la misma página 1 en aproximadamente 12 segundos. Al pulsar “Siguiente” y esperar otros 12 segundos, la URL y el indicador continuaron en página 1; no se observó error de consola.
+- Clasificación runtime: **TRANSITORIO / CAUSA NO COMPROBADA**. La evidencia no permite aislar backend, frontend, red o sesión.
+
+### Muestra pública observada
+
+La primera carga pública expuso 24 productos en la página 1. Se seleccionó una muestra de 15 registros para cubrir precios/MOQ variados, dos fuentes de imagen visibles y extremos de stock observables. El proveedor real, SKU exacto, timestamp de frescura y estado Pricing V2 no se muestran de forma suficiente en la tarjeta pública; cuando no se abrió el detalle, se conserva como **NO COMPROBADO**.
+
+| Producto | SKU/ID | Fuente/Proveedor | Precio público desde | MOQ | Stock | Imagen/ficha | Resultado |
+|---|---|---|---:|---:|---:|---|---|
+| GOMA | `O 014` | proveedor no expuesto; imagen 4Promotional | $1.80 | 834 | 136,336 | 5 imágenes; ficha visible | PARCIAL |
+| CUILLI | `PE 003` | proveedor no expuesto; imagen 4Promotional | $2.31 | 650 | 6,445 | 4 imágenes; ficha no completa | PARCIAL |
+| FORRAN | `BP-925` | proveedor no expuesto; imagen 4Promotional | $2.70 | 556 | 10 | 3 imágenes; ficha no completa | PARCIAL |
+| LAAX | NO COMPROBADO | imagen 4Promotional | $3.35 | 448 | NO COMPROBADO | imagen visible en listado | NO COMPROBADO |
+| CARTOON | NO COMPROBADO | imagen 4Promotional | $3.46 | 434 | NO COMPROBADO | imagen visible en listado | NO COMPROBADO |
+| TLAC | NO COMPROBADO | imagen 4Promotional | $3.93 | 382 | NO COMPROBADO | imagen visible en listado | NO COMPROBADO |
+| Lobby | NO COMPROBADO | imagen G4 México; proveedor no confirmado | $4.18 | 359 | NO COMPROBADO | imagen visible en listado | NO COMPROBADO |
+| FLAMENCO | NO COMPROBADO | imagen 4Promotional | $4.56 | 329 | NO COMPROBADO | imagen visible en listado | NO COMPROBADO |
+| TEC | NO COMPROBADO | imagen 4Promotional | $4.69 | 320 | NO COMPROBADO | imagen visible en listado | NO COMPROBADO |
+| Koi Bio Translúcida Tinta Negra | NO COMPROBADO | imagen G4 México; proveedor no confirmado | $5.16 | 291 | NO COMPROBADO | imagen visible en listado | NO COMPROBADO |
+| Koi Bio Sólida Tinta Negra | NO COMPROBADO | imagen G4 México; proveedor no confirmado | $5.16 | 291 | NO COMPROBADO | imagen visible en listado | NO COMPROBADO |
+| Koi Box tinta azul | NO COMPROBADO | imagen G4 México; proveedor no confirmado | $5.16 | 291 | NO COMPROBADO | imagen visible en listado | NO COMPROBADO |
+| Koi Bio Translúcida Tinta Azul | NO COMPROBADO | imagen G4 México; proveedor no confirmado | $5.16 | 291 | NO COMPROBADO | imagen visible en listado | NO COMPROBADO |
+| Koi Bio Sólida Tinta Negra — variante adicional | NO COMPROBADO | imagen G4 México; proveedor no confirmado | $5.16 | 291 | NO COMPROBADO | imagen visible en listado | NO COMPROBADO |
+| Koi Bio Translúcida Tinta Azul — variante adicional | NO COMPROBADO | imagen G4 México; proveedor no confirmado | $5.16 | 291 | NO COMPROBADO | imagen visible en listado | NO COMPROBADO |
+
+### Detalle y consistencia E2E
+
+- `GOMA / O 014`: el detalle mostró 136,336 piezas, stock sujeto a confirmación, MOQ 834 y precio `$1.80` al consultar cantidad 1,000. La cotización formal QA existente `COT-2026-00008`, leída sin modificar, conserva GOMA × 1,000 a `$1.80`, subtotal `$1,800`, IVA `$288` y total `$2,088`; esta ruta QA resulta consistente.
+- `CUILLI / PE 003`: el detalle mostró 6,445 piezas, MOQ 650 y cuatro imágenes; con la cantidad inicial inferior al MOQ el precio quedó por confirmar, coherente con el contrato visible de MOQ.
+- `FORRAN / BP-925`: el detalle mostró 10 piezas, MOQ 556 y tres imágenes; con la cantidad inicial inferior al MOQ el precio quedó por confirmar. Esto evidencia un caso de stock bajo, no una certificación comercial.
+- No se verificaron en esta ejecución casos de stock cero, `request_quote` explícito, proveedor CDO, timestamp de frescura ni cotización pública nueva. No se creó ninguna cotización.
+
+### Clasificación y límites
+
+- Datos externos: no se puede determinar su frescura actual.
+- Sincronización: campos y funciones existen, pero no hay lectura runtime actual.
+- Pricing V2: contrato y artefactos históricos identificados; release/caché vigente no comprobados por consulta runtime nueva.
+- Frontend/carga: la primera carga y las tres cargas controladas finales mostraron datos; las tres tardaron aproximadamente 6.7 s, 2.2 s y 1.8 s. Las esperas superiores a 10 segundos observadas previamente y un primer intento de “Siguiente” sin avance dejan una anomalía **INTERMITENTE**, sin causa de capa comprobada.
+- Evidencia: insuficiente para certificar operación comercial general.
+
+### Diagnóstico final de carga y paginación
+
+| Prueba | Resultado | Tiempo aproximado | Evidencia |
+|---|---|---:|---|
+| Navegación catálogo 1 | PASS | 6.7 s | Página 1 de 42; 992 productos |
+| Recarga normal 2 | PASS | 2.2 s | Página 1 de 42; 992 productos |
+| Navegación independiente 3 | PASS | 1.8 s | Página 1 de 42; 992 productos |
+| Página 1 → 2, intento 1 | SIN AVANCE | 19.5 s | URL y página permanecieron en 1; sin error visible |
+| Página 1 → 2, intento 2 | PASS | 2.6 s | URL `?view=catalog&page=2`; página 2 de 42; productos cambiaron |
+| Página 2 → 1 | PASS | 1.2 s | URL volvió a `?view=catalog`; página 1 de 42 |
+
+La prueba de paginación se clasifica **INTERMITENTE**. El código read-only revisado calcula `p_offset` como `(page - 1) * 24`, actualiza `page` mediante `goToPage` y vuelve a ejecutar `catalog_search_products_v2` al cambiar la URL. No se observó una excepción de frontend y las herramientas disponibles no expusieron status HTTP, duración de RPC ni respuesta de red.
+
+La carga se clasifica **INTERMITENTE / LENTA EN EPISODIOS PREVIOS**. No se inventa un SLA y no se atribuye la causa a backend, frontend, red o sesión.
+
+**Resultado final CHK-CAT-1: CERRADO / PARCIAL.** No se abre un checkpoint correctivo en esta ejecución.
+
 ## Evidencia no disponible como índice independiente
 
-No existe todavía un reporte separado para:
+No existe todavía un reporte separado, fuera de esta entrada y de `MASTER-STATE.md`, para:
 
 - salud actual de proveedores;
 - stock actual y frescura de precios;
 - disponibilidad actual de imágenes y fichas;
 - reglas de descuentos;
 - aprobación de excepciones;
-- entrega de correo o WhatsApp;
+- una entrega de correo o WhatsApp independiente de la evidencia E2E controlada de CHK-COM-8;
 - métricas de conversión y campañas.

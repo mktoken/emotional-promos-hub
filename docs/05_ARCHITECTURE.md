@@ -113,13 +113,14 @@ La matriz completa vigente de columnas, políticas RLS y grants no está consoli
 - Legacy se conserva como respaldo.
 - La lógica de precio está en funciones/RPC y Edge Functions versionadas, no en una copia independiente del frontend.
 - El estado operativo actual de stock y precios requiere validación específica; la arquitectura no equivale a confiabilidad comercial actual.
+- El diagnóstico read-only de 2026-09-26 observó carga y paginación intermitentes. `CatalogView` deriva `page` desde la URL, calcula `p_offset` como `(page - 1) * 24` y actualiza los parámetros mediante `goToPage`; no se aisló una causa de código, red, sesión o RPC.
 
 ## CRM y cotizaciones
 
 - El CRM se organiza bajo `src/features/crm`.
 - Prospectos, cotizaciones, cotizaciones formales, campañas, perfil y configuración tienen páginas separadas.
 - La cotización formal tiene edición, impresión/PDF y trabajos de impresión.
-- Las acciones Gmail/WhatsApp son aperturas manuales preparadas desde la cotización; el envío y la entrega no forman parte de la evidencia validada.
+- Las acciones Gmail/WhatsApp son aperturas manuales preparadas desde la cotización. Existe evidencia E2E controlada de envío, recepción y PDF para `COT-2026-00008`; no debe extrapolarse a comunicaciones generales.
 
 ## Proveedores y sincronizadores
 

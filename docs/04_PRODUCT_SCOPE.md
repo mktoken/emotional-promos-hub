@@ -51,6 +51,7 @@ Cliente
 - **IMPLEMENTADO:** listado, búsqueda, categorías, ficha, imágenes y selección.
 - **VALIDADO:** catálogo público y navegación fueron comprobados en producción; el corte documentado reportó 992 productos visibles y 42 páginas.
 - **PENDIENTE:** confiabilidad operativa actual de stock, precios, imágenes y fichas de proveedor.
+- **DIAGNÓSTICO READ-ONLY:** tres cargas finales mostraron el catálogo en aproximadamente 6.7 s, 2.2 s y 1.8 s; la paginación fue intermitente, sin causa aislada ni defecto reproducible confirmado.
 
 ### Solicitud de cotización
 
@@ -94,9 +95,7 @@ Cliente
 
 ## Fuera del alcance o no comprobado
 
-- Envío real de correo.
-- Envío real de WhatsApp.
-- Entrega al cliente.
+- Envío y entrega generales fuera del caso QA controlado de CHK-COM-8; el caso `COT-2026-00008` sí tiene evidencia E2E controlada versionada.
 - Stock actual de cada proveedor.
 - Precios actuales y reglas operativas de descuentos.
 - Aprobación de excepciones comerciales.

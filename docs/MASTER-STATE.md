@@ -27,9 +27,10 @@
 - Evidencia CHK-COM-6: en producción, la oportunidad QA `4ee88798-969f-4aaa-a0a6-f294d9753ef4` guardó el seguimiento para el 20/09/2026 a las 10:00, persistió después de recargar y posteriormente fue limpiado con PASS. La cotización formal `COT-2026-00008` permaneció en borrador y no se contactó al prospecto QA.
 - `CHK-COM-7`: **CERRADO / PARCIAL**. La cotización formal QA `COT-2026-00008` fue emitida en producción y mostró “Cotización emitida”, conservando datos, partida y totales. En el corte de cierre de CHK-COM-7 no se había probado el envío al cliente.
 - `CHK-COM-8`: **CERRADO / PASS**. La cotización QA `COT-2026-00008` completó E2E real controlado por Gmail y WhatsApp, con envío, recepción y verificación del PDF.
-- Checkpoint actual: **CHK-COM-8 CERRADO / PASS**.
-- Fase actual: **CIERRE DOCUMENTAL Y E2E DE COMUNICACIONES QA COMPLETADO**. Gmail y WhatsApp fueron probados contra destinatarios controlados; la evidencia visual está versionada en `docs/qa/evidence/chk-com-8/` y la recepción/apertura de WhatsApp queda además registrada como confirmación manual del usuario.
-- Próximo paso autorizado: **CHK-COM-8 cerrado. Antes de iniciar nuevo desarrollo debe definirse y autorizarse el siguiente checkpoint.**
+- `CHK-CAT-1`: **CERRADO / PARCIAL**. El diagnóstico read-only final encontró carga y paginación intermitentes, sin defecto reproducible aislado; permanecen no comprobados los valores runtime internos de proveedores, lotes, frescura, release/caché y varios estados de Pricing V2.
+- Checkpoint actual: **CHK-CAT-1 CERRADO / PARCIAL**.
+- Fase actual: **DIAGNÓSTICO RUNTIME READ-ONLY DE CATÁLOGO, PRECIOS Y STOCK COMPLETADO**. La evidencia detallada está en `docs/10_QA_EVIDENCE.md`; no se ejecutaron sincronizaciones, migraciones, recomputaciones, publicaciones, rollbacks ni escrituras.
+- Próximo paso autorizado: **antes de continuar desarrollo debe definirse y autorizarse el siguiente checkpoint; no se abre un checkpoint correctivo de catálogo por ahora.**
 
 ## Reconciliación Git ↔ Lovable ↔ Producción — 2026-09-26
 
@@ -168,6 +169,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 | Seguimiento de oportunidades públicas | Validado / PASS en producción |
 | Emisión de cotización formal QA | Validada / PASS en producción |
 | Envío de cotización formal | Cerrado / PASS: Gmail y WhatsApp E2E controlados, con recepción y PDF verificados |
+| CHK-CAT-1 catálogo, precios y stock | CERRADO / PARCIAL; limitaciones runtime documentadas |
 | Nueva funcionalidad | No iniciar sin nuevo checkpoint autorizado |
 
 ## Pendientes de control
@@ -175,7 +177,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 ### Pendiente inmediato
 
 - Mantener Legacy y no iniciar correcciones ni desarrollo fuera del alcance aprobado.
-- Definir y autorizar formalmente el siguiente checkpoint antes de iniciar nuevo desarrollo.
+- Definir y autorizar el siguiente checkpoint antes de iniciar desarrollo; no iniciar una fase correctiva de catálogo automáticamente.
 
 ### No hacer todavía
 
@@ -187,7 +189,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 
 ## Próximo checkpoint autorizado
 
-`CHK-COM-8` quedó cerrado como **PASS** mediante pruebas E2E reales controladas en Gmail y WhatsApp, con recepción y PDF verificados. Antes de iniciar nuevo desarrollo debe definirse y autorizarse el siguiente checkpoint, conforme a la regla Construir → Validar → Estado maestro → Cerrar → Avanzar.
+`CHK-CAT-1` queda documentado como **CERRADO / PARCIAL**. La carga y paginación fueron intermitentes, pero página 1 → página 2 → página 1 funcionó en el segundo intento y no se aisló un defecto reproducible. No se abre checkpoint correctivo todavía.
 
 ## Alcance y límites
 
@@ -195,7 +197,7 @@ El cierre registrado aquí cubre la preparación, activación, alineación y QA 
 
 ## Siguiente checkpoint recomendado
 
-`CHK-COM-8` está cerrado. Antes de iniciar nuevo desarrollo debe definirse y autorizarse el siguiente checkpoint.
+`CHK-CAT-1` está **CERRADO / PARCIAL**. Antes de iniciar nuevo desarrollo debe definirse y autorizarse el siguiente checkpoint; no se propone todavía un checkpoint correctivo.
 
 Hasta contar con ese checkpoint no se debe retirar el backend Legacy ni iniciar trabajo funcional fuera del alcance comercial.
 

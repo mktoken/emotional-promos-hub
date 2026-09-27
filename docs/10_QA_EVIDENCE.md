@@ -25,6 +25,7 @@ Este documento indexa pruebas y reportes. No copia el contenido completo de los 
 | Seguimiento de oportunidad | 2026-09-19 | `a16ce79` / `26f46b3` | Producción | PASS | `MASTER-STATE.md`, CHK-COM-6 |
 | Acciones Gmail/WhatsApp | 2026-09-19/26 | `c4d2195` | Lovable y producción | Presencia funcional PASS | `MASTER-STATE.md`, CHK-COM-8 |
 | CHK-COM-8 envío controlado Gmail + WhatsApp | 2026-09-26 | Evidencia QA versionada | Producción | PASS E2E real controlado | [Entrada CHK-COM-8](#chk-com-8--e2e-real-controlado) |
+| CHK-COM-9 ciclo post-envío y seguimiento comercial | 2026-09-26 | `25a0ba6` + prueba QA runtime | Producción/CRM | CERRADO / PARCIAL | [Entrada CHK-COM-9](#chk-com-9--ciclo-post-envío-y-seguimiento-comercial) |
 | CHK-CAT-1 catálogo, precios y stock | 2026-09-26 | `d290e99e` + evidencia read-only de producción | Repositorio y producción | CERRADO / PARCIAL | [Entrada CHK-CAT-1](#chk-cat-1--certificación-operativa-read-only) |
 | Reconciliación Git final | 2026-09-26 | `bc13a15` | GitHub | PASS, 0/0 | `MASTER-STATE.md` |
 | Suite actual | 2026-09-26 | `bc13a15` | Local | PASS, 67/67 | Validación documentada en CHK-DOC-1B |
@@ -73,6 +74,64 @@ Este documento indexa pruebas y reportes. No copia el contenido completo de los 
 Las capturas demuestran el estado visual observado en cada momento. La recepción y apertura desde el dispositivo controlado de WhatsApp se distinguen explícitamente como confirmación manual del usuario; no se inventa una captura del dispositivo receptor.
 
 **Resultado final CHK-COM-8: PASS.**
+
+## CHK-COM-9 — Ciclo post-envío y seguimiento comercial
+
+**Fecha:** 2026-09-26
+**Estado final:** **CERRADO / PARCIAL**
+**Cotización QA:** `COT-2026-00008`
+**Oportunidad relacionada:** `4ee88798-969f-4aaa-a0a6-f294d9753ef4`
+**Entorno:** producción / CRM, sesión autenticada como `admin`.
+
+### Estado inicial observado
+
+- La cotización formal `COT-2026-00008` existía, estaba en estado `Emitida`, enlazada desde la oportunidad y mostraba total `$2,088.00`.
+- La oportunidad mostraba `QA Automatizado` / `QA PromoHub - NO CONTACTAR`, estado `Nueva`, sin fecha de seguimiento y con una nota QA histórica.
+- La nota QA preexistente decía que `COT-2026-00008` estaba “en borrador”; se conserva como registro histórico porque la pantalla no ofrece borrado de notas y la cotización formal actual está `Emitida`.
+- Los estados disponibles eran `Nueva`, `Contactado`, `En proceso`, `Enviada`, `Ganada` y `Perdida`.
+- El CRM expone una fecha/hora de próximo seguimiento, notas internas y un historial de cambios de estado. No expone un campo estructurado separado para “próxima acción”.
+- El historial inicial de estado mostraba `Sin cambios registrados`; el panel de emails del CRM mostraba `Sin eventos de email`.
+
+### Prueba controlada ejecutada
+
+Se utilizó únicamente la oportunidad QA. No se enviaron nuevos correos, WhatsApp ni otras comunicaciones.
+
+1. Se cambió temporalmente el estado de `Nueva` a `Contactado`. El CRM mostró confirmación, persistió el cambio y registró `NUEVA → CONTACTADO` con fecha y hora.
+2. Se guardó temporalmente el seguimiento `2026-09-30 10:00`. El CRM mostró confirmación; la lista mostró `30-sep`.
+3. Se agregó la nota identificable: `CHK-COM-9 QA — seguimiento post-envío de COT-2026-00008; próximo seguimiento 2026-09-30 10:00; no contactar ni cotizar.`
+4. Después de recargar, persistieron el estado `Contactado`, la fecha `2026-09-30T10:00` y la nota.
+5. Después de navegar a la lista y volver a abrir la oportunidad, los tres valores continuaron visibles.
+6. Se restauró el estado original `Nueva` y se limpió la fecha de seguimiento. La nota y el historial se conservaron como evidencia QA; la pantalla no ofrece borrado de notas.
+7. Una recarga final confirmó el estado `Nueva`, el seguimiento vacío, la nota QA y el historial de ambas transiciones (`Nueva → Contactado` y `Contactado → Nueva`).
+
+### Clasificación de resultados
+
+| Capacidad | Resultado | Evidencia / limitación |
+|---|---|---|
+| Estado de oportunidad | PASS | Selector usable; cambio guardado, persistido y restaurado |
+| Estado de cotización formal | PASS | `COT-2026-00008` permaneció `Emitida`; se consulta desde la oportunidad |
+| Próxima acción | PARCIAL | No existe un campo estructurado de acción; se expresa mediante estado, nota y fecha |
+| Fecha de seguimiento | PASS | Guardado, visible como `30-sep`, persistió tras recarga y navegación; luego fue limpiada |
+| Nota interna | PASS | Nota QA guardada con actor y fecha; persistió tras recarga y navegación |
+| Historial de estado | PASS | Registró estado anterior, nuevo estado y fecha/hora; el actor no aparece en el panel visible |
+| Historial de nota | PARCIAL | Actor y fecha son visibles; no hay control de borrado desde esta pantalla |
+| Evento de email en CRM | NO COMPROBADO | El panel mostró `Sin eventos de email`; la recepción Gmail externa de CHK-COM-8 no se enlaza aquí |
+| Coherencia oportunidad ↔ cotización | PARCIAL | El enlace y folio son coherentes; no se observó sincronización bidireccional automática de estados |
+| Ausencia de efectos reales | PASS | Solo se usó la oportunidad QA; no hubo nuevas comunicaciones ni clientes reales |
+
+### Trazabilidad y rol
+
+- Rol observado: `admin`.
+- El estado registra transición y fecha/hora.
+- La nota registra contenido, usuario y fecha/hora.
+- La fecha de seguimiento se persiste en la oportunidad, pero no se observó un evento histórico independiente de esa modificación.
+- La auditoría completa de permisos por rol permanece fuera de CHK-COM-9.
+
+### Resultado final
+
+El ciclo básico de estado, seguimiento, nota y persistencia funciona para la oportunidad QA. El resultado no es PASS completo porque no existe próxima acción estructurada independiente, el historial visible de estado no muestra actor y no hay evento de email enlazado en el CRM. Los valores temporales se restauraron; la nota y el historial se dejaron como evidencia QA.
+
+**Resultado final CHK-COM-9: CERRADO / PARCIAL.** No se implementa corrección ni se abre un siguiente checkpoint; las limitaciones quedan documentadas para una decisión posterior.
 
 ## CHK-CAT-1 — Certificación operativa read-only
 

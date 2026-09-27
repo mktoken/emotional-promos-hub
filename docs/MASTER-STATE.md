@@ -28,9 +28,10 @@
 - `CHK-COM-7`: **CERRADO / PARCIAL**. La cotización formal QA `COT-2026-00008` fue emitida en producción y mostró “Cotización emitida”, conservando datos, partida y totales. En el corte de cierre de CHK-COM-7 no se había probado el envío al cliente.
 - `CHK-COM-8`: **CERRADO / PASS**. La cotización QA `COT-2026-00008` completó E2E real controlado por Gmail y WhatsApp, con envío, recepción y verificación del PDF.
 - `CHK-CAT-1`: **CERRADO / PARCIAL**. El diagnóstico read-only final encontró carga y paginación intermitentes, sin defecto reproducible aislado; permanecen no comprobados los valores runtime internos de proveedores, lotes, frescura, release/caché y varios estados de Pricing V2.
-- Checkpoint actual: **CHK-CAT-1 CERRADO / PARCIAL**.
-- Fase actual: **DIAGNÓSTICO RUNTIME READ-ONLY DE CATÁLOGO, PRECIOS Y STOCK COMPLETADO**. La evidencia detallada está en `docs/10_QA_EVIDENCE.md`; no se ejecutaron sincronizaciones, migraciones, recomputaciones, publicaciones, rollbacks ni escrituras.
-- Próximo paso autorizado: **antes de continuar desarrollo debe definirse y autorizarse el siguiente checkpoint; no se abre un checkpoint correctivo de catálogo por ahora.**
+- `CHK-COM-9`: **CERRADO / PARCIAL**. La prueba QA post-envío de `COT-2026-00008` confirmó estado, seguimiento, nota y persistencia; la trazabilidad y la existencia de una próxima acción estructurada permanecen parciales y documentadas.
+- Checkpoint actual: **CHK-COM-9 CERRADO / PARCIAL**.
+- Fase actual: **CICLO POST-ENVÍO VALIDADO Y DOCUMENTADO COMO PARCIAL**. La evidencia detallada está en `docs/10_QA_EVIDENCE.md`; no se enviaron nuevas comunicaciones ni se modificaron código, Supabase o Lovable.
+- Próximo paso autorizado: **no existe un siguiente checkpoint autorizado todavía; antes de nuevo desarrollo debe definirse y autorizarse uno. No se abre fase correctiva automáticamente.**
 
 ## Reconciliación Git ↔ Lovable ↔ Producción — 2026-09-26
 
@@ -170,6 +171,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 | Emisión de cotización formal QA | Validada / PASS en producción |
 | Envío de cotización formal | Cerrado / PASS: Gmail y WhatsApp E2E controlados, con recepción y PDF verificados |
 | CHK-CAT-1 catálogo, precios y stock | CERRADO / PARCIAL; limitaciones runtime documentadas |
+| CHK-COM-9 ciclo post-envío y seguimiento comercial | CERRADO / PARCIAL; limitaciones documentadas |
 | Nueva funcionalidad | No iniciar sin nuevo checkpoint autorizado |
 
 ## Pendientes de control
@@ -177,7 +179,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 ### Pendiente inmediato
 
 - Mantener Legacy y no iniciar correcciones ni desarrollo fuera del alcance aprobado.
-- Definir y autorizar el siguiente checkpoint antes de iniciar desarrollo; no iniciar una fase correctiva de catálogo automáticamente.
+- Mantener documentadas las limitaciones de CHK-COM-9 y no iniciar correcciones ni otro checkpoint automáticamente.
 
 ### No hacer todavía
 
@@ -187,9 +189,9 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 - No modificar backend, Supabase, migraciones, RLS, grants, secrets o Edge Functions.
 - No ejecutar rollback.
 
-## Próximo checkpoint autorizado
+## Siguiente paso autorizado
 
-`CHK-CAT-1` queda documentado como **CERRADO / PARCIAL**. La carga y paginación fueron intermitentes, pero página 1 → página 2 → página 1 funcionó en el segundo intento y no se aisló un defecto reproducible. No se abre checkpoint correctivo todavía.
+`CHK-COM-9` queda **CERRADO / PARCIAL**. La oportunidad QA permitió guardar y recuperar estado, fecha de seguimiento y nota; la prueba confirmó persistencia tras recarga y navegación. La próxima acción no existe como campo estructurado independiente, el historial visible de estado no muestra actor y no apareció un evento de email enlazado en el CRM. No existe un siguiente checkpoint autorizado todavía.
 
 ## Alcance y límites
 
@@ -197,7 +199,7 @@ El cierre registrado aquí cubre la preparación, activación, alineación y QA 
 
 ## Siguiente checkpoint recomendado
 
-`CHK-CAT-1` está **CERRADO / PARCIAL**. Antes de iniciar nuevo desarrollo debe definirse y autorizarse el siguiente checkpoint; no se propone todavía un checkpoint correctivo.
+`CHK-COM-9` está **CERRADO / PARCIAL**. Antes de iniciar nuevo desarrollo debe definirse y autorizarse el siguiente checkpoint; no se propone ni inicia corrección en esta ejecución.
 
 Hasta contar con ese checkpoint no se debe retirar el backend Legacy ni iniciar trabajo funcional fuera del alcance comercial.
 

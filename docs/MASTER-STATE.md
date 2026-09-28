@@ -14,7 +14,7 @@
 - Working tree: limpio al cierre de `CHK-COM-6`.
 - Push: realizado a `origin/main`.
 
-## Estado de reentrada vigente — 2026-09-26
+## Estado de reentrada vigente — 2026-09-28
 
 - `AUTH-2`: **CERRADO / PASS**. Recuperación de contraseña validada en producción.
 - `CHK-COM-0`: **CERRADO / PASS**. Estado maestro alineado con `main` y `f1101ce`.
@@ -34,9 +34,10 @@
 - `CHK-OPS-1`: **CERRADO / PARCIAL**. La baseline operativa no mostró un P0 reproducible y el critical path puede utilizarse con guardrails; permanecen riesgos P1/P2 y validaciones runtime pendientes.
 - `CHK-AI-SALES-1`: **CERRADO / PASS para el caso QA acotado de 50 libretas**. `CHK-AI-SALES-1-RUNTIME-1B` validó sesión/rol CRM, catálogo y precio público V2 reales, multiturno 50→80, contexto persistido, prospecto/oportunidad QA y cotización formal `BORRADOR` `COT-2026-00009`, sin emitir ni enviar. El canal Web para cliente final y el Super Agente completo siguen fuera de este PASS.
 - `CHK-AI-SALES-2`: **CERRADO / PASS del piloto Web cliente local y controlado**. Reutiliza el núcleo de `CHK-AI-SALES-1`; el E2E real con identidad QA creó la oportunidad `3b080274-7e91-4a05-91ce-660132b1ee6f`, reutilizó el prospecto QA `dcddee4c-0796-4200-bc1f-206caa8d21e1` y creó `COT-2026-00010` en `BORRADOR`, sin emisión ni envío. No constituye lanzamiento público ni capacidad anónima de escritura CRM.
-- Checkpoint actual: **CHK-AI-SALES-2 CERRADO / PASS — PILOTO WEB CLIENTE VALIDADO**.
-- Fase actual: **OPERACIÓN PRIMERO / PILOTO WEB DEL SUPER AGENTE VALIDADO EN QA LOCAL**. El flujo público estable continúa sin cambios y Pricing V2 mantiene la autoridad pública.
-- Próximo paso autorizado: **revisar la evidencia de CHK-AI-SALES-2 y decidir formalmente el siguiente checkpoint antes de desarrollarlo**. No activar `VITE_ENABLE_AGENT_QA` ni `VITE_ENABLE_AGENT_WEB_PILOT` en producción, ni publicar el piloto; mantener Pricing de Conversión shadow-only, G4 e impresión fuera. `CHK-BRAND-WEB-1` continúa como gate previo al lanzamiento público.
+- `CHK-AI-SALES-3`: **CERRADO / PARCIAL**. Se implementó el estado `productLines[]` compartido, resolución segura de referencias, búsqueda/precio/stock por línea, borrador formal multilínea, reconciliación idempotente de partidas, IVA por totales y handoff por producto. Validación de repositorio: tests, tipos, lint dirigido, builds normal y QA PASS. E2E runtime con catálogo real, sesión CRM, persistencia y UI desktop/mobile **NO COMPROBADO** porque en este corte no había servidor escuchando en `127.0.0.1:8080`; no se creó ni modificó ningún registro QA.
+- Checkpoint actual: **CHK-AI-SALES-3 CERRADO / PARCIAL — E2E MULTILÍNEA RUNTIME PENDIENTE**.
+- Fase actual: **OPERACIÓN PRIMERO / PILOTO WEB LOCAL CON SOPORTE MULTILÍNEA IMPLEMENTADO; VALIDACIÓN RUNTIME PENDIENTE**. El flujo público estable continúa sin cambios y Pricing V2 mantiene la autoridad pública.
+- Próximo paso autorizado: **completar una subfase de E2E runtime controlado de CHK-AI-SALES-3** usando la sesión comercial QA y productos reales de libretas, termos y bolsas; comprobar una oportunidad y una sola cotización `BORRADOR`, partidas, totales, recarga y desktop/mobile. No declarar PASS ni iniciar otro frente hasta documentar esa prueba. No activar `VITE_ENABLE_AGENT_QA` ni `VITE_ENABLE_AGENT_WEB_PILOT` en producción ni publicar el piloto; mantener Pricing de Conversión shadow-only, G4 e impresión fuera. `CHK-BRAND-WEB-1` continúa como gate previo al lanzamiento público.
 - Gate de lanzamiento público: **`CHK-BRAND-WEB-1 — REDEFINICIÓN DE MARCA, COMUNICACIÓN Y EXPERIENCIA WEB` PENDIENTE**. Es requisito previo para lanzamiento público, promoción activa, campañas de adquisición o escalamiento significativo de tráfico hacia `articulospromocionales.vip`; no bloquea la operación comercial controlada, la atención comercial controlada, `CHK-AI-SALES-1`, QA, CRM ni Pricing shadow.
 - Simulación marginal read-only precedente de CHK-IMP-1 (2026-09-27): el modelo por tramos conserva `below_minimum` debajo de `$1,500` y elimina descensos para subtotal base creciente; su análisis de total autoritativo, redondeo y escalas derivadas queda como antecedente comparativo. No se incorporó a la autoridad pública ni se activó en producción; el motor vigente de esta subfase es el simulador separado de Pricing de Conversión México.
 
@@ -214,6 +215,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 | Seguimiento de oportunidades públicas | Validado / PASS en producción |
 | Emisión de cotización formal QA | Validada / PASS en producción |
 | Envío de cotización formal | Cerrado / PASS: Gmail y WhatsApp E2E controlados, con recepción y PDF verificados |
+| Super Agente multiproducto | CHK-AI-SALES-3 CERRADO / PARCIAL; implementación y validación automatizada PASS, E2E runtime pendiente |
 | CHK-CAT-1 catálogo, precios y stock | CERRADO / PARCIAL; limitaciones runtime documentadas |
 | CHK-COM-9 ciclo post-envío y seguimiento comercial | CERRADO / PARCIAL; limitaciones documentadas |
 | CHK-IMP-1-SHADOW-1 Pricing de Conversión México | CERRADO / PASS; shadow-only |
@@ -228,6 +230,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 - Mantener Legacy y no iniciar correcciones ni desarrollo fuera del alcance aprobado.
 - Mantener documentadas las limitaciones de CHK-COM-9 y no iniciar correcciones ni otro checkpoint automáticamente.
 - Mantener el resultado de `CHK-IMP-1-SHADOW-1` preservado en Git y el padre pausado hasta definir la canasta competitiva mexicana, validar parámetros y reconciliar el lineage runtime de proveedores antes de cualquier activación. Operar el flujo estable con los guardrails de `docs/07_OPERATIONS_ROADMAP.md`.
+- Completar únicamente la validación E2E runtime pendiente de `CHK-AI-SALES-3`; la implementación está en Git, pero ningún producto real, prospecto, oportunidad ni cotización multilínea fue probado o escrito en este corte.
 
 ### No hacer todavía
 
@@ -239,7 +242,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 
 ## Siguiente paso autorizado
 
-`CHK-OPS-1` queda **CERRADO / PARCIAL**, `CHK-AI-SALES-1` **CERRADO / PASS para el caso QA acotado** y `CHK-AI-SALES-2` **CERRADO / PASS del piloto Web local controlado**; el canal Web público para cliente final sigue sin autorización de despliegue. `CHK-IMP-1` permanece **PAUSADO POR PRIORIDAD OPERATIVA**. La siguiente acción es revisar la evidencia y decidir formalmente el siguiente checkpoint antes de desarrollar; no se deben cargar observaciones productivas, aplicar migraciones, ejecutar recompute/release/publish/sync, modificar G4, continuar impresión ni sustituir `calculate_product_price_v2`.
+`CHK-OPS-1` queda **CERRADO / PARCIAL**, `CHK-AI-SALES-1` **CERRADO / PASS para el caso QA acotado**, `CHK-AI-SALES-2` **CERRADO / PASS del piloto Web local controlado** y `CHK-AI-SALES-3` **CERRADO / PARCIAL**; el E2E runtime multiproducto queda pendiente. El canal Web público para cliente final sigue sin autorización de despliegue. `CHK-IMP-1` permanece **PAUSADO POR PRIORIDAD OPERATIVA**. No iniciar otro frente hasta completar la validación runtime pendiente; no cargar observaciones productivas, aplicar migraciones, ejecutar recompute/release/publish/sync, modificar G4, continuar impresión ni sustituir `calculate_product_price_v2`.
 
 ## Gate de lanzamiento público
 
@@ -262,7 +265,7 @@ El cierre registrado aquí cubre la preparación, activación, alineación y QA 
 
 ## Siguiente checkpoint recomendado
 
-`CHK-AI-SALES-2` está **CERRADO / PASS del piloto Web local controlado**. El siguiente checkpoint todavía debe decidirse formalmente a partir de la evidencia; no se autoriza desplegar ni exponer el piloto al público, ni se ha validado escritura CRM anónima. `CHK-BRAND-WEB-1` sigue como gate obligatorio antes del lanzamiento público y no bloquea la operación controlada. Antes de activar Pricing debe definirse y validarse la canasta competitiva, aprobar parámetros y autorizar un checkpoint posterior.
+`CHK-AI-SALES-3` está **CERRADO / PARCIAL**: la capacidad multilínea y las verificaciones automatizadas quedaron implementadas, pero no hay E2E runtime con catálogo, CRM y visual desktop/mobile. La siguiente acción es completar ese E2E controlado dentro del mismo alcance antes de afirmar PASS; el piloto no se despliega ni se expone al público y no se ha validado escritura CRM anónima. `CHK-BRAND-WEB-1` sigue como gate obligatorio antes del lanzamiento público y no bloquea la operación controlada. Antes de activar Pricing debe definirse y validarse la canasta competitiva, aprobar parámetros y autorizar un checkpoint posterior.
 
 Hasta contar con ese checkpoint no se debe retirar el backend Legacy ni iniciar trabajo funcional fuera del alcance comercial.
 

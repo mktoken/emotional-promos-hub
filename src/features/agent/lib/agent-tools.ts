@@ -37,7 +37,10 @@ const toVariants = (raw: unknown): AgentProduct["variants"] => {
 
 export const catalogTools: CatalogTools = {
   async searchProducts(query, quantity) {
-    const terms = /libreta|cuaderno/i.test(query) ? ["libreta", "cuaderno"] : [query.trim()];
+    const normalized = query.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+    const terms = /libreta|cuaderno|notebook/.test(normalized) ? ["libreta", "cuaderno"]
+      : /termo|cilindro/.test(normalized) ? ["termo", "termos", "cilindro"]
+        : /bolsa/.test(normalized) ? ["bolsa", "bolsas"] : [query.trim()];
     const responses = await Promise.all(terms.map((term) => supabase.rpc("catalog_search_products_v2", {
       p_query: term, p_limit: 24, p_offset: 0, p_category_slug: null, p_collection_slug: null,
       p_subcategory_slug: null, p_min_price: null, p_max_price: null,
@@ -50,9 +53,10 @@ export const catalogTools: CatalogTools = {
       }
     }
     const results = [...found.values()];
-    return /libreta|cuaderno/i.test(query)
-      ? results.filter((row) => /libret|cuadern/i.test(row.nombre ?? ""))
-      : results;
+    const categoryPattern = /libreta|cuaderno|notebook/.test(normalized) ? /libret|cuadern|notebook/i
+      : /termo|cilindro/.test(normalized) ? /termo|cilindro/i
+        : /bolsa/.test(normalized) ? /bolsa/i : null;
+    return categoryPattern ? results.filter((row) => categoryPattern.test(row.nombre ?? "")) : results;
   },
   async getProductDetails(id) {
     const { data, error } = await supabase.from("productos_publicos")
@@ -102,6 +106,26 @@ export async function loadRealProducts(
   return hydrated.filter((item): item is AgentProduct => item !== null);
 }
 
+/** Revalida un producto ya seleccionado sin depender del orden o límite de una nueva búsqueda. */
+export async function loadRealProductById(
+  id: string, quantity: number, tools: CatalogTools = catalogTools,
+): Promise<AgentProduct | null> {
+  const detail = await tools.getProductDetails(id);
+  if (!detail || detail.activo === false) return null;
+  const price = await tools.getAuthoritativePrice(id, quantity);
+  const variants = toVariants(detail.variantes);
+  const known = variants.map((variant) => variant.stock).filter((stock): stock is number => stock !== null);
+  const general = detail.datos_generales && typeof detail.datos_generales === "object"
+    ? detail.datos_generales as Record<string, unknown> : {};
+  const name = typeof general.modelo_comercial === "string" && general.modelo_comercial.trim()
+    ? general.modelo_comercial.trim() : detail.id_interno;
+  return { id: detail.id, sku: detail.sku_base, name,
+    imageUrl: normalizeProductImages(detail.imagenes)[0] ?? null,
+    productUrl: tools.getProductUrl(detail.id), color: null, variants,
+    observedStock: known.length ? known.reduce((a, b) => a + b, 0) : null,
+    stockStatus: known.length ? "observed" : "unknown", price, quantity, state: "considering" };
+}
+
 export function recommendProducts(products: AgentProduct[]): Array<{ label: string; product: AgentProduct }> {
   const eligible = products.filter((p) => p.state !== "rejected" && p.price.status === "priced"
     && p.price.unitPriceBeforeTaxMxn !== null && p.price.isValidQuantity
@@ -118,4 +142,11 @@ export function recommendProducts(products: AgentProduct[]): Array<{ label: stri
     { label: "Recomendada", product: distinctPriceTiers[Math.floor((distinctPriceTiers.length - 1) / 2)] },
     { label: "Premium", product: distinctPriceTiers[distinctPriceTiers.length - 1] },
   ];
+}
+
+/** El mismo orden se usa para presentar tarjetas y resolver “la primera/segunda opción”. */
+export function orderedProductOptions(products: AgentProduct[]): AgentProduct[] {
+  const recommended = recommendProducts(products).map(({ product }) => product);
+  const ids = new Set(recommended.map((product) => product.id));
+  return [...recommended, ...products.filter((product) => product.state !== "rejected" && !ids.has(product.id))];
 }

@@ -1,13 +1,17 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { submitPublicQuoteRequest } from "@/features/quotes/lib/public-quote-request";
-import { calcQuoteTotals } from "@/features/crm/lib/formal-quote-calc";
-import { selectedProduct, handoffReasons, type OpportunityState } from "./agent-state";
+import { buildDraftQuotePlan, planDraftQuoteReconciliation } from "./agent-quote";
+import { findRequestedVariant, handoffReasons, selectedLineProduct, selectedProductLines,
+  setActiveProductLine, type AgentProduct, type AgentProductLine, type OpportunityState } from "./agent-state";
+import { loadRealProductById } from "./agent-tools";
 import { QA_CONTACT } from "./agent-qa-contact";
 
 export { QA_CONTACT } from "./agent-qa-contact";
 
 export interface QaOperationResult { prospectId: string; opportunityId: string; draftQuoteId: string }
+const ownershipMarker = (sessionId: string) => `QA Super Agente ${sessionId}`;
+const roundMoney = (value: number) => Math.round(value * 100) / 100;
 
 async function assertQaStaff() {
   const localPilot = import.meta.env.VITE_ENABLE_AGENT_WEB_PILOT === "true"
@@ -16,10 +20,72 @@ async function assertQaStaff() {
   const { data: auth, error: authError } = await supabase.auth.getUser();
   if (authError || !auth.user) throw new Error("Se requiere sesión CRM.");
   const { data: roles, error } = await supabase.from("user_roles").select("role").eq("user_id", auth.user.id);
-  if (error || !(roles ?? []).some((r) => ["admin", "sales_manager", "sales_agent"].includes(r.role))) {
+  if (error || !(roles ?? []).some((row) => ["admin", "sales_manager", "sales_agent"].includes(row.role))) {
     throw new Error("Se requiere rol comercial de CRM.");
   }
   return auth.user.id;
+}
+
+function activeLines(state: OpportunityState): AgentProductLine[] {
+  return state.productLines.filter((line) => line.status !== "removed" && line.status !== "rejected");
+}
+
+function assertSelectedLines(state: OpportunityState): Array<{ line: AgentProductLine; product: AgentProduct }> {
+  const active = activeLines(state);
+  const selected = selectedProductLines(state);
+  if (!active.length || selected.length !== active.length) {
+    throw new Error("Selecciona una opción verificada para cada línea activa; las líneas incompletas no se guardarán.");
+  }
+  return selected.map((line) => {
+    const product = selectedLineProduct(line);
+    if (!product || !line.quantity || product.quantity !== line.quantity) throw new Error(`La cantidad o selección de ${line.productInterest} requiere revisión.`);
+    if (line.status !== "selected" || product.price.status !== "priced" || product.price.unitPriceBeforeTaxMxn === null
+        || !product.price.isValidQuantity) throw new Error(`El precio de ${line.productInterest} no está verificado para cotizar.`);
+    if (product.observedStock !== null && product.observedStock < line.quantity) throw new Error(`El stock observado de ${line.productInterest} es menor a la cantidad solicitada.`);
+    return { line, product };
+  });
+}
+
+async function revalidateSelectedLines(state: OpportunityState): Promise<OpportunityState> {
+  const selected = assertSelectedLines(state);
+  let next = state;
+  for (const { line } of selected) {
+    const product = selectedLineProduct(line)!;
+    const fresh = await loadRealProductById(product.id, line.quantity!);
+    if (!fresh || fresh.price.status !== "priced" || fresh.price.unitPriceBeforeTaxMxn === null || !fresh.price.isValidQuantity) {
+      throw new Error(`No pude revalidar precio V2 de ${line.productInterest}; no se guardó la cotización.`);
+    }
+    let verified: AgentProduct = { ...fresh, state: "selected" };
+    const requestedColor = line.selectedVariant ?? line.color;
+    if (requestedColor) {
+      const variant = findRequestedVariant(fresh.variants, requestedColor);
+      if (!variant) throw new Error(`La variante ${requestedColor} de ${line.productInterest} ya no está verificada.`);
+      verified = { ...verified, color: variant.color, observedStock: variant.stock,
+        stockStatus: variant.stock === null ? "unknown" : "observed" };
+      if (variant.stock !== null && variant.stock < line.quantity!) throw new Error(`El stock observado de la variante de ${line.productInterest} es insuficiente.`);
+    }
+    const candidates = line.candidates.map((candidate) => candidate.id === verified.id ? verified : candidate);
+    if (!candidates.some((candidate) => candidate.id === verified.id)) candidates.push(verified);
+    const updatedLine = { ...line, candidates, selectedProductId: verified.id,
+      selectedVariant: verified.color, color: verified.color ?? line.color, status: "selected" as const };
+    next = { ...next, productLines: next.productLines.map((item) => item.lineId === line.lineId ? updatedLine : item) };
+  }
+  const currentLine = next.productLines.find((line) => line.lineId === next.activeProductLineId);
+  if (currentLine) next = setActiveProductLine(next, currentLine.lineId);
+  return next;
+}
+
+function selectedSnapshot(line: AgentProductLine) {
+  const product = selectedLineProduct(line) ?? line.candidates.find((candidate) => candidate.id === line.selectedProductId) ?? null;
+  return {
+    lineId: line.lineId, productInterest: line.productInterest, productId: product?.id ?? null,
+    sku: product?.sku ?? null, productName: product?.name ?? null, quantity: line.quantity,
+    selectedVariant: line.selectedVariant, color: line.color ?? product?.color ?? null,
+    pricingStatus: product?.price.status ?? "not_quoted", unitPriceBeforeTaxMxn: product?.price.unitPriceBeforeTaxMxn ?? null,
+    stockObserved: product?.observedStock ?? null, stockStatus: product?.stockStatus ?? "unknown",
+    status: line.status, personalizationRequested: line.personalizationRequested,
+    personalizationStatus: line.personalizationStatus, personalizationNotes: line.personalizationNotes ?? null,
+  };
 }
 
 export function safeQaContext(state: OpportunityState, prospectId: string): Json {
@@ -29,26 +95,80 @@ export function safeQaContext(state: OpportunityState, prospectId: string): Json
     customer: { name: QA_CONTACT.name, email: QA_CONTACT.email, phone: QA_CONTACT.phone },
     company: { name: QA_CONTACT.company, intelligenceStatus: state.company.intelligenceStatus },
     opportunity: state.opportunity as unknown as Json,
-    products: state.products.map((p) => ({ id: p.id, sku: p.sku, name: p.name, quantity: p.quantity,
-      color: p.color, priceStatus: p.price.status, observedStock: p.observedStock, state: p.state })),
-    art: state.art as unknown as Json,
+    activeProductLineId: state.activeProductLineId,
+    productLines: state.productLines.map(selectedSnapshot),
+    products: state.productLines.filter((line) => line.status !== "removed" && line.status !== "rejected")
+      .flatMap((line) => line.candidates.filter((product) => product.id === line.selectedProductId)
+        .map((product) => ({ lineId: line.lineId, id: product.id, sku: product.sku, name: product.name,
+          quantity: line.quantity, color: line.color ?? product.color, priceStatus: product.price.status,
+          unitPriceBeforeTaxMxn: product.price.unitPriceBeforeTaxMxn, observedStock: product.observedStock, state: line.status }))),
+    art: { ...state.art, technicalReviewRequired: state.productLines.length
+      ? state.productLines.some((line) => line.personalizationStatus === "requested_review")
+      : state.art.technicalReviewRequired } as unknown as Json,
     commercial: { nextAction: "Revisión humana", humanReviewReasons: handoffReasons(state) },
   } as Json;
 }
 
+function publicRequestItems(state: OpportunityState, lines: Array<{ line: AgentProductLine; product: AgentProduct }>) {
+  return lines.map(({ line, product }) => ({
+    product_id: product.id, quantity: line.quantity!, color: line.color ?? product.color ?? undefined,
+    personalization: line.personalizationStatus === "requested_review"
+      ? { type: "advisor_review", label: line.personalizationNotes?.slice(0, 160), requires_review: true }
+      : line.personalizationStatus === "no_print_requested"
+        ? { type: "no_print", label: "Sin impresión solicitada", requires_review: false }
+        : undefined,
+    observation: `${ownershipMarker(state.sessionId)}; ${line.productInterest}; ${state.opportunity.useCase ?? ""}`.trim(),
+  }));
+}
+
+function publicLeadItems(lines: Array<{ line: AgentProductLine; product: AgentProduct }>) {
+  return lines.map(({ line, product }, index) => {
+    const price = product.price.unitPriceBeforeTaxMxn!;
+    const subtotal = roundMoney(price * line.quantity!);
+    const personalization = line.personalizationStatus === "requested_review"
+      ? { type: "advisor_review", label: line.personalizationNotes?.slice(0, 160) ?? "Revisión técnica requerida", requires_review: true }
+      : line.personalizationStatus === "no_print_requested"
+        ? { type: "no_print", label: "Sin impresión solicitada", requires_review: false }
+        : { type: "not_specified", label: "Por definir con asesor", requires_review: true };
+    return {
+      line_number: index + 1, producto_id: product.id, id_interno: product.sku ?? product.id,
+      nombre: product.name, sku: product.sku ?? product.id, clave_producto: product.sku ?? product.id,
+      modelo_comercial: product.name, descripcion: product.name, color: line.color ?? product.color,
+      cantidad: line.quantity, public_price_status: product.price.status, precio_unitario_estimado: price,
+      subtotal, currency: product.price.currency, minimum_quantity: product.price.minimumQuantity,
+      pricing_generation_id: product.price.pricingGenerationId, requested_quantity: product.price.requestedQuantity,
+      is_valid_quantity: product.price.isValidQuantity, personalizacion_solicitada_cliente: personalization,
+      personalizacion: personalization.label, requiere_revision_tecnica: personalization.requires_review,
+    };
+  });
+}
+
 export async function createOrUpdateOpportunity(state: OpportunityState): Promise<string> {
   await assertQaStaff();
-  const p = selectedProduct(state);
-  if (!p) throw new Error("Selecciona un producto real antes de guardar la oportunidad QA.");
-  if (!Number.isInteger(p.quantity) || p.quantity < 1 || p.price.status === "below_minimum" || p.price.status === "unavailable") {
-    throw new Error("El producto o la cantidad no son válidos para una solicitud QA.");
+  const lines = assertSelectedLines(state);
+  const { data: existing, error: lookupError } = await supabase.from("cotizaciones_leads")
+    .select("id,public_request_id,datos_cliente,estado_cotizacion").eq("public_request_id", state.sessionId).maybeSingle();
+  if (lookupError) throw new Error(lookupError.message);
+  if (existing) {
+    const customer = existing.datos_cliente && typeof existing.datos_cliente === "object"
+      ? existing.datos_cliente as Record<string, unknown> : {};
+    if (existing.public_request_id !== state.sessionId || customer.email !== QA_CONTACT.email
+        || (existing.estado_cotizacion && !["NUEVA", "BORRADOR"].includes(existing.estado_cotizacion))) {
+      throw new Error("La oportunidad existente no es editable por esta sesión QA.");
+    }
+    const items = publicLeadItems(lines);
+    const subtotal = roundMoney(items.reduce((sum, item) => sum + item.subtotal, 0));
+    const { error } = await supabase.from("cotizaciones_leads").update({
+      articulos_cotizados: items as unknown as Json, total_estimado: subtotal,
+      datos_cliente: { ...customer, pricing_mode: "v2", formato_propuesta: "individual",
+        modalidad_cotizacion: "INDIVIDUAL", modalidad_cotizacion_label: "Cotizar por separado" } as Json,
+    }).eq("id", existing.id).eq("public_request_id", state.sessionId);
+    if (error) throw new Error(error.message);
+    return existing.id;
   }
-  const result = await submitPublicQuoteRequest({
-    requestId: state.sessionId, contact: QA_CONTACT, quoteFormat: "individual",
-    items: [{ product_id: p.id, quantity: p.quantity, color: p.color ?? undefined,
-      personalization: state.art.technicalReviewRequired ? { type: "advisor_review", requires_review: true } : undefined,
-      observation: `QA Super Agente. ${state.opportunity.useCase ?? ""} ${state.art.notes ?? ""}`.trim() }],
-  });
+
+  const result = await submitPublicQuoteRequest({ requestId: state.sessionId, contact: QA_CONTACT,
+    quoteFormat: "individual", items: publicRequestItems(state, lines) });
   return result.quoteId;
 }
 
@@ -62,35 +182,33 @@ export async function saveOpportunityContext(opportunityId: string, state: Oppor
   if (currentCustomer.email !== QA_CONTACT.email) throw new Error("Destino no QA; actualización rechazada.");
   const { error } = await supabase.from("cotizaciones_leads").update({
     datos_cliente: { ...currentCustomer, agent_qa_context: safeQaContext(state, prospectId) } as Json,
-  }).eq("id", opportunityId);
+  }).eq("id", opportunityId).eq("public_request_id", state.sessionId);
   if (error) throw new Error(error.message);
 }
 
 export async function createOrUpdateProspect(opportunityId: string, state: OpportunityState): Promise<string> {
   await assertQaStaff();
   const { data: existing, error: lookupError } = await supabase.from("crm_leads")
-    .select("id,company_name,email").eq("web_lead_id", opportunityId).is("deleted_at", null).limit(1).maybeSingle();
+    .select("id,company_name,email").eq("web_lead_id", opportunityId).is("deleted_at", null).maybeSingle();
   if (lookupError) throw new Error(lookupError.message);
   if (existing) {
-    if (existing.company_name !== QA_CONTACT.company || existing.email !== QA_CONTACT.email) {
-      throw new Error("Existe un prospecto no QA para esta oportunidad.");
-    }
+    if (existing.company_name !== QA_CONTACT.company || existing.email !== QA_CONTACT.email) throw new Error("Existe un prospecto no QA para esta oportunidad.");
     return existing.id;
   }
   const { data: knownQa, error: knownError } = await supabase.from("crm_leads")
-    .select("id,company_name").eq("email", QA_CONTACT.email).is("deleted_at", null).limit(1).maybeSingle();
+    .select("id,company_name").eq("email", QA_CONTACT.email).is("deleted_at", null).maybeSingle();
   if (knownError) throw new Error(knownError.message);
   if (knownQa) {
     if (knownQa.company_name !== QA_CONTACT.company) throw new Error("La identidad QA coincide con un prospecto de otra empresa.");
     return knownQa.id;
   }
+  const productInterest = activeLines(state).map((line) => `${line.productInterest}${line.quantity ? ` (${line.quantity})` : ""}`).join(", ");
   const { data, error } = await supabase.from("crm_leads").insert({
     source: "asistente_virtual", status: "interesado", web_lead_id: opportunityId,
     company_name: QA_CONTACT.company, contact_name: QA_CONTACT.name,
-    email: QA_CONTACT.email, phone: QA_CONTACT.phone,
-    product_interest: state.opportunity.productInterest ?? null,
+    email: QA_CONTACT.email, phone: QA_CONTACT.phone, product_interest: productInterest,
     city: state.opportunity.deliveryCity ?? null,
-    notes: `QA Super Agente ${state.sessionId}. Revisión humana requerida.`,
+    notes: `${ownershipMarker(state.sessionId)}. Revisión humana requerida.`,
   }).select("id").single();
   if (error || !data) throw new Error(error?.message ?? "No se creó prospecto QA.");
   return data.id;
@@ -98,80 +216,81 @@ export async function createOrUpdateProspect(opportunityId: string, state: Oppor
 
 export async function createDraftQuote(opportunityId: string, state: OpportunityState): Promise<string> {
   const userId = await assertQaStaff();
-  const p = selectedProduct(state);
-  if (!p || p.price.status !== "priced" || p.price.unitPriceBeforeTaxMxn === null || !p.price.isValidQuantity) {
-    throw new Error("No hay precio autoritativo para una partida de cotización borrador.");
-  }
+  assertSelectedLines(state);
   const { data: existing, error: lookupError } = await supabase.from("formal_quotes")
-    .select("id,status,cliente").eq("cotizacion_lead_id", opportunityId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    .select("id,status,cliente,notas_internas").eq("cotizacion_lead_id", opportunityId).maybeSingle();
   if (lookupError) throw new Error(lookupError.message);
   if (existing) {
     const client = existing.cliente && typeof existing.cliente === "object" ? existing.cliente as Record<string, unknown> : {};
-    if (existing.status !== "BORRADOR" || client.email !== QA_CONTACT.email) throw new Error("Cotización existente fuera del alcance QA.");
+    if (existing.status !== "BORRADOR" || client.email !== QA_CONTACT.email
+        || !existing.notas_internas?.includes(ownershipMarker(state.sessionId))) {
+      throw new Error("La cotización existente está fuera de esta sesión QA.");
+    }
     return existing.id;
   }
   const { data, error } = await supabase.from("formal_quotes").insert({
     cotizacion_lead_id: opportunityId, status: "BORRADOR", created_by: userId,
-    cliente: { nombre: QA_CONTACT.name, empresa: QA_CONTACT.company, email: QA_CONTACT.email,
-      telefono: QA_CONTACT.phone } as Json,
-    notas_internas: `QA Super Agente ${state.sessionId}. No emitir ni enviar.`,
+    cliente: { nombre: QA_CONTACT.name, empresa: QA_CONTACT.company, email: QA_CONTACT.email, telefono: QA_CONTACT.phone } as Json,
+    notas_internas: `${ownershipMarker(state.sessionId)}. No emitir ni enviar.`,
   }).select("id").single();
   if (error || !data) throw new Error(error?.message ?? "No se creó borrador QA.");
   return data.id;
 }
 
-export async function addOrUpdateDraftQuoteItem(quoteId: string, state: OpportunityState): Promise<void> {
+export async function syncDraftQuoteItems(quoteId: string, state: OpportunityState): Promise<void> {
   await assertQaStaff();
-  const p = selectedProduct(state);
-  if (!p || p.price.status !== "priced" || p.price.unitPriceBeforeTaxMxn === null || !p.price.isValidQuantity) {
-    throw new Error("Precio autoritativo no disponible.");
-  }
+  assertSelectedLines(state);
+  const plan = buildDraftQuotePlan(state);
   const { data: quote, error: quoteError } = await supabase.from("formal_quotes")
-    .select("id,status,cliente").eq("id", quoteId).single();
+    .select("id,status,cliente,notas_internas").eq("id", quoteId).single();
   const client = quote?.cliente && typeof quote.cliente === "object" ? quote.cliente as Record<string, unknown> : {};
-  if (quoteError || !quote || quote.status !== "BORRADOR" || client.email !== QA_CONTACT.email) {
-    throw new Error("La cotización no es un borrador QA.");
+  if (quoteError || !quote || quote.status !== "BORRADOR" || client.email !== QA_CONTACT.email
+      || !quote.notas_internas?.includes(ownershipMarker(state.sessionId))) {
+    throw new Error("La cotización no es un borrador QA de esta sesión.");
   }
-  const { data: items, error: itemError } = await supabase.from("formal_quote_items")
-    .select("id,notes_internal").eq("formal_quote_id", quoteId).limit(2);
+  const { data: existing, error: itemError } = await supabase.from("formal_quote_items")
+    .select("id,notes_internal").eq("formal_quote_id", quoteId);
   if (itemError) throw new Error(itemError.message);
-  if (items && (items.length > 1 || items.some((item) => !item.notes_internal?.includes(`QA Super Agente ${state.sessionId}`)))) {
-    throw new Error("El borrador contiene partidas ajenas a esta sesión QA.");
+  const reconciliation = planDraftQuoteReconciliation(existing ?? [], plan.items, state.sessionId);
+  for (const id of reconciliation.deleteIds) {
+    const { error } = await supabase.from("formal_quote_items").delete()
+      .eq("id", id).eq("formal_quote_id", quoteId);
+    if (error) throw new Error(error.message);
   }
-  const values = {
-    position: 1, source: "CATALOG", modelo_comercial: p.name,
-    clave_producto: p.sku, color: p.color, imagen_url: p.imageUrl,
-    cantidad: p.quantity, precio_unitario: p.price.unitPriceBeforeTaxMxn,
-    subtotal: Math.round(p.quantity * p.price.unitPriceBeforeTaxMxn * 100) / 100,
-    personalizacion: { label: state.art.technicalReviewRequired ? "Sujeta a revisión técnica" : "Por confirmar",
-      requiere_revision_tecnica: true, producto_id: p.id } as Json,
-    notes_internal: `QA Super Agente ${state.sessionId}; stock observado, no confirmado.`,
-  };
-  const { error } = items?.length
-    ? await supabase.from("formal_quote_items").update(values).eq("id", items[0].id)
-    : await supabase.from("formal_quote_items").insert({ ...values, formal_quote_id: quoteId });
-  if (error) throw new Error(error.message);
-  const totals = calcQuoteTotals([{ cantidad: p.quantity, precio_unitario: p.price.unitPriceBeforeTaxMxn, descuento_pct: 0 }], 0.16);
-  const { error: totalError } = await supabase.from("formal_quotes").update({ ...totals })
+  for (const item of reconciliation.upserts) {
+    const { error } = item.existingId
+      ? await supabase.from("formal_quote_items").update(item.values).eq("id", item.existingId).eq("formal_quote_id", quoteId)
+      : await supabase.from("formal_quote_items").insert({ ...item.values, formal_quote_id: quoteId });
+    if (error) throw new Error(error.message);
+  }
+
+  const { error: totalError } = await supabase.from("formal_quotes").update({ ...plan.totals })
     .eq("id", quoteId).eq("status", "BORRADOR");
   if (totalError) throw new Error(totalError.message);
 }
 
+export const addOrUpdateDraftQuoteItem = syncDraftQuoteItems;
+
 export async function requestHumanReview(prospectId: string, state: OpportunityState): Promise<void> {
   await assertQaStaff();
+  const summaries = state.productLines.map((line) => {
+    const product = selectedLineProduct(line) ?? line.candidates.find((item) => item.id === line.selectedProductId);
+    return `${line.productInterest}: ${line.status}${product ? `, ${product.name}, qty ${line.quantity}, ${product.price.status}, stock ${product.observedStock ?? "no observado"}` : ""}`;
+  }).join("; ");
   const { error } = await supabase.from("crm_leads").update({
-    notes: `QA Super Agente ${state.sessionId}. Revisión humana: ${handoffReasons(state).join("; ") || "verificar operación"}.`,
+    notes: `${ownershipMarker(state.sessionId)}. Revisión humana: ${handoffReasons(state).join("; ") || "verificar operación"}. Líneas: ${summaries}`,
   }).eq("id", prospectId).eq("email", QA_CONTACT.email);
   if (error) throw new Error(error.message);
 }
 
 export async function commitQaOperation(state: OpportunityState): Promise<QaOperationResult> {
   await assertQaStaff();
-  const opportunityId = await createOrUpdateOpportunity(state);
-  const prospectId = await createOrUpdateProspect(opportunityId, state);
-  await saveOpportunityContext(opportunityId, state, prospectId);
-  const draftQuoteId = await createDraftQuote(opportunityId, state);
-  await addOrUpdateDraftQuoteItem(draftQuoteId, state);
-  await requestHumanReview(prospectId, state);
+  const verifiedState = await revalidateSelectedLines(state);
+  const opportunityId = await createOrUpdateOpportunity(verifiedState);
+  const prospectId = await createOrUpdateProspect(opportunityId, verifiedState);
+  await saveOpportunityContext(opportunityId, verifiedState, prospectId);
+  const draftQuoteId = await createDraftQuote(opportunityId, verifiedState);
+  await syncDraftQuoteItems(draftQuoteId, verifiedState);
+  await requestHumanReview(prospectId, verifiedState);
   return { prospectId, opportunityId, draftQuoteId };
 }

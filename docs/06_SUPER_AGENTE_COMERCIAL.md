@@ -126,6 +126,14 @@ El piloto `/agente-piloto` está aislado por `VITE_ENABLE_AGENT_WEB_PILOT=true`,
 
 El E2E local con 50 libretas seleccionó BOOKRAFT Royal Blue a 80 piezas y produjo `COT-2026-00010` en `BORRADOR`, con prospecto QA reutilizado, oportunidad nueva y handoff humano. El producto/variante/precio se reconsultan antes de escribir. El contexto de la oportunidad registra el ID del prospecto reutilizado sin alterar el `web_lead_id` histórico del prospecto. No hubo emisión ni envío. `CHK-AI-SALES-2` queda **CERRADO / PASS del piloto local controlado**; habilitar escritura anónima para clientes reales, desplegar al público, perfiles de empresa y conversación amplia sigue fuera de alcance.
 
+### CHK-AI-SALES-3 — multiproducto y cotización multilínea
+
+Se evolucionó el núcleo compartido en `src/features/agent/`, sin crear otro agente. `OpportunityState` v2 conserva `productLines[]` y una línea activa; cada necesidad tiene candidatos, producto/variante, cantidad, precio V2, stock observado, estado y personalización propios. Se admite migración del estado de una sola línea, referencias por categoría/opción, cambio/reemplazo, retiro y reingreso. Si una referencia no identifica una línea con seguridad, el sistema pregunta y no muta otra.
+
+`/crm/agente-qa` y el piloto local presentan las mismas líneas y resumen comercial. La cotización agrupa productos seleccionados y activos en una sola oportunidad y un solo formal quote `BORRADOR`; sus partidas se reconcilián por `lineId`, se excluyen las retiradas y los totales se calculan antes de IVA, IVA 16% y total con IVA. La personalización se guarda por línea; no se inventa técnica ni precio de impresión. Precio público V2 se reconsulta por producto/cantidad y el stock sigue siendo observado, no disponibilidad final. No se incorpora Pricing Conversion Shadow, WhatsApp, G4, impresión automática, ni envío/emisión.
+
+**Validación disponible:** 40 tests dirigidos PASS (estado, workflow, herramientas, contexto QA, cotización y piloto); suite completa 131/131 PASS; tipos PASS; lint dirigido PASS; build normal y build con flags QA/piloto PASS; `git diff --check` PASS en la revisión final. **E2E runtime:** NO COMPROBADO. `127.0.0.1:8080` no tenía servidor escuchando, por lo que no se consultaron productos reales, no se usó identidad CRM, no se crearon prospecto/oportunidad/cotización y no se visualizó desktop/mobile. No se deben inferir SKUs, precios, stock ni IDs de la prueba. `CHK-AI-SALES-3` queda **CERRADO / PARCIAL**, pendiente una subfase runtime antes de declarar PASS.
+
 ## Relación con el gate de lanzamiento público
 
 La validación runtime del caso QA y del piloto Web local está cerrada. El canal público para clientes reales no está autorizado; sus brechas requieren definición y checkpoint separados. La decisión de marca no interrumpe la operación comercial controlada, QA, CRM ni Pricing shadow.

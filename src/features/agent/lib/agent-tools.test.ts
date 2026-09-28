@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { loadRealProducts, type CatalogTools } from "./agent-tools";
+import { loadRealProductById, loadRealProducts, type CatalogTools } from "./agent-tools";
 
 const price = {
   status: "priced" as const, currency: "MXN", unitPriceBeforeTaxMxn: 29.5,
@@ -38,5 +38,16 @@ describe("Super Agente catalog tools", () => {
   it("does not return an unverified product if all price checks fail", async () => {
     await expect(loadRealProducts("libreta", 50, tools({ getAuthoritativePrice: async () => { throw new Error("price unavailable"); } })))
       .rejects.toThrow("No se pudieron verificar");
+  });
+  it("revalidates the selected real product and public price for the exact changed quantity", async () => {
+    const calls: Array<[string, number]> = [];
+    const result = await loadRealProductById("real-1", 80, tools({
+      getAuthoritativePrice: async (id, quantity) => {
+        calls.push([id, quantity]);
+        return { ...price, requestedQuantity: quantity, unitPriceBeforeTaxMxn: 31.25 };
+      },
+    }));
+    expect(calls).toEqual([["real-1", 80]]);
+    expect(result).toMatchObject({ id: "real-1", quantity: 80, price: { status: "priced", requestedQuantity: 80, unitPriceBeforeTaxMxn: 31.25 } });
   });
 });

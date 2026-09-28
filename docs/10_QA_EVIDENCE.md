@@ -32,6 +32,7 @@ Este documento indexa pruebas y reportes. No copia el contenido completo de los 
 | Build actual | 2026-09-26 | `bc13a15` | Local | PASS | Validación documentada en CHK-DOC-1B |
 | CHK-AI-SALES-1 Super Agente Web QA | 2026-09-27 | `CHK-AI-SALES-1-RUNTIME-1B`, sesión CRM QA y evidencia integrada | QA local + CRM integrado | CERRADO / PASS del caso QA acotado; Web público pendiente | [Entrada CHK-AI-SALES-1](#chk-ai-sales-1--super-agente-web-qa) |
 | CHK-AI-SALES-2 piloto Web cliente | 2026-09-27 | E2E local y consultas CRM QA independientes | QA local + CRM integrado | CERRADO / PASS del piloto controlado; no publicado | [Entrada CHK-AI-SALES-2](#chk-ai-sales-2--piloto-web-cliente-controlado) |
+| CHK-AI-SALES-3 multiproducto y cotización multilínea | 2026-09-28 | Implementación local desde `af725ca8e888d2050b7d79f06d99613ec8352aeb` | Local: pruebas/types/lint/build; runtime no disponible | CERRADO / PARCIAL; automatizadas PASS, E2E runtime NO COMPROBADO | [Entrada CHK-AI-SALES-3](#chk-ai-sales-3--multiproducto-y-cotizacion-multilinea) |
 
 ## Interpretación obligatoria
 
@@ -210,6 +211,42 @@ La prueba de paginación se clasifica **INTERMITENTE**. El código read-only rev
 La carga se clasifica **INTERMITENTE / LENTA EN EPISODIOS PREVIOS**. No se inventa un SLA y no se atribuye la causa a backend, frontend, red o sesión.
 
 **Resultado final CHK-CAT-1: CERRADO / PARCIAL.** No se abre un checkpoint correctivo en esta ejecución.
+
+## CHK-AI-SALES-3 — Multiproducto y cotización multilínea
+
+**Fecha:** 2026-09-28
+
+**Base Git verificada:** rama `main`, HEAD/origin/main `af725ca8e888d2050b7d79f06d99613ec8352aeb`, divergencia `0 0`, working tree inicial limpio.
+
+**Entorno:** validación local de código; no se desplegó ni se modificó producción.
+
+### Cambios implementados
+
+- El núcleo compartido del Super Agente evolucionó a estado `productLines[]` con línea activa, estado por línea y migración compatible con sesiones previas de una sola línea.
+- Workflow y UI compartidos para QA CRM/piloto local admiten búsqueda, selección, cantidad, variante/color, retiro/reingreso, reemplazo, personalización por línea y resumen de totales.
+- Revalidación independiente de producto, precio público vigente y stock observado; las líneas sin precio autoritativo bloquean el guardado.
+- Persistencia preparada para una oportunidad y una cotización formal `BORRADOR` por sesión, con reconciliación de quote items para actualizar/agregar/quitar líneas, evitando duplicados ambiguos.
+- Subtotal por línea y general antes de IVA, IVA 16% y total etiquetado con IVA. Impresión queda por confirmar/revisión humana, sin precio ni técnica inventados.
+- Sin migraciones nuevas, despliegue, escritura runtime, emisión, correo, WhatsApp, Pricing Conversion productivo, G4 ni automatización de impresión.
+
+### Validación automatizada
+
+- Pruebas dirigidas del Super Agente: **40/40 PASS** en 6 archivos.
+- Suite completa: **131/131 PASS** en 17 archivos.
+- TypeScript (`tsc --noEmit`): **PASS**.
+- ESLint dirigido a `src/features/agent`: **PASS**.
+- Build normal: **PASS**.
+- Build local con `VITE_ENABLE_AGENT_QA=true` y `VITE_ENABLE_AGENT_WEB_PILOT=true`: **PASS**.
+- `git diff --check`: **PASS** en la revisión final.
+- Ambos builds muestran la advertencia preexistente/de bundle grande (>500 kB) de Vite; el build finaliza correctamente.
+
+### E2E runtime y límites de evidencia
+
+El E2E multiproducto queda **NO COMPROBADO**: la comprobación de `http://127.0.0.1:8080/crm/agente-qa` falló porque no había servidor escuchando, y no existe control de navegador autenticado disponible en esta ejecución. Por ello no se consultaron productos reales de libretas/termos/bolsas ni sus SKU, variantes, precios o stock; no se usó identidad QA; no se crearon ni actualizaron prospecto, oportunidad o cotización; no se verificaron persistencia tras reload, quote items/totales runtime, handoff, ni vistas desktop/mobile. No se atribuyen IDs o valores de runtime que no fueron observados.
+
+Los casos cubiertos por pruebas automatizadas incluyen flujo de una línea y de varias líneas, selección y referencias ambiguas, cantidades y variantes independientes, retiro/reingreso/reemplazo, cambio de precios, error parcial de herramienta, conciliación de quote items, totales/IVA, rechazo de partidas sin precio y controles de contexto QA. Esto no sustituye el E2E con catálogo y CRM integrados.
+
+**Resultado final CHK-AI-SALES-3: CERRADO / PARCIAL.** Requiere una subfase de E2E runtime controlado antes de declararse PASS. No se crean registros CRM ni se inicia otro frente como parte de esta evidencia.
 
 ## Evidencia no disponible como índice independiente
 

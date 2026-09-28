@@ -140,7 +140,7 @@ Solicitud simple, expediente estructurado, producto real, alternativas, CRM y co
 
 ### Fase 2 — Multiproducto + CRM + cotización borrador
 
-Varias necesidades, kits, alternativas, deduplicación, contexto de oportunidad y preparación de cotización sin emisión automática.
+`CHK-AI-SALES-3` implementó líneas independientes de producto, referencias naturales, precio/stock por producto, modificación/retiro/reingreso, contexto único de oportunidad y conciliación de partidas en un único borrador. Suite completa, tipos, lint dirigido y builds normal/QA pasan. El checkpoint queda **CERRADO / PARCIAL** porque el E2E runtime real (productos de catálogo, CRM integrado, persistencia, cotización, reload y QA desktop/mobile) no pudo ejecutarse: no había servidor QA activo en `127.0.0.1:8080`. No se crearon registros CRM ni se desplegó el piloto. Completar esa validación antes de declarar PASS; kits siguen sin validación independiente.
 
 ### Fase 3 — Sector Intelligence + Company Intelligence + visión
 
@@ -175,4 +175,4 @@ Son estimaciones de ingeniería basadas en la estructura actual, no compromisos 
 
 ## Próximo checkpoint
 
-`CHK-AI-SALES-1` quedó **CERRADO / PASS para el caso QA acotado** y `CHK-AI-SALES-2` **CERRADO / PASS del piloto Web local controlado**, ambos sin exposición pública. El siguiente checkpoint debe decidirse formalmente después de revisar la evidencia; no se declara uno nuevo autorizado aquí. Pricing, G4 e impresión permanecen fuera; el lanzamiento público sigue condicionado a un PASS posterior de `CHK-BRAND-WEB-1`.
+`CHK-AI-SALES-1` quedó **CERRADO / PASS para el caso QA acotado**, `CHK-AI-SALES-2` **CERRADO / PASS del piloto Web local controlado** y `CHK-AI-SALES-3` **CERRADO / PARCIAL**. El siguiente paso es únicamente la subfase de E2E runtime de CHK-AI-SALES-3; no declarar PASS ni iniciar otro frente antes de probar catálogo real, persistencia, una oportunidad, un borrador multilínea, totales e interfaz desktop/mobile. No se autoriza exponer ni desplegar el piloto al público. Pricing, G4 e impresión permanecen fuera; el lanzamiento público sigue condicionado a un PASS posterior de `CHK-BRAND-WEB-1`.

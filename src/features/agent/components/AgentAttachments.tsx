@@ -1,8 +1,10 @@
 import { useRef, useState } from "react";
 import { Paperclip, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { applyVisualAnalysis, createCommercialAttachment, linkAttachmentToLines, type CommercialAttachment, type CommercialAttachmentType } from "../lib/agent-attachments";
+import { applyVisualAnalysis, buildSearchCriteriaFromVisualAnalysis, createCommercialAttachment, linkAttachmentToLines, type CommercialAttachment, type CommercialAttachmentType } from "../lib/agent-attachments";
 import { fileToDataUrl, lovableCommercialVisionProcessor } from "../lib/commercial-vision";
+import { loadRealProducts } from "../lib/agent-tools";
+import { setProductLineCandidates } from "../lib/agent-state";
 import type { AgentSession } from "../lib/agent-workflow";
 
 const types: Array<[CommercialAttachmentType, string]> = [
@@ -31,10 +33,29 @@ export function AgentAttachments({ session, setSession, disabled = false }: { se
   async function analyze(attachment: CommercialAttachment) {
     const file = files.current[attachment.attachmentId];
     if (!file) { setError("El archivo ya no está disponible en esta sesión; vuelve a adjuntarlo."); return; }
+    if (attachment.visualAnalysis && attachment.analysisStatus !== "failed") return;
     setSession({ ...session, state: { ...session.state, attachments: session.state.attachments.map((item) => item.attachmentId === attachment.attachmentId ? { ...item, analysisStatus: "analyzing" as const, analysisError: undefined } : item) } });
     try {
       const result = await lovableCommercialVisionProcessor.analyzeCommercialImage({ attachment, dataUrl: await fileToDataUrl(file), commercialContext: { lineIds: attachment.linkedProductLineIds } });
-      setSession({ ...session, state: { ...session.state, attachments: session.state.attachments.map((item) => item.attachmentId === attachment.attachmentId ? applyVisualAnalysis(item, result) : item) } });
+      const analyzed = applyVisualAnalysis(attachment, result);
+      const criteria = buildSearchCriteriaFromVisualAnalysis(result);
+      let nextState = { ...session.state, attachments: session.state.attachments.map((item) => item.attachmentId === attachment.attachmentId ? analyzed : item) };
+      if (criteria) {
+        try {
+          const linkedLines = nextState.productLines.filter((line) => attachment.linkedProductLineIds.includes(line.lineId) && line.quantity !== null && !["removed", "rejected"].includes(line.status));
+          const candidatesByLine = await Promise.all(linkedLines.map(async (line) => [line.lineId, await loadRealProducts(`${criteria} ${line.productInterest}`, line.quantity!)] as const));
+          const candidateProductIds = candidatesByLine.flatMap(([, products]) => products.map((product) => product.id));
+          nextState = { ...nextState,
+            attachments: nextState.attachments.map((item) => item.attachmentId === attachment.attachmentId ? { ...item, catalogSearchStatus: candidateProductIds.length ? "completed" as const : "no_results" as const, candidateProductIds, catalogSearchError: undefined } : item),
+          };
+          for (const [lineId, products] of candidatesByLine) nextState = setProductLineCandidates(nextState, lineId, products);
+        } catch (cause) {
+          nextState = { ...nextState,
+            attachments: nextState.attachments.map((item) => item.attachmentId === attachment.attachmentId ? { ...item, catalogSearchStatus: "failed" as const, catalogSearchError: cause instanceof Error ? cause.message : "No se pudo consultar el catálogo." } : item),
+          };
+        }
+      }
+      setSession({ ...session, state: nextState });
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "No se pudo analizar la imagen.";
       setSession({ ...session, state: { ...session.state, attachments: session.state.attachments.map((item) => item.attachmentId === attachment.attachmentId ? { ...item, analysisStatus: "failed" as const, analysisError: message } : item) } });
@@ -65,6 +86,9 @@ function AttachmentRow({ attachment, onAnalyze, onRemove }: { attachment: Commer
     <div className="min-w-0 flex-1"><p className="truncate font-medium">{attachment.filename}</p><p className="text-xs text-muted-foreground">{attachment.type} · {attachment.analysisStatus} · {attachment.confidence}</p>
       {attachment.analysisStatus === "pending" && <Button type="button" size="sm" variant="outline" onClick={onAnalyze}>Analizar con IA</Button>}
       {attachment.analysisError && <p className="text-destructive">{attachment.analysisError}</p>}
+      {attachment.searchCriteria && <p className="text-xs text-muted-foreground">Criterios de catálogo: {attachment.searchCriteria}</p>}
+      {attachment.catalogSearchStatus === "failed" && <p className="text-destructive">El análisis visual quedó conservado; la búsqueda de catálogo requiere reintento.</p>}
+      {attachment.catalogSearchStatus === "no_results" && <p className="text-xs text-muted-foreground">No encontré candidatos verificados; solicita una aclaración.</p>}
       <input aria-label={`Resumen de ${attachment.filename}`} value={summary} onChange={(event) => setSummary(event.target.value)} placeholder="Resultado resumido confirmado por QA" className="mt-1 w-full rounded border bg-background px-2 py-1 text-xs" />
     </div>
     <Button type="button" variant="ghost" size="icon" aria-label={`Eliminar ${attachment.filename}`} onClick={onRemove}><X className="h-4 w-4" /></Button>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { attachmentHandoff, buildVisualSearchCriteria, createCommercialAttachment, linkAttachmentToLines, recordAttachmentObservations, removeAttachment, validateAttachmentFile } from "./agent-attachments";
+import { attachmentHandoff, buildSearchCriteriaFromVisualAnalysis, buildVisualSearchCriteria, createCommercialAttachment, linkAttachmentToLines, recordAttachmentObservations, removeAttachment, validateAttachmentFile } from "./agent-attachments";
 
 describe("commercial attachment guardrails", () => {
   it("accepts supported files and rejects unsupported or oversized files", () => {
@@ -28,5 +28,30 @@ describe("commercial attachment guardrails", () => {
     const competitor = recordAttachmentObservations(createCommercialAttachment({ name: "competencia.png", type: "image/png", size: 10 }, "competitor_quote", "comp-1"), { competitor: { productName: "Producto visible", quantity: 50, totalMxn: 1000 } });
     expect(competitor.analysis.competitorReference?.iva?.certainty).toBe("UNKNOWN");
     expect(removeAttachment([linked, competitor], "comp-1")).toHaveLength(1);
+  });
+
+  it("uses only concrete category/text signals for low-confidence visual search", () => {
+    const observation = (value: string | string[] | null, certainty: "observed" | "inferred" | "unknown" = "observed") => ({ value, confidence: "low" as const, provenance: "attachment" as const, certainty });
+    const visual = {
+      analysisStatus: "partial" as const, attachmentType: "product_photo" as const,
+      productObservation: {
+        apparentCategory: observation("mochila"), apparentMaterial: observation("piel", "inferred"),
+        apparentStyle: observation("ejecutivo", "inferred"), apparentColors: observation(["azul"], "inferred"),
+        apparentFeatures: observation(["cierre"], "inferred"), visibleBrand: observation(null, "unknown"),
+        visibleText: observation("K22"), possibleUseCase: observation("evento", "inferred"),
+      },
+      logoObservation: { technicalReviewRequired: true }, competitorObservation: {}, confidence: "low" as const,
+      provenance: "attachment" as const, humanReviewRequired: true, candidateReference: observation(null, "unknown"),
+    };
+    expect(buildSearchCriteriaFromVisualAnalysis(visual)).toBe("mochila K22");
+  });
+
+  it("does not search when visual observations are unknown", () => {
+    const unknown = { value: null, confidence: "low" as const, provenance: "attachment" as const, certainty: "unknown" as const };
+    const visual = { analysisStatus: "partial" as const, attachmentType: "unknown" as const,
+      productObservation: { apparentCategory: unknown, visibleText: unknown }, logoObservation: { technicalReviewRequired: true },
+      competitorObservation: {}, confidence: "low" as const, provenance: "attachment" as const,
+      humanReviewRequired: true, candidateReference: unknown };
+    expect(buildSearchCriteriaFromVisualAnalysis(visual)).toBeNull();
   });
 });

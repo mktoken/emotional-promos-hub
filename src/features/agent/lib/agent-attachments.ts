@@ -66,6 +66,10 @@ export interface CommercialAttachment {
   analysisModel?: string;
   analysisError?: string;
   visualAnalysis?: CommercialVisualAnalysis;
+  searchCriteria?: string;
+  catalogSearchStatus?: "not_started" | "completed" | "no_results" | "failed";
+  catalogSearchError?: string;
+  candidateProductIds?: string[];
 }
 
 export interface AttachmentFileMetadata { name: string; type: string; size: number; }
@@ -95,7 +99,9 @@ export function applyVisualAnalysis(attachment: CommercialAttachment, visualAnal
   const product = visualAnalysis.productObservation;
   const logo = visualAnalysis.logoObservation;
   const competitor = visualAnalysis.competitorObservation;
+  const searchCriteria = buildSearchCriteriaFromVisualAnalysis(visualAnalysis);
   return { ...attachment, analysisStatus: visualAnalysis.analysisStatus, analysisProvider: "lovable-ai", analysisModel: "google/gemini-3.7-flash", visualAnalysis,
+    searchCriteria: searchCriteria ?? undefined, catalogSearchStatus: searchCriteria ? "not_started" : "no_results",
     confidence: visualAnalysis.confidence, humanReviewRequired: true,
     analysis: { ...attachment.analysis,
       summary: { value: visualAnalysis.analysisStatus === "completed" ? "Análisis visual estructurado completado" : "No pude identificar suficiente información de esta imagen", certainty: visualAnalysis.analysisStatus === "completed" ? "OBSERVED" : "UNKNOWN", confidence: visualAnalysis.confidence, source: "attachment", attachmentId: attachment.attachmentId, observedAt: new Date().toISOString() },
@@ -103,6 +109,25 @@ export function applyVisualAnalysis(attachment: CommercialAttachment, visualAnal
       logoArtwork: { dominantColors: logo.dominantColors as AttachmentObservation<string[]>, orientation: logo.orientation as AttachmentObservation<string>, background: logo.backgroundObservation as AttachmentObservation<string>, complexity: logo.apparentComplexity as AttachmentObservation<string>, technicalReviewRequired: true, printingReviewNotes: String((logo.reviewNotes as CommercialVisualObservation).value ?? "Revisión técnica requerida") },
       competitorReference: { productName: competitor.visibleProductName as AttachmentObservation<string>, quantity: competitor.visibleQuantity as AttachmentObservation<number>, unitPriceMxn: competitor.visibleUnitPrice as AttachmentObservation<number>, totalMxn: competitor.visibleTotal as AttachmentObservation<number>, iva: competitor.ivaStatus as AttachmentObservation<string>, printing: competitor.printingStatus as AttachmentObservation<string>, shipping: competitor.shippingStatus as AttachmentObservation<string>, competitorName: competitor.visibleCompetitorName as AttachmentObservation<string>, comparability: "unknown", humanReviewRequired: true },
     } };
+}
+
+/** Builds a conservative catalog query; low-confidence analysis only contributes concrete category or visible text. */
+export function buildSearchCriteriaFromVisualAnalysis(visualAnalysis: CommercialVisualAnalysis): string | null {
+  const values: string[] = [];
+  const add = (observation: CommercialVisualObservation | undefined, allowLow = false) => {
+    if (!observation || observation.certainty === "unknown" || !observation.value) return;
+    if (visualAnalysis.confidence === "low" && !allowLow) return;
+    if (Array.isArray(observation.value)) values.push(...observation.value.filter((item): item is string => typeof item === "string"));
+    else if (typeof observation.value === "string") values.push(observation.value);
+  };
+  add(visualAnalysis.productObservation.apparentCategory, true);
+  add(visualAnalysis.productObservation.visibleText, true);
+  add(visualAnalysis.productObservation.apparentMaterial);
+  add(visualAnalysis.productObservation.apparentStyle);
+  add(visualAnalysis.productObservation.apparentFeatures);
+  add(visualAnalysis.productObservation.apparentColors);
+  const normalized = [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+  return normalized.length ? normalized.join(" ") : null;
 }
 
 export function isCommercialVisualAnalysis(value: unknown): value is CommercialVisualAnalysis {
@@ -180,9 +205,10 @@ export function buildVisualSearchCriteria(attachment: CommercialAttachment): str
 }
 
 export function attachmentHandoff(attachments: CommercialAttachment[]) {
-  return attachments.map(({ attachmentId, type, filename, analysisStatus, confidence, linkedProductLineIds, humanReviewRequired, analysis }) => ({
+  return attachments.map(({ attachmentId, type, filename, analysisStatus, confidence, linkedProductLineIds, humanReviewRequired, analysis, searchCriteria, catalogSearchStatus, candidateProductIds }) => ({
     attachmentId, type, filename, analysisStatus, confidence, linkedProductLineIds, humanReviewRequired,
-    summary: analysis.summary?.value ?? null, visualSearchCriteria: buildVisualSearchCriteria({ attachmentId, type, filename, analysisStatus, confidence, linkedProductLineIds, humanReviewRequired, analysis, mimeType: "", size: 0, source: "crm", uploadedAt: "" }),
+    summary: analysis.summary?.value ?? null, visualSearchCriteria: searchCriteria ?? buildVisualSearchCriteria({ attachmentId, type, filename, analysisStatus, confidence, linkedProductLineIds, humanReviewRequired, analysis, mimeType: "", size: 0, source: "crm", uploadedAt: "" }),
+    catalogSearchStatus: catalogSearchStatus ?? "not_started", candidateProductIds: candidateProductIds ?? [],
     printing: "POR CONFIRMAR", pricingAuthority: "No cambia pricing automáticamente", stockAuthority: "No se infiere desde imagen",
   }));
 }

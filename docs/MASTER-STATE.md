@@ -35,6 +35,7 @@
 - Checkpoint actual: **CHK-OPS-1 CERRADO / PARCIAL — OPERACIÓN PRIMERO**.
 - Fase actual: **OPERACIÓN PRIMERO / WEB Y FLUJO COMERCIAL ESTABLE**. Pricing de Conversión, Super Agente, inteligencia, WhatsApp AI, G4 e impresión avanzada evolucionan incrementalmente sin bloquear la operación. La autoridad productiva sigue siendo V2.
 - Próximo paso autorizado: **definir y autorizar `CHK-AI-SALES-1 — SUPER AGENTE WEB / SOLICITUD SIMPLE DE 50 LIBRETAS`; no implementarlo hasta confirmar que no exista un P0 operativo. Mantener Pricing shadow-only, G4 e impresión fuera.**
+- Gate de lanzamiento público: **`CHK-BRAND-WEB-1 — REDEFINICIÓN DE MARCA, COMUNICACIÓN Y EXPERIENCIA WEB` PENDIENTE**. Es requisito previo para lanzamiento público, promoción activa, campañas de adquisición o escalamiento significativo de tráfico hacia `articulospromocionales.vip`; no bloquea la operación comercial controlada, la atención comercial controlada, `CHK-AI-SALES-1`, QA, CRM ni Pricing shadow.
 - Simulación marginal read-only precedente de CHK-IMP-1 (2026-09-27): el modelo por tramos conserva `below_minimum` debajo de `$1,500` y elimina descensos para subtotal base creciente; su análisis de total autoritativo, redondeo y escalas derivadas queda como antecedente comparativo. No se incorporó a la autoridad pública ni se activó en producción; el motor vigente de esta subfase es el simulador separado de Pricing de Conversión México.
 
 ### CHK-IMP-1-SHADOW-1 — Pricing de Conversión México en shadow mode (2026-09-27)
@@ -213,13 +214,28 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 
 `CHK-OPS-1` queda **CERRADO / PARCIAL**: no se encontró un P0 reproducible y el flujo comercial puede utilizarse con guardrails. `CHK-IMP-1` permanece **PAUSADO POR PRIORIDAD OPERATIVA**. La siguiente acción autorizada es definir `CHK-AI-SALES-1`; no se deben cargar observaciones productivas, aplicar migraciones, ejecutar recompute/release/publish/sync, modificar G4, continuar impresión ni sustituir `calculate_product_price_v2`.
 
+## Gate de lanzamiento público
+
+`CHK-BRAND-WEB-1 — REDEFINICIÓN DE MARCA, COMUNICACIÓN Y EXPERIENCIA WEB` queda **PENDIENTE** como requisito previo al lanzamiento público. La plataforma puede utilizarse comercialmente de forma controlada desde la baseline operativa aprobada, pero no deben iniciarse promoción activa, campañas de adquisición ni un escalamiento significativo de tráfico hacia `articulospromocionales.vip` hasta cerrar este checkpoint.
+
+El gate debe aprobar, como mínimo:
+
+- posicionamiento, propuesta de valor y mensajes principales;
+- hero/home, arquitectura de comunicación, identidad visual, jerarquía y experiencia visual;
+- señales de confianza y diferenciación frente a la competencia mexicana;
+- comunicación adecuada para pequeños compradores, PyMEs, grandes empresas y compradores corporativos;
+- integración conceptual de catálogo, atención inmediata, Super Agente, Pricing competitivo, kits, soluciones B2B y trayectoria histórica de la empresa;
+- QA desktop/mobile antes del lanzamiento.
+
+No es un rediseño estético aislado: debe partir de la historia y posicionamiento reales, el nuevo modelo de negocio, PromoPro B2B, las líneas estándar y de kits/soluciones, la estrategia de marketing, el mercado y la competencia mexicana, datos históricos de Google Ads/GA4 cuando sean útiles, Super Agente y Pricing de Conversión. El gate no bloquea la operación interna, la atención comercial controlada, el desarrollo de `CHK-AI-SALES-1`, QA, CRM ni Pricing shadow.
+
 ## Alcance y límites
 
 El cierre registrado aquí cubre la preparación, activación, alineación y QA final descritos para las Fases 1 a 4. No autoriza cambios adicionales en código, Supabase, Lovable, configuración, despliegues o publicaciones.
 
 ## Siguiente checkpoint recomendado
 
-`CHK-OPS-1` está **CERRADO / PARCIAL**. El siguiente checkpoint exacto es `CHK-AI-SALES-1 — SUPER AGENTE WEB / SOLICITUD SIMPLE DE 50 LIBRETAS`, sujeto a autorización. Antes de activar Pricing debe definirse y validarse la canasta competitiva, aprobar parámetros y autorizar un checkpoint posterior.
+`CHK-OPS-1` está **CERRADO / PARCIAL**. El siguiente checkpoint exacto es `CHK-AI-SALES-1 — SUPER AGENTE WEB / SOLICITUD SIMPLE DE 50 LIBRETAS`, sujeto a autorización. `CHK-BRAND-WEB-1` queda como gate posterior y obligatorio antes del lanzamiento público; no altera el siguiente paso operativo ni bloquea la operación controlada. Antes de activar Pricing debe definirse y validarse la canasta competitiva, aprobar parámetros y autorizar un checkpoint posterior.
 
 Hasta contar con ese checkpoint no se debe retirar el backend Legacy ni iniciar trabajo funcional fuera del alcance comercial.
 

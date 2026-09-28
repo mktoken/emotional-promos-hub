@@ -4,6 +4,8 @@
 
 La prioridad formal del proyecto es **OPERACIÓN PRIMERO**: comenzar a utilizar la plataforma comercialmente con el flujo estable disponible, mientras Pricing de Conversión, Super Agente, inteligencia comercial y WhatsApp evolucionan incrementalmente sin bloquear la operación.
 
+La utilización comercial controlada desde esta baseline no equivale a un lanzamiento público. El lanzamiento público, la promoción activa, las campañas de adquisición y el escalamiento significativo de tráfico requieren cerrar previamente `CHK-BRAND-WEB-1`.
+
 Reglas permanentes:
 
 - producción estable no se detiene por desarrollos futuros;
@@ -25,6 +27,26 @@ Reglas permanentes:
 | P5 | WhatsApp | Canal manual validado en QA; IA no construida |
 | P6 | Pricing competitivo México | Shadow mode PASS en repositorio; no productivo |
 | P7 | Aprendizaje comercial | No construido; no ML |
+
+## Gate de lanzamiento público — CHK-BRAND-WEB-1
+
+### Redefinición de marca, comunicación y experiencia web
+
+`CHK-BRAND-WEB-1` es un checkpoint pendiente y obligatorio antes de cualquier lanzamiento público, promoción activa, campaña de adquisición o escalamiento significativo de tráfico hacia `articulospromocionales.vip`. No es un simple rediseño estético y no bloquea la operación interna, la atención comercial controlada, el desarrollo del Super Agente, QA, CRM ni Pricing shadow.
+
+El trabajo debe partir de la historia real de Promocionales Emocionales, su posicionamiento histórico, el nuevo modelo de negocio, el Plan de negocio PromoPro B2B, la línea de promocionales estándar, la línea de kits/soluciones, la estrategia de marketing, el comportamiento del mercado mexicano, el análisis de competencia, Google Ads/GA4 históricos cuando aporten evidencia, Super Agente y Pricing de Conversión.
+
+El gate mínimo de aprobación debe cubrir:
+
+1. Posicionamiento actualizado y propuesta de valor.
+2. Mensajes principales, hero/home y arquitectura de comunicación.
+3. Identidad visual, jerarquía y experiencia visual.
+4. Señales de confianza y diferenciación frente a la competencia mexicana.
+5. Comunicación adecuada para pequeños compradores, PyMEs, grandes empresas y compradores corporativos.
+6. Integración conceptual de catálogo, atención inmediata, Super Agente, Pricing competitivo, kits, soluciones B2B y trayectoria histórica.
+7. QA desktop/mobile antes de lanzamiento.
+
+La percepción objetivo debe combinar profesionalismo, confianza, trayectoria, tecnología, servicio, velocidad, claridad, competitividad y diferenciación: una empresa grande debe poder confiar en la plataforma, y un comprador de cantidades accesibles debe sentir que el sitio también es para él.
 
 ## Baseline operativa CHK-OPS-1
 
@@ -153,4 +175,4 @@ Son estimaciones de ingeniería basadas en la estructura actual, no compromisos 
 
 ## Próximo checkpoint
 
-`CHK-AI-SALES-1 — SUPER AGENTE WEB / SOLICITUD SIMPLE DE 50 LIBRETAS` queda definido para discusión y autorización. No se implementa en este checkpoint si aparece un P0 operativo; Pricing, G4 e impresión permanecen fuera.
+`CHK-AI-SALES-1 — SUPER AGENTE WEB / SOLICITUD SIMPLE DE 50 LIBRETAS` queda definido para discusión y autorización y continúa siendo el siguiente frente operativo; este gate de marca no lo interrumpe ni lo amplía. No se implementa en este checkpoint si aparece un P0 operativo; Pricing, G4 e impresión permanecen fuera. El lanzamiento público sigue condicionado a un PASS posterior de `CHK-BRAND-WEB-1`.

@@ -120,6 +120,12 @@ Criterios de aceptación propuestos:
 
 Este checkpoint se define, pero no se implementa en la misión Operación Primero si antes aparece un P0 operativo.
 
+## Relación con el gate de lanzamiento público
+
+`CHK-AI-SALES-1` continúa siendo el siguiente frente operativo y no se interrumpe ni se amplía por la decisión de marca. La operación comercial controlada, QA, CRM y Pricing shadow pueden continuar desde la baseline aprobada.
+
+Antes de un lanzamiento público, promoción activa, campañas de adquisición o escalamiento significativo de tráfico hacia `articulospromocionales.vip`, debe cerrarse `CHK-BRAND-WEB-1 — REDEFINICIÓN DE MARCA, COMUNICACIÓN Y EXPERIENCIA WEB`. Ese gate es posterior y transversal: define posicionamiento, comunicación, experiencia e identidad de la web, pero no bloquea el desarrollo controlado del Super Agente.
+
 ## Visión e imágenes
 
 El agente podrá interpretar tipo, estilo, color, similitud y referencias visuales para buscar productos comparables y registrar logos. No podrá certificar automáticamente Pantone, técnica de impresión, tamaño final, costo de impresión o viabilidad productiva.

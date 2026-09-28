@@ -103,3 +103,9 @@ Cliente
 - Estrategia de conversión, campañas y publicaciones.
 - Roadmap y backlog aprobados.
 - Matriz completa de permisos por rol.
+
+## Prioridad Operación Primero
+
+La web y el flujo comercial estable son el frente prioritario. Pricing de Conversión México, Super Agente, inteligencia sectorial/empresarial, WhatsApp AI, impresión avanzada y aprendizaje comercial evolucionan detrás de checkpoints, shadow mode o feature flags cuando corresponda; no bloquean la operación salvo una dependencia P0 comprobada.
+
+La autoridad productiva de precios continúa siendo Pricing V2. Cuando el sistema devuelva `request_quote`, `unresolved` o `unavailable`, el equipo comercial debe conservar ese estado y no inventar un importe. La personalización/impresión se confirma manualmente hasta contar con evidencia E2E completa.

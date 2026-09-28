@@ -157,6 +157,14 @@ Emotional Promos Hub no debe mezclarse con:
 - Índice: `docs/00_PROJECT_INDEX.md`.
 - Decisiones: `docs/02_DECISION_LOG.md`.
 - Producto: `docs/04_PRODUCT_SCOPE.md`.
+- Super Agente Comercial: `docs/06_SUPER_AGENTE_COMERCIAL.md`.
+- Roadmap Operación Primero: `docs/07_OPERATIONS_ROADMAP.md`.
 - Arquitectura: `docs/05_ARCHITECTURE.md`.
 - Pricing y catálogo: `docs/09_PRICING_CATALOG_V2.md`.
 - QA: `docs/10_QA_EVIDENCE.md`.
+
+## L. Operación Primero
+
+La producción estable se protege antes de abrir desarrollo nuevo. Usar Pricing V2 como autoridad, conservar estados `request_quote`/`unresolved`/`unavailable`, confirmar manualmente impresión y destinatarios, y no activar motores shadow sin checkpoint posterior.
+
+Antes de declarar un bloqueo P0, distinguir un fallo reproducible que impida vender de una limitación P1/P2 que pueda gestionarse manualmente. Las correcciones focales deben tener rollback y cerrar su propio subcheckpoint.

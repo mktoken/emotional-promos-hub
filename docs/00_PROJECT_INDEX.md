@@ -24,6 +24,8 @@ El estado Git y el checkpoint vigente no se mantienen aquí. La fuente de verdad
 3. `docs/08_OPERATIONS_RUNBOOK.md` — cómo continuar sin romper la gobernanza.
 4. El documento especializado que corresponda:
    - producto: `docs/04_PRODUCT_SCOPE.md`;
+   - Super Agente Comercial: `docs/06_SUPER_AGENTE_COMERCIAL.md`;
+   - roadmap Operación Primero: `docs/07_OPERATIONS_ROADMAP.md`;
    - arquitectura: `docs/05_ARCHITECTURE.md`;
    - precios y catálogo: `docs/09_PRICING_CATALOG_V2.md`;
    - evidencia QA: `docs/10_QA_EVIDENCE.md`;
@@ -36,6 +38,8 @@ El estado Git y el checkpoint vigente no se mantienen aquí. La fuente de verdad
 | 1 | `docs/MASTER-STATE.md` | Estado formal vigente | Siempre al iniciar o cerrar un checkpoint |
 | 2 | `docs/02_DECISION_LOG.md` | Decisiones permanentes | Antes de cuestionar una decisión ya adoptada |
 | 2 | `docs/04_PRODUCT_SCOPE.md` | Producto y alcance | Antes de ampliar o reinterpretar funcionalidades |
+| 2 | `docs/06_SUPER_AGENTE_COMERCIAL.md` | Contrato futuro del Super Agente | Antes de diseñar agente, inteligencia o canales nuevos |
+| 2 | `docs/07_OPERATIONS_ROADMAP.md` | Prioridad Operación Primero y checkpoints operativos | Antes de priorizar trabajo nuevo |
 | 2 | `docs/08_OPERATIONS_RUNBOOK.md` | Continuidad operativa | Antes de usar Git, Lovable o producción |
 | 3 | `docs/05_ARCHITECTURE.md` | Arquitectura comprobable | Para entender componentes y flujos |
 | 3 | `docs/09_PRICING_CATALOG_V2.md` | Contrato de precios y catálogo | Para temas de inventario, precios y releases |
@@ -85,3 +89,8 @@ Antes de desarrollar:
 3. Confirmar rama, HEAD, `origin/main`, divergencia y working tree.
 4. Identificar el checkpoint abierto y su criterio de cierre.
 5. Leer el runbook antes de usar Lovable, Supabase interno o producción.
+
+## Documentos especializados vigentes
+
+- Super Agente Comercial: `docs/06_SUPER_AGENTE_COMERCIAL.md`.
+- Roadmap Operación Primero: `docs/07_OPERATIONS_ROADMAP.md`.

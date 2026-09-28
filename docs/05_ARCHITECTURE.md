@@ -172,3 +172,15 @@ El precio híbrido combina precio económico y referencia de mercado solo con da
 Para enterprise la salida ya puede exponer precio recomendado, benchmark, piso, utilidad, margen y `discount_headroom` (la distancia utilizable sobre el piso cuando este existe). La interfaz `ConversionPricingTelemetry` reserva `quoted_price`, `benchmark_position`, `requested_discount`, `final_price`, `won/lost`, `loss_reason`, `gross_profit` y `lead_source` para una instrumentación futura, sin persistirlos ni aplicar ML en esta fase.
 
 Los defaults de margen y corredor incluidos en el módulo son **SIMULATION DEFAULTS**, no una política comercial permanente. La activación requerirá una canasta competitiva mexicana curada, validación de parámetros, decisión de redondeo y un checkpoint posterior.
+
+## Operación Primero y Super Agente
+
+La arquitectura operativa prioriza el flujo existente y separa la evolución futura:
+
+- **P0/P1 operativo:** Home, catálogo, solicitud, CRM, cotización formal, PDF y seguimiento básico deben permanecer utilizables con la autoridad V2 actual.
+- **Super Agente:** contrato futuro documentado en `docs/06_SUPER_AGENTE_COMERCIAL.md`; no existe todavía un agente autónomo completo.
+- **Tres capas:** Sector Intelligence, Company Intelligence y Opportunity Context; cada dato debe conservar fuente, fecha y confianza.
+- **Canales:** Web y WhatsApp comparten un único cerebro comercial; el canal no duplica reglas ni pricing.
+- **Seguridad comercial:** sin precios inventados, sin activar Conversion Pricing, sin automatizar impresión no comprobada y con human handoff en el nivel inicial.
+
+La baseline operativa, prioridades y estimaciones se mantienen en `docs/07_OPERATIONS_ROADMAP.md`.

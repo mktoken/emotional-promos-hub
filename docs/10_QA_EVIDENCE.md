@@ -1375,3 +1375,60 @@ El modelo admite observaciones curadas de Compudat, Smart Promocionales, Artícu
 La suite completa terminó `11 archivos / 91 pruebas PASS`; el build terminó `PASS` con el warning no bloqueante preexistente de bundle grande; el lint dirigido de ambos archivos nuevos terminó `PASS`; `git diff --check` terminó `PASS`.
 
 Este resultado es evidencia de repositorio y simulación, no evidencia de activación productiva. Quedan NO COMPROBADOS los valores reales de mercado, la selección final de percentiles, el margen mínimo comercial permanente, el redondeo contractual de catálogo/cotización, la canasta completa, los datos runtime de proveedores y cualquier efecto en producción.
+
+## CHK-OPS-1 — Baseline operativa y puesta en marcha (2026-09-27)
+
+**Estado:** **CERRADO / PARCIAL**.
+
+**Decisión:** **OPERACIÓN PRIMERO**. No se encontraron P0 reproducibles; la plataforma puede comenzar a utilizarse con el flujo estable y los guardrails documentados. Los riesgos P1/P2 y validaciones no comprobadas no se convierten en desarrollo grande en esta ejecución.
+
+### Git y producción
+
+- Fase A de preservación completada antes de abrir este checkpoint.
+- Commit de preservación: `5b831f40a6ef347d46dc7691e02876e69edd3a18`.
+- `main = origin/main`, divergencia `0 0`, working tree limpio al abrir Fase B.
+- Producción `https://articulospromocionales.vip`: lectura HTTP read-only de `/`, `/login`, `/crm` y `/catalogo`, todos `200 text/html`.
+- El shell público respondió y cargó assets publicados. HTTP 200 no demuestra interacción autenticada, frescura de datos ni que el asset corresponda exactamente al HEAD local; esos puntos quedan **NO COMPROBADOS**.
+- No se enviaron formularios, no se inició sesión, no se modificaron datos y no se usaron sincronizadores.
+
+### Baseline del critical path
+
+| Tramo | Estado | Prioridad | Evidencia / limitación |
+|---|---|---:|---|
+| Home → catálogo | PASS / PARCIAL | P0 | Shell público accesible; evidencia histórica de catálogo en producción |
+| Búsqueda, ficha, variantes e imágenes | PARCIAL | P0/P1 | Implementado y probado históricamente; frescura y algunas imágenes/fichas actuales no certificadas |
+| Selección → solicitud | PASS | P0 | RPC, validaciones, idempotencia y solicitud QA documentadas |
+| Solicitud → prospecto/oportunidad | PASS | P0/P1 | Caso QA completado; trazabilidad post-envío permanece parcial |
+| Oportunidad → cotización formal | PASS | P0/P1 | `COT-2026-00008` creada y emitida |
+| Cotización → PDF producto-only | PASS | P0/P1 | PDF QA generado, recibido y abierto |
+| Impresión/personalización | PARCIAL | P1 | Motor y campos existen; cálculo/persistencia real de impresión no comprobados |
+| PDF → Gmail/WhatsApp | PASS controlado | P1 | E2E QA real con autorización; no extrapolar a todos los clientes |
+| Seguimiento | PARCIAL | P1/P2 | Persistencia comprobada; historial/próxima acción estructurados incompletos |
+| Auth | PASS | P0/P1 | Login, cambio y recuperación documentados |
+| Roles/permisos | PARCIAL | P1/P2 | Navegación por roles existe; matriz completa no certificada |
+
+### P0
+
+**P0 detectados:** ninguno reproducible en esta ejecución.
+
+No se considera P0 la ausencia del Super Agente, Pricing shadow, benchmark, impresión automática, Company Intelligence o WhatsApp AI. Tampoco se considera prueba suficiente de operación una respuesta HTTP 200 aislada.
+
+### Riesgos P1/P2 y guardrails
+
+- Verificar manualmente precio y stock cuando sean críticos para una oportunidad; conservar `request_quote`, `unresolved` y `unavailable`.
+- No prometer impresión hasta confirmar técnica, compatibilidad, proveedor y precio.
+- Mantener Gmail y WhatsApp manuales, con destinatario revisado y autorización explícita.
+- No interpretar el shell publicado como prueba del commit desplegado.
+- Mantener seguimiento y próxima acción documentados mientras la trazabilidad estructurada siga parcial.
+
+### Funciones disponibles ya
+
+**VALIDADO:** catálogo/selección, solicitud, prospecto, oportunidad, cotización formal, emisión QA, PDF producto-only, Gmail/WhatsApp E2E controlados, seguimiento básico, login y recuperación.
+
+**IMPLEMENTADO PERO NO VALIDADO DE FORMA GENERAL:** frescura de stock/precio por proveedor, disponibilidad completa de fichas/imágenes, impresión E2E, permisos detallados, release exacta actual y comunicaciones fuera del caso QA.
+
+**NO DISPONIBLE:** Super Agente completo, playbooks cargados, Company Intelligence como producto, WhatsApp AI, Pricing de Conversión productivo y aprendizaje comercial.
+
+### Resultado
+
+`CHK-OPS-1: CERRADO / PARCIAL`. La operación comercial puede comenzar con el flujo estable y revisión humana de los puntos P1. El siguiente checkpoint definido es `CHK-AI-SALES-1 — SUPER AGENTE WEB / SOLICITUD SIMPLE DE 50 LIBRETAS`; no se implementó en esta ejecución.

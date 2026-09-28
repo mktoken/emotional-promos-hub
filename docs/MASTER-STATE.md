@@ -31,9 +31,10 @@
 - `CHK-COM-9`: **CERRADO / PARCIAL**. La prueba QA post-envío de `COT-2026-00008` confirmó estado, seguimiento, nota y persistencia; la trazabilidad y la existencia de una próxima acción estructurada permanecen parciales y documentadas.
 - `CHK-IMP-1-SHADOW-1`: **CERRADO / PASS**. Pricing de Conversión México fue implementado y validado en repositorio exclusivamente como shadow mode; no sustituye `calculate_product_price_v2` ni modifica catálogo, cotizaciones, release, caché o producción.
 - `CHK-IMP-1`: **PAUSADO POR PRIORIDAD OPERATIVA**. El padre no queda cerrado ni abandonado. Permanecen pendientes la canasta competitiva real, parámetros definitivos, margen/piso definitivo, datos runtime, G4, impresión y cualquier validación productiva.
-- Checkpoint actual: **CHK-IMP-1 PAUSADO / SUBFASE SHADOW CERRADA; TRANSICIÓN A OPERACIÓN PRIMERO PENDIENTE DE BASELINE**.
-- Fase actual: **SUBFASE DE PRESERVACIÓN DE PRICING CERRADA; PREPARACIÓN DE BASELINE OPERATIVA**. El motor puro conserva `source_cost → provider_factor/adjusted_cost → purchase_base`, regímenes configurables, transición continua `$4,500–$7,500`, benchmark normalizado, corredor, piso de rentabilidad y comparación Current V2 vs recomendación. No altera catálogo, cotizaciones, PDF, release, caché, migraciones aplicadas, G4, Legacy ni producción.
-- Próximo paso autorizado: **completar el gate de preservación Git y, solo con `main = origin/main`, divergencia `0 0` y working tree limpio, abrir CHK-OPS-1 para auditar la baseline operativa. No se autoriza activar Pricing, resolver G4, continuar impresión ni cargar benchmark productivo.**
+- `CHK-OPS-1`: **CERRADO / PARCIAL**. La baseline operativa no mostró un P0 reproducible y el critical path puede utilizarse con guardrails; permanecen riesgos P1/P2 y validaciones runtime pendientes.
+- Checkpoint actual: **CHK-OPS-1 CERRADO / PARCIAL — OPERACIÓN PRIMERO**.
+- Fase actual: **OPERACIÓN PRIMERO / WEB Y FLUJO COMERCIAL ESTABLE**. Pricing de Conversión, Super Agente, inteligencia, WhatsApp AI, G4 e impresión avanzada evolucionan incrementalmente sin bloquear la operación. La autoridad productiva sigue siendo V2.
+- Próximo paso autorizado: **definir y autorizar `CHK-AI-SALES-1 — SUPER AGENTE WEB / SOLICITUD SIMPLE DE 50 LIBRETAS`; no implementarlo hasta confirmar que no exista un P0 operativo. Mantener Pricing shadow-only, G4 e impresión fuera.**
 - Simulación marginal read-only precedente de CHK-IMP-1 (2026-09-27): el modelo por tramos conserva `below_minimum` debajo de `$1,500` y elimina descensos para subtotal base creciente; su análisis de total autoritativo, redondeo y escalas derivadas queda como antecedente comparativo. No se incorporó a la autoridad pública ni se activó en producción; el motor vigente de esta subfase es el simulador separado de Pricing de Conversión México.
 
 ### CHK-IMP-1-SHADOW-1 — Pricing de Conversión México en shadow mode (2026-09-27)
@@ -189,6 +190,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 | CHK-COM-9 ciclo post-envío y seguimiento comercial | CERRADO / PARCIAL; limitaciones documentadas |
 | CHK-IMP-1-SHADOW-1 Pricing de Conversión México | CERRADO / PASS; shadow-only |
 | CHK-IMP-1 padre | PAUSADO POR PRIORIDAD OPERATIVA; G4, impresión y activación productiva pendientes |
+| CHK-OPS-1 baseline operativa | CERRADO / PARCIAL; sin P0 reproducible, guardrails y riesgos P1/P2 documentados |
 | Nueva funcionalidad | No iniciar sin nuevo checkpoint autorizado |
 
 ## Pendientes de control
@@ -197,7 +199,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 
 - Mantener Legacy y no iniciar correcciones ni desarrollo fuera del alcance aprobado.
 - Mantener documentadas las limitaciones de CHK-COM-9 y no iniciar correcciones ni otro checkpoint automáticamente.
-- Mantener el resultado de `CHK-IMP-1-SHADOW-1` preservado en Git; mantener el padre pausado hasta definir la canasta competitiva mexicana, validar parámetros y reconciliar el lineage runtime de proveedores antes de cualquier activación.
+- Mantener el resultado de `CHK-IMP-1-SHADOW-1` preservado en Git y el padre pausado hasta definir la canasta competitiva mexicana, validar parámetros y reconciliar el lineage runtime de proveedores antes de cualquier activación. Operar el flujo estable con los guardrails de `docs/07_OPERATIONS_ROADMAP.md`.
 
 ### No hacer todavía
 
@@ -209,7 +211,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 
 ## Siguiente paso autorizado
 
-`CHK-IMP-1-SHADOW-1` queda **CERRADO / PASS** y `CHK-IMP-1` queda **PAUSADO POR PRIORIDAD OPERATIVA**. La siguiente acción autorizada es completar el gate Git y abrir `CHK-OPS-1` para la baseline operativa. No se deben cargar observaciones productivas, aplicar migraciones, ejecutar recompute/release/publish/sync, modificar G4, continuar impresión ni sustituir `calculate_product_price_v2`.
+`CHK-OPS-1` queda **CERRADO / PARCIAL**: no se encontró un P0 reproducible y el flujo comercial puede utilizarse con guardrails. `CHK-IMP-1` permanece **PAUSADO POR PRIORIDAD OPERATIVA**. La siguiente acción autorizada es definir `CHK-AI-SALES-1`; no se deben cargar observaciones productivas, aplicar migraciones, ejecutar recompute/release/publish/sync, modificar G4, continuar impresión ni sustituir `calculate_product_price_v2`.
 
 ## Alcance y límites
 
@@ -217,7 +219,7 @@ El cierre registrado aquí cubre la preparación, activación, alineación y QA 
 
 ## Siguiente checkpoint recomendado
 
-`CHK-IMP-1-SHADOW-1` está **CERRADO / PASS**. `CHK-IMP-1` permanece **PAUSADO POR PRIORIDAD OPERATIVA**. Antes de activar el motor debe definirse y validarse la canasta competitiva, aprobar parámetros y autorizar un checkpoint posterior; no se propone activación productiva en esta ejecución.
+`CHK-OPS-1` está **CERRADO / PARCIAL**. El siguiente checkpoint exacto es `CHK-AI-SALES-1 — SUPER AGENTE WEB / SOLICITUD SIMPLE DE 50 LIBRETAS`, sujeto a autorización. Antes de activar Pricing debe definirse y validarse la canasta competitiva, aprobar parámetros y autorizar un checkpoint posterior.
 
 Hasta contar con ese checkpoint no se debe retirar el backend Legacy ni iniciar trabajo funcional fuera del alcance comercial.
 

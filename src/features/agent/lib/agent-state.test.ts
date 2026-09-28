@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { captureMessage, createOpportunityState, handoffReasons, rejectProduct,
+import { captureMessage, createOpportunityState, findRequestedVariant, handoffReasons, rejectProduct,
   selectProduct, selectedProduct, updateQuantity, type AgentProduct } from "./agent-state";
 import { recommendProducts } from "./agent-tools";
 
@@ -28,6 +28,14 @@ describe("Super Agente QA structured state", () => {
     state.opportunity.productInterest = "libreta";
     expect(captureMessage(state, "50").opportunity.quantity).toBe(50);
   });
+  it("understands a changed quantity in the natural follow-up", () => {
+    const state = captureMessage(createOpportunityState("session"), "Quiero 50 libretas para un evento corporativo");
+    expect(captureMessage(state, "Mejor cotízame 80.").opportunity.quantity).toBe(80);
+  });
+  it("matches an observed Royal Blue variant when the buyer asks for azul", () => {
+    expect(findRequestedVariant([{ color: "Royal Blue", stock: 6010 }], "azul"))
+      .toEqual({ color: "Royal Blue", stock: 6010 });
+  });
   it("selects and replaces a product, preserving other candidates", () => {
     const state = createOpportunityState("session");
     state.products = [product("a", 20), product("b", 30)];
@@ -46,6 +54,10 @@ describe("Super Agente QA structured state", () => {
   it("never fabricates three recommendation tiers from fewer products", () => {
     expect(recommendProducts([product("a", 20)])).toHaveLength(1);
     expect(recommendProducts([product("a", 20), product("b", 30)])).toHaveLength(2);
+  });
+  it("does not label equal-price color variants as separate price tiers", () => {
+    const recommendations = recommendProducts([product("a", 20), product("b", 30), product("c", 30)]);
+    expect(recommendations.map((item) => item.label)).toEqual(["Económica", "Alternativa"]);
   });
   it("does not recommend an unpriced or insufficient-stock item", () => {
     const unpriced = product("a", 20);

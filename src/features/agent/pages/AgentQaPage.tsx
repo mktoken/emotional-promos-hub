@@ -7,7 +7,7 @@ import { useCrmAuth } from "@/features/crm/hooks/useCrmAuth";
 import { loadRealProducts, recommendProducts } from "../lib/agent-tools";
 import { commitQaOperation, QA_CONTACT } from "../lib/agent-crm";
 import { captureMessage, createOpportunityState, handoffReasons, nextQuestion,
-  rejectProduct, selectProduct, selectedProduct, updateQuantity, type OpportunityState } from "../lib/agent-state";
+  findRequestedVariant, rejectProduct, selectProduct, selectedProduct, updateQuantity, type OpportunityState } from "../lib/agent-state";
 
 const STORAGE_KEY = "pe-agent-qa-session-v1";
 interface Session { state: OpportunityState; messages: Array<{ role: "user" | "agent"; text: string }>; operationStarted?: boolean }
@@ -75,6 +75,7 @@ export default function AgentQaPage() {
     setBusy(true); setError(null); setDraft("");
     let current = append(session, "user", text);
     const before = current.state;
+    const previousSelectedId = selectedProduct(before)?.id;
     current = { ...current, state: captureMessage(before, text) };
     const ordinal = text.match(/(?:la|opci[oó]n)\s*(primera|segunda|tercera|1|2|3)/i);
     if (ordinal && recommendations.length) {
@@ -82,21 +83,25 @@ export default function AgentQaPage() {
       if (recommendations[index]) current = { ...current, state: selectProduct(current.state, recommendations[index].product.id) };
     }
     if (/\b(esa no|otra opci[oó]n)\b/i.test(text) && chosen) current = { ...current, state: rejectProduct(current.state, chosen.id) };
-    if (current.state.opportunity.quantity !== before.opportunity.quantity && before.opportunity.quantity) {
+    const quantityChanged = current.state.opportunity.quantity !== before.opportunity.quantity && Boolean(before.opportunity.quantity);
+    if (quantityChanged) {
       current = { ...current, state: updateQuantity(current.state, current.state.opportunity.quantity!) };
-    }
-    const requestedColor = current.state.opportunity.color;
-    const selected = selectedProduct(current.state);
-    if (selected && requestedColor && requestedColor !== selected.color?.toLowerCase()) {
-      const variant = selected.variants.find((v) => v.color.toLowerCase().includes(requestedColor));
-      current = { ...current, state: { ...current.state, products: current.state.products.map((p) => p.id === selected.id
-        ? { ...p, color: variant?.color ?? null, observedStock: variant?.stock ?? null,
-          stockStatus: variant?.stock === null || !variant ? "unknown" as const : "observed" as const } : p) } };
-      if (!variant) current = append(current, "agent", `No tengo evidencia de variante ${requestedColor} para ese producto.`);
     }
     if (current.state.opportunity.productInterest && current.state.opportunity.quantity &&
       (!current.state.products.length || current.state.opportunity.quantity !== before.opportunity.quantity)) {
       current = await search(current);
+      if (previousSelectedId && current.state.products.some((p) => p.id === previousSelectedId)) {
+        current = { ...current, state: selectProduct(current.state, previousSelectedId) };
+      }
+    }
+    const requestedColor = current.state.opportunity.color;
+    const selected = selectedProduct(current.state);
+    if (selected && requestedColor && (quantityChanged || requestedColor !== before.opportunity.color || selected.id !== previousSelectedId)) {
+      const variant = findRequestedVariant(selected.variants, requestedColor);
+      current = { ...current, state: { ...current.state, products: current.state.products.map((p) => p.id === selected.id
+        ? { ...p, color: variant?.color ?? null, observedStock: variant?.stock ?? null,
+          stockStatus: variant?.stock === null || !variant ? "unknown" as const : "observed" as const } : p) } };
+      if (!variant) current = append(current, "agent", `No tengo evidencia de variante ${requestedColor} para ese producto.`);
     }
     current = append(current, "agent", nextQuestion(current.state));
     setSession(current); setBusy(false);
@@ -157,12 +162,15 @@ export default function AgentQaPage() {
             </div>
           </article>)}
           {state.products.filter((p) => !recommendations.some((r) => r.product.id === p.id) && p.state !== "rejected")
-            .slice(0, 3).map((product) => <article key={product.id} className="rounded-xl border bg-card p-3 text-sm space-y-1">
-              <p className="font-semibold">{product.name} · {product.sku ?? "SKU no informado"}</p>
-              <p>Precio: {product.price.status}. Stock observado: {product.observedStock ?? "No comprobado"}.</p>
-              <p>Disponibilidad y personalización sujetas a revisión humana.</p>
-              <a href={product.productUrl} target="_blank" rel="noopener noreferrer" className="underline">Ver ficha real</a>
-              <Button type="button" size="sm" variant="outline" className="ml-2" onClick={() => void select(product.id)} disabled={session.operationStarted}>Seleccionar</Button>
+            .slice(0, 3).map((product) => <article key={product.id} className="flex gap-3 rounded-xl border bg-card p-3 text-sm">
+              {product.imageUrl && <img src={product.imageUrl} alt={product.name} className="h-20 w-20 shrink-0 rounded object-contain" />}
+              <div className="min-w-0 flex-1 space-y-1">
+                <p className="font-semibold">{product.name} · {product.sku ?? "SKU no informado"}</p>
+                <p>Precio: {product.price.status}. Stock observado: {product.observedStock ?? "No comprobado"}.</p>
+                <p>Disponibilidad y personalización sujetas a revisión humana.</p>
+                <a href={product.productUrl} target="_blank" rel="noopener noreferrer" className="underline">Ver ficha real</a>
+                <Button type="button" size="sm" variant="outline" className="ml-2" onClick={() => void select(product.id)} disabled={session.operationStarted}>Seleccionar</Button>
+              </div>
             </article>)}
         </div>
       </section>
@@ -176,10 +184,17 @@ export default function AgentQaPage() {
           <p>Ciudad: {state.opportunity.deliveryCity ?? "Por confirmar"}</p>
           <p>Presupuesto: {state.opportunity.budgetTotal ?? "Por confirmar"}</p>
           <p>Producto: {chosen?.name ?? "Sin seleccionar"}</p>
+          <p>SKU: {chosen?.sku ?? "No informado"}</p>
           <p>Cantidad: {chosen?.quantity ?? state.opportunity.quantity ?? "Por confirmar"}</p>
-          <p>Precio: {chosen?.price.status ?? "No consultado"}</p>
-          <p>Stock: {chosen?.observedStock ?? "No comprobado"}</p>
-          <p>Logo: {state.art.logoReceived ? "Recibido" : "No recibido"}</p>
+          <p>Color: {chosen?.color ?? state.opportunity.color ?? "Por confirmar"}</p>
+          <p>Precio: {chosen?.price.status === "priced" && chosen.price.unitPriceBeforeTaxMxn !== null
+            ? `$${chosen.price.unitPriceBeforeTaxMxn.toFixed(2)} MXN por pieza antes de IVA e impresión (priced)`
+            : chosen?.price.status ?? "No consultado"}</p>
+          <p>Stock: {chosen?.stockStatus === "observed"
+            ? `${chosen.observedStock} observado; disponibilidad final por confirmar`
+            : "No comprobado"}</p>
+          <p>Logo: {state.art.logoReceived ? "Recibido; revisión técnica pendiente"
+            : state.art.technicalReviewRequired ? "Solicitado; archivo pendiente; revisión técnica requerida" : "No solicitado"}</p>
           <p>Pendientes: {handoffReasons(state).join("; ") || "Revisión humana"}</p>
           <p>Siguiente acción: asesor revisa producto, stock, personalización y borrador.</p>
         </div>

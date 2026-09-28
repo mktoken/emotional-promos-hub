@@ -107,12 +107,15 @@ export function recommendProducts(products: AgentProduct[]): Array<{ label: stri
     && p.price.unitPriceBeforeTaxMxn !== null && p.price.isValidQuantity
     && (p.observedStock === null || p.observedStock >= p.quantity));
   const sorted = [...eligible].sort((a, b) => (a.price.unitPriceBeforeTaxMxn ?? 0) - (b.price.unitPriceBeforeTaxMxn ?? 0));
-  if (!sorted.length) return [];
-  if (sorted.length === 1) return [{ label: "Opción disponible", product: sorted[0] }];
-  if (sorted.length === 2) return [{ label: "Económica", product: sorted[0] }, { label: "Alternativa", product: sorted[1] }];
+  const distinctPriceTiers = sorted.filter((product, index) => index === 0
+    || product.price.unitPriceBeforeTaxMxn !== sorted[index - 1].price.unitPriceBeforeTaxMxn);
+  if (!distinctPriceTiers.length) return [];
+  if (distinctPriceTiers.length === 1) return [{ label: "Opción disponible", product: distinctPriceTiers[0] }];
+  if (distinctPriceTiers.length === 2) return [{ label: "Económica", product: distinctPriceTiers[0] },
+    { label: "Alternativa", product: distinctPriceTiers[1] }];
   return [
-    { label: "Económica", product: sorted[0] },
-    { label: "Recomendada", product: sorted[Math.floor((sorted.length - 1) / 2)] },
-    { label: "Premium", product: sorted[sorted.length - 1] },
+    { label: "Económica", product: distinctPriceTiers[0] },
+    { label: "Recomendada", product: distinctPriceTiers[Math.floor((distinctPriceTiers.length - 1) / 2)] },
+    { label: "Premium", product: distinctPriceTiers[distinctPriceTiers.length - 1] },
   ];
 }

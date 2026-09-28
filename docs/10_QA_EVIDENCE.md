@@ -30,7 +30,7 @@ Este documento indexa pruebas y reportes. No copia el contenido completo de los 
 | Reconciliación Git final | 2026-09-26 | `bc13a15` | GitHub | PASS, 0/0 | `MASTER-STATE.md` |
 | Suite actual | 2026-09-26 | `bc13a15` | Local | PASS, 67/67 | Validación documentada en CHK-DOC-1B |
 | Build actual | 2026-09-26 | `bc13a15` | Local | PASS | Validación documentada en CHK-DOC-1B |
-| CHK-AI-SALES-1 Super Agente Web QA | 2026-09-27 | Implementación versionada en este checkpoint | Repositorio local | CERRADO / PARCIAL; E2E runtime NO COMPROBADO | [Entrada CHK-AI-SALES-1](#chk-ai-sales-1--super-agente-web-qa) |
+| CHK-AI-SALES-1 Super Agente Web QA | 2026-09-27 | `CHK-AI-SALES-1-RUNTIME-1B`, sesión CRM QA y evidencia integrada | QA local + CRM integrado | CERRADO / PASS del caso QA acotado; Web público pendiente | [Entrada CHK-AI-SALES-1](#chk-ai-sales-1--super-agente-web-qa) |
 
 ## Interpretación obligatoria
 
@@ -1436,7 +1436,7 @@ No se considera P0 la ausencia del Super Agente, Pricing shadow, benchmark, impr
 
 ## CHK-AI-SALES-1 — Super Agente Web QA
 
-**Fecha:** 2026-09-27. **Estado:** **CERRADO / PARCIAL**.
+**Fecha:** 2026-09-27. **Estado:** **CERRADO / PASS del caso QA acotado** tras `CHK-AI-SALES-1-RUNTIME-1B`; no equivale a lanzamiento del canal Web para cliente final.
 
 ### Implementado y comprobado en repositorio
 
@@ -1444,14 +1444,22 @@ No se considera P0 la ausencia del Super Agente, Pricing shadow, benchmark, impr
 - Búsqueda V2 de libretas/cuadernos, ficha real, variantes, stock observado, imagen, URL y `get_public_product_price_quote` como única autoridad de precio. Las recomendaciones no inventan tres opciones si faltan candidatos y excluyen estados sin precio o stock insuficiente observado.
 - Ruta de QA `/crm/agente-qa` detrás de `VITE_ENABLE_AGENT_QA=true`, sesión y rol comercial. El build normal conserva el flujo existente; el build con la bandera incluye la ruta QA.
 - Contrato de escritura QA con contacto fijo no real, llave de solicitud idempotente, guard de rol, oportunidad con contexto, prospecto QA, cotización `BORRADOR` y partida solo si el precio está `priced`. No existen herramientas para emitir, enviar o activar Pricing shadow.
-- 13 archivos de test / 104 pruebas PASS; incluye 13 pruebas nuevas de estado, selección, recomendaciones, ausencia de datos inventados y errores de herramientas. `tsc --noEmit` PASS, lint dirigido PASS, build normal y build con flag PASS, `git diff --check` PASS. Ambos builds reportan el warning no bloqueante de tamaño de bundle.
+- Baseline anterior al E2E: 13 archivos de test / 104 pruebas PASS; incluye 13 pruebas nuevas de estado, selección, recomendaciones, ausencia de datos inventados y errores de herramientas. `tsc --noEmit` PASS, lint dirigido PASS, build normal y build con flag PASS, `git diff --check` PASS. Ambos builds reportaron el warning no bloqueante de tamaño de bundle.
 
-### Pendiente para E2E PASS
+### CHK-AI-SALES-1-RUNTIME-1B — E2E controlado real
 
-- No se activó la bandera en producción ni se comprobó la ruta con una sesión CRM real. No se realizaron escrituras de QA.
-- Producto real específico, SKU, precio, stock, imagen y URL para 50 libretas: **NO COMPROBADOS** en runtime. Los CSV de proveedor son históricos y no prueban disponibilidad actual.
-- Prospecto, oportunidad, cotización borrador e IDs generados por esta implementación: **NO COMPROBADOS**. No existe evidencia de persistencia o de que la cotización permanezca `BORRADOR` tras una ejecución real.
-- UX desktop/mobile, multiturno amplio, reuso de perfil empresarial persistente, cobertura de todos los errores y canal Web para cliente final: **PARCIAL / NO COMPROBADO**. El núcleo actual es acotado y determinista; no constituye un agente general autónomo.
-- Producción estable sin degradación: build normal PASS, pero QA interactiva posterior a despliegue **NO COMPROBADA**.
+- Entorno: servidor Vite solo en `127.0.0.1:8080` con `VITE_ENABLE_AGENT_QA=true`, cliente integrado del proyecto y sesión CRM `admin`. La ruta `/crm/agente-qa` fue interactiva; un contexto sin sesión redirigió a `/login`. El servidor QA se detiene al concluir; no hubo despliegue ni activación productiva. El build normal no contiene la ruta QA.
+- Entrada literal: “Quiero 50 libretas para un evento corporativo.” El estado registró `productInterest=libreta`, `quantity=50`, `eventType=corporativo`; la búsqueda real devolvió 12 productos. Para 50 piezas, la autoridad pública V2 devolvió estados `priced` en los candidatos seleccionables. Las fichas observadas no informaron SKU; se mostró “No informado”. No hay timestamp de frescura de stock disponible en el estado del agente.
+- Evidencia de productos visibles: económica `Libreta memo semanal "NOTTINGAM"` (`203d8f1b-a472-462a-a668-01ef9e5ce2f1`), `$34.18`/pieza, MOQ 44, stock observado 16725; alternativa `Libreta Pocket` (`09ab2788-f80e-4a06-9b9b-df7259eea1ad`), `$36.02`/pieza, MOQ 42, stock 5466; mayor precio `Libreta Skin mini` (`022c6486-c28d-406d-85b1-c446b0ae7fa8`), `$51.60`/pieza, MOQ 30, stock 7636. Las tarjetas cargaron imagen y enlace a ficha real; los niveles de recomendación se separaron por precios distintos tras una corrección focal.
+- Producto elegido desde tarjeta real: `Libreta "BOOKRAFT"`, `product_id=857df6f5-2abc-4a71-8840-c045262ea194`, SKU `null`, imagen `https://d2jygl58194cng.cloudfront.net/product_images/pictures/000/129/472/original/alt_promocional_publicitario_libreta_T671_negro_logo.jpg?1696956743`, ficha `/?view=pdp&product=857df6f5-2abc-4a71-8840-c045262ea194`. Variante observada `Royal Blue` con stock 6010; disponibilidad final no prometida. Para 80 piezas, `get_public_product_price_quote` devolvió `priced`, `$42.63 MXN` por pieza antes de IVA e impresión, MOQ 36, `pricingGenerationId=818d824a-ff5d-4b66-a9c1-6cac56d4c4d5`.
+- Multiturno: la primera ejecución reveló que “¿La tienes en azul?” no correspondía a `Royal Blue` y “Mejor cotízame 80” dejaba 50. Se corrigieron solo esos defectos focales; la repetición conservó `product_id`, reconoció color/stock 6010, cambió a 80 y reconsultó precio V2 con `requestedQuantity=80`. El contexto sobrevivió a recarga de la página.
+- Contexto final: cliente `QA Automatizado`, empresa `QA PromoHub - NO CONTACTAR`, correo `qa-promohub@example.com`, evento corporativo `2026-10-20`, entrega en Ciudad de México, presupuesto `$5,000`, 80 piezas Royal Blue, logotipo solicitado pero archivo no recibido, revisión técnica requerida y solicitud de asesor humano. No se calculó impresión ni se comprometió fecha de entrega.
+- Persistencia integrada: sesión QA `0ea8d9b3-e7b6-484e-832d-91ab0530bee3`; oportunidad `e4b57510-b78b-4a02-b84c-c3cdb5c2d2ae` con `agent_qa_context` en `cotizaciones_leads.datos_cliente`; prospecto `dcddee4c-0796-4200-bc1f-206caa8d21e1` vinculado y etiquetado QA; cotización formal `COT-2026-00009` (`1dc1146c-5a0a-4444-ad47-dc9cfa155105`) con una partida BOOKRAFT Royal Blue, cantidad 80, unitario `$42.63`, subtotal `$3,410.40`, IVA `$545.66`, total `$3,956.06 MXN`. Consulta independiente: `status=BORRADOR`, `issued_at=null`, `sent_at=null`; ninguna acción de emisión, correo o WhatsApp ejecutada. Una sola oportunidad y un solo borrador para la sesión; no se forzó un reintento de escritura. `COT-2026-00008` siguió `EMITIDA` sin alteración.
+- Frontera de persistencia: mensajes y traza de herramientas permanecen en `sessionStorage` de esa pestaña; el contexto estructurado QA (identidad fija, oportunidad, producto/estado, arte y motivos de revisión) llega a `cotizaciones_leads.datos_cliente.agent_qa_context`. El precio unitario autoritativo y la imagen quedan en la partida formal; no se presupone que el chat completo sea historial CRM.
+- Handoff y UI: resumen de cliente QA, evento, fecha, ciudad, presupuesto, producto/ID, SKU ausente, cantidad, color, precio V2, stock observado, logo pendiente, alertas y siguiente acción. Inspección visual interactiva desktop 1280 px y móvil 390 px: **PASS** sin overflow relevante. Se corrigió la falta de imagen en la tarjeta secundaria y se hicieron explícitos color, precio, stock y logo en el resumen.
+- Error seguro: en otra pestaña QA temporal, “Quiero 1 libreta…” devolvió cero candidatos por cantidad y pidió revisión humana; no creó registros CRM. No se indujo falla de herramienta ni se recorrió un caso `request_quote` real para evitar intervenciones innecesarias.
+- Validación: 107/107 tests PASS, `tsc --noEmit` PASS, lint dirigido PASS, builds con flag activado/desactivado PASS, `git diff --check` PASS. Warning de bundle grande no bloqueante. No se modificaron Pricing shadow, G4, impresión, Lovable ni producción.
 
-**Conclusión:** no declarar `CHK-AI-SALES-1 PASS`. Siguiente subcheckpoint propuesto: QA runtime controlada y cierre de brechas funcionales antes de habilitar el canal Web para cliente final.
+**Límites:** no se verificó un usuario autenticado sin rol comercial; la protección de rol sí está en código y el acceso sin sesión redirigió a login. No se probó reintento real de idempotencia, Company Intelligence persistente, flujo Web público para cliente final ni agente autónomo general. Los registros QA identificados se conservan como evidencia; el runbook no exige eliminarlos.
+
+**Conclusión:** `CHK-AI-SALES-1-RUNTIME-1B` **PASS** y `CHK-AI-SALES-1` **CERRADO / PASS para este caso QA acotado**. La exposición pública del agente y las capacidades fuera del caso requieren checkpoint y autorización separados.

@@ -46,6 +46,12 @@ export const createOpportunityState = (sessionId: string): OpportunityState => (
 });
 export const selectedProduct = (state: OpportunityState) => state.products.find((p) => p.state === "selected") ?? null;
 
+const normalizeColor = (value: string) => value.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+export function findRequestedVariant(variants: AgentProduct["variants"], requestedColor: string) {
+  const aliases = normalizeColor(requestedColor) === "azul" ? ["azul", "blue"] : [normalizeColor(requestedColor)];
+  return variants.find((variant) => aliases.some((alias) => normalizeColor(variant.color).includes(alias)));
+}
+
 export function selectProduct(state: OpportunityState, id: string): OpportunityState {
   if (!state.products.some((p) => p.id === id && p.state !== "rejected")) return state;
   return { ...state, products: state.products.map((p) => ({
@@ -95,7 +101,8 @@ export function captureMessage(s: OpportunityState, message: string): Opportunit
   if (/\b(libretas?|cuadernos?|notebooks?)\b/i.test(text)) next.opportunity.productInterest = /cuadern/i.test(text) ? "cuaderno" : "libreta";
   if (/evento corporativo/i.test(text)) { next.opportunity.useCase = "evento corporativo"; next.opportunity.eventType = "corporativo"; }
   const qty = text.match(/\b(\d{1,6})\s*(?:libretas?|cuadernos?|piezas?|unidades?)\b/i)
-    ?? text.match(/(?:en|para|cantidad\s*:?)\s*(\d{1,6})\b/i);
+    ?? text.match(/(?:en|para|cantidad\s*:?)\s*(\d{1,6})\b/i)
+    ?? text.match(/cot[ií]zame\s*(\d{1,6})\b/i);
   if (qty) next.opportunity.quantity = Number(qty[1]);
   else if (question.includes("piezas") && /^\d{1,6}$/.test(text)) next.opportunity.quantity = Number(text);
   const eventDate = text.match(/(?:evento|fecha del evento)\s*(?:el|:)?\s*(\d{4}-\d{2}-\d{2})/i);

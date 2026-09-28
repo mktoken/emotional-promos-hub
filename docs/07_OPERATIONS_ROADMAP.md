@@ -136,7 +136,7 @@ Mantener el critical path usable, observar P0/P1, aplicar solo correcciones foca
 
 ### Fase 1 — Super Agente Web
 
-Solicitud simple, expediente estructurado, producto real, alternativas, CRM y cotización borrador con human handoff. `CHK-AI-SALES-1` cerró PARCIAL: existe implementación QA aislada, pero falta validar el flujo runtime con 50 libretas y habilitar el canal Web para cliente final.
+Solicitud simple, expediente estructurado, producto real, alternativas, CRM y cotización borrador con human handoff. `CHK-AI-SALES-1` cerró **PASS para el caso QA acotado**: el E2E runtime de 50 libretas quedó validado con BOOKRAFT, variante azul, cambio de 50 a 80, prospecto/oportunidad QA y cotización `COT-2026-00009` en `BORRADOR` sin emisión ni envío. Habilitar el canal Web para cliente final requiere un checkpoint separado.
 
 ### Fase 2 — Multiproducto + CRM + cotización borrador
 
@@ -175,4 +175,4 @@ Son estimaciones de ingeniería basadas en la estructura actual, no compromisos 
 
 ## Próximo checkpoint
 
-`CHK-AI-SALES-1 — SUPER AGENTE WEB / SOLICITUD SIMPLE DE 50 LIBRETAS` quedó **CERRADO / PARCIAL** tras implementar el núcleo y la ruta QA con flag. El siguiente subcheckpoint propuesto es una validación runtime controlada y el cierre de las brechas del canal Web, sin declararlo aún autorizado. Pricing, G4 e impresión permanecen fuera; el lanzamiento público sigue condicionado a un PASS posterior de `CHK-BRAND-WEB-1`.
+`CHK-AI-SALES-1 — SUPER AGENTE WEB / SOLICITUD SIMPLE DE 50 LIBRETAS` quedó **CERRADO / PASS para el caso QA acotado** tras validar el E2E runtime con sesión CRM y ruta QA con flag. El siguiente checkpoint propuesto es definir las brechas del canal Web para cliente final, sin declararlo aún autorizado. Pricing, G4 e impresión permanecen fuera; el lanzamiento público sigue condicionado a un PASS posterior de `CHK-BRAND-WEB-1`.

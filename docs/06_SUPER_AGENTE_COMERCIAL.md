@@ -2,7 +2,7 @@
 
 ## Estado y propósito
 
-Este documento canoniza la arquitectura del Super Agente Comercial B2B especializado en artículos promocionales. `CHK-AI-SALES-1` implementó un incremento determinista de QA detrás de feature flag y cerró PARCIAL; no existe un agente autónomo completo. No se integró WhatsApp AI ni se cambió el flujo productivo estable.
+Este documento canoniza la arquitectura del Super Agente Comercial B2B especializado en artículos promocionales. `CHK-AI-SALES-1` implementó un incremento determinista detrás de feature flag y cerró PASS para el caso QA acotado de 50 libretas tras validación runtime; no existe un agente autónomo completo ni un canal Web público nuevo. No se integró WhatsApp AI ni se cambió el flujo productivo estable.
 
 El objetivo inicial es llevar una solicitud como **“Quiero 50 libretas para un evento corporativo”** hasta una operación estructurada y lista para revisión humana, sin inventar precios, stock, proveedores, técnicas de impresión ni datos de empresa.
 
@@ -118,11 +118,11 @@ Criterios de aceptación propuestos:
 7. Registrar fuentes, confianza y campos faltantes.
 8. Validar Web primero; reutilizar el mismo contrato para WhatsApp después.
 
-El primer incremento de este checkpoint está implementado en `src/features/agent/` como flujo determinista de QA, detrás de `VITE_ENABLE_AGENT_QA=true` y en ruta CRM restringida. El caso E2E con 50 libretas y CRM real permanece **NO COMPROBADO**; por ello `CHK-AI-SALES-1` cerró **PARCIAL**, no PASS. El Web para cliente final, el reuso de perfiles de empresa y la conversación amplia requieren un subcheckpoint posterior. El asistente histórico de captura sigue disponible sin cambios.
+El primer incremento está implementado en `src/features/agent/` como flujo determinista de QA, detrás de `VITE_ENABLE_AGENT_QA=true` y en ruta CRM restringida. `CHK-AI-SALES-1-RUNTIME-1B` validó en sesión CRM autorizada el caso E2E de 50 libretas: catálogo/Precio V2 reales, selección, variante azul, cambio a 80, contexto persistido, prospecto/oportunidad QA y cotización `COT-2026-00009` en `BORRADOR`, sin emisión ni envío. `CHK-AI-SALES-1` queda **CERRADO / PASS para este caso QA acotado**. El Web para cliente final, el reuso de perfiles de empresa y la conversación amplia requieren un checkpoint posterior. El asistente histórico de captura sigue disponible sin cambios.
 
 ## Relación con el gate de lanzamiento público
 
-La validación runtime y el cierre de brechas de `CHK-AI-SALES-1` continúan como siguiente frente operativo; la decisión de marca no los interrumpe ni los amplía. La operación comercial controlada, QA, CRM y Pricing shadow pueden continuar desde la baseline aprobada.
+La validación runtime del caso QA está cerrada. Las brechas del canal Web para cliente final requieren definición y autorización separadas; la decisión de marca no las interrumpe ni las amplía. La operación comercial controlada, QA, CRM y Pricing shadow pueden continuar desde la baseline aprobada.
 
 Antes de un lanzamiento público, promoción activa, campañas de adquisición o escalamiento significativo de tráfico hacia `articulospromocionales.vip`, debe cerrarse `CHK-BRAND-WEB-1 — REDEFINICIÓN DE MARCA, COMUNICACIÓN Y EXPERIENCIA WEB`. Ese gate es posterior y transversal: define posicionamiento, comunicación, experiencia e identidad de la web, pero no bloquea el desarrollo controlado del Super Agente.
 

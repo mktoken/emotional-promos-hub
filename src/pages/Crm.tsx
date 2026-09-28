@@ -11,6 +11,7 @@ import ConfiguracionEmpresa from "@/features/crm/pages/ConfiguracionEmpresa";
 import FormalQuotesList from "@/features/crm/pages/FormalQuotesList";
 import FormalQuoteEditor from "@/features/crm/pages/FormalQuoteEditor";
 import FormalQuotePrint from "@/features/crm/pages/FormalQuotePrint";
+import AgentQaPage from "@/features/agent/pages/AgentQaPage";
 
 export default function Crm() {
   return (
@@ -34,6 +35,7 @@ export default function Crm() {
         <Route path="campanas" element={<CampaignList />} />
         <Route path="mi-perfil" element={<MiPerfil />} />
         <Route path="configuracion" element={<ConfiguracionEmpresa />} />
+        {import.meta.env.VITE_ENABLE_AGENT_QA === "true" && <Route path="agente-qa" element={<AgentQaPage />} />}
       </Route>
     </Routes>
   );

@@ -178,9 +178,17 @@ Los defaults de margen y corredor incluidos en el módulo son **SIMULATION DEFAU
 La arquitectura operativa prioriza el flujo existente y separa la evolución futura:
 
 - **P0/P1 operativo:** Home, catálogo, solicitud, CRM, cotización formal, PDF y seguimiento básico deben permanecer utilizables con la autoridad V2 actual.
-- **Super Agente:** contrato futuro documentado en `docs/06_SUPER_AGENTE_COMERCIAL.md`; no existe todavía un agente autónomo completo.
+- **Super Agente:** `src/features/agent/` contiene un núcleo determinista y una ruta QA restringida en CRM. No existe todavía un agente autónomo completo ni E2E runtime validado.
 - **Tres capas:** Sector Intelligence, Company Intelligence y Opportunity Context; cada dato debe conservar fuente, fecha y confianza.
 - **Canales:** Web y WhatsApp comparten un único cerebro comercial; el canal no duplica reglas ni pricing.
 - **Seguridad comercial:** sin precios inventados, sin activar Conversion Pricing, sin automatizar impresión no comprobada y con human handoff en el nivel inicial.
 
 La baseline operativa, prioridades y estimaciones se mantienen en `docs/07_OPERATIONS_ROADMAP.md`.
+
+## CHK-AI-SALES-1 — arquitectura del incremento QA
+
+La ruta `/crm/agente-qa` se registra únicamente en builds con `VITE_ENABLE_AGENT_QA=true`; también exige sesión y rol comercial. Sin esa bandera el flujo público anterior permanece intacto. El estado de oportunidad vive en `sessionStorage` durante QA y puede transportar contratos de Sector Intelligence, Company Intelligence y Opportunity Context sin duplicar reglas por canal.
+
+Las herramientas de lectura consultan `catalog_search_products_v2`, `productos_publicos` y `get_public_product_price_quote`. La UI muestra datos obtenidos, marca stock como observado o no comprobado y no usa `pricing-conversion-shadow.ts`. Las herramientas de escritura requieren rol comercial y contacto QA fijo; aprovechan `submit_public_quote_request` con UUID idempotente, guardan contexto en `cotizaciones_leads`, reutilizan o crean prospecto QA y preparan `formal_quotes` / `formal_quote_items` únicamente en `BORRADOR` y con precio autoritativo. El inicio de la escritura congela la sesión para permitir reintento con el mismo payload.
+
+Límites: todavía no hay servidor conversacional, publicación de la bandera, prueba de permisos/RLS runtime ni verificación de las escrituras QA. El perfil empresarial persistente, una UI de cliente final y E2E desktop/mobile permanecen pendientes. No se añadieron migraciones, Edge Functions, acciones automáticas de envío ni impresión.

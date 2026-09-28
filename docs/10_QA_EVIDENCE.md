@@ -30,6 +30,7 @@ Este documento indexa pruebas y reportes. No copia el contenido completo de los 
 | Reconciliación Git final | 2026-09-26 | `bc13a15` | GitHub | PASS, 0/0 | `MASTER-STATE.md` |
 | Suite actual | 2026-09-26 | `bc13a15` | Local | PASS, 67/67 | Validación documentada en CHK-DOC-1B |
 | Build actual | 2026-09-26 | `bc13a15` | Local | PASS | Validación documentada en CHK-DOC-1B |
+| CHK-AI-SALES-1 Super Agente Web QA | 2026-09-27 | Implementación versionada en este checkpoint | Repositorio local | CERRADO / PARCIAL; E2E runtime NO COMPROBADO | [Entrada CHK-AI-SALES-1](#chk-ai-sales-1--super-agente-web-qa) |
 
 ## Interpretación obligatoria
 
@@ -1432,3 +1433,25 @@ No se considera P0 la ausencia del Super Agente, Pricing shadow, benchmark, impr
 ### Resultado
 
 `CHK-OPS-1: CERRADO / PARCIAL`. La operación comercial puede comenzar con el flujo estable y revisión humana de los puntos P1. El siguiente checkpoint definido es `CHK-AI-SALES-1 — SUPER AGENTE WEB / SOLICITUD SIMPLE DE 50 LIBRETAS`; no se implementó en esta ejecución.
+
+## CHK-AI-SALES-1 — Super Agente Web QA
+
+**Fecha:** 2026-09-27. **Estado:** **CERRADO / PARCIAL**.
+
+### Implementado y comprobado en repositorio
+
+- Núcleo determinista channel-agnostic con expediente estructurado, contratos de Sector/Company Intelligence, selección/rechazo/cambio de cantidad, alertas y handoff.
+- Búsqueda V2 de libretas/cuadernos, ficha real, variantes, stock observado, imagen, URL y `get_public_product_price_quote` como única autoridad de precio. Las recomendaciones no inventan tres opciones si faltan candidatos y excluyen estados sin precio o stock insuficiente observado.
+- Ruta de QA `/crm/agente-qa` detrás de `VITE_ENABLE_AGENT_QA=true`, sesión y rol comercial. El build normal conserva el flujo existente; el build con la bandera incluye la ruta QA.
+- Contrato de escritura QA con contacto fijo no real, llave de solicitud idempotente, guard de rol, oportunidad con contexto, prospecto QA, cotización `BORRADOR` y partida solo si el precio está `priced`. No existen herramientas para emitir, enviar o activar Pricing shadow.
+- 13 archivos de test / 104 pruebas PASS; incluye 13 pruebas nuevas de estado, selección, recomendaciones, ausencia de datos inventados y errores de herramientas. `tsc --noEmit` PASS, lint dirigido PASS, build normal y build con flag PASS, `git diff --check` PASS. Ambos builds reportan el warning no bloqueante de tamaño de bundle.
+
+### Pendiente para E2E PASS
+
+- No se activó la bandera en producción ni se comprobó la ruta con una sesión CRM real. No se realizaron escrituras de QA.
+- Producto real específico, SKU, precio, stock, imagen y URL para 50 libretas: **NO COMPROBADOS** en runtime. Los CSV de proveedor son históricos y no prueban disponibilidad actual.
+- Prospecto, oportunidad, cotización borrador e IDs generados por esta implementación: **NO COMPROBADOS**. No existe evidencia de persistencia o de que la cotización permanezca `BORRADOR` tras una ejecución real.
+- UX desktop/mobile, multiturno amplio, reuso de perfil empresarial persistente, cobertura de todos los errores y canal Web para cliente final: **PARCIAL / NO COMPROBADO**. El núcleo actual es acotado y determinista; no constituye un agente general autónomo.
+- Producción estable sin degradación: build normal PASS, pero QA interactiva posterior a despliegue **NO COMPROBADA**.
+
+**Conclusión:** no declarar `CHK-AI-SALES-1 PASS`. Siguiente subcheckpoint propuesto: QA runtime controlada y cierre de brechas funcionales antes de habilitar el canal Web para cliente final.

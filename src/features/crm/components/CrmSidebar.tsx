@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, Megaphone, FileText, FileCheck2, UserCog, Settings } from "lucide-react";
+import { LayoutDashboard, Users, Megaphone, FileText, FileCheck2, UserCog, Settings, Bot } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -21,6 +21,9 @@ const items = [
   { title: "Cotizaciones formales", url: "/crm/cotizaciones-formales", icon: FileCheck2, exact: false },
   { title: "Prospectos", url: "/crm/prospectos", icon: Users, exact: false },
   { title: "Campañas", url: "/crm/campanas", icon: Megaphone, exact: false },
+  ...(import.meta.env.VITE_ENABLE_AGENT_QA === "true"
+    ? [{ title: "Super Agente QA", url: "/crm/agente-qa", icon: Bot, exact: false }]
+    : []),
 ];
 
 export function CrmSidebar() {
@@ -83,4 +86,3 @@ export function CrmSidebar() {
     </Sidebar>
   );
 }
-

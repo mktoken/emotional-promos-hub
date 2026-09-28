@@ -21,7 +21,7 @@ Reglas permanentes:
 |---|---|---|
 | P0 | Web operativa | Baseline usable; validación interactiva completa aún parcial |
 | P1 | Flujo comercial base | Implementado y validado en el caso QA; frescura y operación general requieren control |
-| P2 | Super Agente Web | Arquitectura definida; no construido |
+| P2 | Super Agente Web | Núcleo y ruta CRM QA implementados detrás de flag; E2E real y canal cliente final no comprobados |
 | P3 | Sector Intelligence | Estructura definida; no cargada |
 | P4 | Company Intelligence | Estructura definida; no persistida como producto |
 | P5 | WhatsApp | Canal manual validado en QA; IA no construida |
@@ -136,7 +136,7 @@ Mantener el critical path usable, observar P0/P1, aplicar solo correcciones foca
 
 ### Fase 1 — Super Agente Web
 
-Solicitud simple, expediente estructurado, producto real, alternativas, CRM y cotización borrador con human handoff. Checkpoint: `CHK-AI-SALES-1`.
+Solicitud simple, expediente estructurado, producto real, alternativas, CRM y cotización borrador con human handoff. `CHK-AI-SALES-1` cerró PARCIAL: existe implementación QA aislada, pero falta validar el flujo runtime con 50 libretas y habilitar el canal Web para cliente final.
 
 ### Fase 2 — Multiproducto + CRM + cotización borrador
 
@@ -175,4 +175,4 @@ Son estimaciones de ingeniería basadas en la estructura actual, no compromisos 
 
 ## Próximo checkpoint
 
-`CHK-AI-SALES-1 — SUPER AGENTE WEB / SOLICITUD SIMPLE DE 50 LIBRETAS` queda definido para discusión y autorización y continúa siendo el siguiente frente operativo; este gate de marca no lo interrumpe ni lo amplía. No se implementa en este checkpoint si aparece un P0 operativo; Pricing, G4 e impresión permanecen fuera. El lanzamiento público sigue condicionado a un PASS posterior de `CHK-BRAND-WEB-1`.
+`CHK-AI-SALES-1 — SUPER AGENTE WEB / SOLICITUD SIMPLE DE 50 LIBRETAS` quedó **CERRADO / PARCIAL** tras implementar el núcleo y la ruta QA con flag. El siguiente subcheckpoint propuesto es una validación runtime controlada y el cierre de las brechas del canal Web, sin declararlo aún autorizado. Pricing, G4 e impresión permanecen fuera; el lanzamiento público sigue condicionado a un PASS posterior de `CHK-BRAND-WEB-1`.

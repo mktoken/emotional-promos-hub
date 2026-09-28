@@ -2,7 +2,7 @@
 
 ## Estado y propósito
 
-Este documento canoniza la arquitectura futura del Super Agente Comercial B2B especializado en artículos promocionales. En esta ejecución no se construye el agente completo, no se integra WhatsApp AI y no se cambia el flujo productivo estable.
+Este documento canoniza la arquitectura del Super Agente Comercial B2B especializado en artículos promocionales. `CHK-AI-SALES-1` implementó un incremento determinista de QA detrás de feature flag y cerró PARCIAL; no existe un agente autónomo completo. No se integró WhatsApp AI ni se cambió el flujo productivo estable.
 
 El objetivo inicial es llevar una solicitud como **“Quiero 50 libretas para un evento corporativo”** hasta una operación estructurada y lista para revisión humana, sin inventar precios, stock, proveedores, técnicas de impresión ni datos de empresa.
 
@@ -101,7 +101,7 @@ El objetivo inicial es **Nivel 4**. El Nivel 5 queda fuera de alcance hasta cont
 - Gmail y WhatsApp siguen siendo acciones manuales con autorización y destinatario controlado.
 - Toda recomendación debe poder llevar fuente, fecha y confianza.
 
-## Primer checkpoint futuro
+## Primer checkpoint — estado parcial
 
 ### CHK-AI-SALES-1 — solicitud simple de 50 libretas
 
@@ -118,11 +118,11 @@ Criterios de aceptación propuestos:
 7. Registrar fuentes, confianza y campos faltantes.
 8. Validar Web primero; reutilizar el mismo contrato para WhatsApp después.
 
-Este checkpoint se define, pero no se implementa en la misión Operación Primero si antes aparece un P0 operativo.
+El primer incremento de este checkpoint está implementado en `src/features/agent/` como flujo determinista de QA, detrás de `VITE_ENABLE_AGENT_QA=true` y en ruta CRM restringida. El caso E2E con 50 libretas y CRM real permanece **NO COMPROBADO**; por ello `CHK-AI-SALES-1` cerró **PARCIAL**, no PASS. El Web para cliente final, el reuso de perfiles de empresa y la conversación amplia requieren un subcheckpoint posterior. El asistente histórico de captura sigue disponible sin cambios.
 
 ## Relación con el gate de lanzamiento público
 
-`CHK-AI-SALES-1` continúa siendo el siguiente frente operativo y no se interrumpe ni se amplía por la decisión de marca. La operación comercial controlada, QA, CRM y Pricing shadow pueden continuar desde la baseline aprobada.
+La validación runtime y el cierre de brechas de `CHK-AI-SALES-1` continúan como siguiente frente operativo; la decisión de marca no los interrumpe ni los amplía. La operación comercial controlada, QA, CRM y Pricing shadow pueden continuar desde la baseline aprobada.
 
 Antes de un lanzamiento público, promoción activa, campañas de adquisición o escalamiento significativo de tráfico hacia `articulospromocionales.vip`, debe cerrarse `CHK-BRAND-WEB-1 — REDEFINICIÓN DE MARCA, COMUNICACIÓN Y EXPERIENCIA WEB`. Ese gate es posterior y transversal: define posicionamiento, comunicación, experiencia e identidad de la web, pero no bloquea el desarrollo controlado del Super Agente.
 

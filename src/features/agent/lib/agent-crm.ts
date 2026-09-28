@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { submitPublicQuoteRequest } from "@/features/quotes/lib/public-quote-request";
-import { buildDraftQuotePlan, planDraftQuoteReconciliation } from "./agent-quote";
+import { buildDraftQuotePlan, enrichDraftQuotePlanWithOpportunityItems, planDraftQuoteReconciliation } from "./agent-quote";
 import { findRequestedVariant, handoffReasons, selectedLineProduct, selectedProductLines,
   setActiveProductLine, type AgentProduct, type AgentProductLine, type OpportunityState } from "./agent-state";
 import { loadRealProductById } from "./agent-tools";
@@ -240,13 +240,19 @@ export async function createDraftQuote(opportunityId: string, state: Opportunity
 export async function syncDraftQuoteItems(quoteId: string, state: OpportunityState): Promise<void> {
   await assertQaStaff();
   assertSelectedLines(state);
-  const plan = buildDraftQuotePlan(state);
+  let plan = buildDraftQuotePlan(state);
   const { data: quote, error: quoteError } = await supabase.from("formal_quotes")
-    .select("id,status,cliente,notas_internas").eq("id", quoteId).single();
+    .select("id,status,cliente,notas_internas,cotizacion_lead_id").eq("id", quoteId).single();
   const client = quote?.cliente && typeof quote.cliente === "object" ? quote.cliente as Record<string, unknown> : {};
   if (quoteError || !quote || quote.status !== "BORRADOR" || client.email !== QA_CONTACT.email
       || !quote.notas_internas?.includes(ownershipMarker(state.sessionId))) {
     throw new Error("La cotización no es un borrador QA de esta sesión.");
+  }
+  if (quote.cotizacion_lead_id) {
+    const { data: opportunity, error: opportunityError } = await supabase.from("cotizaciones_leads")
+      .select("articulos_cotizados").eq("id", quote.cotizacion_lead_id).single();
+    if (opportunityError) throw new Error(opportunityError.message);
+    plan = enrichDraftQuotePlanWithOpportunityItems(plan, opportunity.articulos_cotizados);
   }
   const { data: existing, error: itemError } = await supabase.from("formal_quote_items")
     .select("id,notes_internal").eq("formal_quote_id", quoteId);

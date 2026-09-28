@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createOpportunityState, createProductLine, selectProduct, setProductLineCandidates, setProductLinePersonalization } from "./agent-state";
-import { buildDraftQuotePlan, planDraftQuoteReconciliation } from "./agent-quote";
+import { buildDraftQuotePlan, enrichDraftQuotePlanWithOpportunityItems, planDraftQuoteReconciliation } from "./agent-quote";
 import type { AgentProduct } from "./agent-state";
 
 function pricedProduct(id: string, quantity: number, unitPrice: number): AgentProduct {
@@ -42,6 +42,16 @@ describe("multi-line formal quote planning", () => {
     expect(first).toMatchObject({ tipo: "advisor_review", requiere_revision_tecnica: true });
     expect(second).toMatchObject({ tipo: "no_print", requiere_revision_tecnica: false });
     expect(plan.items.every(({ values }) => values.setup_fee === 0 && values.print_unit_price === 0)).toBe(true);
+  });
+
+  it("propagates authoritative enriched SKUs into quote items without replacing an existing SKU", () => {
+    const plan = buildDraftQuotePlan(selectedState());
+    plan.items[0].values.clave_producto = null;
+    const enriched = enrichDraftQuotePlanWithOpportunityItems(plan, [
+      { producto_id: "book", clave_producto: "T671" },
+      { producto_id: "thermo", sku: "TER-KRI" },
+    ]);
+    expect(enriched.items.map(({ values }) => values.clave_producto)).toEqual(["T671", "SKU-thermo"]);
   });
 
   it("blocks a multiline draft if any active product line lacks a priced valid quantity", () => {

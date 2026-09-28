@@ -35,6 +35,12 @@ const toVariants = (raw: unknown): AgentProduct["variants"] => {
   });
 };
 
+function publicSku(detail: ProductRow, general: Record<string, unknown>): string | null {
+  if (detail.sku_base?.trim()) return detail.sku_base.trim();
+  return typeof general.clave_producto === "string" && general.clave_producto.trim()
+    ? general.clave_producto.trim() : null;
+}
+
 export const catalogTools: CatalogTools = {
   async searchProducts(query, quantity) {
     const normalized = query.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
@@ -93,7 +99,7 @@ export async function loadRealProducts(
         ? detail.datos_generales as Record<string, unknown> : {};
       const name = typeof general.modelo_comercial === "string" && general.modelo_comercial.trim()
         ? general.modelo_comercial.trim() : row.nombre?.trim() || detail.id_interno;
-      return { id: detail.id, sku: detail.sku_base, name,
+      return { id: detail.id, sku: publicSku(detail, general), name,
         imageUrl: normalizeProductImages(detail.imagenes)[0] ?? normalizeProductImages(row.imagenes)[0] ?? null,
         productUrl: tools.getProductUrl(detail.id), color: null, variants,
         observedStock, stockStatus: observedStock === null ? "unknown" : "observed",
@@ -119,7 +125,7 @@ export async function loadRealProductById(
     ? detail.datos_generales as Record<string, unknown> : {};
   const name = typeof general.modelo_comercial === "string" && general.modelo_comercial.trim()
     ? general.modelo_comercial.trim() : detail.id_interno;
-  return { id: detail.id, sku: detail.sku_base, name,
+  return { id: detail.id, sku: publicSku(detail, general), name,
     imageUrl: normalizeProductImages(detail.imagenes)[0] ?? null,
     productUrl: tools.getProductUrl(detail.id), color: null, variants,
     observedStock: known.length ? known.reduce((a, b) => a + b, 0) : null,

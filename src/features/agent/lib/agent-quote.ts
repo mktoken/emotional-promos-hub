@@ -12,6 +12,28 @@ export interface DraftQuotePlan {
   totals: { subtotal: number; tax_amount: number; total: number };
 }
 
+/** Conserva el SKU autoritativo enriquecido por la solicitud pública cuando la ficha pública no lo expone. */
+export function enrichDraftQuotePlanWithOpportunityItems(plan: DraftQuotePlan, rawItems: unknown): DraftQuotePlan {
+  if (!Array.isArray(rawItems)) return plan;
+  const skuByProduct = new Map<string, string>();
+  for (const raw of rawItems) {
+    if (!raw || typeof raw !== "object") continue;
+    const item = raw as Record<string, unknown>;
+    const productId = typeof item.producto_id === "string" ? item.producto_id : null;
+    const sku = typeof item.clave_producto === "string" && item.clave_producto.trim()
+      ? item.clave_producto.trim()
+      : typeof item.sku === "string" && item.sku.trim() ? item.sku.trim() : null;
+    if (productId && sku) skuByProduct.set(productId, sku);
+  }
+  return { ...plan, items: plan.items.map((item) => {
+    const productId = item.values.product_ref_id;
+    const sku = productId ? skuByProduct.get(productId) : null;
+    return sku && !item.values.clave_producto
+      ? { ...item, values: { ...item.values, clave_producto: sku } }
+      : item;
+  }) };
+}
+
 const marker = (sessionId: string) => `QA Super Agente ${sessionId}`;
 
 function personalizationForLine(line: AgentProductLine, productId: string) {

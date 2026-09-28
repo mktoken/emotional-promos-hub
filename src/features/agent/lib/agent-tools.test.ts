@@ -50,4 +50,12 @@ describe("Super Agente catalog tools", () => {
     expect(calls).toEqual([["real-1", 80]]);
     expect(result).toMatchObject({ id: "real-1", quantity: 80, price: { status: "priced", requestedQuantity: 80, unitPriceBeforeTaxMxn: 31.25 } });
   });
+  it("uses the public catalog key when sku_base is absent", async () => {
+    const result = await loadRealProductById("real-1", 50, tools({
+      getProductDetails: async () => ({ id: "real-1", id_interno: "pp-internal", sku_base: null,
+        datos_generales: { modelo_comercial: "Libreta real", clave_producto: "T671" },
+        variantes: [], imagenes: null, activo: true }),
+    }));
+    expect(result?.sku).toBe("T671");
+  });
 });

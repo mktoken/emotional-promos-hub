@@ -213,6 +213,15 @@ export async function advanceAgent(
       line = selectedProductLine(state);
     }
   } else {
+    const needsProductLine = extractQuantity(normalizedText, true) !== null
+      || extractColor(normalizedText) !== null
+      || optionOrdinal(normalizedText) !== null
+      || optionLabel(normalizedText) !== null
+      || /\b(quita|elimina|retira|borra|logo|personaliz|impres|esa|ese)\b/i.test(normalizedText);
+    if (!needsProductLine) {
+      current = { ...current, state };
+      return { session: appendMessage(current, "agent", nextQuestion(state)), searchFailed };
+    }
     const resolved = resolveLine(state, normalizedText);
     if (resolved.ambiguous) {
       current = appendMessage(current, "agent", "¿A cuál producto te refieres: libretas, termos o bolsas? No cambiaré ninguna línea hasta confirmarlo.");

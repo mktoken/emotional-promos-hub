@@ -32,7 +32,7 @@ Este documento indexa pruebas y reportes. No copia el contenido completo de los 
 | Build actual | 2026-09-26 | `bc13a15` | Local | PASS | Validación documentada en CHK-DOC-1B |
 | CHK-AI-SALES-1 Super Agente Web QA | 2026-09-27 | `CHK-AI-SALES-1-RUNTIME-1B`, sesión CRM QA y evidencia integrada | QA local + CRM integrado | CERRADO / PASS del caso QA acotado; Web público pendiente | [Entrada CHK-AI-SALES-1](#chk-ai-sales-1--super-agente-web-qa) |
 | CHK-AI-SALES-2 piloto Web cliente | 2026-09-27 | E2E local y consultas CRM QA independientes | QA local + CRM integrado | CERRADO / PASS del piloto controlado; no publicado | [Entrada CHK-AI-SALES-2](#chk-ai-sales-2--piloto-web-cliente-controlado) |
-| CHK-AI-SALES-3 multiproducto y cotización multilínea | 2026-09-28 | Implementación local desde `af725ca8e888d2050b7d79f06d99613ec8352aeb` | Local: pruebas/types/lint/build; runtime no disponible | CERRADO / PARCIAL; automatizadas PASS, E2E runtime NO COMPROBADO | [Entrada CHK-AI-SALES-3](#chk-ai-sales-3--multiproducto-y-cotizacion-multilinea) |
+| CHK-AI-SALES-3 multiproducto y cotización multilínea | 2026-09-28 | E2E desde `79ed55ca241a225820f5cb92f6630bab7eb0b513` | QA local + CRM integrado | CERRADO / PASS; E2E multilínea runtime, borrador y visuales PASS | [Entrada CHK-AI-SALES-3](#chk-ai-sales-3--multiproducto-y-cotizacion-multilinea) |
 
 ## Interpretación obligatoria
 
@@ -216,9 +216,9 @@ La carga se clasifica **INTERMITENTE / LENTA EN EPISODIOS PREVIOS**. No se inven
 
 **Fecha:** 2026-09-28
 
-**Base Git verificada:** rama `main`, HEAD/origin/main `af725ca8e888d2050b7d79f06d99613ec8352aeb`, divergencia `0 0`, working tree inicial limpio.
+**Base Git verificada:** rama `main`, HEAD/origin/main `79ed55ca241a225820f5cb92f6630bab7eb0b513`, divergencia `0 0`, working tree inicial limpio.
 
-**Entorno:** validación local de código; no se desplegó ni se modificó producción.
+**Entorno:** QA local/controlada en `127.0.0.1:8080` con `VITE_ENABLE_AGENT_QA=true` y `VITE_ENABLE_AGENT_WEB_PILOT=true`, sesión CRM autenticada con rol `ADMIN` e infraestructura integrada. No se desplegó ni se modificó producción.
 
 ### Cambios implementados
 
@@ -227,12 +227,13 @@ La carga se clasifica **INTERMITENTE / LENTA EN EPISODIOS PREVIOS**. No se inven
 - Revalidación independiente de producto, precio público vigente y stock observado; las líneas sin precio autoritativo bloquean el guardado.
 - Persistencia preparada para una oportunidad y una cotización formal `BORRADOR` por sesión, con reconciliación de quote items para actualizar/agregar/quitar líneas, evitando duplicados ambiguos.
 - Subtotal por línea y general antes de IVA, IVA 16% y total etiquetado con IVA. Impresión queda por confirmar/revisión humana, sin precio ni técnica inventados.
-- Sin migraciones nuevas, despliegue, escritura runtime, emisión, correo, WhatsApp, Pricing Conversion productivo, G4 ni automatización de impresión.
+- Dos correcciones focales derivadas del E2E: el contexto de oportunidad multiproducto ya no se descarta como referencia ambigua y el SKU público autoritativo se propaga a oportunidad/partidas cuando `sku_base` no existe.
+- Sin migraciones nuevas, despliegue, emisión, correo, WhatsApp, Pricing Conversion productivo, G4 ni automatización de impresión.
 
 ### Validación automatizada
 
-- Pruebas dirigidas del Super Agente: **40/40 PASS** en 6 archivos.
-- Suite completa: **131/131 PASS** en 17 archivos.
+- Pruebas dirigidas del Super Agente: **40/40 PASS** en 5 archivos.
+- Suite completa: **134/134 PASS** en 17 archivos.
 - TypeScript (`tsc --noEmit`): **PASS**.
 - ESLint dirigido a `src/features/agent`: **PASS**.
 - Build normal: **PASS**.
@@ -240,13 +241,27 @@ La carga se clasifica **INTERMITENTE / LENTA EN EPISODIOS PREVIOS**. No se inven
 - `git diff --check`: **PASS** en la revisión final.
 - Ambos builds muestran la advertencia preexistente/de bundle grande (>500 kB) de Vite; el build finaliza correctamente.
 
-### E2E runtime y límites de evidencia
+### E2E runtime
 
-El E2E multiproducto queda **NO COMPROBADO**: la comprobación de `http://127.0.0.1:8080/crm/agente-qa` falló porque no había servidor escuchando, y no existe control de navegador autenticado disponible en esta ejecución. Por ello no se consultaron productos reales de libretas/termos/bolsas ni sus SKU, variantes, precios o stock; no se usó identidad QA; no se crearon ni actualizaron prospecto, oportunidad o cotización; no se verificaron persistencia tras reload, quote items/totales runtime, handoff, ni vistas desktop/mobile. No se atribuyen IDs o valores de runtime que no fueron observados.
+- Conversación multiproducto real: 50 libretas, 50→80 termos y 100→retirada→150 bolsas. Se probaron referencias por categoría y opción, color, retiro/reingreso y la referencia ambigua “Mejor 90”, que pidió aclaración sin cambiar cantidades.
+- Selección final: BOOKRAFT `T671` (`857df6f5-2abc-4a71-8840-c045262ea194`), 50, `Royal Blue`, `$42.63`, subtotal `$2,131.50`, stock observado de variante 6010; Termo Krypton `TER-KRI` (`21449d54-3486-4c3d-82b8-e9d9030f2d00`), 80, `Blanco`, `$172.58`, subtotal `$13,806.40`, stock observado 6897; Bolsa Kyoto `C540` (`b168dd94-6743-4cfd-abbf-40b061c1dbe8`), 150, `$10.05`, subtotal `$1,507.50`, stock observado 37863.
+- Personalización: logo por confirmar/revisión humana para libreta y termo; bolsa sin impresión. No se agregó costo de impresión.
+- Persistencia: el estado de las tres líneas sobrevivió recarga completa antes de escribir CRM. El retiro/reingreso conservó el mismo `line_id` de bolsa y no creó una línea duplicada.
+- CRM: prospecto QA reutilizado `dcddee4c-0796-4200-bc1f-206caa8d21e1`; una oportunidad `112f87ce-8429-41bd-a1b9-b33cbab00aeb`; una cotización `COT-2026-00011` (`f962b802-1baa-441e-a976-eb5e5cb57371`). Repetir la sincronización devolvió los mismos IDs y las mismas tres partidas.
+- Borrador verificado independientemente: tres partidas coherentes; subtotal `$17,445.40`, IVA 16% `$2,791.26`, total `$20,236.66`; `status=BORRADOR`, `issued_at=null`, `sent_at=null`. No hubo emisión, correo ni WhatsApp.
+- Handoff: cliente/empresa QA, evento corporativo, fecha `2026-10-15`, Ciudad de México, presupuesto 25000, tres productos, pendientes de personalización, totales y siguiente acción de revisión humana.
+- Visual: desktop PASS y viewport móvil 390 px PASS, sin overflow horizontal. Evidencia: [desktop](qa/evidence/chk-ai-sales-3/runtime-desktop-summary.png) y [móvil](qa/evidence/chk-ai-sales-3/runtime-mobile-summary.png).
+- Regresión Web Pilot monoproducto: solicitud de 50 libretas, 12 opciones reales, selección recomendada de Libreta Pocket, precio/IVA y handoff mostrados; no se guardó un segundo registro CRM.
 
-Los casos cubiertos por pruebas automatizadas incluyen flujo de una línea y de varias líneas, selección y referencias ambiguas, cantidades y variantes independientes, retiro/reingreso/reemplazo, cambio de precios, error parcial de herramienta, conciliación de quote items, totales/IVA, rechazo de partidas sin precio y controles de contexto QA. Esto no sustituye el E2E con catálogo y CRM integrados.
+### Límites vigentes
 
-**Resultado final CHK-AI-SALES-3: CERRADO / PARCIAL.** Requiere una subfase de E2E runtime controlado antes de declararse PASS. No se crean registros CRM ni se inicia otro frente como parte de esta evidencia.
+- El stock es observado y no equivale a disponibilidad final; no se expuso timestamp de frescura.
+- La impresión y su costo permanecen en revisión humana.
+- Kits no tienen validación independiente; no se desplegó el piloto ni se validó escritura CRM anónima.
+- Categoría sin resultados, `request_quote`, stock insuficiente y falla parcial están cubiertos por pruebas automatizadas, pero no todos se reprodujeron nuevamente en runtime para evitar escrituras o mutaciones adicionales.
+- El build conserva el warning no bloqueante de chunk superior a 500 kB.
+
+**Resultado final CHK-AI-SALES-3: CERRADO / PASS.** Cumple el E2E runtime controlado multiproducto dentro del alcance autorizado; no autoriza despliegue público ni otro checkpoint.
 
 ## Evidencia no disponible como índice independiente
 

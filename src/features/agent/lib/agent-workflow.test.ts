@@ -82,6 +82,19 @@ describe("shared multi-product agent workflow", () => {
     expect(result.session.messages.at(-1)?.text).toContain("No cambiaré ninguna línea");
   });
 
+  it("captures opportunity context without treating it as an ambiguous product-line change", async () => {
+    let session = (await advanceAgent(newAgentSession(), "Quiero 50 libretas para un evento corporativo", realSearch)).session;
+    session = (await advanceAgent(session, "También 50 termos", realSearch)).session;
+    const before = session.state.productLines.map((line) => ({ lineId: line.lineId, quantity: line.quantity }));
+    const result = await advanceAgent(session,
+      "Entrega en Ciudad de México. Fecha del evento: 2026-10-15. Presupuesto de $25,000.", realSearch);
+    expect(result.session.state.opportunity).toMatchObject({
+      deliveryCity: "Ciudad de México", eventDate: "2026-10-15", budgetTotal: 25000,
+    });
+    expect(result.session.state.productLines.map((line) => ({ lineId: line.lineId, quantity: line.quantity }))).toEqual(before);
+    expect(result.session.messages.at(-1)?.text).not.toContain("¿A cuál producto te refieres");
+  });
+
   it("asks before changing duplicate same-category lines instead of picking the first", async () => {
     let session = (await advanceAgent(newAgentSession(), "Quiero 50 libretas", realSearch)).session;
     session = (await advanceAgent(session, "Agrega otra línea de 20 libretas por separado", realSearch)).session;

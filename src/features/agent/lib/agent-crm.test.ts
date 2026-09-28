@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createOpportunityState, createProductLine, selectProduct, setProductLineCandidates } from "./agent-state";
 import { safeQaContext } from "./agent-crm";
+import { qaCommercialContext } from "./agent-intelligence";
 import type { AgentProduct } from "./agent-state";
 
 const product = (id: string, quantity: number): AgentProduct => ({
@@ -13,6 +14,7 @@ const product = (id: string, quantity: number): AgentProduct => ({
 describe("QA CRM handoff context", () => {
   it("records the reused prospect and complete separate product-line context", () => {
     let state = createOpportunityState("qa-session");
+    state = { ...state, ...qaCommercialContext() };
     state = createProductLine(state, "libreta", 80, "line-book");
     state = setProductLineCandidates(state, "line-book", [product("book", 80)]);
     state = selectProduct(state, "book", "line-book");
@@ -28,6 +30,10 @@ describe("QA CRM handoff context", () => {
       { lineId: "line-book", productId: "book", productName: "book", quantity: 80, pricingStatus: "priced" },
       { lineId: "line-thermo", productId: "thermo", productName: "thermo", quantity: 50, pricingStatus: "priced" },
     ]);
+    expect(context.commercialIntelligence).toMatchObject({
+      sector: { id: "corporate-events", confidence: "high" },
+      company: { profileId: "qa-promohub" },
+    });
     expect(JSON.stringify(context)).not.toMatch(/cost|margin|provider/i);
   });
 });

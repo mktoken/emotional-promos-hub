@@ -134,6 +134,16 @@ Se evolucionó el núcleo compartido en `src/features/agent/`, sin crear otro ag
 
 **Validación disponible:** 40/40 tests dirigidos PASS; suite completa 134/134 PASS; tipos PASS; lint dirigido PASS; build normal y build con flags QA/piloto PASS; `git diff --check` PASS. **E2E runtime:** PASS local/controlado. Se probaron libreta BOOKRAFT (`T671`, 50, Royal Blue), Termo Krypton (`TER-KRI`, 80, Blanco) y Bolsa Kyoto (`C540`, 150), con precio V2 y stock observado por línea, retiro/reingreso, ambigüedad segura, persistencia, handoff y UI desktop/mobile. Se reutilizó el prospecto QA y se creó una sola oportunidad y `COT-2026-00011` en `BORRADOR`, con tres partidas, subtotal `$17,445.40`, IVA `$2,791.26` y total `$20,236.66`; `issued_at` y `sent_at` permanecen vacíos. `CHK-AI-SALES-3` queda **CERRADO / PASS**; no hubo despliegue, emisión ni envío.
 
+### CHK-AI-SALES-4 — inteligencia comercial inicial
+
+`src/features/agent/lib/agent-intelligence.ts` mantiene separadas Sector Intelligence, Company Intelligence y Opportunity Context. Incluye provenance (`FACT`, `INFERENCE`, `USER_PROVIDED`, `INTERNAL_HISTORY`, `EXTERNAL_RESEARCH`), confidence y `lastVerified`. Se cargaron únicamente dos playbooks piloto sustentados por documentación interna: Eventos corporativos y Compras B2B.
+
+La identidad QA reutiliza el perfil `qa-promohub`, mientras una empresa desconocida recibe solo un perfil mínimo con datos proporcionados por el usuario. Las recomendaciones agregan razones comerciales y cross-sell conceptual, y los kits son ideas sin SKU ni precio. Todo producto, SKU, precio, stock y disponibilidad continúa viniendo de las herramientas deterministas del catálogo.
+
+E2E contextual local: el QA recibió “Quiero 50 libretas para un evento corporativo”, recomendó categorías reales con razón de encaje y complemento conceptual, agregó 50 termos, registró fecha `2026-10-15`, Ciudad de México, presupuesto `25000` y personalización pendiente. Se creó una sola oportunidad `20241fd6-f8e8-49d8-b8d8-49d906ec1a38` y `COT-2026-00013` en `BORRADOR`, con Libreta Pocket y Termo Krypton, subtotal `$10,430.00`, IVA `$1,668.80`, total `$12,098.80` y handoff enriquecido. No se emitió ni se envió.
+
+**Validación:** 34/34 pruebas dirigidas de inteligencia/regresión en el corte focal; suite completa **139/139 PASS**; tipos, lint dirigido, build normal y build QA/piloto PASS; `git diff --check` PASS. La inteligencia no está desplegada públicamente, no realiza crawler masivo, no integra WhatsApp AI, visión, Pricing Conversion ni perfiles CRM generales.
+
 ## Relación con el gate de lanzamiento público
 
 La validación runtime del caso QA y del piloto Web local está cerrada. El canal público para clientes reales no está autorizado; sus brechas requieren definición y checkpoint separados. La decisión de marca no interrumpe la operación comercial controlada, QA, CRM ni Pricing shadow.

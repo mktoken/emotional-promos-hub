@@ -1,4 +1,5 @@
 import { loadRealProducts, orderedProductOptions, recommendProducts } from "./agent-tools";
+import { composeCommercialContext, crossSellSuggestions, recommendationRationale, type CommercialContext } from "./agent-intelligence";
 import { captureMessage, createProductLine, createOpportunityState, findRequestedVariant, nextQuestion,
   removeProductLine, replaceProductLine, rejectProduct, restoreProductLine, selectProduct,
   selectedLineProduct, selectedProductLine, setActiveProductLine, setProductLineCandidates,
@@ -13,8 +14,20 @@ export interface AgentSession {
 }
 export type ProductSearch = typeof loadRealProducts;
 
-export function newAgentSession(welcome = "Cuéntame qué producto y cantidad necesitas. Buscaré opciones reales del catálogo."): AgentSession {
-  return { state: createOpportunityState(crypto.randomUUID()), messages: [{ role: "agent", text: welcome }] };
+export function newAgentSession(welcome = "Cuéntame qué producto y cantidad necesitas. Buscaré opciones reales del catálogo.",
+  initialContext: Partial<Pick<OpportunityState, "company" | "sectorContext" | "sectorPlaybook" | "companyProfile">> = {}): AgentSession {
+  return { state: { ...createOpportunityState(crypto.randomUUID()), ...initialContext }, messages: [{ role: "agent", text: welcome }] };
+}
+
+function contextualSearchMessage(state: OpportunityState, productInterest: string, count: number): string {
+  const context: CommercialContext = composeCommercialContext(state);
+  const base = count
+    ? `Encontré ${count} productos reales para ${productInterest}. Selecciona una opción; precio V2 y stock se conservan por línea.`
+    : `No encontré productos reales compatibles con ${productInterest}. Las demás líneas permanecen intactas.`;
+  if (!count || !context.sector) return base;
+  const rationale = recommendationRationale(context, productInterest);
+  const crossSell = crossSellSuggestions(context, productInterest)[0];
+  return `${base}${rationale ? ` ${rationale}` : ""}${crossSell ? ` Complemento conceptual sugerido: ${crossSell}; solo se mostrará si existe en catálogo.` : ""}`;
 }
 
 export function migrateAgentSession(raw: unknown): AgentSession | null {
@@ -273,9 +286,7 @@ export async function advanceAgent(
       state = setProductLineCandidates(state, currentLine.lineId, candidates, quantityChanged ? oldSelectedId : currentLine.selectedProductId);
       currentLine = state.productLines.find((item) => item.lineId === oldLine.lineId);
       state = { ...state, trace: [...state.trace, { tool: `search_products:${currentLine?.productInterest ?? "line"}`, ok: true, timestamp: new Date().toISOString() }] };
-      const resultMessage = candidates.length
-        ? `Encontré ${candidates.length} productos reales para ${currentLine?.productInterest}. Selecciona una opción; precio V2 y stock se conservan por línea.`
-        : `No encontré productos reales compatibles con ${currentLine?.productInterest}. Las demás líneas permanecen intactas.`;
+      const resultMessage = contextualSearchMessage(state, currentLine?.productInterest ?? "producto", candidates.length);
       current = appendMessage(current, "agent", resultMessage);
     } catch {
       searchFailed = true;

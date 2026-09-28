@@ -33,6 +33,7 @@ Este documento indexa pruebas y reportes. No copia el contenido completo de los 
 | CHK-AI-SALES-1 Super Agente Web QA | 2026-09-27 | `CHK-AI-SALES-1-RUNTIME-1B`, sesión CRM QA y evidencia integrada | QA local + CRM integrado | CERRADO / PASS del caso QA acotado; Web público pendiente | [Entrada CHK-AI-SALES-1](#chk-ai-sales-1--super-agente-web-qa) |
 | CHK-AI-SALES-2 piloto Web cliente | 2026-09-27 | E2E local y consultas CRM QA independientes | QA local + CRM integrado | CERRADO / PASS del piloto controlado; no publicado | [Entrada CHK-AI-SALES-2](#chk-ai-sales-2--piloto-web-cliente-controlado) |
 | CHK-AI-SALES-3 multiproducto y cotización multilínea | 2026-09-28 | E2E desde `79ed55ca241a225820f5cb92f6630bab7eb0b513` | QA local + CRM integrado | CERRADO / PASS; E2E multilínea runtime, borrador y visuales PASS | [Entrada CHK-AI-SALES-3](#chk-ai-sales-3--multiproducto-y-cotizacion-multilinea) |
+| CHK-AI-SALES-4 inteligencia comercial inicial | 2026-09-28 | E2E desde `01e848eec233df424341ac3ea8568e5aaaf9ba68` | QA local + CRM integrado | CERRADO / PASS; inteligencia contextual y borrador QA PASS | [Entrada CHK-AI-SALES-4](#chk-ai-sales-4--inteligencia-comercial-inicial) |
 
 ## Interpretación obligatoria
 
@@ -262,6 +263,50 @@ La carga se clasifica **INTERMITENTE / LENTA EN EPISODIOS PREVIOS**. No se inven
 - El build conserva el warning no bloqueante de chunk superior a 500 kB.
 
 **Resultado final CHK-AI-SALES-3: CERRADO / PASS.** Cumple el E2E runtime controlado multiproducto dentro del alcance autorizado; no autoriza despliegue público ni otro checkpoint.
+
+## CHK-AI-SALES-4 — Inteligencia comercial inicial
+
+**Fecha:** 2026-09-28
+
+**Base Git de entrada:** rama `main`, HEAD/origin/main `01e848eec233df424341ac3ea8568e5aaaf9ba68`, divergencia `0 0`, working tree limpio.
+
+### Contratos y playbooks
+
+- `SectorPlaybook`, `CompanyProfile`, `OpportunityContext`, `CommercialContext` y `Provenance` están tipados y permanecen separados.
+- Provenance soporta `FACT`, `INFERENCE`, `USER_PROVIDED`, `INTERNAL_HISTORY` y `EXTERNAL_RESEARCH`, además de confidence y `lastVerified`.
+- Playbooks piloto: `corporate-events` y `b2b-solutions`. Se eligieron por el alcance B2B, eventos corporativos, kits/soluciones y casos QA ya documentados; no se inventaron sectores históricos.
+- Perfil QA reutilizable: `qa-promohub` / `QA Automatizado`, con información mínima y marcada como QA interno.
+- Empresa desconocida: perfil mínimo con únicamente lo proporcionado; no inventa sector, tamaño, sedes, colores, compras ni preferencias.
+
+### E2E contextual
+
+- La sesión CRM QA cargó explícitamente Sector Intelligence de Eventos corporativos y Company Intelligence `qa-promohub`.
+- Solicitud: “Quiero 50 libretas para un evento corporativo”. El agente mostró 12 productos reales y explicó que la libreta encaja con eventos corporativos; sugirió `libreta → bolígrafo` como complemento conceptual, condicionado a catálogo real.
+- Se agregó Termo Krypton, 50 piezas, SKU `TER-KRI`; la libreta seleccionada fue Pocket, SKU `LIB-POK`, 50 piezas. Precio V2, stock y variantes vinieron del catálogo real.
+- Se registró fecha `2026-10-15`, Ciudad de México, presupuesto `25000` y personalización de libreta/termo para revisión humana.
+- Handoff y CRM: prospecto QA reutilizado `dcddee4c-0796-4200-bc1f-206caa8d21e1`; oportunidad `20241fd6-f8e8-49d8-b8d8-49d906ec1a38`; cotización `COT-2026-00013`; estado `BORRADOR`; 2 partidas; subtotal `$10,430.00`; IVA `$1,668.80`; total `$12,098.80`; sin emisión ni envío.
+- El contexto persistido en el handoff conserva playbook, perfil, provenance/confidence, kit conceptual y cross-sell sin exponer costos, márgenes ni datos sensibles.
+
+### Comparativa y regresiones
+
+- Sin contexto explícito, la búsqueda de productos mantiene catálogo/precio/stock y no agrega razones sectoriales ni cross-sell.
+- Con contexto explícito, aparecen razón comercial y complemento conceptual; no cambia artificialmente la autoridad transaccional.
+- Multiproducto, monoproducto, CRM, catálogo, cotización borrador, totales y handoff conservaron sus pruebas previas.
+- Se verificó que el perfil cargado se muestra únicamente en la vista QA administrativa; el piloto comprador no muestra metadata técnica.
+
+### Validación automatizada y límites
+
+- Pruebas dirigidas focales: **34/34 PASS**.
+- Suite completa: **139/139 PASS** en 18 archivos.
+- TypeScript: **PASS**.
+- Lint dirigido: **PASS**.
+- Build normal: **PASS**.
+- Build QA/piloto: **PASS**.
+- `git diff --check`: PASS en la revisión de cierre.
+- Warning no bloqueante: bundle superior a 500 kB.
+- No se construyó crawler, investigación externa masiva, visión, WhatsApp AI, Pricing nuevo, G4 ni perfil de empresa como producto CRM general. El piloto Web continúa sin autorización de producción y la escritura anónima sigue prohibida.
+
+**Resultado final CHK-AI-SALES-4: CERRADO / PASS.** Inteligencia comercial inicial validada en QA controlada; no autoriza lanzamiento público ni automatización de comunicaciones.
 
 ## Evidencia no disponible como índice independiente
 

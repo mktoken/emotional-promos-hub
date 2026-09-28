@@ -1,14 +1,15 @@
 import type { PublicPriceQuote } from "@/features/catalog/lib/public-product-price";
+import type { CompanyProfile, SectorPlaybook } from "./agent-intelligence";
 
 export interface SectorContext {
   sector?: string; subsector?: string; useCases?: string[]; audiences?: string[];
   preferredCategories?: string[]; preferredProducts?: string[]; productsToAvoid?: string[];
   kits?: string[]; suggestedQuestions?: string[]; objections?: string[]; crossSell?: string[];
-  style?: string; formality?: string; source?: string; confidence?: number;
+  style?: string; formality?: string; source?: string; confidence?: number; lastVerified?: string;
 }
 export interface CompanyContext {
   profileId?: string; name?: string; domain?: string; sector?: string; website?: string;
-  brandAttributes?: string[]; context?: string; sources?: string[];
+  brandAttributes?: string[]; context?: string; sources?: string[]; audiences?: string[];
   confidence?: number; lastVerified?: string;
   intelligenceStatus: "not_requested" | "found" | "not_found" | "error";
 }
@@ -51,6 +52,9 @@ export interface OpportunityState {
     productInterest?: string; quantity?: number; color?: string; style?: string;
   };
   sectorContext?: SectorContext;
+  /** Structured layers remain separate from the live opportunity context. */
+  sectorPlaybook?: SectorPlaybook;
+  companyProfile?: CompanyProfile;
   productLines: AgentProductLine[];
   activeProductLineId: string | null;
   /** Legacy current-line candidate projection; new consumers use productLines. */

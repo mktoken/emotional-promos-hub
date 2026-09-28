@@ -22,8 +22,8 @@ Reglas permanentes:
 | P0 | Web operativa | Baseline usable; validación interactiva completa aún parcial |
 | P1 | Flujo comercial base | Implementado y validado en el caso QA; frescura y operación general requieren control |
 | P2 | Super Agente Web | QA interna y piloto Web cliente local/controlado E2E PASS; canal público y escritura CRM anónima no habilitados |
-| P3 | Sector Intelligence | Estructura definida; no cargada |
-| P4 | Company Intelligence | Estructura definida; no persistida como producto |
+| P3 | Sector Intelligence | Dos playbooks piloto estructurados y validados; no es investigación masiva |
+| P4 | Company Intelligence | Perfil QA reutilizable y perfil mínimo de empresa nueva validados; no es producto CRM general |
 | P5 | WhatsApp | Canal manual validado en QA; IA no construida |
 | P6 | Pricing competitivo México | Shadow mode PASS en repositorio; no productivo |
 | P7 | Aprendizaje comercial | No construido; no ML |
@@ -144,7 +144,7 @@ Solicitud simple, expediente estructurado, producto real, alternativas, CRM y co
 
 ### Fase 3 — Sector Intelligence + Company Intelligence + visión
 
-Playbooks, perfiles persistentes, investigación puntual con fuentes y análisis de imágenes, sin certificar impresión automáticamente.
+`CHK-AI-SALES-4` cerró **PASS** para la primera capa de inteligencia comercial sin visión: dos playbooks piloto sustentados por documentación interna, perfil QA reutilizable, perfil mínimo sin hechos inventados, provenance/confidence/last_verified, composición separada con Opportunity Context, razones comerciales, kit conceptual y cross-sell limitado a categorías. El E2E creó `COT-2026-00013` en `BORRADOR` con dos partidas reales y handoff enriquecido. No se construyó crawler, investigación externa masiva, visión, WhatsApp AI, Pricing nuevo ni producto CRM general de perfiles.
 
 ### Fase 4 — WhatsApp
 
@@ -175,4 +175,4 @@ Son estimaciones de ingeniería basadas en la estructura actual, no compromisos 
 
 ## Próximo checkpoint
 
-`CHK-AI-SALES-1`, `CHK-AI-SALES-2` y `CHK-AI-SALES-3` quedan **CERRADOS / PASS** dentro de sus alcances QA controlados. No existe un siguiente checkpoint funcional autorizado automáticamente; debe definirse de forma expresa antes de iniciar otro frente. No se autoriza exponer ni desplegar el piloto al público. Pricing, G4 e impresión permanecen fuera; el lanzamiento público sigue condicionado a un PASS posterior de `CHK-BRAND-WEB-1`.
+`CHK-AI-SALES-1`, `CHK-AI-SALES-2`, `CHK-AI-SALES-3` y `CHK-AI-SALES-4` quedan **CERRADOS / PASS** dentro de sus alcances QA controlados. No existe un siguiente checkpoint funcional autorizado automáticamente; debe definirse de forma expresa antes de iniciar otro frente. No se autoriza exponer ni desplegar el piloto al público. Pricing, G4, visión e impresión permanecen fuera; el lanzamiento público sigue condicionado a un PASS posterior de `CHK-BRAND-WEB-1`.

@@ -8,6 +8,7 @@ import { AgentProductLines } from "../components/AgentProductLines";
 import { commitQaOperation, QA_CONTACT } from "../lib/agent-crm";
 import { selectedLineProduct, selectedProductLines } from "../lib/agent-state";
 import { advanceAgent, agentDraftFingerprint, migrateAgentSession, newAgentSession, type AgentSession } from "../lib/agent-workflow";
+import { qaCommercialContext } from "../lib/agent-intelligence";
 
 const STORAGE_KEY = "pe-agent-qa-session-v1";
 function readSession(): AgentSession {
@@ -15,10 +16,13 @@ function readSession(): AgentSession {
     const raw = sessionStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = migrateAgentSession(JSON.parse(raw));
-      if (parsed) return parsed;
+      if (parsed) {
+        const intelligence = qaCommercialContext();
+        return { ...parsed, state: { ...parsed.state, ...intelligence } };
+      }
     }
   } catch { /* sesión nueva */ }
-  return newAgentSession();
+  return newAgentSession(undefined, qaCommercialContext());
 }
 
 export default function AgentQaPage() {
@@ -101,6 +105,8 @@ export default function AgentQaPage() {
           <h2 className="font-semibold">Operación QA para revisión</h2>
           <p>Cliente: {QA_CONTACT.name} · {QA_CONTACT.email}</p>
           <p>Empresa: {QA_CONTACT.company}</p>
+          <p>Sector Intelligence: {state.sectorPlaybook?.sector ?? "No cargado"} · confianza {state.sectorContext?.confidence ?? "—"}</p>
+          <p>Company Intelligence: {state.companyProfile?.companyName ?? "Perfil mínimo"} · {state.companyProfile ? "reutilizable" : "no cargado"}</p>
           <p>Evento: {state.opportunity.eventType ?? "Por confirmar"}</p>
           <p>Fecha: {state.opportunity.eventDate ?? "Por confirmar"}</p>
           <p>Ciudad: {state.opportunity.deliveryCity ?? "Por confirmar"}</p>

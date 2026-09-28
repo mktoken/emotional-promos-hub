@@ -5,6 +5,7 @@ import { buildDraftQuotePlan, enrichDraftQuotePlanWithOpportunityItems, planDraf
 import { findRequestedVariant, handoffReasons, selectedLineProduct, selectedProductLines,
   setActiveProductLine, type AgentProduct, type AgentProductLine, type OpportunityState } from "./agent-state";
 import { loadRealProductById } from "./agent-tools";
+import { composeCommercialContext, conceptualKit, crossSellSuggestions } from "./agent-intelligence";
 import { QA_CONTACT } from "./agent-qa-contact";
 
 export { QA_CONTACT } from "./agent-qa-contact";
@@ -89,11 +90,22 @@ function selectedSnapshot(line: AgentProductLine) {
 }
 
 export function safeQaContext(state: OpportunityState, prospectId: string): Json {
+  const intelligence = composeCommercialContext(state);
   return {
     schemaVersion: state.schemaVersion, sessionId: state.sessionId,
     crm: { prospectId },
     customer: { name: QA_CONTACT.name, email: QA_CONTACT.email, phone: QA_CONTACT.phone },
     company: { name: QA_CONTACT.company, intelligenceStatus: state.company.intelligenceStatus },
+    commercialIntelligence: {
+      sector: intelligence.sector ? { id: intelligence.sector.id, sector: intelligence.sector.sector,
+        subsector: intelligence.sector.subsector, confidence: intelligence.sector.provenance.confidence,
+        source: intelligence.sector.provenance.reference, lastVerified: intelligence.sector.provenance.lastVerified } : null,
+      company: intelligence.company ? { profileId: intelligence.company.profileId, companyName: intelligence.company.companyName,
+        confidence: intelligence.company.provenance[0]?.confidence, source: intelligence.company.provenance[0]?.reference,
+        lastVerified: intelligence.company.provenance[0]?.lastVerified } : null,
+      conceptualKit: conceptualKit(intelligence), crossSell: intelligence.sector
+        ? [...new Set(intelligence.sector.productAffinities.flatMap((item) => crossSellSuggestions(intelligence, item)))].slice(0, 6) : [],
+    },
     opportunity: state.opportunity as unknown as Json,
     activeProductLineId: state.activeProductLineId,
     productLines: state.productLines.map(selectedSnapshot),

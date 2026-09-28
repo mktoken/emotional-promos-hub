@@ -7,6 +7,7 @@ import { commitQaOperation } from "../lib/agent-crm";
 import { isControlledQaContact, type PilotContact } from "../lib/agent-pilot";
 import { advanceAgent, agentDraftFingerprint, migrateAgentSession, newAgentSession, type AgentSession } from "../lib/agent-workflow";
 import { selectedLineProduct, selectedProductLines } from "../lib/agent-state";
+import { createMinimalCompanyProfile, findSectorPlaybook, loadKnownCompanyProfile, toSectorContext } from "../lib/agent-intelligence";
 import { AgentProductLines } from "../components/AgentProductLines";
 
 const STORAGE_KEY = "pe-agent-web-pilot-v1";
@@ -71,9 +72,17 @@ export default function AgentPilotPage() {
   async function prepare() {
     if (!canPrepare) return;
     setBusy(true); setError("");
+    const companyProfile = loadKnownCompanyProfile({ name: contact.company })
+      ?? createMinimalCompanyProfile({ name: contact.company, domain: contact.email.split("@")[1] });
+    const sectorPlaybook = session.state.sectorPlaybook
+      ?? findSectorPlaybook(companyProfile.sector, session.state.opportunity.useCase);
     const operationState = { ...session.state,
       customer: { name: contact.name.trim(), email: contact.email.trim().toLowerCase(), phone: contact.phone.trim() },
-      company: { ...session.state.company, name: contact.company.trim() } };
+      company: { ...session.state.company, name: contact.company.trim(), profileId: companyProfile.profileId,
+        sector: companyProfile.sector, domain: companyProfile.domain, confidence: companyProfile.provenance[0]?.confidence === "high" ? 0.9 : 0.6,
+        intelligenceStatus: "found" as const },
+      companyProfile, sectorPlaybook: sectorPlaybook ?? undefined,
+      sectorContext: sectorPlaybook ? toSectorContext(sectorPlaybook) : session.state.sectorContext };
     const frozen = { ...session, state: operationState, operationStarted: true };
     setSession(frozen);
     try {

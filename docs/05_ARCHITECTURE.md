@@ -150,3 +150,25 @@ La fecha, salud y resultado de la última sincronización operativa de cada prov
 - No se confirma desde este documento el estado actual de publicación de cada Edge Function.
 - No se confirma aquí el estado actual de proveedores, stock, imágenes, fichas ni impresión.
 - No se debe usar este documento para declarar un checkpoint cerrado.
+
+## Pricing de Conversión México — shadow mode
+
+`src/lib/pricing-conversion-shadow.ts` implementa un functor puro de simulación. No importa el cliente Supabase, no ejecuta RPCs, no conoce rutas, no escribe cachés y no publica resultados. Su contrato recibe `source_cost`, un `provider_factor` solo para trazabilidad y/o `adjusted_cost` ya resuelto, más cantidad y observaciones opcionales.
+
+La secuencia calculada es:
+
+```text
+source_cost → provider_adjustment → adjusted_cost → quantity → purchase_base
+→ pricing_regime → internal_economic_price → market_reference
+→ competitive_corridor → profitability_floor → recommended_price
+```
+
+`purchase_base` es `adjusted_cost × quantity`, antes de markup, impresión, IVA y envío. Los regímenes y límites son configurables: `SMALL_ORDER` desde `$1,500` hasta antes de `$5,000`, `MARKET_AWARE` desde `$5,000` y `ENTERPRISE` desde `$55,000`. La influencia de mercado usa una función continua entre `$4,500` y `$7,500`, sin un salto especial en `$5,000`.
+
+El benchmark es una estructura para observaciones curadas de Compudat, Smart Promocionales, Artículos Promocionales de México y TodoPromocional. La normalización solo conserva mismo SKU, MXN, cantidad comparable, tratamiento homogéneo de IVA, sin impresión ni envío, observación vigente y stock razonable. Se calculan mínimo, P25, mediana, P75, máximo y conteo; la mediana es la referencia central configurable. No hay scraping ni observaciones inventadas en esta implementación.
+
+El precio híbrido combina precio económico y referencia de mercado solo con datos suficientes. Sin benchmark suficiente, la salida conserva el precio interno y marca `market_adjustment_applied: false`. El piso configurable se aplica con `max(floor, hybrid)` y, si rebasa el corredor alto, el resultado se clasifica `NOT_COMPETITIVE` en lugar de ocultarlo. La salida incluye `shadow_only: true` y una comparación opcional contra Current V2; `calculate_product_price_v2` continúa siendo la autoridad pública.
+
+Para enterprise la salida ya puede exponer precio recomendado, benchmark, piso, utilidad, margen y `discount_headroom` (la distancia utilizable sobre el piso cuando este existe). La interfaz `ConversionPricingTelemetry` reserva `quoted_price`, `benchmark_position`, `requested_discount`, `final_price`, `won/lost`, `loss_reason`, `gross_profit` y `lead_source` para una instrumentación futura, sin persistirlos ni aplicar ML en esta fase.
+
+Los defaults de margen y corredor incluidos en el módulo son **SIMULATION DEFAULTS**, no una política comercial permanente. La activación requerirá una canasta competitiva mexicana curada, validación de parámetros, decisión de redondeo y un checkpoint posterior.

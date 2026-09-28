@@ -97,6 +97,16 @@ La última fecha, estado, error y volumen de sincronización de cada proveedor n
 - Las reglas de descuentos y aprobación de excepciones no están documentadas como contrato vigente.
 - Los reportes detallados deben consultarse en `supabase/qa/`.
 
+## Pricing de Conversión México — separación shadow
+
+El módulo `src/lib/pricing-conversion-shadow.ts` es un simulador read-only independiente. No reemplaza `public.calculate_product_price_v2`, no cambia `catalog_price_cache`, no altera `catalog_price_v2_releases`, no modifica cotizaciones y no ejecuta recompute, publish o sincronización.
+
+Su comparación conserva dos columnas conceptuales: **Current V2** y **Conversion Pricing Recommendation**. El motor recibe el costo ajustado ya resuelto para impedir doble aplicación de CDO/ForPromotional `×1.03`; Legacy `×1.35` no participa. G4 no se modifica y su mapeo de escala sigue pendiente.
+
+La recomendación usa `purchase_base = adjusted_cost × quantity`, una curva configurable de margen económico, una transición continua de influencia de mercado entre `$4,500` y `$7,500`, corredor competitivo configurable, piso de rentabilidad y estados `COMPETITIVE`, `VERY_COMPETITIVE`, `ABOVE_MARKET`, `NOT_COMPETITIVE`, `NO_MARKET_DATA` y `BELOW_MINIMUM`. Sin benchmark suficiente se conserva el precio interno.
+
+No se agregan observaciones competitivas reales ni scraping en esta ejecución. La estructura admite posteriormente una canasta curada de 30–50 SKUs. Los parámetros actuales están marcados como valores técnicos de simulación; la activación pública requiere aprobación, evidencia de mercado y un checkpoint posterior.
+
 ## Evidencia detallada
 
 - [Dry run V2](../supabase/qa/recompute_v2_dry_run_report.md)

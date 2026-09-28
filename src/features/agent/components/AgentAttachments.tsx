@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Paperclip, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { createCommercialAttachment, linkAttachmentToLines, type CommercialAttachment, type CommercialAttachmentType } from "../lib/agent-attachments";
+import { applyVisualAnalysis, createCommercialAttachment, linkAttachmentToLines, type CommercialAttachment, type CommercialAttachmentType } from "../lib/agent-attachments";
+import { fileToDataUrl, lovableCommercialVisionProcessor } from "../lib/commercial-vision";
 import type { AgentSession } from "../lib/agent-workflow";
 
 const types: Array<[CommercialAttachmentType, string]> = [
@@ -12,17 +13,32 @@ const types: Array<[CommercialAttachmentType, string]> = [
 export function AgentAttachments({ session, setSession, disabled = false }: { session: AgentSession; setSession: (session: AgentSession) => void; disabled?: boolean }) {
   const [type, setType] = useState<CommercialAttachmentType>("product_photo");
   const [error, setError] = useState<string | null>(null);
+  const files = useRef<Record<string, File>>({});
   function add(file: File) {
     const attachment = createCommercialAttachment({ name: file.name, type: file.type, size: file.size }, type);
     if (attachment.analysisStatus === "rejected") { setError("Archivo rechazado: formato, tamaño o nombre no válido."); return; }
     const previewUrl = file.type.startsWith("image/") ? URL.createObjectURL(file) : undefined;
     const lineIds = session.state.productLines.filter((line) => !["removed", "rejected"].includes(line.status)).map((line) => line.lineId);
     const linked = linkAttachmentToLines({ ...attachment, previewUrl }, lineIds);
+    files.current[linked.attachmentId] = file;
     setSession({ ...session, state: { ...session.state, attachments: [...session.state.attachments, linked] } });
     setError(null);
   }
   function remove(attachmentId: string) {
+    delete files.current[attachmentId];
     setSession({ ...session, state: { ...session.state, attachments: session.state.attachments.filter((item) => item.attachmentId !== attachmentId) } });
+  }
+  async function analyze(attachment: CommercialAttachment) {
+    const file = files.current[attachment.attachmentId];
+    if (!file) { setError("El archivo ya no está disponible en esta sesión; vuelve a adjuntarlo."); return; }
+    setSession({ ...session, state: { ...session.state, attachments: session.state.attachments.map((item) => item.attachmentId === attachment.attachmentId ? { ...item, analysisStatus: "analyzing" as const, analysisError: undefined } : item) } });
+    try {
+      const result = await lovableCommercialVisionProcessor.analyzeCommercialImage({ attachment, dataUrl: await fileToDataUrl(file), commercialContext: { lineIds: attachment.linkedProductLineIds } });
+      setSession({ ...session, state: { ...session.state, attachments: session.state.attachments.map((item) => item.attachmentId === attachment.attachmentId ? applyVisualAnalysis(item, result) : item) } });
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : "No se pudo analizar la imagen.";
+      setSession({ ...session, state: { ...session.state, attachments: session.state.attachments.map((item) => item.attachmentId === attachment.attachmentId ? { ...item, analysisStatus: "failed" as const, analysisError: message } : item) } });
+    }
   }
   return <div className="space-y-3 rounded-xl border bg-card p-4 text-sm" data-testid="agent-attachments">
     <div className="flex items-center justify-between gap-2"><h2 className="font-semibold">Referencias visuales</h2><span className="text-xs text-muted-foreground">QA · máximo 10 MB</span></div>
@@ -38,15 +54,17 @@ export function AgentAttachments({ session, setSession, disabled = false }: { se
     </div>
     {error && <p className="text-destructive" role="alert">{error}</p>}
     {!session.state.attachments.length && <p className="text-muted-foreground">Sin archivos adjuntos.</p>}
-    <div className="space-y-2">{session.state.attachments.map((attachment) => <AttachmentRow key={attachment.attachmentId} attachment={attachment} onRemove={() => remove(attachment.attachmentId)} />)}</div>
+    <div className="space-y-2">{session.state.attachments.map((attachment) => <AttachmentRow key={attachment.attachmentId} attachment={attachment} onAnalyze={() => void analyze(attachment)} onRemove={() => remove(attachment.attachmentId)} />)}</div>
   </div>;
 }
 
-function AttachmentRow({ attachment, onRemove }: { attachment: CommercialAttachment; onRemove: () => void }) {
+function AttachmentRow({ attachment, onAnalyze, onRemove }: { attachment: CommercialAttachment; onAnalyze: () => void; onRemove: () => void }) {
   const [summary, setSummary] = useState(attachment.analysis.summary?.value ?? "");
   return <div className="flex items-start gap-3 rounded-md border p-2">
     {attachment.previewUrl ? <img src={attachment.previewUrl} alt="Vista previa de referencia QA" className="h-12 w-12 rounded object-cover" /> : <Paperclip className="mt-1 h-5 w-5" />}
     <div className="min-w-0 flex-1"><p className="truncate font-medium">{attachment.filename}</p><p className="text-xs text-muted-foreground">{attachment.type} · {attachment.analysisStatus} · {attachment.confidence}</p>
+      {attachment.analysisStatus === "pending" && <Button type="button" size="sm" variant="outline" onClick={onAnalyze}>Analizar con IA</Button>}
+      {attachment.analysisError && <p className="text-destructive">{attachment.analysisError}</p>}
       <input aria-label={`Resumen de ${attachment.filename}`} value={summary} onChange={(event) => setSummary(event.target.value)} placeholder="Resultado resumido confirmado por QA" className="mt-1 w-full rounded border bg-background px-2 py-1 text-xs" />
     </div>
     <Button type="button" variant="ghost" size="icon" aria-label={`Eliminar ${attachment.filename}`} onClick={onRemove}><X className="h-4 w-4" /></Button>

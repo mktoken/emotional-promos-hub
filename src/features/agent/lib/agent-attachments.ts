@@ -1,7 +1,7 @@
 export type CommercialAttachmentType =
   | "product_photo" | "product_screenshot" | "inspiration_image" | "logo"
   | "artwork" | "competitor_quote" | "other_commercial_document";
-export type AttachmentStatus = "pending" | "analyzed" | "needs_review" | "rejected" | "error";
+export type AttachmentStatus = "pending" | "analyzing" | "completed" | "partial" | "unsupported" | "failed" | "analyzed" | "needs_review" | "rejected" | "error";
 export type ObservationCertainty = "OBSERVED" | "INFERRED" | "USER_CONFIRMED" | "UNKNOWN";
 export type Confidence = "high" | "medium" | "low";
 
@@ -62,11 +62,57 @@ export interface CommercialAttachment {
   linkedProductLineIds: string[];
   humanReviewRequired: boolean;
   previewUrl?: string;
+  analysisProvider?: "lovable-ai";
+  analysisModel?: string;
+  analysisError?: string;
+  visualAnalysis?: CommercialVisualAnalysis;
 }
 
 export interface AttachmentFileMetadata { name: string; type: string; size: number; }
 export const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
 export const ALLOWED_ATTACHMENT_MIME = ["image/jpeg", "image/png", "image/webp", "application/pdf"] as const;
+
+export interface CommercialVisualObservation {
+  value: string | number | string[] | null;
+  confidence: Confidence;
+  provenance: "attachment";
+  certainty: "observed" | "inferred" | "unknown";
+}
+
+export interface CommercialVisualAnalysis {
+  analysisStatus: "completed" | "partial" | "unsupported" | "failed";
+  attachmentType: CommercialAttachmentType | "unknown";
+  productObservation: Record<string, CommercialVisualObservation>;
+  logoObservation: Record<string, CommercialVisualObservation> & { technicalReviewRequired: true };
+  competitorObservation: Record<string, CommercialVisualObservation>;
+  confidence: Confidence;
+  provenance: "attachment";
+  humanReviewRequired: boolean;
+  candidateReference: CommercialVisualObservation;
+}
+
+export function applyVisualAnalysis(attachment: CommercialAttachment, visualAnalysis: CommercialVisualAnalysis): CommercialAttachment {
+  const product = visualAnalysis.productObservation;
+  const logo = visualAnalysis.logoObservation;
+  const competitor = visualAnalysis.competitorObservation;
+  return { ...attachment, analysisStatus: visualAnalysis.analysisStatus, analysisProvider: "lovable-ai", analysisModel: "google/gemini-3.7-flash", visualAnalysis,
+    confidence: visualAnalysis.confidence, humanReviewRequired: true,
+    analysis: { ...attachment.analysis,
+      summary: { value: visualAnalysis.analysisStatus === "completed" ? "Análisis visual estructurado completado" : "No pude identificar suficiente información de esta imagen", certainty: visualAnalysis.analysisStatus === "completed" ? "OBSERVED" : "UNKNOWN", confidence: visualAnalysis.confidence, source: "attachment", attachmentId: attachment.attachmentId, observedAt: new Date().toISOString() },
+      productReference: { category: product.apparentCategory as AttachmentObservation<string>, material: product.apparentMaterial as AttachmentObservation<string>, style: product.apparentStyle as AttachmentObservation<string>, colors: product.apparentColors as AttachmentObservation<string[]>, features: product.apparentFeatures as AttachmentObservation<string[]>, visibleText: product.visibleText as AttachmentObservation<string>, possibleUseCase: product.possibleUseCase as AttachmentObservation<string> },
+      logoArtwork: { dominantColors: logo.dominantColors as AttachmentObservation<string[]>, orientation: logo.orientation as AttachmentObservation<string>, background: logo.backgroundObservation as AttachmentObservation<string>, complexity: logo.apparentComplexity as AttachmentObservation<string>, technicalReviewRequired: true, printingReviewNotes: String((logo.reviewNotes as CommercialVisualObservation).value ?? "Revisión técnica requerida") },
+      competitorReference: { productName: competitor.visibleProductName as AttachmentObservation<string>, quantity: competitor.visibleQuantity as AttachmentObservation<number>, unitPriceMxn: competitor.visibleUnitPrice as AttachmentObservation<number>, totalMxn: competitor.visibleTotal as AttachmentObservation<number>, iva: competitor.ivaStatus as AttachmentObservation<string>, printing: competitor.printingStatus as AttachmentObservation<string>, shipping: competitor.shippingStatus as AttachmentObservation<string>, competitorName: competitor.visibleCompetitorName as AttachmentObservation<string>, comparability: "unknown", humanReviewRequired: true },
+    } };
+}
+
+export function isCommercialVisualAnalysis(value: unknown): value is CommercialVisualAnalysis {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Record<string, unknown>;
+  return ["completed", "partial", "unsupported", "failed"].includes(String(candidate.analysisStatus))
+    && candidate.provenance === "attachment"
+    && ["high", "medium", "low"].includes(String(candidate.confidence))
+    && Boolean(candidate.productObservation && candidate.logoObservation && candidate.competitorObservation);
+}
 
 export function validateAttachmentFile(file: AttachmentFileMetadata): string[] {
   const errors: string[] = [];

@@ -21,7 +21,7 @@ Reglas permanentes:
 |---|---|---|
 | P0 | Web operativa | Baseline usable; validación interactiva completa aún parcial |
 | P1 | Flujo comercial base | Implementado y validado en el caso QA; frescura y operación general requieren control |
-| P2 | Super Agente Web | Núcleo y ruta CRM QA implementados detrás de flag; E2E real y canal cliente final no comprobados |
+| P2 | Super Agente Web | QA interna y piloto Web cliente local/controlado E2E PASS; canal público y escritura CRM anónima no habilitados |
 | P3 | Sector Intelligence | Estructura definida; no cargada |
 | P4 | Company Intelligence | Estructura definida; no persistida como producto |
 | P5 | WhatsApp | Canal manual validado en QA; IA no construida |
@@ -136,7 +136,7 @@ Mantener el critical path usable, observar P0/P1, aplicar solo correcciones foca
 
 ### Fase 1 — Super Agente Web
 
-Solicitud simple, expediente estructurado, producto real, alternativas, CRM y cotización borrador con human handoff. `CHK-AI-SALES-1` cerró **PASS para el caso QA acotado**: el E2E runtime de 50 libretas quedó validado con BOOKRAFT, variante azul, cambio de 50 a 80, prospecto/oportunidad QA y cotización `COT-2026-00009` en `BORRADOR` sin emisión ni envío. Habilitar el canal Web para cliente final requiere un checkpoint separado.
+Solicitud simple, expediente estructurado, producto real, alternativas, CRM y cotización borrador con human handoff. `CHK-AI-SALES-1` cerró **PASS para el caso QA acotado** con `COT-2026-00009`; `CHK-AI-SALES-2` cerró **PASS del piloto Web cliente local/controlado** con BOOKRAFT Royal Blue, 50→80, prospecto QA reutilizado, oportunidad nueva y `COT-2026-00010` en `BORRADOR`, sin emisión ni envío. El piloto no está publicado ni permite escritura CRM anónima; un canal público para clientes reales requiere autorización posterior.
 
 ### Fase 2 — Multiproducto + CRM + cotización borrador
 
@@ -175,4 +175,4 @@ Son estimaciones de ingeniería basadas en la estructura actual, no compromisos 
 
 ## Próximo checkpoint
 
-`CHK-AI-SALES-1 — SUPER AGENTE WEB / SOLICITUD SIMPLE DE 50 LIBRETAS` quedó **CERRADO / PASS para el caso QA acotado** tras validar el E2E runtime con sesión CRM y ruta QA con flag. El siguiente checkpoint propuesto es definir las brechas del canal Web para cliente final, sin declararlo aún autorizado. Pricing, G4 e impresión permanecen fuera; el lanzamiento público sigue condicionado a un PASS posterior de `CHK-BRAND-WEB-1`.
+`CHK-AI-SALES-1` quedó **CERRADO / PASS para el caso QA acotado** y `CHK-AI-SALES-2` **CERRADO / PASS del piloto Web local controlado**, ambos sin exposición pública. El siguiente checkpoint debe decidirse formalmente después de revisar la evidencia; no se declara uno nuevo autorizado aquí. Pricing, G4 e impresión permanecen fuera; el lanzamiento público sigue condicionado a un PASS posterior de `CHK-BRAND-WEB-1`.

@@ -4,26 +4,21 @@ import { Loader2, Send, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCrmAuth } from "@/features/crm/hooks/useCrmAuth";
-import { loadRealProducts, recommendProducts } from "../lib/agent-tools";
+import { recommendProducts } from "../lib/agent-tools";
 import { commitQaOperation, QA_CONTACT } from "../lib/agent-crm";
-import { captureMessage, createOpportunityState, handoffReasons, nextQuestion,
-  findRequestedVariant, rejectProduct, selectProduct, selectedProduct, updateQuantity, type OpportunityState } from "../lib/agent-state";
+import { handoffReasons, selectedProduct } from "../lib/agent-state";
+import { advanceAgent, chooseAgentProduct, newAgentSession, type AgentSession } from "../lib/agent-workflow";
 
 const STORAGE_KEY = "pe-agent-qa-session-v1";
-interface Session { state: OpportunityState; messages: Array<{ role: "user" | "agent"; text: string }>; operationStarted?: boolean }
-const makeSession = (): Session => ({
-  state: createOpportunityState(crypto.randomUUID()),
-  messages: [{ role: "agent", text: "Cuéntame qué producto y cantidad necesitas. Buscaré opciones reales del catálogo." }],
-});
-function readSession(): Session {
+function readSession(): AgentSession {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY);
     if (raw) {
-      const parsed = JSON.parse(raw) as Session;
+      const parsed = JSON.parse(raw) as AgentSession;
       if (parsed.state?.schemaVersion === 1 && Array.isArray(parsed.messages)) return parsed;
     }
   } catch { /* sesión nueva */ }
-  return makeSession();
+  return newAgentSession();
 }
 
 export default function AgentQaPage() {
@@ -45,72 +40,20 @@ export default function AgentQaPage() {
   const state = session.state;
   const chosen = selectedProduct(state);
   const recommendations = recommendProducts(state.products);
-  const append = (current: Session, role: "user" | "agent", text: string): Session => ({
-    ...current, messages: [...current.messages, { role, text }],
-  });
-  const trace = (current: OpportunityState, tool: string, ok: boolean): OpportunityState => ({
-    ...current, trace: [...current.trace, { tool, ok, timestamp: new Date().toISOString() }],
-  });
-
-  async function search(current: Session) {
-    const interest = current.state.opportunity.productInterest;
-    const quantity = current.state.opportunity.quantity;
-    if (!interest || !quantity) return current;
-    try {
-      const products = await loadRealProducts(interest, quantity);
-      const next = { ...current, state: trace({ ...current.state, products }, "search_products", true) };
-      return append(next, "agent", products.length
-        ? `Encontré ${products.length} productos reales. Revisa precio y stock observados; selecciona una opción.`
-        : "No encontré productos compatibles con esa cantidad. Puedo dejar la búsqueda para revisión humana.");
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Error al consultar el catálogo.");
-      return append({ ...current, state: trace(current.state, "search_products", false) }, "agent",
-        "No pude consultar el catálogo. No recomendaré productos sin datos; intenta de nuevo o solicita revisión humana.");
-    }
-  }
-
   async function sendMessage() {
     const text = draft.trim();
     if (!text || busy || completed || session.operationStarted) return;
     setBusy(true); setError(null); setDraft("");
-    let current = append(session, "user", text);
-    const before = current.state;
-    const previousSelectedId = selectedProduct(before)?.id;
-    current = { ...current, state: captureMessage(before, text) };
-    const ordinal = text.match(/(?:la|opci[oó]n)\s*(primera|segunda|tercera|1|2|3)/i);
-    if (ordinal && recommendations.length) {
-      const index = ({ primera: 0, segunda: 1, tercera: 2, "1": 0, "2": 1, "3": 2 } as Record<string, number>)[ordinal[1].toLowerCase()];
-      if (recommendations[index]) current = { ...current, state: selectProduct(current.state, recommendations[index].product.id) };
-    }
-    if (/\b(esa no|otra opci[oó]n)\b/i.test(text) && chosen) current = { ...current, state: rejectProduct(current.state, chosen.id) };
-    const quantityChanged = current.state.opportunity.quantity !== before.opportunity.quantity && Boolean(before.opportunity.quantity);
-    if (quantityChanged) {
-      current = { ...current, state: updateQuantity(current.state, current.state.opportunity.quantity!) };
-    }
-    if (current.state.opportunity.productInterest && current.state.opportunity.quantity &&
-      (!current.state.products.length || current.state.opportunity.quantity !== before.opportunity.quantity)) {
-      current = await search(current);
-      if (previousSelectedId && current.state.products.some((p) => p.id === previousSelectedId)) {
-        current = { ...current, state: selectProduct(current.state, previousSelectedId) };
-      }
-    }
-    const requestedColor = current.state.opportunity.color;
-    const selected = selectedProduct(current.state);
-    if (selected && requestedColor && (quantityChanged || requestedColor !== before.opportunity.color || selected.id !== previousSelectedId)) {
-      const variant = findRequestedVariant(selected.variants, requestedColor);
-      current = { ...current, state: { ...current.state, products: current.state.products.map((p) => p.id === selected.id
-        ? { ...p, color: variant?.color ?? null, observedStock: variant?.stock ?? null,
-          stockStatus: variant?.stock === null || !variant ? "unknown" as const : "observed" as const } : p) } };
-      if (!variant) current = append(current, "agent", `No tengo evidencia de variante ${requestedColor} para ese producto.`);
-    }
-    current = append(current, "agent", nextQuestion(current.state));
-    setSession(current); setBusy(false);
+    try {
+      const result = await advanceAgent(session, text);
+      if (result.searchFailed) setError("No se pudo consultar el catálogo. Intenta de nuevo.");
+      setSession(result.session);
+    } finally { setBusy(false); }
   }
 
   async function select(id: string) {
     if (session.operationStarted) return;
-    const updated = selectProduct(state, id);
-    setSession(append({ ...session, state: updated }, "agent", nextQuestion(updated)));
+    setSession(chooseAgentProduct(session, id));
   }
 
   async function saveQa() {

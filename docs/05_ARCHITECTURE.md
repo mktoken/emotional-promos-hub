@@ -178,7 +178,7 @@ Los defaults de margen y corredor incluidos en el módulo son **SIMULATION DEFAU
 La arquitectura operativa prioriza el flujo existente y separa la evolución futura:
 
 - **P0/P1 operativo:** Home, catálogo, solicitud, CRM, cotización formal, PDF y seguimiento básico deben permanecer utilizables con la autoridad V2 actual.
-- **Super Agente:** `src/features/agent/` contiene un núcleo determinista y una ruta QA restringida en CRM. No existe todavía un agente autónomo completo ni E2E runtime validado.
+- **Super Agente:** `src/features/agent/` contiene un núcleo determinista compartido por la ruta QA restringida en CRM y el piloto Web cliente local; ambos casos simples tienen E2E runtime QA validado. No existe todavía un agente autónomo completo ni despliegue público del piloto.
 - **Tres capas:** Sector Intelligence, Company Intelligence y Opportunity Context; cada dato debe conservar fuente, fecha y confianza.
 - **Canales:** Web y WhatsApp comparten un único cerebro comercial; el canal no duplica reglas ni pricing.
 - **Seguridad comercial:** sin precios inventados, sin activar Conversion Pricing, sin automatizar impresión no comprobada y con human handoff en el nivel inicial.
@@ -191,4 +191,12 @@ La ruta `/crm/agente-qa` se registra únicamente en builds con `VITE_ENABLE_AGEN
 
 Las herramientas de lectura consultan `catalog_search_products_v2`, `productos_publicos` y `get_public_product_price_quote`. La UI muestra datos obtenidos, marca stock como observado o no comprobado y no usa `pricing-conversion-shadow.ts`. Las herramientas de escritura requieren rol comercial y contacto QA fijo; aprovechan `submit_public_quote_request` con UUID idempotente, guardan contexto en `cotizaciones_leads`, reutilizan o crean prospecto QA y preparan `formal_quotes` / `formal_quote_items` únicamente en `BORRADOR` y con precio autoritativo. El inicio de la escritura congela la sesión para permitir reintento con el mismo payload.
 
-Límites: todavía no hay servidor conversacional, publicación de la bandera, prueba de permisos/RLS runtime ni verificación de las escrituras QA. El perfil empresarial persistente, una UI de cliente final y E2E desktop/mobile permanecen pendientes. No se añadieron migraciones, Edge Functions, acciones automáticas de envío ni impresión.
+Límites del incremento original: no hay servidor conversacional, publicación de la bandera ni perfil empresarial persistente. Las escrituras QA, el E2E desktop/mobile y la UI piloto cliente local se validaron posteriormente en `CHK-AI-SALES-1-RUNTIME-1B` y `CHK-AI-SALES-2`; no equivalen a prueba general de permisos/RLS ni lanzamiento público. No se añadieron migraciones, Edge Functions, acciones automáticas de envío ni impresión.
+
+## CHK-AI-SALES-2 — adaptador Web piloto
+
+`agent-workflow.ts` concentra captura, búsqueda, selección, cambio de cantidad/variante y preguntas siguientes; `/crm/agente-qa` y `/agente-piloto` lo reutilizan junto con `agent-state.ts` y `agent-tools.ts`. El adaptador Web es local-only (`VITE_ENABLE_AGENT_WEB_PILOT=true` más hostname loopback), no indexable y sin enlace público; el build normal deja la ruta inactiva. Esto aísla el piloto, pero **no es un mecanismo de autorización**. El guard de escritura sigue exigiendo usuario y rol comercial en CRM y durante QA solo se admite contacto fijo controlado.
+
+Antes de preparar el borrador, el piloto reconsulta producto, variante y precio autoritativo. `commitQaOperation` crea la oportunidad idempotente, reutiliza o crea el prospecto QA y guarda en el contexto de la oportunidad el ID del prospecto asociado; después crea únicamente una cotización `BORRADOR` y human handoff. Esta asociación evita sustituir `crm_leads.web_lead_id` cuando el prospecto QA ya apuntaba a una oportunidad anterior. Los IDs CRM y las trazas no se muestran en la UI compradora; el estado conversacional local sobrevive a recarga, pero no guarda allí IDs CRM. No hay acciones de emisión, correo o WhatsApp en el piloto.
+
+Límites: no hay escritura CRM anónima ni backend conversacional público; el flujo de guardado es un piloto QA asistido por operador comercial. No se cambió RLS central, no se desplegó a producción y `CHK-BRAND-WEB-1` sigue siendo gate antes de lanzamiento público.

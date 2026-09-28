@@ -3,16 +3,16 @@ import type { Json } from "@/integrations/supabase/types";
 import { submitPublicQuoteRequest } from "@/features/quotes/lib/public-quote-request";
 import { calcQuoteTotals } from "@/features/crm/lib/formal-quote-calc";
 import { selectedProduct, handoffReasons, type OpportunityState } from "./agent-state";
+import { QA_CONTACT } from "./agent-qa-contact";
 
-export const QA_CONTACT = {
-  name: "QA Automatizado", company: "QA PromoHub - NO CONTACTAR",
-  email: "qa-promohub@example.com", phone: "5500000000",
-} as const;
+export { QA_CONTACT } from "./agent-qa-contact";
 
 export interface QaOperationResult { prospectId: string; opportunityId: string; draftQuoteId: string }
 
 async function assertQaStaff() {
-  if (import.meta.env.VITE_ENABLE_AGENT_QA !== "true") throw new Error("Feature flag de QA desactivada.");
+  const localPilot = import.meta.env.VITE_ENABLE_AGENT_WEB_PILOT === "true"
+    && typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
+  if (import.meta.env.VITE_ENABLE_AGENT_QA !== "true" && !localPilot) throw new Error("Feature flag de QA desactivada.");
   const { data: auth, error: authError } = await supabase.auth.getUser();
   if (authError || !auth.user) throw new Error("Se requiere sesión CRM.");
   const { data: roles, error } = await supabase.from("user_roles").select("role").eq("user_id", auth.user.id);
@@ -22,9 +22,10 @@ async function assertQaStaff() {
   return auth.user.id;
 }
 
-function safeQaContext(state: OpportunityState): Json {
+export function safeQaContext(state: OpportunityState, prospectId: string): Json {
   return {
     schemaVersion: state.schemaVersion, sessionId: state.sessionId,
+    crm: { prospectId },
     customer: { name: QA_CONTACT.name, email: QA_CONTACT.email, phone: QA_CONTACT.phone },
     company: { name: QA_CONTACT.company, intelligenceStatus: state.company.intelligenceStatus },
     opportunity: state.opportunity as unknown as Json,
@@ -51,7 +52,7 @@ export async function createOrUpdateOpportunity(state: OpportunityState): Promis
   return result.quoteId;
 }
 
-export async function saveOpportunityContext(opportunityId: string, state: OpportunityState): Promise<void> {
+export async function saveOpportunityContext(opportunityId: string, state: OpportunityState, prospectId: string): Promise<void> {
   await assertQaStaff();
   const { data: current, error: readError } = await supabase.from("cotizaciones_leads")
     .select("datos_cliente,public_request_id").eq("id", opportunityId).single();
@@ -60,7 +61,7 @@ export async function saveOpportunityContext(opportunityId: string, state: Oppor
     ? current.datos_cliente as Record<string, unknown> : {};
   if (currentCustomer.email !== QA_CONTACT.email) throw new Error("Destino no QA; actualización rechazada.");
   const { error } = await supabase.from("cotizaciones_leads").update({
-    datos_cliente: { ...currentCustomer, agent_qa_context: safeQaContext(state) } as Json,
+    datos_cliente: { ...currentCustomer, agent_qa_context: safeQaContext(state, prospectId) } as Json,
   }).eq("id", opportunityId);
   if (error) throw new Error(error.message);
 }
@@ -167,8 +168,8 @@ export async function requestHumanReview(prospectId: string, state: OpportunityS
 export async function commitQaOperation(state: OpportunityState): Promise<QaOperationResult> {
   await assertQaStaff();
   const opportunityId = await createOrUpdateOpportunity(state);
-  await saveOpportunityContext(opportunityId, state);
   const prospectId = await createOrUpdateProspect(opportunityId, state);
+  await saveOpportunityContext(opportunityId, state, prospectId);
   const draftQuoteId = await createDraftQuote(opportunityId, state);
   await addOrUpdateDraftQuoteItem(draftQuoteId, state);
   await requestHumanReview(prospectId, state);

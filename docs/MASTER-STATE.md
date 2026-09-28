@@ -33,9 +33,10 @@
 - `CHK-IMP-1`: **PAUSADO POR PRIORIDAD OPERATIVA**. El padre no queda cerrado ni abandonado. Permanecen pendientes la canasta competitiva real, parámetros definitivos, margen/piso definitivo, datos runtime, G4, impresión y cualquier validación productiva.
 - `CHK-OPS-1`: **CERRADO / PARCIAL**. La baseline operativa no mostró un P0 reproducible y el critical path puede utilizarse con guardrails; permanecen riesgos P1/P2 y validaciones runtime pendientes.
 - `CHK-AI-SALES-1`: **CERRADO / PASS para el caso QA acotado de 50 libretas**. `CHK-AI-SALES-1-RUNTIME-1B` validó sesión/rol CRM, catálogo y precio público V2 reales, multiturno 50→80, contexto persistido, prospecto/oportunidad QA y cotización formal `BORRADOR` `COT-2026-00009`, sin emitir ni enviar. El canal Web para cliente final y el Super Agente completo siguen fuera de este PASS.
-- Checkpoint actual: **CHK-AI-SALES-1-RUNTIME-1B CERRADO / PASS — E2E WEB QA CONTROLADO**.
-- Fase actual: **OPERACIÓN PRIMERO / QA RUNTIME DEL SUPER AGENTE VALIDADA**. El flujo público estable continúa sin cambios y Pricing V2 mantiene la autoridad pública.
-- Próximo paso autorizado: **revisar la evidencia y definir, antes de desarrollar, un checkpoint separado para las brechas del canal Web para cliente final**. No activar `VITE_ENABLE_AGENT_QA` en producción ni publicar el Super Agente QA; mantener Pricing de Conversión shadow-only, G4 e impresión fuera. `CHK-BRAND-WEB-1` continúa como gate previo al lanzamiento público.
+- `CHK-AI-SALES-2`: **CERRADO / PASS del piloto Web cliente local y controlado**. Reutiliza el núcleo de `CHK-AI-SALES-1`; el E2E real con identidad QA creó la oportunidad `3b080274-7e91-4a05-91ce-660132b1ee6f`, reutilizó el prospecto QA `dcddee4c-0796-4200-bc1f-206caa8d21e1` y creó `COT-2026-00010` en `BORRADOR`, sin emisión ni envío. No constituye lanzamiento público ni capacidad anónima de escritura CRM.
+- Checkpoint actual: **CHK-AI-SALES-2 CERRADO / PASS — PILOTO WEB CLIENTE VALIDADO**.
+- Fase actual: **OPERACIÓN PRIMERO / PILOTO WEB DEL SUPER AGENTE VALIDADO EN QA LOCAL**. El flujo público estable continúa sin cambios y Pricing V2 mantiene la autoridad pública.
+- Próximo paso autorizado: **revisar la evidencia de CHK-AI-SALES-2 y decidir formalmente el siguiente checkpoint antes de desarrollarlo**. No activar `VITE_ENABLE_AGENT_QA` ni `VITE_ENABLE_AGENT_WEB_PILOT` en producción, ni publicar el piloto; mantener Pricing de Conversión shadow-only, G4 e impresión fuera. `CHK-BRAND-WEB-1` continúa como gate previo al lanzamiento público.
 - Gate de lanzamiento público: **`CHK-BRAND-WEB-1 — REDEFINICIÓN DE MARCA, COMUNICACIÓN Y EXPERIENCIA WEB` PENDIENTE**. Es requisito previo para lanzamiento público, promoción activa, campañas de adquisición o escalamiento significativo de tráfico hacia `articulospromocionales.vip`; no bloquea la operación comercial controlada, la atención comercial controlada, `CHK-AI-SALES-1`, QA, CRM ni Pricing shadow.
 - Simulación marginal read-only precedente de CHK-IMP-1 (2026-09-27): el modelo por tramos conserva `below_minimum` debajo de `$1,500` y elimina descensos para subtotal base creciente; su análisis de total autoritativo, redondeo y escalas derivadas queda como antecedente comparativo. No se incorporó a la autoridad pública ni se activó en producción; el motor vigente de esta subfase es el simulador separado de Pricing de Conversión México.
 
@@ -51,6 +52,18 @@
 - El contexto QA sobrevivió a recarga y quedó en la oportunidad `e4b57510-b78b-4a02-b84c-c3cdb5c2d2ae`; prospecto QA `dcddee4c-0796-4200-bc1f-206caa8d21e1`; cotización `COT-2026-00009` (`1dc1146c-5a0a-4444-ad47-dc9cfa155105`) con una partida BOOKRAFT Royal Blue de 80. Consulta independiente: `status=BORRADOR`, `issued_at=null`, `sent_at=null`, total `$3,956.06 MXN`; personalización sujeta a revisión técnica y handoff humano. `COT-2026-00008` permaneció `EMITIDA` sin alteración.
 - QA visual desktop/mobile PASS; caso seguro de 1 libreta devolvió cero opciones sin crear CRM. Validación local: 107/107 tests PASS, `tsc --noEmit` PASS, lint dirigido PASS, builds normal/QA PASS y `git diff --check` PASS; warning de bundle grande no bloqueante.
 - **Límites vigentes:** no hay SKU ni timestamp de frescura de stock en los datos observados; la disponibilidad final y la impresión no están confirmadas. No se probó un rol autenticado no comercial, reintento real de idempotencia, `request_quote` ni falla de herramienta; Company Intelligence, Web público para cliente final y agente autónomo completo siguen fuera. Registros QA etiquetados se conservan como evidencia; no se hizo limpieza agresiva.
+
+### CHK-AI-SALES-2 — Piloto Web cliente controlado (2026-09-27)
+
+**Estado:** **CERRADO / PASS del piloto local QA**, no de un lanzamiento público ni de una escritura CRM anónima.
+
+- `/agente-piloto` usa `VITE_ENABLE_AGENT_WEB_PILOT=true` y solo se registra para `localhost`/`127.0.0.1`; con flag OFF devuelve 404. No hay enlace desde Home, catálogo o campañas; lleva `noindex,nofollow`. La ocultación de ruta no es autorización: escribir en CRM exige sesión y rol comercial existentes, además de identidad QA explícita.
+- `AgentQaPage` y el piloto comparten `agent-workflow.ts`, `agent-state.ts` y `agent-tools.ts`; el piloto muestra solo información comercial para comprador, no IDs de CRM, trazas, costos ni márgenes. Antes del guardado vuelve a consultar producto, variante y precio autoritativos. La sesión conversacional local sobrevive a recarga en la pestaña; no persiste allí IDs CRM.
+- E2E local controlado: solicitud de 50 libretas para evento corporativo, 12 productos reales, BOOKRAFT (`857df6f5-2abc-4a71-8840-c045262ea194`), cambio 50→80 y variante `Royal Blue`; precio V2 `priced` `$42.63 MXN` por pieza antes de IVA/personalización, stock observado de variante 6010, disponibilidad final por confirmar.
+- Tras captura explícita de `QA Automatizado` / `QA PromoHub - NO CONTACTAR` / `qa-promohub@example.com` / `5500000000`, la sesión comercial autorizada creó oportunidad `3b080274-7e91-4a05-91ce-660132b1ee6f`, reutilizó sin duplicar el prospecto `dcddee4c-0796-4200-bc1f-206caa8d21e1` y creó cotización `COT-2026-00010` (`63c79c02-79f8-459f-8dd1-7ff46b734f0c`). Conteos por identidad/sesión: 1 prospecto activo, 1 oportunidad y 1 cotización. El contexto de la nueva oportunidad enlaza el prospecto reutilizado; su `web_lead_id` histórico no fue sustituido.
+- Verificación independiente: `COT-2026-00010` `BORRADOR`, `issued_at=null`, `sent_at=null`, una partida BOOKRAFT Royal Blue de 80 a `$42.63`, subtotal `$3,410.40`, IVA `$545.66`, total `$3,956.06`; personalización por confirmar y siguiente acción revisión humana. No se pulsaron acciones de emisión, correo ni WhatsApp.
+- QA desktop/mobile local, recarga, bandera OFF y regresiones básicas de `/crm/agente-qa`, dashboard CRM y catálogo normal: PASS. Validación final: 113/113 tests, 22/22 dirigidos, types, lint dirigido, builds normal/piloto y `git diff --check` PASS. Warning de bundle grande no bloqueante.
+- **Límites:** el piloto no está desplegado ni ofrece escritura CRM pública/anónima; un operador comercial autenticado debe validar la solicitud QA. Stock final, impresión, permisos de rol no comercial, disponibilidad/errores de red en runtime y conversación multiproducto no quedan certificados. `CHK-BRAND-WEB-1` sigue siendo gate de lanzamiento público.
 
 ### CHK-IMP-1-SHADOW-1 — Pricing de Conversión México en shadow mode (2026-09-27)
 
@@ -226,7 +239,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 
 ## Siguiente paso autorizado
 
-`CHK-OPS-1` queda **CERRADO / PARCIAL** y `CHK-AI-SALES-1` queda **CERRADO / PASS para el caso QA acotado** tras el E2E runtime de 50 libretas; el canal Web público para cliente final sigue pendiente de definición separada. `CHK-IMP-1` permanece **PAUSADO POR PRIORIDAD OPERATIVA**. La siguiente acción es revisar la evidencia y decidir el siguiente checkpoint antes de desarrollar; no se deben cargar observaciones productivas, aplicar migraciones, ejecutar recompute/release/publish/sync, modificar G4, continuar impresión ni sustituir `calculate_product_price_v2`.
+`CHK-OPS-1` queda **CERRADO / PARCIAL**, `CHK-AI-SALES-1` **CERRADO / PASS para el caso QA acotado** y `CHK-AI-SALES-2` **CERRADO / PASS del piloto Web local controlado**; el canal Web público para cliente final sigue sin autorización de despliegue. `CHK-IMP-1` permanece **PAUSADO POR PRIORIDAD OPERATIVA**. La siguiente acción es revisar la evidencia y decidir formalmente el siguiente checkpoint antes de desarrollar; no se deben cargar observaciones productivas, aplicar migraciones, ejecutar recompute/release/publish/sync, modificar G4, continuar impresión ni sustituir `calculate_product_price_v2`.
 
 ## Gate de lanzamiento público
 
@@ -249,7 +262,7 @@ El cierre registrado aquí cubre la preparación, activación, alineación y QA 
 
 ## Siguiente checkpoint recomendado
 
-`CHK-AI-SALES-1` está **CERRADO / PASS para el caso QA acotado**. El siguiente checkpoint recomendado, aún sin autorización formal, debe definir las brechas del canal Web para cliente final; no se autoriza desplegar ni exponer el agente QA al público. `CHK-BRAND-WEB-1` sigue como gate obligatorio antes del lanzamiento público y no bloquea la operación controlada. Antes de activar Pricing debe definirse y validarse la canasta competitiva, aprobar parámetros y autorizar un checkpoint posterior.
+`CHK-AI-SALES-2` está **CERRADO / PASS del piloto Web local controlado**. El siguiente checkpoint todavía debe decidirse formalmente a partir de la evidencia; no se autoriza desplegar ni exponer el piloto al público, ni se ha validado escritura CRM anónima. `CHK-BRAND-WEB-1` sigue como gate obligatorio antes del lanzamiento público y no bloquea la operación controlada. Antes de activar Pricing debe definirse y validarse la canasta competitiva, aprobar parámetros y autorizar un checkpoint posterior.
 
 Hasta contar con ese checkpoint no se debe retirar el backend Legacy ni iniciar trabajo funcional fuera del alcance comercial.
 

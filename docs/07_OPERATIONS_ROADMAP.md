@@ -173,6 +173,16 @@ Son estimaciones de ingeniería basadas en la estructura actual, no compromisos 
 | Visión e imágenes | 1–2 semanas para captura/clasificación | 4–10 semanas |
 | WhatsApp con el mismo agente | 1–2 semanas para handoff controlado | 4–8 semanas |
 
+## CHK-AI-SALES-5 — Visión y documentos comerciales
+
+**Estado:** **CERRADO / PARCIAL**.
+
+Se implementó intake QA/local de imágenes y PDF comercial simple con validación de MIME, tamaño y nombre; preview, tipo, estado, confidence, provenance, UNKNOWN explícito, eliminación previa al guardado, asociación a una o varias product lines y handoff CRM. La capa no sustituye catálogo, pricing V2, stock ni revisión humana de impresión. No modifica Pricing Conversion, G4, producción, Lovable, Supabase, WhatsApp ni `CHK-BRAND-WEB-1`.
+
+Validaciones de repositorio: tests dirigidos PASS, suite completa PASS, TypeScript PASS, lint dirigido PASS, build normal PASS, build QA/piloto PASS y `git diff --check` PASS. El E2E visual exigido por el checkpoint —archivo visual QA real, procesamiento runtime de atributos, búsqueda real de similares, precio/stock y handoff— permanece **NO COMPROBADO** porque el repositorio no contiene un motor de visión ni fixture visual comercial adecuado. No se inventan resultados.
+
+El subcheckpoint propuesto es `CHK-AI-SALES-5-RUNTIME-VISION-1`, con alcance exclusivo de ejecutar ese E2E controlado y cerrar los casos de foto, logo y referencia competidora.
+
 ## Próximo checkpoint
 
-`CHK-AI-SALES-1`, `CHK-AI-SALES-2`, `CHK-AI-SALES-3` y `CHK-AI-SALES-4` quedan **CERRADOS / PASS** dentro de sus alcances QA controlados. No existe un siguiente checkpoint funcional autorizado automáticamente; debe definirse de forma expresa antes de iniciar otro frente. No se autoriza exponer ni desplegar el piloto al público. Pricing, G4, visión e impresión permanecen fuera; el lanzamiento público sigue condicionado a un PASS posterior de `CHK-BRAND-WEB-1`.
+`CHK-AI-SALES-1`, `CHK-AI-SALES-2`, `CHK-AI-SALES-3` y `CHK-AI-SALES-4` quedan **CERRADOS / PASS** dentro de sus alcances QA controlados. `CHK-AI-SALES-5` queda **CERRADO / PARCIAL** y su runtime visual requiere el subcheckpoint propuesto `CHK-AI-SALES-5-RUNTIME-VISION-1`. No se autoriza exponer ni desplegar el piloto al público. Pricing, G4, impresión y visión automática permanecen fuera de producción; el lanzamiento público sigue condicionado a un PASS posterior de `CHK-BRAND-WEB-1`.

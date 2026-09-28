@@ -80,6 +80,14 @@ Una operación lista para revisión humana debe incluir:
 - cotización borrador sin emisión automática;
 - preguntas abiertas, confianza por dato y human handoff.
 
+## CHK-AI-SALES-5 — attachments visuales
+
+El estado de oportunidad conserva `attachments[]` sin romper snapshots v1/v2. El intake local/QA valida MIME, extensión/nombre y límite de 10 MB; muestra preview, tipo, estado y permite eliminar antes de guardar. Los archivos pueden vincularse a una o varias líneas sin duplicación física.
+
+Las observaciones están versionadas con `attachmentId`, fecha, fuente, certeza y confianza. Fotos y screenshots pueden producir criterios de búsqueda, pero solo el catálogo real puede devolver producto, SKU, precio V2 y stock observado. Logos y artes siempre requieren revisión técnica; referencias competidoras son `COMPETITIVE CONTEXT` y no cambian precio, margen, descuento ni reglas. La capa no calcula impresión ni incorpora archivos a WhatsApp.
+
+**Estado:** implementación de intake, contratos, guardrails y handoff validada; procesamiento visual automático y E2E con archivo visual real aún no comprobados.
+
 ## Niveles de autonomía
 
 1. Informar.

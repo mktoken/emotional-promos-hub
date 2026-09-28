@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCrmAuth } from "@/features/crm/hooks/useCrmAuth";
 import { AgentProductLines } from "../components/AgentProductLines";
+import { AgentAttachments } from "../components/AgentAttachments";
 import { commitQaOperation, QA_CONTACT } from "../lib/agent-crm";
 import { selectedLineProduct, selectedProductLines } from "../lib/agent-state";
 import { advanceAgent, agentDraftFingerprint, migrateAgentSession, newAgentSession, type AgentSession } from "../lib/agent-workflow";
@@ -99,6 +100,7 @@ export default function AgentQaPage() {
           </Button>
         </form>
         <AgentProductLines session={session} setSession={setSession} disabled={busy || session.operationStarted} audience="advisor" />
+        <AgentAttachments session={session} setSession={setSession} disabled={busy || session.operationStarted} />
       </section>
       <aside className="space-y-4">
         <div className="space-y-2 rounded-xl border bg-card p-4 text-sm">

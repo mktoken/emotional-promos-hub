@@ -54,6 +54,9 @@ export function agentDraftFingerprint(state: OpportunityState): string {
       quantity: line.quantity, selectedProductId: line.selectedProductId, selectedVariant: line.selectedVariant,
       color: line.color, status: line.status, personalizationStatus: line.personalizationStatus,
       personalizationRequested: line.personalizationRequested, personalizationNotes: line.personalizationNotes ?? null })),
+    attachments: state.attachments.map((attachment) => ({ attachmentId: attachment.attachmentId, type: attachment.type,
+      filename: attachment.filename, analysisStatus: attachment.analysisStatus, linkedProductLineIds: attachment.linkedProductLineIds,
+      summary: attachment.analysis.summary?.value ?? null })),
   });
 }
 

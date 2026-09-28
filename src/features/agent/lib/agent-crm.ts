@@ -6,6 +6,7 @@ import { findRequestedVariant, handoffReasons, selectedLineProduct, selectedProd
   setActiveProductLine, type AgentProduct, type AgentProductLine, type OpportunityState } from "./agent-state";
 import { loadRealProductById } from "./agent-tools";
 import { composeCommercialContext, conceptualKit, crossSellSuggestions } from "./agent-intelligence";
+import { attachmentHandoff } from "./agent-attachments";
 import { QA_CONTACT } from "./agent-qa-contact";
 
 export { QA_CONTACT } from "./agent-qa-contact";
@@ -106,6 +107,7 @@ export function safeQaContext(state: OpportunityState, prospectId: string): Json
       conceptualKit: conceptualKit(intelligence), crossSell: intelligence.sector
         ? [...new Set(intelligence.sector.productAffinities.flatMap((item) => crossSellSuggestions(intelligence, item)))].slice(0, 6) : [],
     },
+    attachments: attachmentHandoff(state.attachments),
     opportunity: state.opportunity as unknown as Json,
     activeProductLineId: state.activeProductLineId,
     productLines: state.productLines.map(selectedSnapshot),

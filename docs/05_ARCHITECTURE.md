@@ -173,6 +173,14 @@ Para enterprise la salida ya puede exponer precio recomendado, benchmark, piso, 
 
 Los defaults de margen y corredor incluidos en el módulo son **SIMULATION DEFAULTS**, no una política comercial permanente. La activación requerirá una canasta competitiva mexicana curada, validación de parámetros, decisión de redondeo y un checkpoint posterior.
 
+## CHK-AI-SALES-5 — capa visual y documentos comerciales
+
+La capa visual del Super Agente usa `CommercialAttachment` en `src/features/agent/lib/agent-attachments.ts`. Soporta fotos, screenshots, inspiración, logos, arte, referencias competidoras y documentos comerciales simples. Cada archivo conserva tipo, nombre, MIME, tamaño, origen, fecha, estado de análisis, confianza, provenance, asociación a líneas y `humanReviewRequired`.
+
+El intake acepta únicamente JPEG, PNG, WebP y PDF de hasta 10 MB, valida nombre seguro y no ejecuta contenido. Las observaciones explícitas conservan `OBSERVED`, `INFERRED`, `USER_CONFIRMED` o `UNKNOWN`; no se derivan SKU, precio, stock, Pantone, técnica, tintas, tamaño ni costo de impresión desde una imagen. Los logos y artes permanecen con revisión técnica requerida; una referencia competidora queda como contexto no autoritativo y no altera pricing.
+
+La búsqueda visual solo produce criterios textuales derivados de atributos confirmados y debe delegar la búsqueda a catálogo real. El handoff CRM expone resumen, fuente, confianza y líneas vinculadas, junto con los guardrails de impresión, pricing y stock. La capacidad está integrada en `/crm/agente-qa` y `/agente-piloto` como intake QA/local; no existe todavía un motor de visión de píxeles ni un adaptador WhatsApp de archivos.
+
 ## Operación Primero y Super Agente
 
 La arquitectura operativa prioriza el flujo existente y separa la evolución futura:

@@ -1,0 +1,142 @@
+export type CommercialAttachmentType =
+  | "product_photo" | "product_screenshot" | "inspiration_image" | "logo"
+  | "artwork" | "competitor_quote" | "other_commercial_document";
+export type AttachmentStatus = "pending" | "analyzed" | "needs_review" | "rejected" | "error";
+export type ObservationCertainty = "OBSERVED" | "INFERRED" | "USER_CONFIRMED" | "UNKNOWN";
+export type Confidence = "high" | "medium" | "low";
+
+export interface AttachmentObservation<T = string> {
+  value: T | null;
+  certainty: ObservationCertainty;
+  confidence: Confidence;
+  source: "attachment" | "user";
+  attachmentId: string;
+  observedAt: string;
+}
+
+export interface AttachmentAnalysis {
+  summary?: AttachmentObservation<string>;
+  productReference?: {
+    category?: AttachmentObservation<string>;
+    material?: AttachmentObservation<string>;
+    style?: AttachmentObservation<string>;
+    colors?: AttachmentObservation<string[]>;
+    features?: AttachmentObservation<string[]>;
+    visibleText?: AttachmentObservation<string>;
+    possibleUseCase?: AttachmentObservation<string>;
+  };
+  logoArtwork?: {
+    dominantColors?: AttachmentObservation<string[]>;
+    orientation?: AttachmentObservation<string>;
+    background?: AttachmentObservation<string>;
+    complexity?: AttachmentObservation<string>;
+    technicalReviewRequired: true;
+    printingReviewNotes: string;
+  };
+  competitorReference?: {
+    productName?: AttachmentObservation<string>;
+    quantity?: AttachmentObservation<number>;
+    unitPriceMxn?: AttachmentObservation<number>;
+    totalMxn?: AttachmentObservation<number>;
+    iva?: AttachmentObservation<string>;
+    printing?: AttachmentObservation<string>;
+    shipping?: AttachmentObservation<string>;
+    competitorName?: AttachmentObservation<string>;
+    observedDate?: AttachmentObservation<string>;
+    comparability: "unknown" | "partial" | "comparable";
+    humanReviewRequired: true;
+  };
+}
+
+export interface CommercialAttachment {
+  attachmentId: string;
+  type: CommercialAttachmentType;
+  filename: string;
+  mimeType: string;
+  size: number;
+  source: "qa_upload" | "user_upload" | "crm";
+  uploadedAt: string;
+  analysisStatus: AttachmentStatus;
+  analysis: AttachmentAnalysis;
+  confidence: Confidence;
+  linkedProductLineIds: string[];
+  humanReviewRequired: boolean;
+  previewUrl?: string;
+}
+
+export interface AttachmentFileMetadata { name: string; type: string; size: number; }
+export const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
+export const ALLOWED_ATTACHMENT_MIME = ["image/jpeg", "image/png", "image/webp", "application/pdf"] as const;
+
+export function validateAttachmentFile(file: AttachmentFileMetadata): string[] {
+  const errors: string[] = [];
+  if (!ALLOWED_ATTACHMENT_MIME.includes(file.type as typeof ALLOWED_ATTACHMENT_MIME[number])) errors.push("Formato no soportado");
+  if (!Number.isInteger(file.size) || file.size <= 0 || file.size > MAX_ATTACHMENT_BYTES) errors.push("Tamaño fuera de límite");
+  if (!/^[\p{L}\p{N}._ -]{1,160}$/u.test(file.name) || file.name.includes("..")) errors.push("Nombre de archivo no seguro");
+  return errors;
+}
+
+const observation = <T,>(attachmentId: string, value: T | null, certainty: ObservationCertainty = "UNKNOWN", source: "attachment" | "user" = "attachment"): AttachmentObservation<T> => ({
+  value, certainty, confidence: certainty === "UNKNOWN" ? "low" : certainty === "USER_CONFIRMED" ? "high" : "medium",
+  source, attachmentId, observedAt: new Date().toISOString(),
+});
+
+export function createCommercialAttachment(file: AttachmentFileMetadata, type: CommercialAttachmentType, attachmentId = crypto.randomUUID()): CommercialAttachment {
+  const errors = validateAttachmentFile(file);
+  const needsReview = type === "logo" || type === "artwork" || type === "competitor_quote";
+  return {
+    attachmentId, type, filename: file.name, mimeType: file.type, size: file.size, source: "user_upload",
+    uploadedAt: new Date().toISOString(), analysisStatus: errors.length ? "rejected" : "pending",
+    analysis: { summary: observation(attachmentId, errors.length ? null : "Archivo recibido; análisis visual pendiente") },
+    confidence: "low", linkedProductLineIds: [], humanReviewRequired: needsReview || Boolean(errors.length),
+  };
+}
+
+/** Stores only explicit observations; it never derives SKU, price, stock, Pantone or printing cost. */
+export function recordAttachmentObservations(
+  attachment: CommercialAttachment,
+  input: { summary?: string; category?: string; material?: string; style?: string; colors?: string[]; possibleUseCase?: string; dominantColors?: string[]; orientation?: string; background?: string; competitor?: { productName?: string; quantity?: number; unitPriceMxn?: number; totalMxn?: number; iva?: string } },
+): CommercialAttachment {
+  const id = attachment.attachmentId;
+  const productReference = input.category || input.material || input.style || input.colors?.length || input.possibleUseCase ? {
+    category: input.category ? observation(id, input.category, "USER_CONFIRMED", "user") : undefined,
+    material: input.material ? observation(id, input.material, "USER_CONFIRMED", "user") : undefined,
+    style: input.style ? observation(id, input.style, "USER_CONFIRMED", "user") : undefined,
+    colors: input.colors?.length ? observation(id, input.colors, "USER_CONFIRMED", "user") : undefined,
+    possibleUseCase: input.possibleUseCase ? observation(id, input.possibleUseCase, "USER_CONFIRMED", "user") : undefined,
+  } : undefined;
+  const competitorReference = input.competitor ? {
+    productName: input.competitor.productName ? observation(id, input.competitor.productName, "OBSERVED") : undefined,
+    quantity: input.competitor.quantity === undefined ? undefined : observation(id, input.competitor.quantity, "OBSERVED"),
+    unitPriceMxn: input.competitor.unitPriceMxn === undefined ? undefined : observation(id, input.competitor.unitPriceMxn, "OBSERVED"),
+    totalMxn: input.competitor.totalMxn === undefined ? undefined : observation(id, input.competitor.totalMxn, "OBSERVED"),
+    iva: input.competitor.iva ? observation(id, input.competitor.iva, "OBSERVED") : observation(id, null),
+    comparability: "unknown" as const, humanReviewRequired: true as const,
+  } : undefined;
+  return { ...attachment, analysisStatus: "analyzed", confidence: "medium", humanReviewRequired: attachment.humanReviewRequired || Boolean(competitorReference),
+    analysis: { ...attachment.analysis, summary: input.summary ? observation(id, input.summary, "USER_CONFIRMED", "user") : attachment.analysis.summary, productReference, competitorReference,
+      logoArtwork: attachment.type === "logo" || attachment.type === "artwork" ? { dominantColors: input.dominantColors ? observation(id, input.dominantColors, "USER_CONFIRMED", "user") : observation(id, null), orientation: input.orientation ? observation(id, input.orientation, "USER_CONFIRMED", "user") : observation(id, null), background: input.background ? observation(id, input.background, "USER_CONFIRMED", "user") : observation(id, null), technicalReviewRequired: true, printingReviewNotes: "No certificar Pantone, técnica, tintas, tamaño ni costo; requiere revisión técnica." } : attachment.analysis.logoArtwork },
+  };
+}
+
+export function removeAttachment(attachments: CommercialAttachment[], attachmentId: string): CommercialAttachment[] {
+  return attachments.filter((attachment) => attachment.attachmentId !== attachmentId);
+}
+
+export function linkAttachmentToLines(attachment: CommercialAttachment, lineIds: string[]): CommercialAttachment {
+  return { ...attachment, linkedProductLineIds: [...new Set(lineIds)] };
+}
+
+export function buildVisualSearchCriteria(attachment: CommercialAttachment): string | null {
+  const reference = attachment.analysis.productReference;
+  const values = [reference?.category?.value, reference?.material?.value, reference?.style?.value, reference?.colors?.value?.join(" ")].filter(Boolean);
+  return values.length ? values.join(" ") : null;
+}
+
+export function attachmentHandoff(attachments: CommercialAttachment[]) {
+  return attachments.map(({ attachmentId, type, filename, analysisStatus, confidence, linkedProductLineIds, humanReviewRequired, analysis }) => ({
+    attachmentId, type, filename, analysisStatus, confidence, linkedProductLineIds, humanReviewRequired,
+    summary: analysis.summary?.value ?? null, visualSearchCriteria: buildVisualSearchCriteria({ attachmentId, type, filename, analysisStatus, confidence, linkedProductLineIds, humanReviewRequired, analysis, mimeType: "", size: 0, source: "crm", uploadedAt: "" }),
+    printing: "POR CONFIRMAR", pricingAuthority: "No cambia pricing automáticamente", stockAuthority: "No se infiere desde imagen",
+  }));
+}

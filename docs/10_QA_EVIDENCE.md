@@ -1532,6 +1532,19 @@ No se considera P0 la ausencia del Super Agente, Pricing shadow, benchmark, impr
 
 `CHK-OPS-1: CERRADO / PARCIAL`. La operación comercial puede comenzar con el flujo estable y revisión humana de los puntos P1. El siguiente checkpoint definido es `CHK-AI-SALES-1 — SUPER AGENTE WEB / SOLICITUD SIMPLE DE 50 LIBRETAS`; no se implementó en esta ejecución.
 
+## CHK-AI-SALES-5 — Visión y documentos comerciales (2026-09-28)
+
+**Estado:** **CERRADO / PARCIAL**. Se validó la implementación de intake y guardrails; no se declara PASS porque falta el E2E runtime visual requerido.
+
+- `CommercialAttachment` conserva tipo, nombre, MIME, tamaño, origen, fecha, estado, análisis estructurado, confianza, provenance, asociación a líneas y revisión humana.
+- Se aceptan JPEG, PNG, WebP y PDF hasta 10 MB; se rechazan MIME no permitido, tamaño inválido y nombres inseguros. El archivo no se ejecuta ni se usa como identidad.
+- Se soportan foto/screenshot, inspiración, logo, arte, referencia competidora y documento comercial simple. El componente `AgentAttachments` quedó integrado en QA CRM y piloto local con preview, tipo, estado y eliminación antes de guardar.
+- Las observaciones explícitas pueden quedar `OBSERVED`, `INFERRED`, `USER_CONFIRMED` o `UNKNOWN`; el handoff CRM incluye resumen, criterios visuales, líneas y guardrails. No se inventan SKU, precio, stock, IVA, Pantone, técnica, tintas, tamaño, impresión ni costo.
+- Una referencia competidora no modifica automáticamente pricing, margen o descuentos. Un logo/arte conserva `technicalReviewRequired=true` y `PRINTING / PERSONALIZATION: POR CONFIRMAR`.
+- Tests dirigidos: PASS; suite completa: PASS; TypeScript: PASS; lint dirigido: PASS; build normal: PASS; build QA/piloto: PASS; `git diff --check`: PASS. El warning de bundle grande continúa no bloqueante.
+
+**No comprobado:** archivo visual comercial QA real procesado por un motor de visión; extracción automática de atributos; búsqueda runtime de similares derivada de esos atributos; candidato real con precio/stock y handoff E2E; casos runtime de logo y screenshot competidor. Por ello el siguiente alcance requiere `CHK-AI-SALES-5-RUNTIME-VISION-1` y no habilita producción ni WhatsApp.
+
 ## CHK-AI-SALES-1 — Super Agente Web QA
 
 **Fecha:** 2026-09-27. **Estado:** **CERRADO / PASS del caso QA acotado** tras `CHK-AI-SALES-1-RUNTIME-1B`; no equivale a lanzamiento del canal Web para cliente final.

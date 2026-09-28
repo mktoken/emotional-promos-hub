@@ -9,6 +9,7 @@ import { advanceAgent, agentDraftFingerprint, migrateAgentSession, newAgentSessi
 import { selectedLineProduct, selectedProductLines } from "../lib/agent-state";
 import { createMinimalCompanyProfile, findSectorPlaybook, loadKnownCompanyProfile, toSectorContext } from "../lib/agent-intelligence";
 import { AgentProductLines } from "../components/AgentProductLines";
+import { AgentAttachments } from "../components/AgentAttachments";
 
 const STORAGE_KEY = "pe-agent-web-pilot-v1";
 const welcome = "¿Qué producto promocional necesitas y para cuántas personas? Buscaré opciones reales del catálogo y conservaré cada producto por separado.";
@@ -119,6 +120,7 @@ export default function AgentPilotPage() {
             </Button>
           </form>
           <AgentProductLines session={session} setSession={setSession} disabled={busy || session.operationStarted} audience="buyer" />
+          <AgentAttachments session={session} setSession={setSession} disabled={busy || session.operationStarted} />
         </section>
         <aside className="space-y-4">
           <div className="space-y-2 rounded-xl border bg-card p-4 text-sm">

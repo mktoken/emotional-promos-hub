@@ -1,5 +1,6 @@
 import type { PublicPriceQuote } from "@/features/catalog/lib/public-product-price";
 import type { CompanyProfile, SectorPlaybook } from "./agent-intelligence";
+import type { CommercialAttachment } from "./agent-attachments";
 
 export interface SectorContext {
   sector?: string; subsector?: string; useCases?: string[]; audiences?: string[];
@@ -55,6 +56,7 @@ export interface OpportunityState {
   /** Structured layers remain separate from the live opportunity context. */
   sectorPlaybook?: SectorPlaybook;
   companyProfile?: CompanyProfile;
+  attachments: CommercialAttachment[];
   productLines: AgentProductLine[];
   activeProductLineId: string | null;
   /** Legacy current-line candidate projection; new consumers use productLines. */
@@ -70,7 +72,7 @@ export interface OpportunityState {
 
 export const createOpportunityState = (sessionId: string): OpportunityState => ({
   schemaVersion: 2, sessionId, customer: {}, company: { intelligenceStatus: "not_requested" },
-  opportunity: {}, productLines: [], activeProductLineId: null, products: [],
+  opportunity: {}, productLines: [], activeProductLineId: null, products: [], attachments: [],
   art: { logoReceived: false, technicalReviewRequired: false },
   commercial: { humanReviewReasons: [] }, crm: {}, trace: [],
 });
@@ -359,7 +361,9 @@ export function captureMessage(state: OpportunityState, message: string): Opport
 export function migrateOpportunityState(raw: unknown): OpportunityState | null {
   if (!raw || typeof raw !== "object") return null;
   const state = raw as Record<string, unknown>;
-  if (state.schemaVersion === 2 && Array.isArray(state.productLines)) return state as unknown as OpportunityState;
+  if (state.schemaVersion === 2 && Array.isArray(state.productLines)) {
+    return { ...state, attachments: Array.isArray(state.attachments) ? state.attachments : [] } as unknown as OpportunityState;
+  }
   if (state.schemaVersion !== 1 || !state.opportunity || typeof state.opportunity !== "object") return null;
   const legacyOpportunity = state.opportunity as OpportunityState["opportunity"];
   const migrated = createOpportunityState(typeof state.sessionId === "string" ? state.sessionId : crypto.randomUUID());

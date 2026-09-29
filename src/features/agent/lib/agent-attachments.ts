@@ -80,7 +80,7 @@ export const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
 export const ALLOWED_ATTACHMENT_MIME = ["image/jpeg", "image/png", "image/webp", "application/pdf"] as const;
 
 export interface CommercialVisualObservation {
-  value: string | number | string[] | null;
+  value: string | number | boolean | string[] | null;
   confidence: Confidence;
   provenance: "attachment";
   certainty: "observed" | "inferred" | "unknown";

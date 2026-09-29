@@ -26,6 +26,20 @@ const detectedElementsShape = {
   notes: "Fotografía de producto en fondo blanco sin texto ni marca visible.",
 };
 
+const productShape = {
+  media_type: "product_photo",
+  product: {
+    title: null,
+    description: "Taza de cerámica blanca con interior, asa y cuchara a juego en color rojo.",
+    category: { value: "Tazas / Artículos para el hogar", certainty: "high", confidence: "high" },
+    colors: [{ name: "Blanco", role: "exterior" }, { name: "Rojo", role: "interior / asa / cuchara" }],
+    materials: [{ value: "Cerámica", certainty: "high", confidence: "high" }],
+    components: ["Taza con asa perforada para soporte", "Cuchara de cerámica"],
+    branding: { has_logo: false, text: null },
+  },
+  text_detected: [],
+};
+
 describe("Gemini → Edge Function → cliente → criterios de catálogo", () => {
   it("preserves the observed product signals through the HTTP JSON contract", () => {
     const edgeResponse = normalizeAnalysis(realGeminiShape);
@@ -56,6 +70,51 @@ describe("Gemini → Edge Function → cliente → criterios de catálogo", () =
       productObservation: { visibleText: { value: null } }, brandingDetected: { value: null } });
     expect(normalized?.searchTerms).toContain("taza con cuchara");
     expect(buildSearchCriteriaFromVisualAnalysis(normalized!)).toContain("taza con cuchara");
+  });
+
+  it("normalizes the exact product/media_type shape into the same commercial contract", () => {
+    const normalized = normalizeCommercialVisionPayload(JSON.parse(JSON.stringify(normalizeAnalysis(productShape))));
+    expect(isCommercialVisualAnalysis(normalized)).toBe(true);
+    expect(normalized).toMatchObject({ attachmentType: "product_photo", productName: null,
+      description: productShape.product.description, normalizedColors: ["blanco", "rojo"],
+      primaryMaterial: { value: "cerámica", confidence: "high" },
+      brandingDetected: { value: false }, commercialCategory: { value: "taza", confidence: "high", certainty: "inferred" },
+      productObservation: { visibleText: { value: null } }, queryReady: true });
+    expect(normalized?.keyFeatures).toContain("cuchara de cerámica");
+    expect(normalized?.searchTerms).toContain("taza con cuchara de cerámica");
+    expect(buildSearchCriteriaFromVisualAnalysis(normalized!)).toContain("taza con cuchara de cerámica");
+  });
+
+  it("keeps compatible product and detected_elements sources deduplicated", () => {
+    const normalized = normalizeAnalysis({ ...productShape, detected_elements: detectedElementsShape.detected_elements });
+    expect(normalized).toMatchObject({ commercialCategory: { value: "taza" }, normalizedColors: ["blanco", "rojo"], queryReady: true });
+    expect(new Set(normalized.normalizedColors).size).toBe(normalized.normalizedColors.length);
+    expect(new Set(normalized.keyFeatures).size).toBe(normalized.keyFeatures.length);
+    expect(new Set(normalized.searchTerms).size).toBe(normalized.searchTerms.length);
+  });
+
+  it("vetoes search when product contradicts another shape despite a spoon feature", () => {
+    const normalized = normalizeCommercialVisionPayload(normalizeAnalysis({ ...productShape, extracted_data: {
+      product_name: { value: "Termo de acero", confidence: "high" }, description: "Termo metálico", materials: ["acero"],
+    } }));
+    expect(normalized).toMatchObject({ analysisStatus: "partial", commercialCategory: { value: null }, searchTerms: [], queryReady: false });
+    expect(normalized?.keyFeatures?.some((feature) => feature.includes("cuchara"))).toBe(true);
+    expect(buildSearchCriteriaFromVisualAnalysis(normalized!)).toBeNull();
+  });
+
+  it("does not invent a category or query from an incomplete product shape", () => {
+    const normalized = normalizeCommercialVisionPayload(normalizeAnalysis({ media_type: "product_photo", product: {
+      title: null, description: null, category: null, colors: [{ name: "Rojo" }], components: [],
+    } }));
+    expect(normalized).toMatchObject({ attachmentType: "product_photo", commercialCategory: { value: null }, queryReady: false });
+    expect(buildSearchCriteriaFromVisualAnalysis(normalized!)).toBeNull();
+  });
+
+  it("preserves observed text without promoting model-supplied authority fields", () => {
+    const normalized = normalizeAnalysis({ ...productShape, text_detected: ["MARCA QA"], sku: "invented",
+      product_id: "invented", price: 10, stock: 100, product: { ...productShape.product, sku: "invented", price: 10 } });
+    expect(normalized.productObservation.visibleText).toMatchObject({ value: ["MARCA QA"] });
+    expect(JSON.stringify(normalized)).not.toMatch(/\b(sku|product_id|price|stock)\b/i);
   });
 
   it("derives a category from a clear product description when components are absent", () => {

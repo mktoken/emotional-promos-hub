@@ -31,7 +31,7 @@ const safeObservation = (value: unknown) => {
 
 function deriveCategory(text: string) {
   const normalized = text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
-  if (/\b(taza|mug)\b/.test(normalized)) return "taza";
+  if (/\b(tazas?|mugs?)\b/.test(normalized)) return "taza";
   if (/\b(termo|cilindro|botella)\b/.test(normalized)) return normalized.includes("botella") ? "botella" : "termo";
   if (/\b(libreta|cuaderno|notebook)\b/.test(normalized)) return "libreta";
   if (/\b(mochila|backpack)\b/.test(normalized)) return "mochila";
@@ -49,15 +49,16 @@ interface ProductSignals {
   visibleText: string[];
   brandingDetected: boolean | string | null;
   category: string | null;
+  categoryConfidence: Confidence;
   candidateConfidence: Confidence;
   materialConfidence: Confidence;
   ambiguous: boolean;
 }
 
 const emptySignals = (): ProductSignals => ({ productName: null, description: null, colors: [], materials: [], accessories: [],
-  visibleText: [], brandingDetected: null, category: null, candidateConfidence: "low", materialConfidence: "low", ambiguous: false });
+  visibleText: [], brandingDetected: null, category: null, categoryConfidence: "low", candidateConfidence: "low", materialConfidence: "low", ambiguous: false });
 const lower = (items: string[]) => [...new Set(items.map((item) => item.toLowerCase()))];
-const visibleTextOf = (raw: RecordValue) => listText(raw.extracted_text, "text");
+const visibleTextOf = (raw: RecordValue) => [...new Set([...listText(raw.extracted_text, "text"), ...listText(raw.text_detected, "text")])];
 
 function fromExtractedData(raw: RecordValue): ProductSignals | null {
   const extracted = asRecord(raw.extracted_data);
@@ -73,6 +74,7 @@ function fromExtractedData(raw: RecordValue): ProductSignals | null {
   return { productName, description, colors: lower(listText(extracted.colors, "name")),
     materials: lower(listText(extracted.materials, "value")), accessories: lower(listText(extracted.included_accessories, "item")),
     visibleText: visibleTextOf(raw), brandingDetected, category: ambiguous ? null : nameCategory ?? descriptionCategory,
+    categoryConfidence: "low",
     candidateConfidence: confidenceOf(asRecord(extracted.product_name)?.confidence ?? asRecord(extracted.description)?.confidence),
     materialConfidence: confidenceOf(asRecord(Array.isArray(extracted.materials) ? extracted.materials[0] : null)?.confidence), ambiguous };
 }
@@ -92,7 +94,30 @@ function fromDetectedElements(raw: RecordValue): ProductSignals | null {
   return { ...emptySignals(), description, colors: lower(listText(product.colors, "name")),
     materials: lower(listText(product.materials, "value")),
     accessories: componentCategories.length ? components.filter((item) => !deriveCategory(item)) : [], visibleText: visibleTextOf(raw),
-    category, candidateConfidence: confidenceOf(product.confidence), ambiguous };
+    category, categoryConfidence: "low", candidateConfidence: confidenceOf(product.confidence), ambiguous };
+}
+
+function fromProduct(raw: RecordValue): ProductSignals | null {
+  const product = asRecord(raw.product);
+  if (!product) return null;
+  const productName = knownText(product.title);
+  const description = knownText(product.description);
+  const categoryField = asRecord(product.category);
+  const explicitCategory = deriveCategory(knownText(product.category) ?? "");
+  const categories = [...new Set([explicitCategory, productName, description,
+    ...listText(product.components, "value")].map((item) => deriveCategory(item ?? "")).filter((item): item is NonNullable<ReturnType<typeof deriveCategory>> => item !== null))];
+  const branding = asRecord(product.branding);
+  const brandText = knownText(branding?.text);
+  const hasLogo = branding?.has_logo;
+  const brandingDetected = typeof hasLogo === "boolean" ? hasLogo : brandText;
+  return { productName, description, colors: lower(listText(product.colors, "name")),
+    materials: lower(listText(product.materials, "value")),
+    accessories: lower(listText(product.components, "value")).filter((item) => !deriveCategory(item)),
+    visibleText: [...new Set([...visibleTextOf(raw), ...(brandText ? [brandText] : [])])], brandingDetected,
+    category: categories.length === 1 ? categories[0] : null,
+    categoryConfidence: explicitCategory ? confidenceOf(categoryField?.confidence) : "low",
+    candidateConfidence: "low", materialConfidence: confidenceOf(asRecord(Array.isArray(product.materials) ? product.materials[0] : null)?.confidence),
+    ambiguous: categories.length > 1 || (hasLogo === false && Boolean(brandText)) };
 }
 
 const signalCount = (signals: ProductSignals) => Number(Boolean(signals.productName)) + Number(Boolean(signals.description))
@@ -109,11 +134,12 @@ export function normalizeAnalysis(raw: unknown) {
   const value = asRecord(raw) ?? {};
   const extracted = fromExtractedData(value);
   const detected = fromDetectedElements(value);
-  // Prefer the richer valid source; extracted_data wins ties. Never merge conflicting observations.
-  const selected = extracted && detected ? signalCount(extracted) >= signalCount(detected) ? extracted : detected
-    : extracted ?? detected ?? emptySignals();
-  const ambiguous = selected.ambiguous || Boolean(extracted?.ambiguous || detected?.ambiguous)
-    || Boolean(extracted && detected && conflicting(extracted, detected));
+  const product = fromProduct(value);
+  // Prefer the richer valid source; earlier adapters win ties. Never merge conflicting observations.
+  const sources = [extracted, detected, product].filter((source): source is ProductSignals => source !== null);
+  const selected = sources.reduce((best, source) => signalCount(source) > signalCount(best) ? source : best, emptySignals());
+  const ambiguous = sources.some((source) => source.ambiguous)
+    || sources.some((source, index) => sources.slice(index + 1).some((other) => conflicting(source, other)));
   const { productName, description, colors, materials, accessories, visibleText, brandingDetected } = selected;
   const category = ambiguous ? null : selected.category;
   const searchTerms = ambiguous ? [] : [...new Set([
@@ -129,18 +155,20 @@ export function normalizeAnalysis(raw: unknown) {
   const productObservation = asRecord(value.productObservation);
   const logoObservation = asRecord(value.logoObservation);
   const competitorObservation = asRecord(value.competitorObservation);
+  const attachmentType = [value.attachmentType, value.document_type, value.media_type]
+    .find((type) => ["product_photo", "product_screenshot", "logo", "artwork", "competitor_quote"].includes(String(type))) ?? "unknown";
   return { analysisStatus: ambiguous ? "partial" : ["completed", "partial", "unsupported", "failed"].includes(String(value.analysisStatus)) ? value.analysisStatus : "partial",
-    attachmentType: ["product_photo", "product_screenshot", "logo", "artwork", "competitor_quote", "unknown"].includes(String(value.attachmentType)) ? value.attachmentType : value.document_type === "product_photo" ? "product_photo" : "unknown",
+    attachmentType,
     productName, description,
     productObservation: Object.fromEntries(productKeys.map((key) => [key,
-      key === "apparentCategory" ? observation(category, "inferred") : key === "apparentMaterial" ? observation(materials[0], "inferred")
+      key === "apparentCategory" ? observation(category, "inferred", selected.categoryConfidence) : key === "apparentMaterial" ? observation(materials[0], "inferred")
         : key === "apparentColors" ? observation(colors) : key === "apparentFeatures" ? observation(accessories)
           : key === "visibleText" ? observation(visibleText) : safeObservation(productObservation?.[key])])),
     logoObservation: { ...Object.fromEntries(logoKeys.map((key) => [key, safeObservation(logoObservation?.[key])])), technicalReviewRequired: true },
     competitorObservation: Object.fromEntries(competitorKeys.map((key) => [key, safeObservation(competitorObservation?.[key])])),
     confidence: confidenceOf(value.confidence), provenance: "attachment", humanReviewRequired: true,
     candidateReference: observation(productName || description, "observed", selected.candidateConfidence),
-    commercialCategory: observation(category, "inferred"), searchTerms, normalizedColors: colors,
+    commercialCategory: observation(category, "inferred", selected.categoryConfidence), searchTerms, normalizedColors: colors,
     primaryMaterial: observation(materials[0], "inferred", selected.materialConfidence), keyFeatures: accessories,
     brandingDetected: observation(brandingDetected), usableSignals, queryReady: Boolean(!ambiguous && category && usableSignals >= 2) };
 }

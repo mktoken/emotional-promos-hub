@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { isCommercialVisualAnalysis, type CommercialAttachment, type CommercialVisualAnalysis } from "./agent-attachments";
+import { isCommercialVisualAnalysis, normalizeCommercialVisionPayload, type CommercialAttachment, type CommercialVisualAnalysis } from "./agent-attachments";
 
 export interface CommercialVisionProcessorInput {
   attachment: Pick<CommercialAttachment, "attachmentId" | "type" | "filename" | "mimeType" | "size">;
@@ -15,8 +15,9 @@ export const lovableCommercialVisionProcessor: CommercialVisionProcessor = {
   async analyzeCommercialImage(input) {
     const { data, error } = await supabase.functions.invoke("analyze-commercial-image", { body: input });
     if (error) throw new Error(error.message || "No fue posible analizar la imagen.");
-    if (!isCommercialVisualAnalysis(data)) throw new Error("La respuesta visual no cumple el contrato estructurado.");
-    return data;
+    const normalized = normalizeCommercialVisionPayload(data);
+    if (!normalized || !isCommercialVisualAnalysis(normalized)) throw new Error("La respuesta visual no cumple el contrato estructurado.");
+    return normalized;
   },
 };
 

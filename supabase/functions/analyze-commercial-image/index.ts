@@ -18,18 +18,54 @@ function headers(request: Request) {
 }
 function reply(request: Request, status: number, body: unknown) { return new Response(JSON.stringify(body), { status, headers: headers(request) }); }
 function unknownObservation() { return { value: null, confidence: "low", provenance: "attachment", certainty: "unknown" }; }
-function safeObservation(value: unknown) { return value && typeof value === "object" ? value : unknownObservation(); }
+function observation(value: unknown, confidence: "high" | "medium" | "low" = "low", certainty: "observed" | "inferred" | "unknown" = "observed") {
+  if (value === null || value === undefined || value === "" || (Array.isArray(value) && value.length === 0)) return unknownObservation();
+  return { value, confidence, provenance: "attachment", certainty };
+}
+function safeObservation(value: unknown) { return value && typeof value === "object" && "value" in value ? value : unknownObservation(); }
+function strings(value: unknown) { return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0).map((item) => item.trim()) : []; }
+function deriveCategory(text: string) {
+  const normalized = text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+  if (/\b(taza|mug)\b/.test(normalized)) return "taza";
+  if (/\b(termo|cilindro|botella)\b/.test(normalized)) return normalized.includes("botella") ? "botella" : "termo";
+  if (/\b(libreta|cuaderno|notebook)\b/.test(normalized)) return "libreta";
+  if (/\b(mochila|backpack)\b/.test(normalized)) return "mochila";
+  if (/\b(bolsa|tote)\b/.test(normalized)) return "bolsa";
+  if (/\b(pluma|boligrafo|lapicero)\b/.test(normalized)) return "pluma";
+  return null;
+}
 function normalizeAnalysis(raw: unknown) {
   const value = raw && typeof raw === "object" ? raw as Record<string, any> : {};
+  const extracted = value.extracted_data && typeof value.extracted_data === "object" ? value.extracted_data as Record<string, unknown> : {};
+  const productName = typeof extracted.product_name === "string" ? extracted.product_name : "";
+  const description = typeof extracted.description === "string" ? extracted.description : "";
+  const colors = strings(extracted.colors);
+  const materials = strings(extracted.materials);
+  const accessories = strings(extracted.included_accessories);
+  const branding = extracted.branding_or_print;
+  const brandingValue = branding && typeof branding === "object" ? (branding as Record<string, unknown>).value : branding;
+  const category = deriveCategory(`${productName} ${description}`);
+  const searchTerms = [...new Set([
+    category,
+    accessories.length ? `${category ?? productName} con ${accessories.join(" ")}` : null,
+    materials.length && category ? `${category} ${materials[0]}` : null,
+    colors.length && category ? `${category} ${colors.join(" ")}` : null,
+  ].filter((item): item is string => Boolean(item)))];
+  const usableSignals = Number(Boolean(category)) + Number(Boolean(productName || description)) + Number(Boolean(colors.length)) + Number(Boolean(materials.length)) + Number(Boolean(accessories.length));
   const productKeys = ["apparentCategory", "apparentMaterial", "apparentStyle", "apparentColors", "apparentFeatures", "visibleBrand", "visibleText", "possibleUseCase"];
   const logoKeys = ["dominantColors", "orientation", "backgroundObservation", "apparentComplexity", "reviewNotes"];
   const competitorKeys = ["visibleProductName", "visibleQuantity", "visibleUnitPrice", "visibleTotal", "ivaStatus", "printingStatus", "shippingStatus", "visibleCompetitorName"];
   return { analysisStatus: ["completed", "partial", "unsupported", "failed"].includes(value.analysisStatus) ? value.analysisStatus : "partial",
     attachmentType: ["product_photo", "product_screenshot", "logo", "artwork", "competitor_quote", "unknown"].includes(value.attachmentType) ? value.attachmentType : "unknown",
-    productObservation: Object.fromEntries(productKeys.map((key) => [key, safeObservation(value.productObservation?.[key])])),
+    productObservation: Object.fromEntries(productKeys.map((key) => [key,
+      key === "apparentCategory" ? observation(category) : key === "apparentMaterial" ? observation(materials[0])
+        : key === "apparentColors" ? observation(colors) : key === "apparentFeatures" ? observation(accessories)
+          : key === "visibleText" ? observation(productName || description) : safeObservation(value.productObservation?.[key])])),
     logoObservation: { ...Object.fromEntries(logoKeys.map((key) => [key, safeObservation(value.logoObservation?.[key])])), technicalReviewRequired: true },
     competitorObservation: Object.fromEntries(competitorKeys.map((key) => [key, safeObservation(value.competitorObservation?.[key])])),
-    confidence: ["high", "medium", "low"].includes(value.confidence) ? value.confidence : "low", provenance: "attachment", humanReviewRequired: true, candidateReference: safeObservation(value.candidateReference) };
+    confidence: ["high", "medium", "low"].includes(value.confidence) ? value.confidence : "low", provenance: "attachment", humanReviewRequired: true, candidateReference: observation(productName || description),
+    commercialCategory: observation(category), searchTerms, normalizedColors: colors, primaryMaterial: observation(materials[0]), keyFeatures: accessories,
+    brandingDetected: observation(brandingValue, "low", brandingValue ? "observed" : "unknown"), usableSignals, queryReady: Boolean(category && usableSignals >= 2) };
 }
 
 Deno.serve(async (request) => {

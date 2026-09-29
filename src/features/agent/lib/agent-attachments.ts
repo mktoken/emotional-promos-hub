@@ -1,3 +1,5 @@
+import type { AgentProduct } from "./agent-state";
+
 export type CommercialAttachmentType =
   | "product_photo" | "product_screenshot" | "inspiration_image" | "logo"
   | "artwork" | "competitor_quote" | "other_commercial_document";
@@ -70,6 +72,7 @@ export interface CommercialAttachment {
   catalogSearchStatus?: "not_started" | "completed" | "no_results" | "failed";
   catalogSearchError?: string;
   candidateProductIds?: string[];
+  catalogCandidates?: AgentProduct[];
 }
 
 export interface AttachmentFileMetadata { name: string; type: string; size: number; }
@@ -93,6 +96,56 @@ export interface CommercialVisualAnalysis {
   provenance: "attachment";
   humanReviewRequired: boolean;
   candidateReference: CommercialVisualObservation;
+  commercialCategory?: CommercialVisualObservation;
+  searchTerms?: string[];
+  normalizedColors?: string[];
+  primaryMaterial?: CommercialVisualObservation;
+  keyFeatures?: string[];
+  brandingDetected?: CommercialVisualObservation;
+  usableSignals?: number;
+  queryReady?: boolean;
+}
+
+const visualObservation = (value: unknown, confidence: Confidence = "low", certainty: CommercialVisualObservation["certainty"] = "observed"): CommercialVisualObservation => ({
+  value: value === "" || value === undefined || (Array.isArray(value) && !value.length) ? null : value as CommercialVisualObservation["value"],
+  confidence, provenance: "attachment", certainty: value === null || value === undefined ? "unknown" : certainty,
+});
+
+function derivedCategory(text: string): string | null {
+  const normalized = text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+  if (/\b(taza|mug)\b/.test(normalized)) return "taza";
+  if (/\b(termo|cilindro|botella)\b/.test(normalized)) return normalized.includes("botella") ? "botella" : "termo";
+  if (/\b(libreta|cuaderno|notebook)\b/.test(normalized)) return "libreta";
+  if (/\b(mochila|backpack)\b/.test(normalized)) return "mochila";
+  if (/\b(bolsa|tote)\b/.test(normalized)) return "bolsa";
+  if (/\b(pluma|boligrafo|lapicero)\b/.test(normalized)) return "pluma";
+  return null;
+}
+
+/** Accepts both the Edge Function contract and the raw extracted_data shape returned by the gateway. */
+export function normalizeCommercialVisionPayload(raw: unknown): CommercialVisualAnalysis | null {
+  if (!raw || typeof raw !== "object") return null;
+  const value = raw as Record<string, unknown>;
+  if (value.productObservation && value.logoObservation && value.competitorObservation) return value as CommercialVisualAnalysis;
+  const extracted = value.extracted_data && typeof value.extracted_data === "object" ? value.extracted_data as Record<string, unknown> : null;
+  if (!extracted) return null;
+  const productName = typeof extracted.product_name === "string" ? extracted.product_name : "";
+  const description = typeof extracted.description === "string" ? extracted.description : "";
+  const colors = Array.isArray(extracted.colors) ? extracted.colors.filter((item): item is string => typeof item === "string") : [];
+  const materials = Array.isArray(extracted.materials) ? extracted.materials.filter((item): item is string => typeof item === "string") : [];
+  const features = Array.isArray(extracted.included_accessories) ? extracted.included_accessories.filter((item): item is string => typeof item === "string") : [];
+  const category = derivedCategory(`${productName} ${description}`);
+  const searchTerms = [...new Set([category, features.length && category ? `${category} con ${features.join(" ")}` : null,
+    materials.length && category ? `${category} ${materials[0]}` : null, colors.length && category ? `${category} ${colors.join(" ")}` : null]
+    .filter((item): item is string => Boolean(item)))];
+  const branding = extracted.branding_or_print;
+  const brandingValue = branding && typeof branding === "object" ? (branding as Record<string, unknown>).value : branding;
+  const usableSignals = Number(Boolean(category)) + Number(Boolean(productName || description)) + Number(Boolean(colors.length)) + Number(Boolean(materials.length)) + Number(Boolean(features.length));
+  return { analysisStatus: value.analysisStatus === "completed" ? "completed" : "partial", attachmentType: "product_photo",
+    productObservation: { apparentCategory: visualObservation(category), apparentMaterial: visualObservation(materials[0]), apparentStyle: visualObservation(null, "low", "unknown"), apparentColors: visualObservation(colors), apparentFeatures: visualObservation(features), visibleBrand: visualObservation(brandingValue), visibleText: visualObservation(productName || description), possibleUseCase: visualObservation(null, "low", "unknown") },
+    logoObservation: { technicalReviewRequired: true }, competitorObservation: {}, confidence: ["high", "medium", "low"].includes(value.confidence) ? value.confidence : "low",
+    provenance: "attachment", humanReviewRequired: true, candidateReference: visualObservation(productName || description), commercialCategory: visualObservation(category), searchTerms,
+    normalizedColors: colors, primaryMaterial: visualObservation(materials[0]), keyFeatures: features, brandingDetected: visualObservation(brandingValue), usableSignals, queryReady: Boolean(category && usableSignals >= 2) };
 }
 
 export function applyVisualAnalysis(attachment: CommercialAttachment, visualAnalysis: CommercialVisualAnalysis): CommercialAttachment {
@@ -113,6 +166,10 @@ export function applyVisualAnalysis(attachment: CommercialAttachment, visualAnal
 
 /** Builds a conservative catalog query; low-confidence analysis only contributes concrete category or visible text. */
 export function buildSearchCriteriaFromVisualAnalysis(visualAnalysis: CommercialVisualAnalysis): string | null {
+  if (visualAnalysis.queryReady && visualAnalysis.searchTerms?.length && (visualAnalysis.usableSignals ?? 0) >= 2) {
+    const terms = [...new Set(visualAnalysis.searchTerms.map((term) => term.trim()).filter(Boolean))];
+    if (terms.length) return terms.join(" ");
+  }
   const values: string[] = [];
   const add = (observation: CommercialVisualObservation | undefined, allowLow = false) => {
     if (!observation || observation.certainty === "unknown" || !observation.value) return;
@@ -122,6 +179,9 @@ export function buildSearchCriteriaFromVisualAnalysis(visualAnalysis: Commercial
   };
   add(visualAnalysis.productObservation.apparentCategory, true);
   add(visualAnalysis.productObservation.visibleText, true);
+  add(visualAnalysis.commercialCategory, true);
+  add(visualAnalysis.primaryMaterial, visualAnalysis.confidence !== "low");
+  if (visualAnalysis.keyFeatures?.length) values.push(...visualAnalysis.keyFeatures);
   add(visualAnalysis.productObservation.apparentMaterial);
   add(visualAnalysis.productObservation.apparentStyle);
   add(visualAnalysis.productObservation.apparentFeatures);

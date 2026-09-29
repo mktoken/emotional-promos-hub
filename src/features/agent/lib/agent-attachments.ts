@@ -89,6 +89,8 @@ export interface CommercialVisualObservation {
 export interface CommercialVisualAnalysis {
   analysisStatus: "completed" | "partial" | "unsupported" | "failed";
   attachmentType: CommercialAttachmentType | "unknown";
+  productName?: string | null;
+  description?: string | null;
   productObservation: Record<string, CommercialVisualObservation>;
   logoObservation: Record<string, CommercialVisualObservation> & { technicalReviewRequired: true };
   competitorObservation: Record<string, CommercialVisualObservation>;
@@ -166,6 +168,7 @@ export function applyVisualAnalysis(attachment: CommercialAttachment, visualAnal
 
 /** Builds a conservative catalog query; low-confidence analysis only contributes concrete category or visible text. */
 export function buildSearchCriteriaFromVisualAnalysis(visualAnalysis: CommercialVisualAnalysis): string | null {
+  if (visualAnalysis.queryReady === false) return null;
   if (visualAnalysis.queryReady && visualAnalysis.searchTerms?.length && (visualAnalysis.usableSignals ?? 0) >= 2) {
     const terms = [...new Set(visualAnalysis.searchTerms.map((term) => term.trim()).filter(Boolean))];
     if (terms.length) return terms.join(" ");

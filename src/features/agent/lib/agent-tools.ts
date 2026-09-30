@@ -14,6 +14,7 @@ interface ProductRow {
 
 export interface CatalogTools {
   searchProducts(query: string, quantity: number): Promise<SearchRow[]>;
+  searchProductsExact?(query: string, quantity: number): Promise<SearchRow[]>;
   getProductDetails(id: string): Promise<ProductRow | null>;
   getProductVariants(id: string): Promise<AgentProduct["variants"]>;
   getProductStock(id: string): Promise<{ observedStock: number | null; status: "observed" | "unknown" }>;
@@ -42,6 +43,14 @@ function publicSku(detail: ProductRow, general: Record<string, unknown>): string
 }
 
 export const catalogTools: CatalogTools = {
+  async searchProductsExact(query, quantity) {
+    const { data, error } = await supabase.rpc("catalog_search_products_v2", {
+      p_query: query.trim(), p_limit: 24, p_offset: 0, p_category_slug: null, p_collection_slug: null,
+      p_subcategory_slug: null, p_min_price: null, p_max_price: null,
+    });
+    if (error) throw new Error(error.message);
+    return ((data ?? []) as SearchRow[]).filter((row) => row.id && (!row.minimum_quantity || row.minimum_quantity <= quantity));
+  },
   async searchProducts(query, quantity) {
     const normalized = query.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
     const terms = /libreta|cuaderno|notebook/.test(normalized) ? ["libreta", "cuaderno"]
@@ -84,9 +93,22 @@ export const catalogTools: CatalogTools = {
 };
 
 export async function loadRealProducts(
-  query: string, quantity: number, tools: CatalogTools = catalogTools,
+  query: string | null, quantity: number, tools: CatalogTools = catalogTools,
 ): Promise<AgentProduct[]> {
-  const rows = await tools.searchProducts(query, quantity);
+  if (!query?.trim()) return [];
+  const queries = planVisualCatalogQueries(query);
+  const categoryPattern = visualCategoryPatterns[queries[0]];
+  const rowsById = new Map<string, SearchRow>();
+  const exactSearch = tools.searchProductsExact?.bind(tools) ?? tools.searchProducts.bind(tools);
+  for (const term of queries) {
+    const results = queries.length > 1 ? await exactSearch(term, quantity) : await tools.searchProducts(term, quantity);
+    for (const row of results) {
+      if (!row.id || rowsById.has(row.id) || (categoryPattern && !categoryPattern.test(row.nombre ?? ""))) continue;
+      rowsById.set(row.id, row);
+    }
+    if (rowsById.size >= 12) break;
+  }
+  const rows = [...rowsById.values()];
   const hydrated = await Promise.all(rows.slice(0, 12).map(async (row): Promise<AgentProduct | null> => {
     try {
       const detail = await tools.getProductDetails(row.id);
@@ -110,6 +132,31 @@ export async function loadRealProducts(
     throw new Error("No se pudieron verificar las fichas o los precios del catálogo.");
   }
   return hydrated.filter((item): item is AgentProduct => item !== null);
+}
+
+const visualCategoryAliases: Record<string, string[]> = {
+  libreta: ["cuaderno"], termo: ["termos", "cilindro"], bolsa: ["bolsas"],
+};
+const visualCategories = ["libreta", "termo", "botella", "bolsa", "mochila", "pluma", "taza"];
+const visualCategoryPatterns: Record<string, RegExp> = {
+  libreta: /libret|cuadern|notebook/i, termo: /termo|cilindro/i, botella: /botell/i,
+  bolsa: /bolsa|tote/i, mochila: /mochila|backpack/i, pluma: /pluma|boligrafo|lapicero/i, taza: /taza|mug/i,
+};
+const queryOnlyNoise = new Set(["cuerpo", "asa", "borde", "tapa", "exterior", "interior", "con", "de", "del", "para", "color"]);
+
+/** Splits the existing serialized visual criteria into a bounded category-first retrieval plan. */
+export function planVisualCatalogQueries(criteria: string): string[] {
+  const normalized = criteria.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().replace(/\s+/g, " ").trim();
+  const category = visualCategories.find((candidate) => normalized === candidate || normalized.startsWith(`${candidate} `));
+  if (!category) return [criteria.trim()].filter(Boolean);
+
+  const suffix = normalized === category ? "" : normalized.slice(category.length).trim();
+  const phrases = suffix.split(new RegExp(`\\b${category}\\b`, "g"))
+    .map((phrase) => phrase.split(/\s+/).filter((word) => word && word !== "o" && !queryOnlyNoise.has(word)).join(" ").trim())
+    .filter(Boolean);
+  const planned = [category, ...phrases.map((phrase) => `${category} ${phrase}`)];
+  for (const alias of visualCategoryAliases[category] ?? []) planned.push(alias);
+  return [...new Set(planned.map((term) => term.trim()).filter(Boolean))].slice(0, 3);
 }
 
 /** Revalida un producto ya seleccionado sin depender del orden o límite de una nueva búsqueda. */

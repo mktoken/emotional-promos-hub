@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { loadRealProductById, loadRealProducts, type CatalogTools } from "./agent-tools";
+import { loadRealProductById, loadRealProducts, planVisualCatalogQueries, type CatalogTools } from "./agent-tools";
 
 const price = {
   status: "priced" as const, currency: "MXN", unitPriceBeforeTaxMxn: 29.5,
@@ -21,6 +21,57 @@ const tools = (overrides: Partial<CatalogTools> = {}): CatalogTools => ({
 });
 
 describe("Super Agente catalog tools", () => {
+  it("plans the canonical category first and keeps visual terms in separate queries", () => {
+    expect(planVisualCatalogQueries("taza taza con cuerpo asa taza blanco o gris claro rojo"))
+      .toEqual(["taza", "taza blanco gris claro rojo"]);
+  });
+  it("caps visual retrieval at three unique queries and removes generic structural words", () => {
+    const planned = planVisualCatalogQueries("taza taza con cuerpo asa taza con borde tapa taza exterior interior rojo azul");
+    expect(planned[0]).toBe("taza");
+    expect(planned.length).toBeLessThanOrEqual(3);
+    expect(new Set(planned).size).toBe(planned.length);
+    expect(planned.slice(1).join(" ")).not.toMatch(/cuerpo|asa|borde|tapa|exterior|interior/i);
+  });
+  it.each([
+    ["libreta", ["libreta", "cuaderno"]],
+    ["termo", ["termo", "termos", "cilindro"]],
+    ["bolsa", ["bolsa", "bolsas"]],
+  ])("keeps the existing deterministic expansions for %s", (query, expected) => {
+    expect(planVisualCatalogQueries(query)).toEqual(expected);
+  });
+  it("does not query when visual criteria are null", async () => {
+    let calls = 0;
+    const result = await loadRealProducts(null, 50, tools({ searchProducts: async () => { calls++; return []; } }));
+    expect(result).toEqual([]);
+    expect(calls).toBe(0);
+  });
+  it("retrieves category first, deduplicates real candidates and stops after enough results", async () => {
+    const calls: string[] = [];
+    const rows = Array.from({ length: 12 }, (_, index) => ({ id: `real-${index}`, nombre: `Taza ${index}`, sku_base: `T-${index}`, minimum_quantity: 1, imagenes: null, public_price_status: "priced" }));
+    const result = await loadRealProducts("taza taza con cuchara taza rojo", 50, tools({
+      searchProductsExact: async (query) => { calls.push(query); return [...rows, rows[0]]; },
+      getProductDetails: async (id) => ({ id, id_interno: id, sku_base: id, datos_generales: { modelo_comercial: id }, variantes: [], imagenes: null, activo: true }),
+    }));
+    expect(calls).toEqual(["taza"]);
+    expect(result.map((product) => product.id)).toEqual(rows.map((row) => row.id));
+    expect(result.every((product) => product.state === "considering")).toBe(true);
+  });
+  it("uses up to three separate queries when earlier searches return too few candidates", async () => {
+    const calls: string[] = [];
+    await loadRealProducts("taza taza con cuchara taza rojo taza cerámica", 50, tools({
+      searchProductsExact: async (query) => { calls.push(query); return []; },
+    }));
+    expect(calls).toEqual(["taza", "taza cuchara", "taza rojo"]);
+    expect(calls.length).toBeLessThanOrEqual(3);
+  });
+  it("returns the controlled no-results fallback after exhausting the bounded plan", async () => {
+    const calls: string[] = [];
+    const result = await loadRealProducts("taza taza con cuchara taza rojo", 50, tools({
+      searchProductsExact: async (query) => { calls.push(query); return []; },
+    }));
+    expect(calls.length).toBeLessThanOrEqual(3);
+    expect(result).toEqual([]);
+  });
   it("preserves missing image and stock instead of inventing them", async () => {
     const result = await loadRealProducts("libreta", 50, tools());
     expect(result).toHaveLength(1);

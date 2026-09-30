@@ -1,33 +1,38 @@
-# CHK-AI-SALES-5-OPENAI-VISION-1 — Selección del motor OpenAI (solo inspección)
+# CHK-AI-SALES-5-OPENAI-VISION-4 — Diagnóstico de la sonda OpenAI (solo inspección)
 
-Fuentes: catálogo autenticado `GET /v1/models` (lectura, sin inferencia ni créditos) y documentación interna del gateway (structured-output, schemas de Responses, parámetros OpenAI).
+Fuentes: registro del gateway `01a0efd6…` (cuerpo `redacted`), código desplegado `7eb0d18` (`index.ts`, `vision-contract.ts`, `normalize-analysis.ts`), `agent-attachments.ts` y `agent-tools.ts`. No se ejecutó IA, SQL ni se tocaron archivos.
 
-1. Modelos OpenAI multimodales disponibles (entrada text+image, salida texto, retención `zero`): chat-latest, gpt-5, gpt-5-mini, gpt-5-nano, gpt-5.2, gpt-5.4, gpt-5.4-mini, gpt-5.4-nano, gpt-5.4-pro (solo Responses), gpt-5.5, gpt-5.5-pro (solo Responses), gpt-5.6-luna, gpt-5.6-sol, gpt-5.6-terra, gpt-6-astra, gpt-6-luna, gpt-6-sol. Los gpt-image-* se excluyen (salida imagen).
-2. ID exacto seleccionado: `openai/gpt-6-astra`. Es el modelo asignado por la política del workspace para toda llamada de chat/texto nueva o editada; no se permite sustituirlo por otro salvo que tú nombres explícitamente un ID distinto.
-3. Structured Output: SÍ (todos los OpenAI de chat; el catálogo no expone flags por modelo).
-4. json_schema: SÍ.
-5. strict: SÍ. Con `strict: true` un schema no conforme se rechaza con 400 que nombra la violación.
-6. Sintaxis Lovable: los modelos `openai/*` van por defecto a `/v1/responses`, no a `/v1/chat/completions`. En HTTP directo: `text: { format: { type: "json_schema", name: "commercial_vision_v1", strict: true, schema: {...} } }`, con `stream: true`, `store: false` y `reasoning: { effort: "low", summary: "auto" }`, más `include: ["reasoning.encrypted_content"]`. La forma `response_format.json_schema` es la de Chat Completions y solo aplica si se queda en ese endpoint.
-7. `structuredOutputs: true`: es una opción del helper `createLovableAiGatewayProvider` (proveedor OpenAI-compatible del AI SDK, solo Chat Completions). Activa `supportsStructuredOutputs`, que hace que el SDK emita `response_format: json_schema` con strict. Sin esa opción se emite `json_object`. Aplica solo a OpenAI; con Gemini debe quedar apagada. No se usa con `/v1/responses`, donde el schema va en `text.format`.
-8. image_url: SÍ. En Responses el bloque es `{ type: "input_image", image_url: "data:image/webp;base64,..." }` junto a `{ type: "input_text", text }`, en lugar del `image_url` anidado de Chat Completions.
-9. WEBP: SÍ. El formato admite data URL de PNG, JPEG, WEBP y GIF no animado, así que no hace falta convertir. El PDF que hoy permite `allowedMime` NO entra como imagen: necesita un bloque `input_file`, o se excluye en esta fase.
-10. Límites del JSON Schema: se permiten object, properties, required, string, boolean, null (`["string","null"]`), array/items, enum pequeño y `additionalProperties:false`. Hay que evitar: propiedades opcionales (todas deben ir en `required`, nullable si hace falta), raíz array, `const`, `default`, format/pattern, y los límites numéricos o de longitud (incluido `maxItems`). Los conteos se piden en el prompt y se recortan en código. El contrato propuesto es compatible tal cual; `schemaVersion` se expresa como enum `["1"]`.
-11. Costo relativo (orientativo; el catálogo no publica precios): nano < mini < luna/terra < sol/astra < pro. El costo se controla con un prompt corto, esfuerzo de razonamiento `low`, schema pequeño y un límite de salida pedido en el prompt. Astra rechaza `max_tokens` y `temperature`.
-12. Modelo recomendado: `openai/gpt-6-astra`.
-13. Razón: es obligatorio por política del workspace. Además tiene visión, json_schema strict y retención cero, y se sirve por el endpoint documentado. Nota: el pedido de elegir "el más económico" no puede resolverse cambiando de modelo; solo con el diseño de la llamada.
-14. Rollback: Gemini actual (`google/gemini-3.7-flash`, commit f3f3719), ya desplegado. No se agrega un segundo modelo OpenAI.
-15. Cambios para migrar Gemini → OpenAI (solo en `analyze-commercial-image`):
-    - endpoint `/v1/chat/completions` → `/v1/responses` (mismo host);
-    - body: `input` con input_text/input_image, `text.format` json_schema strict, reasoning low, `store:false`, stream SSE, header `X-Lovable-AIG-SDK: fetch` y propagación del run-id;
-    - parsing: consumir el SSE y hacer JSON.parse del texto final; mapear el contrato v1 al `CommercialVisualAnalysis` existente (un adaptador nuevo y pequeño en normalize-analysis.ts, sin quitar los adaptadores de Gemini);
-    - manejo de errores según la semántica del gateway (402/403/429/5xx; refusal terminal);
-    - PDF: excluirlo o enviarlo como `input_file`;
-    - excepción: esto es más que "cambiar model + schema", porque el protocolo cambia a Responses con streaming.
-16. Frontend cambia: NO (el contrato hacia el navegador se mantiene).
-17. DB cambia: NO.
-18. LOVABLE_API_KEY suficiente: SÍ.
-19. Se ejecutó IA: NO (solo se leyó el catálogo de modelos).
-20. Créditos consumidos: NO.
-21. Próxima acción exacta, con tu autorización: implementar en una rama la variante OpenAI detrás de un selector de motor server-side (por defecto Gemini) y agregar tests unitarios del adaptador v1. Después, commit y redeploy de ese commit exacto, y una sola sonda controlada con el fixture neutral para verificar la request y el shape de respuesta en los logs del gateway.
+1. Timestamp: 2026-09-30T01:03:37Z (19:03:37 México).
+2. log_id `01a0efd6-9b53-7a2f-b5b9-a62b02b12ad2`; run_id `01a0efd6-9b53-7a35-a11b-68e045e202eb`; response `resp_0c10db11…`.
+3. Modelo: `openai/gpt-6-luna` (upstream `gpt-6-luna`).
+4. Endpoint: `responses` (/v1/responses), streaming, sdk `fetch`.
+5. HTTP: 200 (upstream 200).
+6. Duración: 2,917 ms.
+7. Costo: 0.0012996 créditos; 2,404 tokens entrada / 169 salida.
+8. Imagen presente: SÍ (`input_image` con data URL real) + `input_text` presente.
+9. MIME: `image/webp`.
+10. json_schema: SÍ (`text.format.type = json_schema`, confirmado en el eco del proveedor).
+11. commercial_vision_v1: SÍ.
+12. strict=true: SÍ.
+13. JSON final:
+    `schemaVersion "1"`, `documentType "product_photo"`, 1 producto: `name "Taza"`, `description "Taza de cuerpo claro con asa y borde rojos; interior rojo visible."`, `category "Taza para beber"`, `colors ["blanco o gris claro","rojo"]`, `materials []`, `components ["cuerpo","asa"]`, `brandingPresent false`, `visibleText []`, `confidence "high"`.
+14. Zod: PASS (inferido con certeza alta: el JSON cumple exactamente el schema estricto, y la UI mostró `completed · high`, que solo produce `normalizeVisionV1`; el fallback daría `failed`).
+15. Normalización (derivada del código con ese JSON): attachmentType `product_photo`, productName "Taza", commercialCategory "taza", colors ["blanco o gris claro","rojo"], materials [], keyFeatures ["cuerpo","asa"], brandingDetected false, visibleText [], usableSignals 4.
+16. commercialCategory: `taza`.
+17. confidence: `high`.
+18. queryReady: `true`.
+19. searchTerms: `["taza", "taza con cuerpo asa", "taza blanco o gris claro rojo"]`.
+20. Query: `buildSearchCriteriaFromVisualAnalysis` une los términos en una sola cadena: `"taza taza con cuerpo asa taza blanco o gris claro rojo"`.
+21. Catálogo: `searchProducts` → `catalog_search_products_v2` con esa cadena completa como `p_query` único (no hay expansión para "taza", solo para libreta/termo/bolsa). `find_similar_products` es alias del mismo. Llamada: SÍ (la UI llegó a `no_results`).
+22. Resultados brutos: NO COMPROBABLE sin SQL (prohibido); con esa cadena de 11 palabras (incluye "cuerpo", "asa", "o", "gris", "claro") es esperable 0.
+23. Candidatos verificados: 0.
+24. Motivo: la búsqueda recibe una frase larga que mezcla categoría, partes físicas y colores descriptivos; el término simple "taza" nunca se consulta solo. Los componentes "cuerpo/asa" se tratan como accesorios, lo que contamina la query.
+25. Llamadas IA para este fixture: 1.
+26. Errores: ninguno en gateway ni en contrato.
+27. Clasificación: CASO C.
+28. Próxima corrección mínima (sin ejecutarla):
+    - En `agent-tools.ts`: consultar cada `searchTerm` por separado (empezando por la categoría sola) en lugar de unirlos en una frase, o agregar la expansión `taza|tazas|mug`.
+    - En `normalize-analysis.ts`: no convertir partes estructurales genéricas (cuerpo, asa, tapa, borde) en términos de búsqueda.
+    - Verificar con el fixture neutral solo tras autorización y redeploy/publicación explícitos.
 
-OPENAI VISION STRUCTURED OUTPUT — READY FOR CONTROLLED PROBE
+OPENAI STRUCTURED VISION RUNTIME DIAGNOSED — CASO C

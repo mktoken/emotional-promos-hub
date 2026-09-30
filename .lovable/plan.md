@@ -1,64 +1,33 @@
-# Diagnóstico QA visual final CHK-AI-SALES-5 (solo lectura)
+# CHK-AI-SALES-5-OPENAI-VISION-1 — Selección del motor OpenAI (solo inspección)
 
-1. Timestamp: 2026-09-29T21:01:47Z
-2. log_id: 01a0eef9-282d-7910-80ea-7f74fcc12c5c (run_id 01a0eef9-282d-7916-b618-7a800055da55)
-3. Modelo: google/gemini-3.7-flash
-4. Duración: 6,570 ms en el gateway (sin streaming)
-5. HTTP/upstream: 200 / 200; finish_reason stop
-6. Costo: 0.014529 créditos
-7. Tokens: 1,198 de entrada / 729 de salida (294 de razonamiento)
-8. Imagen presente: TRUE (mensaje user con parte text + parte image_url)
-9. MIME: image/webp, data URL base64 real (no se muestra)
-10. JSON exacto (contenido del mensaje; payload_state: redacted, pero el contenido llegó completo):
+Fuentes: catálogo autenticado `GET /v1/models` (lectura, sin inferencia ni créditos) y documentación interna del gateway (structured-output, schemas de Responses, parámetros OpenAI).
 
-```json
-{
-  "document_type": "product_photo",
-  "products": [
-    {
-      "name": { "value": "Taza con cuchara", "certainty": "medium", "confidence": 0.85 },
-      "sku": { "value": null, "certainty": "unknown", "confidence": 0.0 },
-      "description": { "value": "Taza de cerámica con exterior blanco, interior de color rojo, asa roja con orificio para sostener una cuchara y cuchara de cerámica roja incluida.", "certainty": "high", "confidence": 0.95 },
-      "colors": [
-        { "name": "Blanco", "certainty": "high", "confidence": 0.95 },
-        { "name": "Rojo", "certainty": "high", "confidence": 0.95 }
-      ],
-      "materials": [
-        { "value": "Cerámica", "certainty": "medium", "confidence": 0.8 }
-      ],
-      "components": [
-        { "type": "Taza", "color": "Blanco / Interior Rojo" },
-        { "type": "Cuchara", "color": "Rojo" }
-      ]
-    }
-  ],
-  "extracted_text": [],
-  "pricing": { "value": null, "currency": null, "certainty": "unknown", "confidence": 0.0 },
-  "stock_availability": { "value": null, "certainty": "unknown", "confidence": 0.0 }
-}
-```
+1. Modelos OpenAI multimodales disponibles (entrada text+image, salida texto, retención `zero`): chat-latest, gpt-5, gpt-5-mini, gpt-5-nano, gpt-5.2, gpt-5.4, gpt-5.4-mini, gpt-5.4-nano, gpt-5.4-pro (solo Responses), gpt-5.5, gpt-5.5-pro (solo Responses), gpt-5.6-luna, gpt-5.6-sol, gpt-5.6-terra, gpt-6-astra, gpt-6-luna, gpt-6-sol. Los gpt-image-* se excluyen (salida imagen).
+2. ID exacto seleccionado: `openai/gpt-6-astra`. Es el modelo asignado por la política del workspace para toda llamada de chat/texto nueva o editada; no se permite sustituirlo por otro salvo que tú nombres explícitamente un ID distinto.
+3. Structured Output: SÍ (todos los OpenAI de chat; el catálogo no expone flags por modelo).
+4. json_schema: SÍ.
+5. strict: SÍ. Con `strict: true` un schema no conforme se rechaza con 400 que nombra la violación.
+6. Sintaxis Lovable: los modelos `openai/*` van por defecto a `/v1/responses`, no a `/v1/chat/completions`. En HTTP directo: `text: { format: { type: "json_schema", name: "commercial_vision_v1", strict: true, schema: {...} } }`, con `stream: true`, `store: false` y `reasoning: { effort: "low", summary: "auto" }`, más `include: ["reasoning.encrypted_content"]`. La forma `response_format.json_schema` es la de Chat Completions y solo aplica si se queda en ese endpoint.
+7. `structuredOutputs: true`: es una opción del helper `createLovableAiGatewayProvider` (proveedor OpenAI-compatible del AI SDK, solo Chat Completions). Activa `supportsStructuredOutputs`, que hace que el SDK emita `response_format: json_schema` con strict. Sin esa opción se emite `json_object`. Aplica solo a OpenAI; con Gemini debe quedar apagada. No se usa con `/v1/responses`, donde el schema va en `text.format`.
+8. image_url: SÍ. En Responses el bloque es `{ type: "input_image", image_url: "data:image/webp;base64,..." }` junto a `{ type: "input_text", text }`, en lugar del `image_url` anidado de Chat Completions.
+9. WEBP: SÍ. El formato admite data URL de PNG, JPEG, WEBP y GIF no animado, así que no hace falta convertir. El PDF que hoy permite `allowedMime` NO entra como imagen: necesita un bloque `input_file`, o se excluye en esta fase.
+10. Límites del JSON Schema: se permiten object, properties, required, string, boolean, null (`["string","null"]`), array/items, enum pequeño y `additionalProperties:false`. Hay que evitar: propiedades opcionales (todas deben ir en `required`, nullable si hace falta), raíz array, `const`, `default`, format/pattern, y los límites numéricos o de longitud (incluido `maxItems`). Los conteos se piden en el prompt y se recortan en código. El contrato propuesto es compatible tal cual; `schemaVersion` se expresa como enum `["1"]`.
+11. Costo relativo (orientativo; el catálogo no publica precios): nano < mini < luna/terra < sol/astra < pro. El costo se controla con un prompt corto, esfuerzo de razonamiento `low`, schema pequeño y un límite de salida pedido en el prompt. Astra rechaza `max_tokens` y `temperature`.
+12. Modelo recomendado: `openai/gpt-6-astra`.
+13. Razón: es obligatorio por política del workspace. Además tiene visión, json_schema strict y retención cero, y se sirve por el endpoint documentado. Nota: el pedido de elegir "el más económico" no puede resolverse cambiando de modelo; solo con el diseño de la llamada.
+14. Rollback: Gemini actual (`google/gemini-3.7-flash`, commit f3f3719), ya desplegado. No se agrega un segundo modelo OpenAI.
+15. Cambios para migrar Gemini → OpenAI (solo en `analyze-commercial-image`):
+    - endpoint `/v1/chat/completions` → `/v1/responses` (mismo host);
+    - body: `input` con input_text/input_image, `text.format` json_schema strict, reasoning low, `store:false`, stream SSE, header `X-Lovable-AIG-SDK: fetch` y propagación del run-id;
+    - parsing: consumir el SSE y hacer JSON.parse del texto final; mapear el contrato v1 al `CommercialVisualAnalysis` existente (un adaptador nuevo y pequeño en normalize-analysis.ts, sin quitar los adaptadores de Gemini);
+    - manejo de errores según la semántica del gateway (402/403/429/5xx; refusal terminal);
+    - PDF: excluirlo o enviarlo como `input_file`;
+    - excepción: esto es más que "cambiar model + schema", porque el protocolo cambia a Responses con streaming.
+16. Frontend cambia: NO (el contrato hacia el navegador se mantiene).
+17. DB cambia: NO.
+18. LOVABLE_API_KEY suficiente: SÍ.
+19. Se ejecutó IA: NO (solo se leyó el catálogo de modelos).
+20. Créditos consumidos: NO.
+21. Próxima acción exacta, con tu autorización: implementar en una rama la variante OpenAI detrás de un selector de motor server-side (por defecto Gemini) y agregar tests unitarios del adaptador v1. Después, commit y redeploy de ese commit exacto, y una sola sonda controlada con el fixture neutral para verificar la request y el shape de respuesta en los logs del gateway.
 
-11. Top-level keys: `document_type` (string), `products` (array de objetos), `extracted_text` (array vacío), `pricing` (objeto), `stock_availability` (objeto)
-12. Shape: E — NUEVO SHAPE NO SOPORTADO. Usa `products` (plural, arreglo), no `product`, `extracted_data` ni `detected_elements`. Además, confidence es numérico (0.85, 0.95) en lugar de "high/medium/low", y components son objetos con `type`/`color`.
-13. Producto: "Taza con cuchara" (certainty medium, confidence 0.85)
-14. Descripción: la citada arriba (high, 0.95)
-15. Categoría: no hay campo de categoría
-16. Colores: Blanco, Rojo (high, 0.95)
-17. Materiales: Cerámica (medium, 0.8)
-18. Componentes: Taza (Blanco / Interior Rojo), Cuchara (Rojo)
-19. Branding: no hay campo de branding
-20. Texto visible: [] (vacío)
-21. Confidence: solo por campo, numérica; sin confidence global ni analysisStatus
-22. Respuesta normalizada Edge: NO COMPROBABLE (los registros de la función solo muestran arranques, sin salida). Observación sobre el código actual (f3f3719), sin inferir el runtime: ninguno de los tres adaptadores lee `products`; `document_type` sí se reconoce, así que attachmentType quedaría product_photo. Eso coincide con lo que mostró la pantalla (product_photo · partial · low).
-23. queryReady: NO COMPROBABLE en los registros; con el código actual sería false (sin categoría y sin señales)
-24. Query: NO COMPROBABLE
-25. Catálogo consultado: NO COMPROBABLE (lo más probable es que no, por queryReady false)
-26. Candidatos: 0 según la pantalla
-27. Llamadas Gemini en la ventana 20:55–21:05 UTC: 1
-28. Errores: ninguno (gateway 200, sin errores en los registros de la función)
-29. Clasificación: CASO 2. Gemini devolvió señales útiles, pero en un shape nuevo que el código no soporta.
-30. Próxima corrección mínima (NO se ejecuta): en normalize-analysis.ts, aceptar `products[]` cuando haya exactamente un producto, con el mismo trato que `product` (name.value → productName, description.value, colors[].name, materials[].value, components[].type). También convertir confidence numérica a high/medium/low e ignorar `pricing` y `stock_availability`. Como el formato ya cambió 4 veces, conviene fijar un JSON schema estricto en la llamada al modelo en vez de `json_object` libre. Requiere tu autorización, un commit y un redeploy.
-
-Archivos modificados: NINGUNO (salvo este reporte). Redeploy: NO. Nueva llamada a Gemini: NO. Publish: NO.
-
-VISION FINAL QA DIAGNOSED — CASO 2
+OPENAI VISION STRUCTURED OUTPUT — READY FOR CONTROLLED PROBE

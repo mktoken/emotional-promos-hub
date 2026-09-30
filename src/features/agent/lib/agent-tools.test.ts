@@ -20,6 +20,19 @@ const tools = (overrides: Partial<CatalogTools> = {}): CatalogTools => ({
   ...overrides,
 });
 
+const candidateRow = (id: string, values: Partial<{
+  nombre: string | null; descripcion: string | null; categoria_nombre: string | null;
+  subcategoria_nombre: string | null;
+}> = {}) => ({ id, nombre: "SKU comercial", sku_base: id, minimum_quantity: 1,
+  imagenes: null, public_price_status: "priced", descripcion: null,
+  categoria_nombre: null, subcategoria_nombre: null, ...values });
+
+const loadCandidates = (query: string, row: ReturnType<typeof candidateRow>) => loadRealProducts(query, 50, tools({
+  searchProducts: async () => [row],
+  getProductDetails: async (id) => ({ id, id_interno: id, sku_base: id,
+    datos_generales: { modelo_comercial: row.nombre }, variantes: [], imagenes: null, activo: true }),
+}));
+
 describe("Super Agente catalog tools", () => {
   it("plans the canonical category first and keeps visual terms in separate queries", () => {
     expect(planVisualCatalogQueries("taza taza con cuerpo asa taza blanco o gris claro rojo"))
@@ -71,6 +84,54 @@ describe("Super Agente catalog tools", () => {
     }));
     expect(calls.length).toBeLessThanOrEqual(3);
     expect(result).toEqual([]);
+  });
+  it.each([
+    ["CONCA", "Taza de ceramica."],
+    ["TOKAI", "Taza de ceramica corrugada."],
+    ["MOKA", "Taza de acero inoxidable acabado mate y asa de plástico."],
+  ])("retains a generic commercial SKU when its product description identifies it as a taza (%s)", async (name, description) => {
+    const result = await loadCandidates("taza", candidateRow(name, { nombre: name, descripcion: description }));
+    expect(result.map((item) => item.id)).toEqual([name]);
+    expect(result[0].state).toBe("considering");
+  });
+  it("uses an authoritative catalog category label to retain a candidate", async () => {
+    const result = await loadCandidates("taza", candidateRow("CATALOG-TAXONOMY", {
+      nombre: "CONCA", categoria_nombre: "Bebidas", subcategoria_nombre: "Tazas promocionales",
+    }));
+    expect(result.map((item) => item.id)).toEqual(["CATALOG-TAXONOMY"]);
+  });
+  it("rejects an incidental category word later in an unrelated product description", async () => {
+    const result = await loadCandidates("taza", candidateRow("OTHER", {
+      nombre: "Llavero", descripcion: "Llavero metálico ideal para acompañar tu taza.",
+      categoria_nombre: "Accesorios",
+    }));
+    expect(result).toEqual([]);
+  });
+  it("handles null description and category fields without crashing", async () => {
+    const result = await loadCandidates("taza", candidateRow("NULL-FIELDS", {
+      nombre: "MUG-01", descripcion: null, categoria_nombre: null, subcategoria_nombre: null,
+    }));
+    expect(result.map((item) => item.id)).toEqual(["NULL-FIELDS"]);
+  });
+  it("matches case-insensitively, normalizes accents, and accepts the existing mug alias", async () => {
+    const result = await loadCandidates("taza", candidateRow("MUG-ACCENT", {
+      nombre: "MUG-ACCENT", descripcion: "MUG térmico de cerámica.", categoria_nombre: null,
+    }));
+    expect(result.map((item) => item.id)).toEqual(["MUG-ACCENT"]);
+    const accented = await loadCandidates("libreta", candidateRow("ACCENT-NOTEBOOK", {
+      nombre: "SKU-42", descripcion: "LIBRÉTA de notas.",
+    }));
+    expect(accented.map((item) => item.id)).toEqual(["ACCENT-NOTEBOOK"]);
+  });
+  it.each([
+    ["libreta", "Cuaderno de pasta rígida."],
+    ["termo", "Cilindro de acero inoxidable."],
+    ["bolsa", "Tote de algodón reutilizable."],
+  ])("retains existing category behavior for %s based on catalog description", async (query, description) => {
+    const result = await loadCandidates(query, candidateRow(`REAL-${query}`, {
+      nombre: `SKU-${query}`, descripcion: description,
+    }));
+    expect(result.map((item) => item.id)).toEqual([`REAL-${query}`]);
   });
   it("preserves missing image and stock instead of inventing them", async () => {
     const result = await loadRealProducts("libreta", 50, tools());

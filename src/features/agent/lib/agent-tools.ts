@@ -6,6 +6,7 @@ import type { AgentProduct } from "./agent-state";
 interface SearchRow {
   id: string; nombre: string | null; sku_base: string | null;
   minimum_quantity: number | null; imagenes: unknown; public_price_status: string | null;
+  descripcion?: string | null; categoria_nombre?: string | null; subcategoria_nombre?: string | null;
 }
 interface ProductRow {
   id: string; id_interno: string; sku_base: string | null;
@@ -97,13 +98,13 @@ export async function loadRealProducts(
 ): Promise<AgentProduct[]> {
   if (!query?.trim()) return [];
   const queries = planVisualCatalogQueries(query);
-  const categoryPattern = visualCategoryPatterns[queries[0]];
+  const category = queries[0];
   const rowsById = new Map<string, SearchRow>();
   const exactSearch = tools.searchProductsExact?.bind(tools) ?? tools.searchProducts.bind(tools);
   for (const term of queries) {
     const results = queries.length > 1 ? await exactSearch(term, quantity) : await tools.searchProducts(term, quantity);
     for (const row of results) {
-      if (!row.id || rowsById.has(row.id) || (categoryPattern && !categoryPattern.test(row.nombre ?? ""))) continue;
+      if (!row.id || rowsById.has(row.id) || !matchesVisualCategory(row, category)) continue;
       rowsById.set(row.id, row);
     }
     if (rowsById.size >= 12) break;
@@ -139,9 +140,39 @@ const visualCategoryAliases: Record<string, string[]> = {
 };
 const visualCategories = ["libreta", "termo", "botella", "bolsa", "mochila", "pluma", "taza"];
 const visualCategoryPatterns: Record<string, RegExp> = {
-  libreta: /libret|cuadern|notebook/i, termo: /termo|cilindro/i, botella: /botell/i,
-  bolsa: /bolsa|tote/i, mochila: /mochila|backpack/i, pluma: /pluma|boligrafo|lapicero/i, taza: /taza|mug/i,
+  libreta: /\b(?:libret\w*|cuadern\w*|notebooks?)\b/i,
+  termo: /\b(?:termos?|cilindros?)\b/i,
+  botella: /\bbotell\w*\b/i,
+  bolsa: /\b(?:bolsas?|totes?)\b/i,
+  mochila: /\b(?:mochilas?|backpacks?)\b/i,
+  pluma: /\b(?:plumas?|boligrafos?|lapiceros?)\b/i,
+  taza: /\b(?:tazas?|mugs?)\b/i,
 };
+const visualDescriptionCategoryPatterns: Record<string, RegExp> = {
+  libreta: /^(?:(?:un|una|el|la)\s+)?(?:libret\w*|cuadern\w*|notebooks?)\b/i,
+  termo: /^(?:(?:un|una|el|la)\s+)?(?:termos?|cilindros?)\b/i,
+  botella: /^(?:(?:un|una|el|la)\s+)?botell\w*\b/i,
+  bolsa: /^(?:(?:un|una|el|la)\s+)?(?:bolsas?|totes?)\b/i,
+  mochila: /^(?:(?:un|una|el|la)\s+)?(?:mochilas?|backpacks?)\b/i,
+  pluma: /^(?:(?:un|una|el|la)\s+)?(?:plumas?|boligrafos?|lapiceros?)\b/i,
+  taza: /^(?:(?:un|una|el|la)\s+)?(?:tazas?|mugs?)\b/i,
+};
+
+function normalizeCatalogText(value: string | null | undefined): string {
+  return (value ?? "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim();
+}
+
+function matchesVisualCategory(row: SearchRow, category: string): boolean {
+  const pattern = visualCategoryPatterns[category];
+  if (!pattern) return true;
+  const catalogLabels = [row.nombre, row.categoria_nombre, row.subcategoria_nombre];
+  if (catalogLabels.some((value) => pattern.test(normalizeCatalogText(value)))) return true;
+
+  // Descriptions can identify generically named SKUs, but only when they describe
+  // the item itself from the beginning, not when the category is incidental text.
+  const descriptionPattern = visualDescriptionCategoryPatterns[category];
+  return descriptionPattern?.test(normalizeCatalogText(row.descripcion)) ?? false;
+}
 const queryOnlyNoise = new Set(["cuerpo", "asa", "borde", "tapa", "exterior", "interior", "con", "de", "del", "para", "color"]);
 
 /** Splits the existing serialized visual criteria into a bounded category-first retrieval plan. */

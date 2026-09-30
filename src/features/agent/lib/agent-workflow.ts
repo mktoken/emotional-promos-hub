@@ -1,4 +1,4 @@
-import { loadRealProducts, orderedProductOptions, recommendProducts } from "./agent-tools";
+import { loadRealProductById, loadRealProducts, orderedProductOptions, recommendProducts } from "./agent-tools";
 import { composeCommercialContext, crossSellSuggestions, recommendationRationale, type CommercialContext } from "./agent-intelligence";
 import { captureMessage, createProductLine, createOpportunityState, findRequestedVariant, nextQuestion,
   removeProductLine, replaceProductLine, rejectProduct, restoreProductLine, selectProduct,
@@ -13,6 +13,7 @@ export interface AgentSession {
   draftPrepared?: boolean; draftFingerprint?: string;
 }
 export type ProductSearch = typeof loadRealProducts;
+export type SelectedVisualProductLoader = typeof loadRealProductById;
 
 export function newAgentSession(welcome = "Cuéntame qué producto y cantidad necesitas. Buscaré opciones reales del catálogo.",
   initialContext: Partial<Pick<OpportunityState, "company" | "sectorContext" | "sectorPlaybook" | "companyProfile">> = {}): AgentSession {
@@ -166,12 +167,64 @@ function capturePersonalization(state: OpportunityState, line: AgentProductLine,
 
 export async function advanceAgent(
   session: AgentSession, text: string, searchProducts: ProductSearch = loadRealProducts,
+  loadSelectedVisualProduct: SelectedVisualProductLoader = loadRealProductById,
 ): Promise<{ session: AgentSession; searchFailed: boolean }> {
   const normalizedText = text.trim();
   let current = appendMessage(session, "user", normalizedText);
   let state = captureMessage(session.state, normalizedText);
   let searchFailed = false;
   if (!normalizedText) return { session: current, searchFailed };
+
+  const pendingVisualSelection = state.attachments.find((attachment) =>
+    attachment.selectedVisualCandidateId && attachment.visualCandidates?.some((candidate) =>
+      candidate.productId === attachment.selectedVisualCandidateId));
+  const visualCandidate = pendingVisualSelection?.visualCandidates?.find((candidate) =>
+    candidate.productId === pendingVisualSelection.selectedVisualCandidateId);
+  const visualQuantity = extractQuantity(normalizedText, true);
+  if (pendingVisualSelection && visualCandidate && visualQuantity !== null) {
+    const minimum = visualCandidate.minimumQuantity;
+    if (minimum !== null && visualQuantity < minimum) {
+      const message = `El mínimo de compra de ${visualCandidate.name} es ${minimum} piezas. No consulté precio ni suficiencia de stock. ¿Necesitas al menos ${minimum} piezas?`;
+      return { session: appendMessage({ ...current, state }, "agent", message), searchFailed: false };
+    }
+    const linkedPendingLines = state.productLines.filter((line) =>
+      pendingVisualSelection.linkedProductLineIds.includes(line.lineId)
+      && line.quantity === null && !["removed", "rejected"].includes(line.status));
+    if (linkedPendingLines.length > 1) {
+      const message = "La referencia está vinculada a varias líneas sin cantidad. Indica a cuál línea corresponde antes de continuar.";
+      return { session: appendMessage({ ...current, state }, "agent", message), searchFailed: false };
+    }
+    try {
+      const product = await loadSelectedVisualProduct(visualCandidate.productId, visualQuantity);
+      if (!product) throw new Error("La ficha del producto ya no está disponible.");
+      if (product.price.status === "below_minimum" && product.price.minimumQuantity !== null) {
+        const message = `El mínimo de compra vigente de ${product.name} es ${product.price.minimumQuantity} piezas. No se creó la línea; indica una cantidad que cumpla ese mínimo.`;
+        return { session: appendMessage({ ...current, state }, "agent", message), searchFailed: false };
+      }
+      let nextState = state;
+      let lineId: string;
+      if (linkedPendingLines.length === 1) {
+        lineId = linkedPendingLines[0].lineId;
+        nextState = updateProductLineQuantity(nextState, lineId, visualQuantity);
+      } else {
+        nextState = createProductLine(nextState, visualCandidate.category, visualQuantity);
+        lineId = selectedProductLine(nextState)!.lineId;
+      }
+      nextState = setProductLineCandidates(nextState, lineId, [product]);
+      nextState = selectProduct(nextState, product.id, lineId);
+      nextState = { ...nextState, attachments: nextState.attachments.map((attachment) =>
+        attachment.attachmentId === pendingVisualSelection.attachmentId
+          ? { ...attachment, linkedProductLineIds: [...new Set([...attachment.linkedProductLineIds, lineId])] }
+          : attachment) };
+      const finalLine = nextState.productLines.find((line) => line.lineId === lineId);
+      const statusMessage = finalLine?.status === "requires_review"
+        ? `${product.name} tiene cantidad y precio verificados, pero requiere revisión de elegibilidad o stock.`
+        : `${product.name} quedó asociado a la cantidad de ${visualQuantity} piezas tras tu selección explícita.`;
+      return { session: appendMessage({ ...current, state: nextState }, "agent", `${statusMessage} ${nextQuestion(nextState)}`), searchFailed: false };
+    } catch {
+      return { session: appendMessage({ ...current, state }, "agent", "No pude verificar el producto para esa cantidad. La referencia visual sigue guardada; intenta de nuevo o pide revisión humana."), searchFailed: true };
+    }
+  }
 
   const replacement = parseReplacement(normalizedText);
   const detectedInterest = detectProductInterest(normalizedText);

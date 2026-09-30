@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { loadRealProductById, loadRealProducts, planVisualCatalogQueries, type CatalogTools } from "./agent-tools";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { supabase } from "@/integrations/supabase/client";
+import { catalogTools, loadRealProductById, loadRealProducts, loadVisualCatalogCandidates, planVisualCatalogQueries, type CatalogTools } from "./agent-tools";
 
 const price = {
   status: "priced" as const, currency: "MXN", unitPriceBeforeTaxMxn: 29.5,
@@ -21,6 +22,7 @@ const tools = (overrides: Partial<CatalogTools> = {}): CatalogTools => ({
 });
 
 const candidateRow = (id: string, values: Partial<{
+  sku_base: string | null; minimum_quantity: number | null;
   nombre: string | null; descripcion: string | null; categoria_nombre: string | null;
   subcategoria_nombre: string | null;
 }> = {}) => ({ id, nombre: "SKU comercial", sku_base: id, minimum_quantity: 1,
@@ -34,6 +36,7 @@ const loadCandidates = (query: string, row: ReturnType<typeof candidateRow>) => 
 }));
 
 describe("Super Agente catalog tools", () => {
+  afterEach(() => vi.restoreAllMocks());
   it("plans the canonical category first and keeps visual terms in separate queries", () => {
     expect(planVisualCatalogQueries("taza taza con cuerpo asa taza blanco o gris claro rojo"))
       .toEqual(["taza", "taza blanco gris claro rojo"]);
@@ -57,6 +60,47 @@ describe("Super Agente catalog tools", () => {
     const result = await loadRealProducts(null, 50, tools({ searchProducts: async () => { calls++; return []; } }));
     expect(result).toEqual([]);
     expect(calls).toBe(0);
+  });
+  it("returns null-quantity visual candidates without detail, stock, or pricing calls", async () => {
+    const calls: Array<[string, number | null]> = [];
+    let detailCalls = 0;
+    let priceCalls = 0;
+    const rows = [
+      candidateRow("ab296a25-8ccc-44a9-9e2b-8411a401b77b", { nombre: "CONCA", sku_base: "CONCA", descripcion: "Taza de ceramica.", minimum_quantity: 21 }),
+      candidateRow("08dcd02c-5e8c-4099-8f18-f326e36641d2", { nombre: "TOKAI", sku_base: "TOKAI", descripcion: "Taza de ceramica corrugada.", minimum_quantity: 20 }),
+      candidateRow("3f0c42c4-71c8-4195-90f5-8a2f3c730aca", { nombre: "MOKA", sku_base: "MOKA", descripcion: "Taza de acero inoxidable.", minimum_quantity: 17 }),
+    ];
+    const results = await loadVisualCatalogCandidates("taza", tools({
+      searchProductsExact: async (query, quantity) => { calls.push([query, quantity]); return rows; },
+      getProductDetails: async () => { detailCalls++; return null; },
+      getAuthoritativePrice: async () => { priceCalls++; return price; },
+    }));
+    expect(calls).toEqual([["taza", null]]);
+    expect(results.map(({ name }) => name)).toEqual(["CONCA", "TOKAI", "MOKA"]);
+    expect(results.map(({ minimumQuantity }) => minimumQuantity)).toEqual([21, 20, 17]);
+    expect(results.every((candidate) => candidate.quantity === null && candidate.price === null
+      && candidate.pricingStatus === "pending_quantity" && candidate.status === "considering")).toBe(true);
+    expect(detailCalls).toBe(0);
+    expect(priceCalls).toBe(0);
+  });
+  it("does not search visual catalog when the criteria are null", async () => {
+    let calls = 0;
+    const result = await loadVisualCatalogCandidates(null, tools({
+      searchProductsExact: async () => { calls++; return []; },
+    }));
+    expect(result).toEqual([]);
+    expect(calls).toBe(0);
+  });
+  it.each([
+    [null, ["CONCA"]],
+    [50, ["CONCA"]],
+    [10, []],
+    [1, []],
+  ] as const)("applies MOQ only to known quantity %s", async (quantity, expected) => {
+    const rows = [candidateRow("CONCA", { nombre: "CONCA", descripcion: "Taza de ceramica.", minimum_quantity: 21 })];
+    vi.spyOn(supabase, "rpc").mockResolvedValue({ data: rows, error: null } as never);
+    const result = await catalogTools.searchProductsExact!("taza", quantity);
+    expect(result.map((row) => row.nombre)).toEqual(expected);
   });
   it("retrieves category first, deduplicates real candidates and stops after enough results", async () => {
     const calls: string[] = [];

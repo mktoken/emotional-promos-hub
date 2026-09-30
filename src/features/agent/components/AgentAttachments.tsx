@@ -1,9 +1,9 @@
 import { useRef, useState } from "react";
 import { Paperclip, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { applyVisualAnalysis, buildSearchCriteriaFromVisualAnalysis, createCommercialAttachment, linkAttachmentToLines, type CommercialAttachment, type CommercialAttachmentType } from "../lib/agent-attachments";
+import { applyVisualAnalysis, buildSearchCriteriaFromVisualAnalysis, createCommercialAttachment, linkAttachmentToLines, selectVisualCatalogCandidate, type CommercialAttachment, type CommercialAttachmentType } from "../lib/agent-attachments";
 import { fileToDataUrl, lovableCommercialVisionProcessor } from "../lib/commercial-vision";
-import { loadRealProducts } from "../lib/agent-tools";
+import { loadRealProducts, loadVisualCatalogCandidates } from "../lib/agent-tools";
 import { setProductLineCandidates } from "../lib/agent-state";
 import { chooseAgentProduct, type AgentSession } from "../lib/agent-workflow";
 
@@ -30,6 +30,12 @@ export function AgentAttachments({ session, setSession, disabled = false }: { se
     delete files.current[attachmentId];
     setSession({ ...session, state: { ...session.state, attachments: session.state.attachments.filter((item) => item.attachmentId !== attachmentId) } });
   }
+  function selectVisualCandidate(attachment: CommercialAttachment, candidateId: string) {
+    const selected = selectVisualCatalogCandidate(attachment, candidateId);
+    if (selected === attachment) return;
+    setSession({ ...session, state: { ...session.state, attachments: session.state.attachments.map((item) =>
+      item.attachmentId === attachment.attachmentId ? selected : item) } });
+  }
   async function analyze(attachment: CommercialAttachment) {
     const file = files.current[attachment.attachmentId];
     if (!file) { setError("El archivo ya no está disponible en esta sesión; vuelve a adjuntarlo."); return; }
@@ -42,12 +48,24 @@ export function AgentAttachments({ session, setSession, disabled = false }: { se
       let nextState = { ...session.state, attachments: session.state.attachments.map((item) => item.attachmentId === attachment.attachmentId ? analyzed : item) };
       if (criteria) {
         try {
-          const quantity = nextState.productLines.find((line) => line.quantity !== null && !["removed", "rejected"].includes(line.status))?.quantity ?? 1;
-          const catalogCandidates = await loadRealProducts(criteria, quantity);
-          const candidateProductIds = catalogCandidates.map((product) => product.id);
-          nextState = { ...nextState,
-            attachments: nextState.attachments.map((item) => item.attachmentId === attachment.attachmentId ? { ...item, catalogSearchStatus: candidateProductIds.length ? "completed" as const : "no_results" as const, candidateProductIds, catalogCandidates, catalogSearchError: undefined } : item),
-          };
+          const activeLine = nextState.productLines.find((line) => line.lineId === nextState.activeProductLineId
+            && !["removed", "rejected"].includes(line.status));
+          const quantity = activeLine?.quantity ?? null;
+          if (quantity === null) {
+            const visualCandidates = await loadVisualCatalogCandidates(criteria);
+            const candidateProductIds = visualCandidates.map((product) => product.productId);
+            nextState = { ...nextState, attachments: nextState.attachments.map((item) => item.attachmentId === attachment.attachmentId
+              ? { ...item, catalogSearchStatus: candidateProductIds.length ? "completed" as const : "no_results" as const,
+                candidateProductIds, catalogCandidates: undefined, visualCandidates, selectedVisualCandidateId: undefined, catalogSearchError: undefined }
+              : item) };
+          } else {
+            const catalogCandidates = await loadRealProducts(criteria, quantity);
+            const candidateProductIds = catalogCandidates.map((product) => product.id);
+            nextState = { ...nextState, attachments: nextState.attachments.map((item) => item.attachmentId === attachment.attachmentId
+              ? { ...item, catalogSearchStatus: candidateProductIds.length ? "completed" as const : "no_results" as const,
+                candidateProductIds, catalogCandidates, visualCandidates: undefined, selectedVisualCandidateId: undefined, catalogSearchError: undefined }
+              : item) };
+          }
         } catch (cause) {
           nextState = { ...nextState,
             attachments: nextState.attachments.map((item) => item.attachmentId === attachment.attachmentId ? { ...item, catalogSearchStatus: "failed" as const, catalogSearchError: cause instanceof Error ? cause.message : "No se pudo consultar el catálogo." } : item),
@@ -74,7 +92,7 @@ export function AgentAttachments({ session, setSession, disabled = false }: { se
     </div>
     {error && <p className="text-destructive" role="alert">{error}</p>}
     {!session.state.attachments.length && <p className="text-muted-foreground">Sin archivos adjuntos.</p>}
-    <div className="space-y-2">{session.state.attachments.map((attachment) => <AttachmentRow key={attachment.attachmentId} attachment={attachment} onAnalyze={() => void analyze(attachment)} onSelectCandidate={(candidateId) => {
+    <div className="space-y-2">{session.state.attachments.map((attachment) => <AttachmentRow key={attachment.attachmentId} attachment={attachment} onAnalyze={() => void analyze(attachment)} onSelectVisualCandidate={(candidateId) => selectVisualCandidate(attachment, candidateId)} onSelectCandidate={(candidateId) => {
       const line = session.state.productLines.find((item) => item.lineId === session.state.activeProductLineId && !["removed", "rejected"].includes(item.status))
         ?? session.state.productLines.find((item) => !["removed", "rejected"].includes(item.status));
       if (!line || !attachment.catalogCandidates) return;
@@ -85,7 +103,7 @@ export function AgentAttachments({ session, setSession, disabled = false }: { se
   </div>;
 }
 
-function AttachmentRow({ attachment, onAnalyze, onSelectCandidate, onRemove }: { attachment: CommercialAttachment; onAnalyze: () => void; onSelectCandidate: (candidateId: string) => void; onRemove: () => void }) {
+function AttachmentRow({ attachment, onAnalyze, onSelectCandidate, onSelectVisualCandidate, onRemove }: { attachment: CommercialAttachment; onAnalyze: () => void; onSelectCandidate: (candidateId: string) => void; onSelectVisualCandidate: (candidateId: string) => void; onRemove: () => void }) {
   const [summary, setSummary] = useState(attachment.analysis.summary?.value ?? "");
   return <div className="flex items-start gap-3 rounded-md border p-2">
     {attachment.previewUrl ? <img src={attachment.previewUrl} alt="Vista previa de referencia QA" className="h-12 w-12 rounded object-cover" /> : <Paperclip className="mt-1 h-5 w-5" />}
@@ -95,6 +113,17 @@ function AttachmentRow({ attachment, onAnalyze, onSelectCandidate, onRemove }: {
       {attachment.searchCriteria && <p className="text-xs text-muted-foreground">Criterios de catálogo: {attachment.searchCriteria}</p>}
       {attachment.catalogSearchStatus === "failed" && <p className="text-destructive">El análisis visual quedó conservado; la búsqueda de catálogo requiere reintento.</p>}
       {attachment.catalogSearchStatus === "no_results" && <p className="text-xs text-muted-foreground">No encontré candidatos verificados; solicita una aclaración.</p>}
+      {attachment.visualCandidates?.length ? <div className="mt-2 space-y-2"><p className="text-xs font-medium">Referencias reales del catálogo. Selecciona una; precio y suficiencia de stock requieren una cantidad.</p>{attachment.visualCandidates.slice(0, 6).map((candidate) => <div key={candidate.productId} className="rounded border p-2 text-xs">
+        {candidate.imageUrl ? <img src={candidate.imageUrl} alt={`Imagen de ${candidate.name}`} className="mb-2 h-16 w-16 rounded object-cover" /> : null}
+        <p className="font-medium">{candidate.name}</p><p>SKU: {candidate.sku ?? "No informado"}</p>
+        {candidate.description ? <p>{candidate.description}</p> : null}
+        {candidate.minimumQuantity !== null ? <p>Pedido mínimo del catálogo: {candidate.minimumQuantity} piezas</p> : <p>Pedido mínimo: por confirmar</p>}
+        <p>Precio pendiente de cantidad · stock para cantidad no verificado</p>
+        <Button type="button" size="sm" variant="outline" onClick={() => onSelectVisualCandidate(candidate.productId)}>
+          {attachment.selectedVisualCandidateId === candidate.productId ? "Referencia seleccionada" : "Seleccionar referencia"}
+        </Button>
+        {attachment.selectedVisualCandidateId === candidate.productId ? <p role="status">Referencia elegida. Indica la cantidad (por ejemplo, “50 piezas”) para validar MOQ, precio y stock.</p> : null}
+      </div>)}</div> : null}
       {attachment.catalogCandidates?.length ? <div className="mt-2 space-y-2"><p className="text-xs font-medium">Opciones parecidas del catálogo; selecciona una para asociarla a la línea activa.</p>{attachment.catalogCandidates.slice(0, 6).map((candidate) => <div key={candidate.id} className="rounded border p-2 text-xs"><p className="font-medium">{candidate.name}</p><p>SKU: {candidate.sku ?? "No informado"} · {candidate.price.status}</p><p>{candidate.stockStatus === "observed" ? `Stock observado: ${candidate.observedStock}` : "Stock no observado"}</p><Button type="button" size="sm" variant="outline" onClick={() => onSelectCandidate(candidate.id)}>Seleccionar candidato visual</Button></div>)}</div> : null}
       <input aria-label={`Resumen de ${attachment.filename}`} value={summary} onChange={(event) => setSummary(event.target.value)} placeholder="Resultado resumido confirmado por QA" className="mt-1 w-full rounded border bg-background px-2 py-1 text-xs" />
     </div>

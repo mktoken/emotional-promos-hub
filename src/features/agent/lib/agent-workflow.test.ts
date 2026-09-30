@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { selectedLineProduct, selectedProductLines } from "./agent-state";
 import { advanceAgent, chooseAgentProduct, newAgentSession } from "./agent-workflow";
 import type { AgentProduct } from "./agent-state";
+import type { VisualCatalogCandidate } from "./agent-tools";
+import { createCommercialAttachment, selectVisualCatalogCandidate } from "./agent-attachments";
 
 function catalogProduct(category: string, index: number, quantity: number): AgentProduct {
   const id = `${category}-${index}`;
@@ -20,7 +22,62 @@ const realSearch = async (interest: string, quantity: number) => {
   return [1, 2, 3].map((index) => catalogProduct(category, index, quantity));
 };
 
+function withSelectedVisualCandidate(session = newAgentSession()) {
+  const candidate: VisualCatalogCandidate = {
+    productId: "catalog-mug-1", sku: "MUG-1", name: "Taza real", description: "Taza cerámica con cuchara",
+    imageUrl: null, category: "taza", catalogCategory: "Bebidas", subcategory: "Tazas", minimumQuantity: 21,
+    status: "considering", quantity: null, pricingStatus: "pending_quantity", price: null, stockStatus: "not_checked",
+  };
+  const attachment = { ...createCommercialAttachment({ name: "taza.png", type: "image/png", size: 100 }, "product_photo", "88888888-8888-4888-8888-888888888888"),
+    visualCandidates: [candidate] };
+  const selected = selectVisualCatalogCandidate(attachment, candidate.productId);
+  return { ...session, state: { ...session.state, attachments: [selected] } };
+}
+
+function pricedVisualProduct(quantity: number): AgentProduct {
+  return { ...catalogProduct("taza", 1, quantity), id: "catalog-mug-1", sku: "MUG-1", name: "Taza real",
+    price: { status: "priced", currency: "MXN", unitPriceBeforeTaxMxn: 38, minimumQuantity: 21,
+      pricingGenerationId: "public-v2", requestedQuantity: quantity, isValidQuantity: true } };
+}
+
 describe("shared multi-product agent workflow", () => {
+  it("does not infer a quantity, create a product line, or call pricing when a visual candidate is only selected", () => {
+    const session = withSelectedVisualCandidate();
+    expect(session.state.productLines).toEqual([]);
+    expect(session.state.attachments[0]).toMatchObject({ selectedVisualCandidateId: "catalog-mug-1" });
+    expect(session.state.attachments[0].visualCandidates?.[0]).toMatchObject({ quantity: null, price: null, stockStatus: "not_checked" });
+  });
+
+  it("requires a real quantity meeting catalog MOQ before authoritative pricing and creates one selected line", async () => {
+    const calls: Array<[string, number]> = [];
+    const loader = async (productId: string, quantity: number) => {
+      calls.push([productId, quantity]);
+      return pricedVisualProduct(quantity);
+    };
+    const below = await advanceAgent(withSelectedVisualCandidate(), "20 piezas", realSearch, loader);
+    expect(calls).toEqual([]);
+    expect(below.session.state.productLines).toEqual([]);
+    expect(below.session.messages.at(-1)?.text).toContain("mínimo de compra");
+
+    const result = await advanceAgent(withSelectedVisualCandidate(), "50 piezas", realSearch, loader);
+    expect(calls).toEqual([["catalog-mug-1", 50]]);
+    expect(result.session.state.productLines).toHaveLength(1);
+    expect(result.session.state.productLines[0]).toMatchObject({ productInterest: "taza", quantity: 50, selectedProductId: "catalog-mug-1", status: "selected" });
+    expect(selectedLineProduct(result.session.state.productLines[0])).toMatchObject({ id: "catalog-mug-1", quantity: 50, price: { requestedQuantity: 50, unitPriceBeforeTaxMxn: 38 } });
+    expect(result.session.state.attachments[0].linkedProductLineIds).toEqual([result.session.state.productLines[0].lineId]);
+  });
+
+  it("preserves quantity one as known input and rejects it against explicit catalog MOQ without pricing", async () => {
+    let pricingCalls = 0;
+    const result = await advanceAgent(withSelectedVisualCandidate(), "1 pieza", realSearch, async () => {
+      pricingCalls++;
+      return pricedVisualProduct(1);
+    });
+    expect(pricingCalls).toBe(0);
+    expect(result.session.state.productLines).toEqual([]);
+    expect(result.session.messages.at(-1)?.text).toContain("21 piezas");
+  });
+
   it("keeps the original mono-product request and searches its real line", async () => {
     const calls: Array<[string, number]> = [];
     const result = await advanceAgent(newAgentSession(), "Quiero 50 libretas para un evento corporativo", async (interest, quantity) => {

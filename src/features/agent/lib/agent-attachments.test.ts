@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { attachmentHandoff, buildSearchCriteriaFromVisualAnalysis, buildVisualSearchCriteria, createCommercialAttachment, linkAttachmentToLines, recordAttachmentObservations, removeAttachment, validateAttachmentFile } from "./agent-attachments";
+import { attachmentHandoff, buildSearchCriteriaFromVisualAnalysis, buildVisualSearchCriteria, createCommercialAttachment, linkAttachmentToLines, recordAttachmentObservations, removeAttachment, selectVisualCatalogCandidate, validateAttachmentFile } from "./agent-attachments";
+import type { VisualCatalogCandidate } from "./agent-tools";
+
+const visualCandidate: VisualCatalogCandidate = {
+  productId: "catalog-real-1", sku: "MUG-1", name: "Taza real", description: "Taza cerámica con cuchara",
+  imageUrl: null, category: "taza", catalogCategory: "Bebidas", subcategory: "Tazas", minimumQuantity: 21,
+  status: "considering", quantity: null, pricingStatus: "pending_quantity", price: null, stockStatus: "not_checked",
+};
 
 describe("commercial attachment guardrails", () => {
   it("accepts supported files and rejects unsupported or oversized files", () => {
@@ -53,5 +60,16 @@ describe("commercial attachment guardrails", () => {
       competitorObservation: {}, confidence: "low" as const, provenance: "attachment" as const,
       humanReviewRequired: true, candidateReference: unknown };
     expect(buildSearchCriteriaFromVisualAnalysis(visual)).toBeNull();
+  });
+
+  it("stores only an explicit selection of a real visual candidate, without quantity or price", () => {
+    const attachment = { ...createCommercialAttachment({ name: "taza.png", type: "image/png", size: 100 }, "product_photo", "77777777-7777-4777-8777-777777777777"),
+      visualCandidates: [visualCandidate] };
+    const invalid = selectVisualCatalogCandidate(attachment, "invented-id");
+    expect(invalid).toBe(attachment);
+    const selected = selectVisualCatalogCandidate(attachment, visualCandidate.productId);
+    expect(selected.selectedVisualCandidateId).toBe("catalog-real-1");
+    expect(selected.visualCandidates?.[0]).toMatchObject({ quantity: null, price: null, pricingStatus: "pending_quantity", stockStatus: "not_checked" });
+    expect(selected).not.toHaveProperty("productLines");
   });
 });

@@ -15,7 +15,7 @@ interface ProductRow {
 
 export interface CatalogTools {
   searchProducts(query: string, quantity: number): Promise<SearchRow[]>;
-  searchProductsExact?(query: string, quantity: number): Promise<SearchRow[]>;
+  searchProductsExact?(query: string, quantity: number | null): Promise<SearchRow[]>;
   getProductDetails(id: string): Promise<ProductRow | null>;
   getProductVariants(id: string): Promise<AgentProduct["variants"]>;
   getProductStock(id: string): Promise<{ observedStock: number | null; status: "observed" | "unknown" }>;
@@ -50,7 +50,8 @@ export const catalogTools: CatalogTools = {
       p_subcategory_slug: null, p_min_price: null, p_max_price: null,
     });
     if (error) throw new Error(error.message);
-    return ((data ?? []) as SearchRow[]).filter((row) => row.id && (!row.minimum_quantity || row.minimum_quantity <= quantity));
+    return ((data ?? []) as SearchRow[]).filter((row) => row.id
+      && (quantity === null || !row.minimum_quantity || row.minimum_quantity <= quantity));
   },
   async searchProducts(query, quantity) {
     const normalized = query.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
@@ -96,20 +97,7 @@ export const catalogTools: CatalogTools = {
 export async function loadRealProducts(
   query: string | null, quantity: number, tools: CatalogTools = catalogTools,
 ): Promise<AgentProduct[]> {
-  if (!query?.trim()) return [];
-  const queries = planVisualCatalogQueries(query);
-  const category = queries[0];
-  const rowsById = new Map<string, SearchRow>();
-  const exactSearch = tools.searchProductsExact?.bind(tools) ?? tools.searchProducts.bind(tools);
-  for (const term of queries) {
-    const results = queries.length > 1 ? await exactSearch(term, quantity) : await tools.searchProducts(term, quantity);
-    for (const row of results) {
-      if (!row.id || rowsById.has(row.id) || !matchesVisualCategory(row, category)) continue;
-      rowsById.set(row.id, row);
-    }
-    if (rowsById.size >= 12) break;
-  }
-  const rows = [...rowsById.values()];
+  const rows = await searchCatalogRows(query, quantity, tools, false);
   const hydrated = await Promise.all(rows.slice(0, 12).map(async (row): Promise<AgentProduct | null> => {
     try {
       const detail = await tools.getProductDetails(row.id);
@@ -133,6 +121,70 @@ export async function loadRealProducts(
     throw new Error("No se pudieron verificar las fichas o los precios del catálogo.");
   }
   return hydrated.filter((item): item is AgentProduct => item !== null);
+}
+
+export interface VisualCatalogCandidate {
+  productId: string;
+  sku: string | null;
+  name: string;
+  description: string | null;
+  imageUrl: string | null;
+  category: string;
+  catalogCategory: string | null;
+  subcategory: string | null;
+  minimumQuantity: number | null;
+  status: "considering";
+  quantity: null;
+  pricingStatus: "pending_quantity";
+  price: null;
+  stockStatus: "not_checked";
+}
+
+/** Searches catalog candidates before quantity is known; it never hydrates details, price, or stock. */
+export async function loadVisualCatalogCandidates(
+  query: string | null, tools: CatalogTools = catalogTools,
+): Promise<VisualCatalogCandidate[]> {
+  const category = query?.trim() ? planVisualCatalogQueries(query)[0] : "";
+  const rows = await searchCatalogRows(query, null, tools, true);
+  return rows.map((row) => ({
+    productId: row.id,
+    sku: row.sku_base?.trim() || null,
+    name: row.nombre?.trim() || row.sku_base?.trim() || "Producto de catálogo",
+    description: row.descripcion ?? null,
+    imageUrl: normalizeProductImages(row.imagenes)[0] ?? null,
+    category,
+    catalogCategory: row.categoria_nombre ?? null,
+    subcategory: row.subcategoria_nombre ?? null,
+    minimumQuantity: row.minimum_quantity,
+    status: "considering",
+    quantity: null,
+    pricingStatus: "pending_quantity",
+    price: null,
+    stockStatus: "not_checked",
+  }));
+}
+
+async function searchCatalogRows(
+  query: string | null, quantity: number | null, tools: CatalogTools, exactSingleQuery: boolean,
+): Promise<SearchRow[]> {
+  if (!query?.trim()) return [];
+  const queries = planVisualCatalogQueries(query);
+  const category = queries[0];
+  const rowsById = new Map<string, SearchRow>();
+  for (const term of queries) {
+    const requiresExact = queries.length > 1 || exactSingleQuery;
+    const results = requiresExact
+      ? tools.searchProductsExact
+        ? await tools.searchProductsExact(term, quantity)
+        : quantity === null ? [] : await tools.searchProducts(term, quantity)
+      : await tools.searchProducts(term, quantity ?? 1);
+    for (const row of results) {
+      if (!row.id || rowsById.has(row.id) || !matchesVisualCategory(row, category)) continue;
+      rowsById.set(row.id, row);
+    }
+    if (rowsById.size >= 12) break;
+  }
+  return [...rowsById.values()].slice(0, 12);
 }
 
 const visualCategoryAliases: Record<string, string[]> = {

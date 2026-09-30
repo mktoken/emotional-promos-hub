@@ -1,4 +1,5 @@
 import type { AgentProduct } from "./agent-state";
+import type { VisualCatalogCandidate } from "./agent-tools";
 
 export type CommercialAttachmentType =
   | "product_photo" | "product_screenshot" | "inspiration_image" | "logo"
@@ -73,6 +74,8 @@ export interface CommercialAttachment {
   catalogSearchError?: string;
   candidateProductIds?: string[];
   catalogCandidates?: AgentProduct[];
+  visualCandidates?: VisualCatalogCandidate[];
+  selectedVisualCandidateId?: string;
 }
 
 export interface AttachmentFileMetadata { name: string; type: string; size: number; }
@@ -259,6 +262,11 @@ export function removeAttachment(attachments: CommercialAttachment[], attachment
 
 export function linkAttachmentToLines(attachment: CommercialAttachment, lineIds: string[]): CommercialAttachment {
   return { ...attachment, linkedProductLineIds: [...new Set(lineIds)] };
+}
+
+export function selectVisualCatalogCandidate(attachment: CommercialAttachment, productId: string): CommercialAttachment {
+  if (!attachment.visualCandidates?.some((candidate) => candidate.productId === productId)) return attachment;
+  return { ...attachment, selectedVisualCandidateId: productId };
 }
 
 export function buildVisualSearchCriteria(attachment: CommercialAttachment): string | null {

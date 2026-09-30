@@ -1,4 +1,8 @@
 type RecordValue = Record<string, unknown>;
+import type { z } from "zod";
+import { createVisionV1Schema } from "./vision-contract.ts";
+
+type VisionV1 = z.infer<ReturnType<typeof createVisionV1Schema>>;
 
 const asRecord = (value: unknown): RecordValue | null =>
   value !== null && typeof value === "object" && !Array.isArray(value) ? value as RecordValue : null;
@@ -171,4 +175,49 @@ export function normalizeAnalysis(raw: unknown) {
     commercialCategory: observation(category, "inferred", selected.categoryConfidence), searchTerms, normalizedColors: colors,
     primaryMaterial: observation(materials[0], "inferred", selected.materialConfidence), keyFeatures: accessories,
     brandingDetected: observation(brandingDetected), usableSignals, queryReady: Boolean(!ambiguous && category && usableSignals >= 2) };
+}
+
+/** V1 is intentionally separate from the three legacy Gemini adapters. */
+export function normalizeVisionV1(value: VisionV1) {
+  const count = value.products.length;
+  const product = count === 1 ? value.products[0] : null;
+  const legacyShape = product ? {
+    document_type: value.documentType,
+    confidence: product.confidence,
+    extracted_data: {
+      product_name: product.name,
+      description: product.description,
+      colors: product.colors,
+      materials: product.materials,
+      included_accessories: product.components,
+      branding_or_print: product.brandingPresent,
+    },
+    extracted_text: product.visibleText,
+  } : { document_type: value.documentType };
+  const result = normalizeAnalysis(legacyShape);
+  const categoryHint = product ? deriveCategory(product.category ?? "") : null;
+  const nameCategory = product ? deriveCategory(product.name ?? "") : null;
+  const descriptionCategory = product ? deriveCategory(product.description ?? "") : null;
+  const categories = [...new Set([categoryHint, nameCategory, descriptionCategory].filter(Boolean))];
+  const ambiguous = categories.length > 1;
+  const category = !ambiguous && categoryHint ? categoryHint : result.commercialCategory.value;
+  const usableSignals = result.usableSignals + Number(Boolean(categoryHint && !result.commercialCategory.value));
+  const queryReady = Boolean(count === 1 && ["product_photo", "product_screenshot"].includes(value.documentType) && !ambiguous && category && usableSignals >= 2);
+  return {
+    ...result,
+    analysisStatus: count === 1 && !ambiguous ? "completed" as const : "partial" as const,
+    attachmentType: value.documentType,
+    confidence: product?.confidence ?? "low" as const,
+    commercialCategory: observation(queryReady ? category : null, "inferred", product?.confidence ?? "low"),
+    productObservation: { ...result.productObservation, apparentCategory: observation(queryReady ? category : null, "inferred", product?.confidence ?? "low") },
+    brandingDetected: observation(product?.brandingPresent ?? null),
+    searchTerms: queryReady ? result.searchTerms.length ? result.searchTerms : [category as string] : [],
+    usableSignals,
+    queryReady,
+  };
+}
+
+export function failedVisionAnalysis() {
+  return { ...normalizeAnalysis({}), analysisStatus: "failed" as const, queryReady: false,
+    searchTerms: [], error: "vision_contract_invalid" };
 }

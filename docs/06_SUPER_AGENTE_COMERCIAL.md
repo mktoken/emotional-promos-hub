@@ -84,9 +84,11 @@ Una operación lista para revisión humana debe incluir:
 
 El estado de oportunidad conserva `attachments[]` sin romper snapshots v1/v2. El intake local/QA valida MIME, extensión/nombre y límite de 10 MB; muestra preview, tipo, estado y permite eliminar antes de guardar. Los archivos pueden vincularse a una o varias líneas sin duplicación física.
 
-Las observaciones están versionadas con `attachmentId`, fecha, fuente, certeza y confianza. Fotos y screenshots pueden producir criterios de búsqueda, pero solo el catálogo real puede devolver producto, SKU, precio V2 y stock observado. Logos y artes siempre requieren revisión técnica; referencias competidoras son `COMPETITIVE CONTEXT` y no cambian precio, margen, descuento ni reglas. La capa no calcula impresión ni incorpora archivos a WhatsApp.
+Las observaciones están versionadas con `attachmentId`, fecha, fuente, certeza y confianza. El motor del E2E visual QA es OpenAI `openai/gpt-6-luna` por Lovable AI Gateway `/v1/responses`, contrato estricto `commercial_vision_v1` y Zod. La integración Gemini anterior queda como compatibilidad histórica/rollback; su metadata heredada no determina el modelo runtime. Fotos y screenshots derivan criterios, pero producto/SKU salen del catálogo, precio de Pricing V2 y stock de la autoridad existente.
 
-**Estado:** implementación de intake, contratos, guardrails y handoff validada; procesamiento visual automático y E2E con archivo visual real aún no comprobados.
+Un candidato visual pre-pricing conserva identidad real de catálogo pero puede existir con cantidad desconocida, precio nulo y stock no comprobado. El MOQ no filtra mientras la cantidad es desconocida; Pricing V2 y stock no se consultan prematuramente. La selección requiere acción explícita del comprador. Solo tras cantidad real y MOQ válido se consulta precio/stock y se transforma el candidato en `AgentProduct`/product line. Disponibilidad final e impresión permanecen por confirmar y el handoff sigue siendo humano.
+
+**Estado:** **CLOSED / PASS** para el E2E QA visual controlado del 2026-09-29: fixture neutral, contrato V1 validado, categoría taza, candidatos reales, SAHARA explícito, 50 piezas, MOQ 44, SKU T 98, precio V2, stock observado, product line, Opportunity Context, oportunidad/cotización `BORRADOR` y handoff. No hubo emisión, correo ni WhatsApp. El PASS no abarca runtime de logo/competidor ni un lanzamiento público. La evidencia completa está en `docs/10_QA_EVIDENCE.md`.
 
 ## Niveles de autonomía
 

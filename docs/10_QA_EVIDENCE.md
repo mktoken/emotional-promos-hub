@@ -1532,18 +1532,35 @@ No se considera P0 la ausencia del Super Agente, Pricing shadow, benchmark, impr
 
 `CHK-OPS-1: CERRADO / PARCIAL`. La operación comercial puede comenzar con el flujo estable y revisión humana de los puntos P1. El siguiente checkpoint definido es `CHK-AI-SALES-1 — SUPER AGENTE WEB / SOLICITUD SIMPLE DE 50 LIBRETAS`; no se implementó en esta ejecución.
 
-## CHK-AI-SALES-5 — Visión y documentos comerciales (2026-09-28)
+## CHK-AI-SALES-5 — Visión y documentos comerciales (cierre E2E 2026-09-29)
 
-**Estado:** **CERRADO / PARCIAL**. Se validó la implementación de intake y guardrails; no se declara PASS porque falta el E2E runtime visual requerido.
+**Estado:** **CLOSED / PASS** para el E2E visual QA controlado descrito aquí. La ejecución runtime final se reportó y certificó con el fixture QA neutral `visual-fixture-qa.webp`; este registro consolida esa evidencia y no afirma una nueva ejecución durante el cierre documental.
 
-- `CommercialAttachment` conserva tipo, nombre, MIME, tamaño, origen, fecha, estado, análisis estructurado, confianza, provenance, asociación a líneas y revisión humana.
-- Se aceptan JPEG, PNG, WebP y PDF hasta 10 MB; se rechazan MIME no permitido, tamaño inválido y nombres inseguros. El archivo no se ejecuta ni se usa como identidad.
-- Se soportan foto/screenshot, inspiración, logo, arte, referencia competidora y documento comercial simple. El componente `AgentAttachments` quedó integrado en QA CRM y piloto local con preview, tipo, estado y eliminación antes de guardar.
-- Las observaciones explícitas pueden quedar `OBSERVED`, `INFERRED`, `USER_CONFIRMED` o `UNKNOWN`; el handoff CRM incluye resumen, criterios visuales, líneas y guardrails. No se inventan SKU, precio, stock, IVA, Pantone, técnica, tintas, tamaño, impresión ni costo.
-- Una referencia competidora no modifica automáticamente pricing, margen o descuentos. Un logo/arte conserva `technicalReviewRequired=true` y `PRINTING / PERSONALIZATION: POR CONFIRMAR`.
-- Tests dirigidos: PASS; suite completa: PASS; TypeScript: PASS; lint dirigido: PASS; build normal: PASS; build QA/piloto: PASS; `git diff --check`: PASS. El warning de bundle grande continúa no bloqueante.
+### E2E visual
 
-**No comprobado:** archivo visual comercial QA real procesado por un motor de visión; extracción automática de atributos; búsqueda runtime de similares derivada de esos atributos; candidato real con precio/stock y handoff E2E; casos runtime de logo y screenshot competidor. Por ello el siguiente alcance requiere `CHK-AI-SALES-5-RUNTIME-VISION-1` y no habilita producción ni WhatsApp.
+Cadena validada: `visual-fixture-qa.webp` (tipo `product_photo`) → Lovable AI Gateway → `openai/gpt-6-luna` vía `/v1/responses` → Structured Output `commercial_vision_v1` con `json_schema` y `strict=true` → validación Zod → normalización a `CommercialVisualAnalysis` → query guard → catálogo real.
+
+- El resultado V1 fue válido; categoría `taza`, `queryReady=true` y criterios de catálogo derivados de señales visuales. El catálogo devolvió candidatos reales; no hubo selección automática.
+- Cantidad inicialmente desconocida: se mostraron candidatos pre-pricing sin usar `1` como sustituto ni filtrar por MOQ. Pricing V2 no se ejecutó antes de una cantidad explícita.
+- El usuario eligió `SAHARA`. El MOQ observado en catálogo fue 44 piezas; el usuario indicó 50. MOQ: PASS.
+- Identidad real de catálogo: SKU `T 98`. Pricing V2 devolvió `$34.79 MXN` por pieza antes de IVA e impresión, subtotal `$1,739.50 MXN` antes de IVA. La autoridad de precio fue Pricing V2.
+- Stock observado: 3,760. Esto no certifica disponibilidad final, que permaneció **POR CONFIRMAR**. Personalización/impresión también quedó **POR CONFIRMAR**.
+- Se creó una product line `taza · 50`, una oportunidad QA y una cotización QA sincronizada en estado `BORRADOR`; Opportunity Context quedó integrado. Handoff: listo para revisión humana.
+- No se emitió la cotización. No se envió correo ni WhatsApp.
+
+### Guardrails y autoridad
+
+- La visión extrae observaciones; no es autoridad para SKU, precio, stock, Pantone, disponibilidad ni impresión. SKU provino del catálogo; precio de Pricing V2; stock de su fuente de catálogo observada.
+- La selección del candidato fue explícita. Un `pre-pricing candidate` puede existir sin cantidad, precio, ni estado de stock comprobado; no es un `AgentProduct` ni una línea comercial. Solo cantidad real permite validar MOQ y luego obtener precio/stock autoritativos y crear la línea.
+- No se inventaron Pantone, técnica, costo o área de impresión. La cotización permaneció borrador y el flujo terminó en revisión humana.
+
+### Motor y contrato
+
+El motor runtime del E2E fue `openai/gpt-6-luna` a través del Lovable AI Gateway, endpoint Responses `/v1/responses`, contrato `commercial_vision_v1`, `json_schema`, `strict=true` y validación Zod. La decisión reemplaza Gemini como motor runtime para estabilizar el contrato: la integración anterior por Gemini/Lovable Gateway admitía `json_object` y se observaron cuatro shapes de respuesta variables; los adaptadores Gemini permanecen solo como compatibilidad/historia y no identifican el motor runtime actual. El registro técnico versionado de `.lovable/plan.md` documenta una sonda OpenAI real con imagen y contrato V1; el resultado de catálogo y operación de esta sección corresponde al reporte E2E QA certificado para el cierre.
+
+La capa de intake aún admite fotos, screenshots, inspiración, logos, arte, referencias competidoras y documentos simples. Los casos runtime de logo y screenshot competidor no forman parte del PASS de este E2E. Esto no habilita exposición pública del piloto ni cambia la autoridad comercial fuera de QA.
+
+**Validación de repositorio relacionada:** suite completa 205/205 PASS; pruebas focales de retrieval, attachments y workflow 49/49 PASS; ESLint dirigido PASS; builds normal y QA PASS; `git diff --check` PASS en la implementación funcional. TypeScript conserva 47 diagnósticos preexistentes del baseline, sin nuevos diagnósticos en los cambios funcionales de retrieval/workflow/UI; no se corrigieron por estar fuera del alcance. El warning de bundle grande no fue bloqueante.
 
 ## CHK-AI-SALES-1 — Super Agente Web QA
 

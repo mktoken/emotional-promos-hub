@@ -175,14 +175,12 @@ Son estimaciones de ingeniería basadas en la estructura actual, no compromisos 
 
 ## CHK-AI-SALES-5 — Visión y documentos comerciales
 
-**Estado:** **CERRADO / PARCIAL**.
+**Estado:** **CLOSED / PASS para E2E visual QA controlado (2026-09-29)**.
 
 Se implementó intake QA/local de imágenes y PDF comercial simple con validación de MIME, tamaño y nombre; preview, tipo, estado, confidence, provenance, UNKNOWN explícito, eliminación previa al guardado, asociación a una o varias product lines y handoff CRM. La capa no sustituye catálogo, pricing V2, stock ni revisión humana de impresión. No modifica Pricing Conversion, G4, producción, Lovable, Supabase, WhatsApp ni `CHK-BRAND-WEB-1`.
 
-Validaciones de repositorio: tests dirigidos PASS, suite completa PASS, TypeScript PASS, lint dirigido PASS, build normal PASS, build QA/piloto PASS y `git diff --check` PASS. El E2E visual exigido por el checkpoint —archivo visual QA real, procesamiento runtime de atributos, búsqueda real de similares, precio/stock y handoff— permanece **NO COMPROBADO** porque el repositorio no contiene un motor de visión ni fixture visual comercial adecuado. No se inventan resultados.
-
-El subcheckpoint propuesto es `CHK-AI-SALES-5-RUNTIME-VISION-1`, con alcance exclusivo de ejecutar ese E2E controlado y cerrar los casos de foto, logo y referencia competidora.
+El E2E QA controlado del 2026-09-29 validó fixture visual neutral, motor OpenAI V1, catálogo real, candidato pre-pricing sin cantidad/precio, selección explícita, cantidad 50, MOQ 44, Pricing V2, stock observado, product line, oportunidad/cotización `BORRADOR` y handoff humano. Disponibilidad final e impresión quedaron por confirmar; no hubo emisión ni comunicación. El detalle está en `docs/10_QA_EVIDENCE.md`. El PASS no incluye runtime de logo/competidor ni exposición pública.
 
 ## Próximo checkpoint
 
-`CHK-AI-SALES-1`, `CHK-AI-SALES-2`, `CHK-AI-SALES-3` y `CHK-AI-SALES-4` quedan **CERRADOS / PASS** dentro de sus alcances QA controlados. `CHK-AI-SALES-5` queda **CERRADO / PARCIAL** y su runtime visual requiere el subcheckpoint propuesto `CHK-AI-SALES-5-RUNTIME-VISION-1`. No se autoriza exponer ni desplegar el piloto al público. Pricing, G4, impresión y visión automática permanecen fuera de producción; el lanzamiento público sigue condicionado a un PASS posterior de `CHK-BRAND-WEB-1`.
+`CHK-AI-SALES-1`, `CHK-AI-SALES-2`, `CHK-AI-SALES-3` y `CHK-AI-SALES-4` quedan **CERRADOS / PASS** dentro de sus alcances QA controlados. `CHK-AI-SALES-5` queda **CLOSED / PASS** para el E2E visual QA controlado documentado; no se autoriza exponer ni desplegar el piloto al público. Pricing de Conversión, G4 e impresión automatizada permanecen fuera de producción; el lanzamiento público sigue condicionado al cierre de `CHK-BRAND-WEB-1`, que se registra como próximo frente mayor y no se inicia en este cierre.

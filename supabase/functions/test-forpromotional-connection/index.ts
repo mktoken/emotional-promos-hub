@@ -166,6 +166,9 @@ Deno.serve(async (req) => {
       ok: res.ok,
       provider: "forpromotional",
       status: res.status,
+      filterApplied,
+      sampleIdArticulo:
+        firstProduct && firstProduct["id_articulo"] != null ? String(firstProduct["id_articulo"]) : null,
       hasProducts: firstProduct !== null,
       productCountDetected: productList.length,
       topLevelKeys,

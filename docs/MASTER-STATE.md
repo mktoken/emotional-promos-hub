@@ -1212,3 +1212,15 @@ Estado: CERRADO / PASS.
 - La regla operativa Supabase / Lovable se mantiene vigente.
 
 La regla operativa vigente se conserva: Supabase se trata como integrado/interno dentro de Lovable; no se usa supabase.com, Supabase CLI ni service role como ruta operativa.
+
+## PE SPECIALIST GOVERNANCE V1
+
+Estado: VIGENTE.
+
+- Existen 7 Skills especialistas y 1 Skill orquestador para el trabajo de Promocionales Emocionales: `pe-evidence-claims`, `pe-brand-strategist`, `pe-b2b-buyer-jtbd`, `pe-ux-cro-architect`, `pe-conversion-copy-chief`, `pe-visual-image-director`, `pe-google-ads-intent-miner` y `pe-specialist-orchestrator`.
+- El `SPECIALIST PRE-FLIGHT` es obligatorio antes de iniciar cualquier nueva fase, checkpoint, investigación, diseño, copy, preparación de Build, campaña o auditoría relevante.
+- Work debe consultar los Skills según el tipo de tarea; el orquestador designa lead/supporting specialists, recupera fuentes y decisiones canónicas, revisa dependencias, superficies protegidas y bloqueos, y detiene el trabajo si no existe readiness suficiente.
+- Los Skills no pueden cambiar decisiones aprobadas, redefinir posicionamiento, aprobar claims sin evidencia, ordenar Build, publicar ni modificar repositorio, producción, Lovable o Supabase.
+- Work coordina; Chat Principal integra; el propietario aprueba decisiones de negocio.
+- Lovable construye únicamente checkpoints autorizados y dentro de su alcance aprobado.
+- Se mantiene el principio operativo: **NO DEPENDER DE RECORDATORIOS DEL PROPIETARIO**. Las fuentes canónicas deben recuperar Skills, decisiones cerradas, checkpoints pendientes y superficies protegidas sin exigir que el propietario los recuerde.

@@ -94,7 +94,16 @@ Deno.serve(async (req) => {
       return jsonResponse(401, { ok: false, error_message: "test_key inválido" });
     }
 
-    const endpoint = "https://api-external-clients.4promotional.net/api/products";
+    const baseEndpoint = "https://api-external-clients.4promotional.net/api/products";
+    // Filtro opcional documentado (API 2.0). Sin él, comportamiento original.
+    const idArticuloRaw = (url.searchParams.get("id_articulo") ?? "").trim();
+    if (idArticuloRaw && !/^[A-Za-z0-9._\- ]{1,64}$/.test(idArticuloRaw)) {
+      return jsonResponse(400, { ok: false, error_message: "id_articulo inválido" });
+    }
+    const filterApplied = idArticuloRaw.length > 0;
+    const endpoint = filterApplied
+      ? `${baseEndpoint}?id_articulo=${encodeURIComponent(idArticuloRaw)}`
+      : baseEndpoint;
 
     const res = await fetch(endpoint, {
       method: "GET",
@@ -157,6 +166,9 @@ Deno.serve(async (req) => {
       ok: res.ok,
       provider: "forpromotional",
       status: res.status,
+      filterApplied,
+      sampleIdArticulo:
+        firstProduct && firstProduct["id_articulo"] != null ? String(firstProduct["id_articulo"]) : null,
       hasProducts: firstProduct !== null,
       productCountDetected: productList.length,
       topLevelKeys,

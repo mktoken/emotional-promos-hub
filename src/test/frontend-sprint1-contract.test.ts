@@ -17,9 +17,13 @@ describe("contrato estático del frontend de solicitud de cotización", () => {
   });
 
   it("no usa ShoppingCart y muestra Mi solicitud", () => {
+    const homeHeader = readSource("src/components/home/HomeHeader.tsx");
     expect(productDetail).not.toContain("ShoppingCart");
     expect(index).not.toContain("ShoppingCart");
-    expect(index).toContain("Mi solicitud");
+    expect(homeHeader).not.toContain("ShoppingCart");
+    expect(homeHeader).toContain("Mi solicitud");
+    expect(index).toMatch(/import\s+HomeHeader\s+from\s+["']@\/components\/home\/HomeHeader["']/);
+    expect(index).toContain("<HomeHeader");
   });
 
   it("no consulta precio_desde_mxn en ProductDetailView", () => {

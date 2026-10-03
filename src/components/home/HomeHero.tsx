@@ -1,0 +1,77 @@
+import { ArrowRight } from "lucide-react";
+
+interface HomeHeroProps {
+  onExploreCatalog: () => void;
+  /** Slot reemplazable: cuando exista el asset final aprobado, pasar su URL aquí. */
+  imageSrc?: string;
+  imageAlt?: string;
+}
+
+export default function HomeHero({ onExploreCatalog, imageSrc, imageAlt = "" }: HomeHeroProps) {
+  return (
+    <section className="bg-surface border-b border-border">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+          <div className="lg:col-span-6">
+            <p className="text-sm font-semibold uppercase tracking-wide text-primary mb-4">
+              Promocionales para empresas
+            </p>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground leading-tight mb-6">
+              Artículos promocionales que dejan marca.
+            </h1>
+            <p className="hidden sm:block text-lg text-muted-foreground mb-10 max-w-xl">
+              Explora productos para tu empresa o cuéntanos tu proyecto.
+              <br />
+              Te ayudamos a encontrar opciones y avanzar con claridad.
+            </p>
+            <p className="sm:hidden text-base text-muted-foreground mb-8">
+              Explora productos o cuéntanos tu proyecto.
+              <br />
+              Te ayudamos a encontrar opciones claras.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
+              <div className="rounded-xl border border-border bg-card p-5 flex flex-col gap-4">
+                <p className="text-sm font-semibold text-foreground">Sé qué producto necesito</p>
+                <button
+                  type="button"
+                  onClick={onExploreCatalog}
+                  className="min-h-[44px] w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-5 rounded-lg transition-colors inline-flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
+                >
+                  Explorar catálogo <ArrowRight size={18} aria-hidden="true" />
+                </button>
+              </div>
+
+              <div className="rounded-xl border border-border bg-card p-5 flex flex-col gap-4">
+                <p className="text-sm font-semibold text-foreground">Tengo un proyecto</p>
+                {/* Ruta B: solo visual. Sin destino funcional autorizado (ROUTE B FUNCTIONAL CONTRACT = OPEN). */}
+                <button
+                  type="button"
+                  disabled
+                  aria-disabled="true"
+                  aria-describedby="route-b-status"
+                  className="min-h-[44px] w-full border-2 border-foreground text-foreground font-bold py-3 px-5 rounded-lg inline-flex items-center justify-center gap-2 cursor-not-allowed opacity-60"
+                >
+                  Contar mi proyecto
+                </button>
+                <span id="route-b-status" className="sr-only">
+                  Esta opción aún no está disponible.
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-6">
+            <div className="aspect-[4/3] w-full rounded-2xl border border-border bg-card overflow-hidden">
+              {imageSrc ? (
+                <img src={imageSrc} alt={imageAlt} className="w-full h-full object-contain" />
+              ) : (
+                <div className="w-full h-full bg-muted" aria-hidden="true" />
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

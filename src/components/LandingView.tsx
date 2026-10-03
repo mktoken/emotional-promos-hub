@@ -1,19 +1,10 @@
-import { useEffect, useState } from "react";
 import {
   CheckCircle2,
   Target,
   ArrowRight,
   Gift,
-  Activity,
-  Coffee,
-  BookOpen,
-  ChevronRight,
   ShieldCheck,
-  MessageCircle,
-  Loader2,
-  PackageX,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import HomeHero from "@/components/home/HomeHero";
 import HomeCategories from "@/components/home/HomeCategories";
 
@@ -26,7 +17,6 @@ const WHATSAPP_HREF =
   encodeURIComponent("Hola, quiero solicitar una propuesta de artículos promocionales para mi empresa.");
 
 export default function LandingView({ onViewChange }: LandingViewProps) {
-
   return (
     <>
       {/* HERO (B1) */}

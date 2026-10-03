@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ClipboardList, MessageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react";
+import HomeHeader from "@/components/home/HomeHeader";
 import LandingView from "@/components/LandingView";
 import CatalogView from "@/components/CatalogView";
 import ProductDetailView from "@/components/ProductDetailView";
@@ -115,6 +116,23 @@ export default function Index() {
     setView("catalog");
   }, [searchParams, navigate, setView]);
 
+  const goToCatalogCategories = useCallback(() => {
+    const next = new URLSearchParams();
+    next.set("view", "catalog");
+    next.set("choose", "categories");
+    setSearchParams(next);
+  }, [setSearchParams]);
+
+  const goToHowItWorks = useCallback(() => {
+    const scroll = () => document.getElementById("proceso")?.scrollIntoView({ behavior: "smooth" });
+    if (currentView === "landing") {
+      scroll();
+      return;
+    }
+    setView("landing");
+    window.setTimeout(scroll, 120);
+  }, [currentView, setView]);
+
   // Scroll al inicio cuando cambia la vista (excepto pdp→catalog, que restaura scroll dentro del catálogo).
   useEffect(() => {
     if (currentView === "landing" || currentView === "cart") {
@@ -124,38 +142,14 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-surface font-sans text-foreground">
-      {/* NAV */}
-      <nav className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView("landing")}>
-              <img src="/images/logo-pe.gif" alt="Promocionales Emocionales" className="h-12 w-auto" />
-            </div>
-
-            <div className="flex items-center space-x-4 md:space-x-8">
-              <button
-                onClick={() => setView("catalog")}
-                className="hidden md:block text-sm font-bold text-primary hover:text-primary/80 transition px-4 py-2 bg-primary/10 rounded-lg"
-              >
-                Catálogo +10k
-              </button>
-
-              <button
-                onClick={() => setView("cart")}
-                className="relative flex items-center gap-2 text-sm font-bold text-foreground hover:text-primary transition px-3 py-2 bg-secondary hover:bg-muted rounded-lg"
-              >
-                <ClipboardList size={20} />
-                <span className="hidden sm:inline">Mi solicitud</span>
-                {quoteCart.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-card shadow-sm">
-                    {quoteCart.length}
-                  </span>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      {/* NAV (B1) */}
+      <HomeHeader
+        quoteCount={quoteCart.length}
+        onLogo={() => setView("landing")}
+        onCatalog={goToCatalogCategories}
+        onHowItWorks={goToHowItWorks}
+        onQuote={() => setView("cart")}
+      />
 
       {/* VIEWS */}
       {currentView === "landing" && (

@@ -259,6 +259,28 @@ El gate debe aprobar, como mínimo:
 - integración conceptual de catálogo, atención inmediata, Super Agente, Pricing competitivo, kits, soluciones B2B y trayectoria histórica de la empresa;
 - QA desktop/mobile antes del lanzamiento.
 
+## PE BRAND / WEB CANONICAL STATE
+
+- Phase 2 Brand/Experience: **approved**.
+- Phase 3 UX/CRO: **approved**.
+- Phase 3A Wireframe Lock: **approved**. La fuente canónica es `docs/brand-web/PE_WIREFRAME_LOCK_V1.md` y conserva el cierre `PE WIREFRAME LOCK V1 — READY FOR STITCH`.
+- Phase 5 Visual Direction: **approved**.
+- Phase 6 Copy Lock: **owner approved**.
+- Phase 7 Build Plan: **prepared**.
+- Phase 7C/7D image research: **completed for internal build**.
+- Phase 7E image direction: **approved for internal build**.
+
+### Open gates
+
+1. **HERO FINAL ASSET**.
+2. **PUBLICATION RIGHTS**.
+3. **SKU / TAXONOMY RUNTIME VALIDATION**.
+4. **ROUTE B FUNCTIONAL CONTRACT** — consentimiento, idempotencia y mapeo final.
+
+`D-013 / CHK-BRAND-WEB-1` permanece **OPEN** y debe cerrarse antes del lanzamiento público, promoción activa, campañas de adquisición o escalamiento significativo de tráfico. Este estado no bloquea la operación comercial controlada ni la preparación documental.
+
+La gobernanza specialist vigente conserva `pe-specialist-orchestrator`, `pe-evidence-claims`, `pe-brand-strategist`, `pe-b2b-buyer-jtbd`, `pe-ux-cro-architect`, `pe-conversion-copy-chief`, `pe-visual-image-director` y `pe-google-ads-intent-miner`. El `SPECIALIST PRE-FLIGHT` es obligatorio antes de cada nueva fase, checkpoint, auditoría, investigación, diseño, copy, preparación de Build o campaña. Se mantiene la regla **NO DEPENDER DE RECORDATORIOS DEL PROPIETARIO**.
+
 No es un rediseño estético aislado: debe partir de la historia y posicionamiento reales, el nuevo modelo de negocio, PromoPro B2B, las líneas estándar y de kits/soluciones, la estrategia de marketing, el mercado y la competencia mexicana, datos históricos de Google Ads/GA4 cuando sean útiles, Super Agente y Pricing de Conversión. El gate no bloquea la operación interna, la atención comercial controlada, la validación y cierre de brechas de `CHK-AI-SALES-1`, QA, CRM ni Pricing shadow.
 
 ## Alcance y límites

@@ -1,32 +1,23 @@
-# CHK-BRAND-WEB-B3-VALIDATION-V1 — Plan de validación (solo inspección)
+# CHK-BRAND-WEB-B3-VALIDATION-V1 — BLOCKED
 
-Sin cambios de código, commits, push, publicación ni backend. Solo lectura y pruebas.
+**Motivo:** en el celular (390 px), al tocar "Soluciones" en el menú estando ya en Home, el título "Promocionales para cada ocasión" queda tapado bajo la barra superior. El título queda 5 px por encima del borde de la pantalla, y la barra mide 80 px. Esto falla el requisito "sin superposición con header". La causa: el menú móvil se cierra en el mismo clic y la página se acomoda después de calcular el salto.
 
-## Hallazgos previos (ya verificados en solo lectura)
+## Resultados
 
-- HEAD = origin/main = 62b63d50f1a03a6755baca0bb92c7dd029f1d985; divergencia 0/0; working tree limpio.
-- La rama actual se llama `edit/edt-d3168771-…`, no `main`: hay que reportarlo.
-- Commits B3 desde 8455ebe: 39e2578, 9382cc2, fff9fa9, f630062 ("Changes", automáticos de Lovable) y 62b63d5 ("Added Solutions handler").
-- Diff B3: solo los 4 archivos esperados (HomeSolutions +51, LandingView +2/−51, HomeHeader +8/−1, Index +29/−9). No hay archivos inesperados.
-- **Riesgo en Index.tsx (decisión requerida):** el cambio crea una función compartida `goToSection`. Así, "Cómo funciona" desde vistas que no son Home ahora usa el mismo mecanismo (espera 400/1200 ms en vez de 120 ms). Es una mejora del salto, pero toca algo más que `#soluciones`. Según el punto 3, eso puede dar BLOCKED. Lo propongo como **SCOPE NOTE – behavior-preserving**, siempre que el runtime confirme que "Cómo funciona" sigue llegando a `#proceso`. El propietario decide.
-- No se tocan Route A, el carrito, la ficha de producto, el catálogo ni el estado guardado, y no hay escrituras. Se sale del bucle porque `pendingSection` se limpia antes de desplazar la página.
+- GIT: HEAD = origin/main = 4a0b6e5a793d7f1dafdeb4f3fbe750ef2a442ff0; divergencia 0/0; working tree limpio; 0 commits exclusivos de la rama. Commits posteriores a 62b63d5: f601f0e "Changes" y 4a0b6e5 "Update plan" (Lovable; solo `.lovable/plan.md`). Commits B3 automáticos: 39e2578, 9382cc2, fff9fa9, f630062, 62b63d5. LOVABLE TEMP BRANCH — ACCEPTED FOR VALIDATION.
+- DIFF AUDIT: solo HomeSolutions.tsx, LandingView.tsx, HomeHeader.tsx e Index.tsx, todos EXPECTED. UNEXPECTED: ninguno.
+- INDEX.TSX: solo cambia la navegación a secciones. Route A, carrito, ficha de producto, catálogo y estado guardado quedan igual. No hay escrituras: los POST observados son lecturas de catálogo, iguales que antes. La URL se mantiene estable y no hay bucles. "Cómo funciona" llega a #proceso desde catálogo, ficha de producto y carrito, en computadora y celular. INDEX SHARED NAV HELPER: ACCEPTED — BEHAVIOR-PRESERVING.
+- COPY: PASS (carácter por carácter). NUMBER OF CTAS = 1.
+- CTA ROUTE B: PASS. Visible, desactivado, 0 peticiones, 0 popups, la URL no cambia; el lector anuncia "Esta opción aún no está disponible."
+- HOME ORDER: PASS. Hero → Categorías → Soluciones → Cómo funciona, sin duplicados.
+- KITS: PASS. Las 5 frases y sus equivalentes desaparecieron.
+- HEADER SOLUCIONES: PASS desde catálogo, ficha de producto y carrito (computadora y celular) y desde Home en computadora. No existe /soluciones. **FAIL en Home con el menú del celular** (el título queda tapado). A 1280–1440 px la sección queda unos 56 px más abajo por el límite natural del scroll: COSMETIC / NON-BLOCKING.
+- Observación previa a B3: "Cómo funciona" desde Home con el menú del celular también queda bajo la barra (−127 px). Ese salto no cambió en B3.
+- RESPONSIVE: PASS. 1 columna a 390 px, 3 desde 768 px, sin desborde, botón de 52 px. El foco con teclado sigue el orden Catálogo → Soluciones → Cómo funciona → Mi solicitud.
+- VISUALS: PASS. Sin imágenes, SKU, URLs de proveedor ni insignias. PUBLICATION RIGHTS sigue OPEN.
+- VITEST: 205/205 (22 archivos). BUILD: PASS. TYPECHECK: 47 errores en los mismos 6 archivos; B3 NEW TYPE ERRORS = 0. LINT: PASS en los 4 archivos. git diff --check: PASS.
+- PROTECTED SURFACES: PASS, sin cambios.
 
-## Pasos de ejecución
+## Corrección propuesta (requiere un checkpoint BUILD aparte)
 
-1. Git: `git log --oneline -8`, con la clasificación EXPECTED/UNEXPECTED de cada commit.
-2. Index.tsx: revisar el diff línea por línea según los 8 criterios del punto 3.
-3. Copy: comparar carácter por carácter el texto de HomeSolutions.tsx con la orden y contar los botones (debe haber 1).
-4. Botón "Contar mi proyecto": confirmar con Playwright que está visible y desactivado. Hay que medir que el clic produce 0 peticiones, 0 popups y que la URL no cambia. También leer el texto de `aria-describedby`.
-5. Orden de la portada: leer los h2 en el DOM; debe quedar Hero → Categorías → Soluciones → Cómo funciona, sin repeticiones.
-6. Kits: buscar con `rg` en `src/` y en el DOM las 5 frases, más equivalentes ("kit", "un solo proveedor", "armamos").
-7. Header: probar "Soluciones" en Home (computadora y celular), catálogo, ficha de producto y carrito. Repetir con "Cómo funciona" para descartar regresiones. Confirmar que no existe /soluciones y que no hay bucles. Registrar la diferencia de 1440 px como COSMETIC / NON-BLOCKING si se confirma.
-8. Responsive y accesibilidad a 390, 768, 1024 y 1440 px: número de columnas, desborde, foco con Tab, botón de al menos 44 px y que nada quede tapado por la cabecera.
-9. Visual: confirmar que no hay `<img>`, SKU, URLs de proveedor ni insignias.
-10. Vitest completo (se esperan 205/205).
-11. Build (`vite build`) y typecheck por separado. En el typecheck se esperan 47 errores en los mismos 6 archivos, con 0 en los 4 archivos de B3.
-12. Lint de los 4 archivos de B3, clasificado como PASS, PREEXISTING o B3-RELATED.
-13. Superficies protegidas: correr `git diff --stat 8455ebe..HEAD` sobre CatalogView, ProductDetailView, QuoteCartView, pricing, agent, supabase/ y HomeCategories (se espera vacío).
-
-## Resultado
-
-El informe final se entrega en el formato de la orden, con el veredicto PASS o BLOCKED [razón]. Siguen OPEN: HERO FINAL ASSET, PUBLICATION RIGHTS, ROUTE B FUNCTIONAL CONTRACT, REGALOS EJECUTIVOS PUBLIC INVENTORY y D-013 / CHK-BRAND-WEB-1.
+En el salto dentro de Home, desplazar la página después de que el menú móvil termine de cerrarse (en el siguiente cuadro de pantalla) en lugar de hacerlo en el mismo clic. Así se corrige también la observación previa de "Cómo funciona". El cambio quedaría solo en Index.tsx o HomeHeader.tsx. Gates OPEN: HERO FINAL ASSET, PUBLICATION RIGHTS, ROUTE B FUNCTIONAL CONTRACT, REGALOS EJECUTIVOS PUBLIC INVENTORY, D-013 / CHK-BRAND-WEB-1.

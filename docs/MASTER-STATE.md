@@ -269,6 +269,10 @@ El gate debe aprobar, como mínimo:
 - Phase 7 Build Plan: **prepared**.
 - Phase 7C/7D image research: **completed for internal build**.
 - Phase 7E image direction: **approved for internal build**.
+- **PUBLICATION RIGHTS:** **CLOSED / PASS**. ForPromotional / 4Promotional assets are **CLEARED FOR COMMERCIAL PUBLICATION** by `OWNER CONFIRMED BROAD COMMERCIAL AUTHORIZATION`, including web, catalog, PDP, social media, Google Ads, Meta Ads, email, proposals/presentations, storage/rehosting, crop, resizing, background/composition adaptation and PE graphic integration. The asset must belong effectively to the authorized bank. This does not override third-party restrictions such as Doble Vela `RESTRICTED / DO NOT USE`.
+- Category image rights for `T150`, `O090`, `CH002`, `BL163` and `SO019`: **CLEARED** by the same owner confirmation; product identity, taxonomy, public visibility, availability and stock remain separate validations.
+- Hero final asset: **OPEN**. `HERO FINAL RECOMMENDED: T150`; it remains the internal fallback until final owner approval of desktop/mobile composition and crop. No final Hero asset is locked.
+- Solutions V1: **no photography**; rights clearance does not require introducing solution images.
 
 ### CHK-BRAND-WEB-B1 — Header + Hero
 
@@ -330,11 +334,10 @@ El gate debe aprobar, como mínimo:
 ### Open gates
 
 1. **HERO FINAL ASSET**.
-2. **PUBLICATION RIGHTS**.
-3. **ROUTE B FUNCTIONAL CONTRACT** — consentimiento, idempotencia y mapeo final.
-4. **REGALOS EJECUTIVOS PUBLIC INVENTORY**.
+2. **ROUTE B FUNCTIONAL CONTRACT** — consentimiento, idempotencia y mapeo final.
+3. **REGALOS EJECUTIVOS PUBLIC INVENTORY**.
 
-5. **D-013 / CHK-BRAND-WEB-1** permanece **OPEN** y debe cerrarse antes del lanzamiento público, promoción activa, campañas de adquisición o escalamiento significativo de tráfico. Este estado no bloquea la operación comercial controlada ni la preparación documental.
+4. **D-013 / CHK-BRAND-WEB-1** permanece **OPEN** y debe cerrarse antes del lanzamiento público, promoción activa, campañas de adquisición o escalamiento significativo de tráfico. Este estado no bloquea la operación comercial controlada ni la preparación documental.
 
 La gobernanza specialist vigente conserva `pe-specialist-orchestrator`, `pe-evidence-claims`, `pe-brand-strategist`, `pe-b2b-buyer-jtbd`, `pe-ux-cro-architect`, `pe-conversion-copy-chief`, `pe-visual-image-director` y `pe-google-ads-intent-miner`. El `SPECIALIST PRE-FLIGHT` es obligatorio antes de cada nueva fase, checkpoint, auditoría, investigación, diseño, copy, preparación de Build o campaña. Se mantiene la regla **NO DEPENDER DE RECORDATORIOS DEL PROPIETARIO**.
 
@@ -346,7 +349,7 @@ El cierre registrado aquí cubre la preparación, activación, alineación y QA 
 
 ## Siguiente checkpoint recomendado
 
-`CHK-AI-SALES-4` está **CERRADO / PASS** con inteligencia comercial inicial estructurada y E2E contextual QA. `CHK-AI-SALES-5` está **CLOSED / PASS** para el E2E visual QA controlado del 2026-09-29; el alcance, evidencia, autoridades y límites están registrados en `docs/10_QA_EVIDENCE.md`. `CHK-BRAND-WEB-B1` está **CLOSED / PASS** para Header + Hero, `CHK-BRAND-WEB-B2` está **CLOSED / PASS** para Home Categories y cinco mappings de taxonomía runtime, y `CHK-BRAND-WEB-B3` está **CLOSED / PASS** para Home Solutions, navegación `Soluciones` y el fix de scroll móvil. La siguiente fase autorizada es `B4 — Cómo funciona + confianza + FAQ + CTA final`; estos cierres no equivalen a cerrar `BRAND-WEB-1` ni autorizan publicación o lanzamiento. El piloto no se despliega ni se expone al público, los perfiles de empresa no son todavía un producto CRM general y no se ha validado escritura CRM anónima. `CHK-BRAND-WEB-1` continúa como gate obligatorio antes del lanzamiento público. Antes de activar Pricing debe definirse y validarse la canasta competitiva, aprobar parámetros y autorizar un checkpoint posterior.
+`CHK-AI-SALES-4` está **CERRADO / PASS** con inteligencia comercial inicial estructurada y E2E contextual QA. `CHK-AI-SALES-5` está **CLOSED / PASS** para el E2E visual QA controlado del 2026-09-29; el alcance, evidencia, autoridades y límites están registrados en `docs/10_QA_EVIDENCE.md`. `CHK-BRAND-WEB-B1` está **CLOSED / PASS** para Header + Hero, `CHK-BRAND-WEB-B2` está **CLOSED / PASS** para Home Categories y cinco mappings de taxonomía runtime, `CHK-BRAND-WEB-B3` está **CLOSED / PASS** para Home Solutions, navegación `Soluciones` y el fix de scroll móvil, y `CHK-BRAND-WEB-B4` está **CLOSED / PASS** para Cómo funciona, Confianza, FAQ y CTA final. `PUBLICATION RIGHTS` para assets ForPromotional / 4Promotional está **CLOSED / PASS** por confirmación amplia del propietario; Hero final, Route B, inventario público de Regalos ejecutivos y `D-013 / CHK-BRAND-WEB-1` continúan abiertos. Estos cierres no equivalen a cerrar `BRAND-WEB-1` ni autorizan publicación o lanzamiento. El piloto no se despliega ni se expone al público, los perfiles de empresa no son todavía un producto CRM general y no se ha validado escritura CRM anónima. `CHK-BRAND-WEB-1` continúa como gate obligatorio antes del lanzamiento público. Antes de activar Pricing debe definirse y validarse la canasta competitiva, aprobar parámetros y autorizar un checkpoint posterior.
 
 Hasta contar con ese checkpoint no se debe retirar el backend Legacy ni iniciar trabajo funcional fuera del alcance comercial.
 

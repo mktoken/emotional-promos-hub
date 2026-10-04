@@ -294,6 +294,22 @@ El gate debe aprobar, como mínimo:
 - **Legacy claim:** `favoritos de nuestros clientes corporativos` was removed from Home with the replacement of the old `Productos destacados` section. This does not certify that every legacy claim on the site is resolved.
 - **Next authorized phase:** `B3 — Solutions / Promocionales para cada ocasión`.
 
+### CHK-BRAND-WEB-B3 — Home Solutions + Header Navigation
+
+- **Status:** **CLOSED / PASS**.
+- **Canonical integrated HEAD:** `185c3133a28919c4c05ab5cc827cff1afb4e1464`.
+- **Closed scope:** Home Solutions; Header `Soluciones` navigation; mobile section scroll fix.
+- **Implementation:** new `src/components/home/HomeSolutions.tsx`; modified `src/components/LandingView.tsx`, `src/components/home/HomeHeader.tsx` and `src/pages/Index.tsx`.
+- **Functional heads:** B3 implementation `62b63d50f1a03a6755baca0bb92c7dd029f1d985`; mobile fix `3acb4e5fd82571e7c32ab6f50caafd4cbd6984db`; final integrated HEAD `185c3133a28919c4c05ab5cc827cff1afb4e1464`.
+- **Solutions:** H2 `Promocionales para cada ocasión`; cards `Eventos y campañas`, `Colaboradores y reconocimiento` and `Regalos corporativos`; one common CTA `Contar mi proyecto`; CTA status `PRESENTATIONAL / DISABLED`.
+- **Route B:** no functional implementation yet; no submit, CRM write, endpoint, Edge Function, WhatsApp substitution or automation.
+- **Legacy Kits:** removed from Home, including claims about `Solución Todo en Uno`, `Nosotros los armamos`, integration, logistical savings and `Arma tu Kit Multi-Producto`. This does not certify that all legacy claims across the site are resolved.
+- **Header:** `Soluciones` points to `#soluciones` from Home, catálogo, PDP and carrito on desktop and mobile. The shared Index navigation helper is behavior-preserving; no `/soluciones` route exists.
+- **Mobile fix:** menu close, render/frame wait and subsequent scroll. `HOME MOBILE SOLUTIONS` and `HOME MOBILE HOW IT WORKS` PASS; the fix also corrected the pre-existing Cómo funciona scroll behavior.
+- **Validation:** Vitest `205 / 205 PASS`; Build PASS; Lint PASS; `git diff --check` PASS; 47 pre-existing TypeScript errors; B3 introduced 0 new errors; unexpected functional files 0; protected surfaces PASS.
+- **Visual state:** no final photography, SKU, supplier URLs or publication-bound assets; no badges; presentational cards; one column mobile and three cards desktop. Publication rights remain OPEN.
+- **Next authorized phase:** `B4 — Cómo funciona + confianza + FAQ + CTA final`.
+
 ### Open gates
 
 1. **HERO FINAL ASSET**.
@@ -313,7 +329,7 @@ El cierre registrado aquí cubre la preparación, activación, alineación y QA 
 
 ## Siguiente checkpoint recomendado
 
-`CHK-AI-SALES-4` está **CERRADO / PASS** con inteligencia comercial inicial estructurada y E2E contextual QA. `CHK-AI-SALES-5` está **CLOSED / PASS** para el E2E visual QA controlado del 2026-09-29; el alcance, evidencia, autoridades y límites están registrados en `docs/10_QA_EVIDENCE.md`. `CHK-BRAND-WEB-B1` está **CLOSED / PASS** para Header + Hero y `CHK-BRAND-WEB-B2` está **CLOSED / PASS** para Home Categories y cinco mappings de taxonomía runtime. La siguiente fase autorizada es `B3 — Solutions / Promocionales para cada ocasión`; estos cierres no equivalen a cerrar `BRAND-WEB-1` ni autorizan publicación o lanzamiento. El piloto no se despliega ni se expone al público, los perfiles de empresa no son todavía un producto CRM general y no se ha validado escritura CRM anónima. `CHK-BRAND-WEB-1` continúa como gate obligatorio antes del lanzamiento público. Antes de activar Pricing debe definirse y validarse la canasta competitiva, aprobar parámetros y autorizar un checkpoint posterior.
+`CHK-AI-SALES-4` está **CERRADO / PASS** con inteligencia comercial inicial estructurada y E2E contextual QA. `CHK-AI-SALES-5` está **CLOSED / PASS** para el E2E visual QA controlado del 2026-09-29; el alcance, evidencia, autoridades y límites están registrados en `docs/10_QA_EVIDENCE.md`. `CHK-BRAND-WEB-B1` está **CLOSED / PASS** para Header + Hero, `CHK-BRAND-WEB-B2` está **CLOSED / PASS** para Home Categories y cinco mappings de taxonomía runtime, y `CHK-BRAND-WEB-B3` está **CLOSED / PASS** para Home Solutions, navegación `Soluciones` y el fix de scroll móvil. La siguiente fase autorizada es `B4 — Cómo funciona + confianza + FAQ + CTA final`; estos cierres no equivalen a cerrar `BRAND-WEB-1` ni autorizan publicación o lanzamiento. El piloto no se despliega ni se expone al público, los perfiles de empresa no son todavía un producto CRM general y no se ha validado escritura CRM anónima. `CHK-BRAND-WEB-1` continúa como gate obligatorio antes del lanzamiento público. Antes de activar Pricing debe definirse y validarse la canasta competitiva, aprobar parámetros y autorizar un checkpoint posterior.
 
 Hasta contar con ese checkpoint no se debe retirar el backend Legacy ni iniciar trabajo funcional fuera del alcance comercial.
 

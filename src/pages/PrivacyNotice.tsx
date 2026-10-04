@@ -75,7 +75,7 @@ const PrivacyNotice = () => {
         <blockquote className="mt-2 border-l-4 border-primary pl-4 italic">
           “He leído el Aviso de Privacidad y autorizo el uso de mis datos para revisar esta solicitud y contactarme sobre ella.”
         </blockquote>
-        <p className="mt-2">La versión, URL y fecha/hora del consentimiento se conservarán junto con la solicitud.</p>
+        <p className="mt-2">La versión, URL y fecha/hora del consentimiento deberán conservarse junto con la solicitud cuando el flujo real sea implementado.</p>
 
         <H2>6. Revocación y limitación</H2>
         <p>La persona titular podrá solicitar la revocación del consentimiento o la limitación del uso de sus datos mediante el correo: <Mail /></p>
@@ -106,7 +106,7 @@ const PrivacyNotice = () => {
         <Ul items={[
           "URL y ruta;", "referrer;", "navegador/dispositivo;", "locale;", "país;", "identificador de sesión;", "métricas de rendimiento.",
         ]} />
-        <p className="mt-2">Esta analítica no se utiliza para publicidad conductual, perfilado comercial ni atribución de marketing.</p>
+        <p className="mt-2">No se afirma que esta analítica constituya publicidad conductual, perfilado comercial o atribución de marketing.</p>
 
         <H2>12. Seguridad y confidencialidad</H2>
         <p>Se aplicarán medidas técnicas y organizativas razonables para proteger la información contra acceso, pérdida, alteración o divulgación no autorizada.</p>

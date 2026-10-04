@@ -310,6 +310,23 @@ El gate debe aprobar, como mínimo:
 - **Visual state:** no final photography, SKU, supplier URLs or publication-bound assets; no badges; presentational cards; one column mobile and three cards desktop. Publication rights remain OPEN.
 - **Next authorized phase:** `B4 — Cómo funciona + confianza + FAQ + CTA final`.
 
+### CHK-BRAND-WEB-B4 — Cómo funciona + Confianza + FAQ + CTA final
+
+- **Status:** **CLOSED / PASS**.
+- **Canonical integrated HEAD:** `9f781734ceba12ad8ad5721c54139c938b80e979`.
+- **Functional head:** `87b0e81f06cf4f98d1931891b6f82049fe8bb67a`; final remote tip `9f781734ceba12ad8ad5721c54139c938b80e979`.
+- **Closed scope:** Cómo funciona, Confianza, FAQ, CTA final and removal of the replaced legacy process/guarantee blocks.
+- **Implementation:** new `src/components/home/HomeProcess.tsx`, `src/components/home/HomeTrust.tsx`, `src/components/home/HomeFaq.tsx` and `src/components/home/HomeFinalCta.tsx`; modified `src/components/LandingView.tsx` only.
+- **Cómo funciona:** H2 `De la idea a una cotización clara`; three canonical steps; `id="proceso"`. Removed Home claims `+10k productos`, muestra virtual, anticipo, Producción y Envío, calidad premium and entrega puntual.
+- **Confianza:** H2 `Claridad antes de decidir`; three blocks `Catálogo abierto`, `Condiciones por producto` and `Revisión comercial`; `id="confianza"`. Removed `Garantía Cero Riesgos`, render and reposición sin costo.
+- **FAQ:** H2 `Preguntas frecuentes`; five canonical questions; `id="faq"`; closed by default with `aria-expanded`, `aria-controls`, keyboard operation and visible focus.
+- **CTA final:** H2 `Empieza por el camino que ya tienes claro`; CTA A `Explorar catálogo` is functional through the existing catalog route; CTA B `Contar mi proyecto` remains `PRESENTATIONAL / DISABLED` with accessible status `Esta opción aún no está disponible.` Route B functional contract remains OPEN.
+- **Home order:** Hero → Categorías → Soluciones → Cómo funciona → Confianza → FAQ → CTA final → Footer.
+- **Validation:** Vitest `205 / 205 PASS`; Build PASS; Lint PASS; `git diff --check` PASS; 47 pre-existing TypeScript errors; B4 introduced 0 new errors; responsive PASS at 390 / 768 / 1024 / 1440; unexpected functional files 0; protected surfaces PASS.
+- **Claims boundary:** only the legacy claims in the replaced B4 blocks are certified as removed; this does not certify that every legacy claim across the site is resolved.
+- **Scope boundary:** B4 CLOSED / PASS does not mean `BRAND-WEB CLOSED`, `PUBLICATION READY` or `LAUNCH READY`.
+- **Next step:** before starting a new Build phase, evaluate which currently open gate should be resolved; no new Lovable work is implied automatically.
+
 ### Open gates
 
 1. **HERO FINAL ASSET**.

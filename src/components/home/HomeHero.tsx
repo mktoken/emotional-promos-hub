@@ -4,6 +4,7 @@ const T150_HERO_SRC = "/images/home-hero-t150.jpg";
 
 interface HomeHeroProps {
   onExploreCatalog: () => void;
+  onTellProject: () => void;
   /** Slot reemplazable: cuando exista el asset final aprobado, pasar su URL aquí. */
   imageSrc?: string;
   imageAlt?: string;
@@ -11,6 +12,7 @@ interface HomeHeroProps {
 
 export default function HomeHero({
   onExploreCatalog,
+  onTellProject,
   imageSrc = T150_HERO_SRC,
   imageAlt = "Vaso térmico promocional en un entorno de escritorio",
 }: HomeHeroProps) {
@@ -50,19 +52,14 @@ export default function HomeHero({
 
               <div className="rounded-xl border border-border bg-card p-5 flex flex-col gap-4">
                 <p className="text-sm font-semibold text-foreground">Tengo un proyecto</p>
-                {/* Ruta B: solo visual. Sin destino funcional autorizado (ROUTE B FUNCTIONAL CONTRACT = OPEN). */}
+                {/* Ruta B: navega al Project Brief (RB2, sin escritura). */}
                 <button
                   type="button"
-                  disabled
-                  aria-disabled="true"
-                  aria-describedby="route-b-status"
-                  className="min-h-[44px] w-full border-2 border-foreground text-foreground font-bold py-3 px-5 rounded-lg inline-flex items-center justify-center gap-2 cursor-not-allowed opacity-60"
+                  onClick={onTellProject}
+                  className="min-h-[44px] w-full border-2 border-foreground text-foreground font-bold py-3 px-5 rounded-lg inline-flex items-center justify-center gap-2 hover:bg-foreground hover:text-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
                 >
                   Contar mi proyecto
                 </button>
-                <span id="route-b-status" className="sr-only">
-                  Esta opción aún no está disponible.
-                </span>
               </div>
             </div>
           </div>

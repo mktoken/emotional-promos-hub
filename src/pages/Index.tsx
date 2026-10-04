@@ -6,10 +6,11 @@ import LandingView from "@/components/LandingView";
 import CatalogView from "@/components/CatalogView";
 import ProductDetailView from "@/components/ProductDetailView";
 import QuoteCartView from "@/components/QuoteCartView";
+import ProjectBriefView from "@/components/ProjectBriefView";
 import AssistantWidget from "@/features/assistant/components/AssistantWidget";
 import type { QuoteSelectionItem, NewQuoteSelectionItem } from "@/features/quotes/lib/quote-selection";
 
-type ViewType = "landing" | "catalog" | "pdp" | "cart";
+type ViewType = "landing" | "catalog" | "pdp" | "cart" | "brief";
 
 const createCartId = () => Date.now() + Math.floor(Math.random() * 1_000_000);
 
@@ -31,7 +32,7 @@ export default function Index() {
 
   const viewParam = searchParams.get("view");
   const currentView: ViewType =
-    viewParam === "catalog" || viewParam === "pdp" || viewParam === "cart" ? viewParam : "landing";
+    viewParam === "catalog" || viewParam === "pdp" || viewParam === "cart" || viewParam === "brief" ? viewParam : "landing";
   const selectedProductId = searchParams.get("product");
 
   const setView = useCallback(
@@ -152,7 +153,7 @@ export default function Index() {
         window.clearTimeout(t2);
       };
     }
-    if (currentView === "landing" || currentView === "cart") {
+    if (currentView === "landing" || currentView === "cart" || currentView === "brief") {
       window.scrollTo(0, 0);
     }
   }, [currentView]);
@@ -190,6 +191,7 @@ export default function Index() {
       {currentView === "pdp" && (
         <ProductDetailView productId={selectedProductId} onBack={backFromProduct} onAddToQuote={addToQuote} />
       )}
+      {currentView === "brief" && <ProjectBriefView onBack={() => setView("landing")} />}
       {currentView === "cart" && (
         <QuoteCartView
           cart={quoteCart}

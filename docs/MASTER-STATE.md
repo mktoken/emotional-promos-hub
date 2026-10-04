@@ -349,12 +349,25 @@ El gate debe aprobar, como mínimo:
 - **RB3 write integration:** **BLOCKED**.
 - **Scope boundary:** RB2 CLOSED / PASS does not close Route B, authorize production publication, or authorize CRM/backend writes.
 
+### CHK-ROUTE-B-RB3 — Technical design and migration specification
+
+- **CHK-ROUTE-B-RB3-TECH-DESIGN:** **CLOSED / PASS** as a documented technical design.
+- **CHK-ROUTE-B-RB3-FINAL-MIGRATION-SPEC:** **CLOSED / PASS** as the canonical RB3-A migration specification.
+- **Technical design:** complete. The destination remains `cotizaciones_leads`; no new table, direct frontend write, CRM automation, automatic email or automatic WhatsApp is authorized.
+- **Canonical decisions:** `public_request_type` is approved with `quote` and `project_brief`, default `quote`; `privacy_url` is defined as `/aviso-de-privacidad`; `marketing_consent` remains `false` in RB3 V1.
+- **Implementation state:** no frontend, backend, migration, Supabase, Edge Function, CRM or production changes were made by this documentation checkpoint.
+- **RB3 build:** **BLOCKED BY LEGAL GATE**. The write path must remain inactive until `PE-PRIVACY-V1` is legally approved, `/aviso-de-privacidad` is published, the active server-side privacy configuration exists, hosting analytics/cookies/storage disclosure is validated, processor/transfer wording is reviewed and retention is approved.
+- **Readiness:** `READY FOR BUILD = NO`; `READY AFTER LEGAL GATE = YES`, subject to controlled implementation and QA.
+- **Canonical specification:** `docs/route-b/RB3_FINAL_MIGRATION_SPEC_V1.md`.
+
 ### Open gates
 
-1. **ROUTE B FUNCTIONAL CONTRACT** — consentimiento, idempotencia y mapeo final.
+1. **RB3 WRITE INTEGRATION / ROUTE B FUNCTIONAL CONTRACT** — **BLOCKED BY LEGAL GATE**. The technical design and migration specification are closed; implementation remains inactive until the legal blockers listed below are closed.
 2. **REGALOS EJECUTIVOS PUBLIC INVENTORY**.
 
-3. **D-013 / CHK-BRAND-WEB-1** permanece **OPEN** y debe cerrarse antes del lanzamiento público, promoción activa, campañas de adquisición o escalamiento significativo de tráfico. Este estado no bloquea la operación comercial controlada ni la preparación documental.
+3. **RB3 LEGAL GATE** — final legal approval of `PE-PRIVACY-V1`; publication of `/aviso-de-privacidad`; hosting analytics `/~flock.js` disclosure; cookie/storage disclosure; processor/transfer wording; and retention legal review.
+
+4. **D-013 / CHK-BRAND-WEB-1** permanece **OPEN** y debe cerrarse antes del lanzamiento público, promoción activa, campañas de adquisición o escalamiento significativo de tráfico. Este estado no bloquea la operación comercial controlada ni la preparación documental.
 
 La gobernanza specialist vigente conserva `pe-specialist-orchestrator`, `pe-evidence-claims`, `pe-brand-strategist`, `pe-b2b-buyer-jtbd`, `pe-ux-cro-architect`, `pe-conversion-copy-chief`, `pe-visual-image-director` y `pe-google-ads-intent-miner`. El `SPECIALIST PRE-FLIGHT` es obligatorio antes de cada nueva fase, checkpoint, auditoría, investigación, diseño, copy, preparación de Build o campaña. Se mantiene la regla **NO DEPENDER DE RECORDATORIOS DEL PROPIETARIO**.
 

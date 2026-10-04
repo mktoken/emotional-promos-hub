@@ -12,15 +12,16 @@ interface LandingViewProps {
 
 export default function LandingView({ onViewChange }: LandingViewProps) {
   const exploreCatalog = () => onViewChange("catalog");
+  const tellProject = () => onViewChange("brief");
   return (
     <>
-      <HomeHero onExploreCatalog={exploreCatalog} />
+      <HomeHero onExploreCatalog={exploreCatalog} onTellProject={tellProject} />
       <HomeCategories />
-      <HomeSolutions />
+      <HomeSolutions onTellProject={tellProject} />
       <HomeProcess />
       <HomeTrust />
       <HomeFaq />
-      <HomeFinalCta onExploreCatalog={exploreCatalog} />
+      <HomeFinalCta onExploreCatalog={exploreCatalog} onTellProject={tellProject} />
     </>
   );
 }

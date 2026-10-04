@@ -13,7 +13,7 @@ const SOLUTIONS = [
   },
 ];
 
-export default function HomeSolutions() {
+export default function HomeSolutions({ onTellProject }: { onTellProject: () => void }) {
   return (
     <section id="soluciones" className="py-16 sm:py-20 bg-surface scroll-mt-20" aria-labelledby="soluciones-title">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -31,19 +31,14 @@ export default function HomeSolutions() {
         </ul>
 
         <div className="mt-10 sm:mt-12 flex justify-center">
-          {/* CTA común presentacional. ROUTE B FUNCTIONAL CONTRACT = OPEN. */}
+          {/* Ruta B: navega al Project Brief (RB2, sin escritura). */}
           <button
             type="button"
-            disabled
-            aria-disabled="true"
-            aria-describedby="solutions-cta-status"
-            className="min-h-[44px] w-full sm:w-auto border-2 border-foreground text-foreground font-bold py-3 px-8 rounded-lg inline-flex items-center justify-center cursor-not-allowed opacity-60"
+                  onClick={onTellProject}
+            className="min-h-[44px] w-full sm:w-auto border-2 border-foreground text-foreground font-bold py-3 px-8 rounded-lg inline-flex items-center justify-center hover:bg-foreground hover:text-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
           >
             Contar mi proyecto
           </button>
-          <span id="solutions-cta-status" className="sr-only">
-            Esta opción aún no está disponible.
-          </span>
         </div>
       </div>
     </section>

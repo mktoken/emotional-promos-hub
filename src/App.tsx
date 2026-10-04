@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import UpdatePassword from "./pages/UpdatePassword";
 import Crm from "./pages/Crm";
 import NotFound from "./pages/NotFound";
+import PrivacyNotice from "./pages/PrivacyNotice";
 import { pilotEnabled } from "./features/agent/lib/agent-pilot";
 
 const AgentPilotPage = lazy(() => import("./features/agent/pages/AgentPilotPage"));
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/auth/update-password" element={<UpdatePassword />} />
           <Route path="/crm/*" element={<Crm />} />
+          <Route path="/aviso-de-privacidad" element={<PrivacyNotice />} />
           {pilotEnabled(window.location.hostname) && <Route path="/agente-piloto" element={<Suspense fallback={<p className="p-6">Cargando asistente…</p>}><AgentPilotPage /></Suspense>} />}
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

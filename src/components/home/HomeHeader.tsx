@@ -16,8 +16,14 @@ const linkClass =
 export default function HomeHeader({ quoteCount, onLogo, onCatalog, onSolutions, onHowItWorks, onQuote }: HomeHeaderProps) {
   const [open, setOpen] = useState(false);
   const run = (fn: () => void) => () => {
+    if (!open) {
+      fn();
+      return;
+    }
     setOpen(false);
-    fn();
+    // Ejecutar después de que el menú móvil se cierre y la página se reacomode,
+    // para que el desplazamiento a la sección no quede bajo la cabecera.
+    requestAnimationFrame(() => requestAnimationFrame(fn));
   };
 
   return (

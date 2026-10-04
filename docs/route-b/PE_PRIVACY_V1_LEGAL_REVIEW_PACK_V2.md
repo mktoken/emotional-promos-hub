@@ -2,14 +2,18 @@
 
 ## Estado canónico
 
-- **PE-PRIVACY-V1:** `LEGAL REVIEW DRAFT`.
-- **Ready for external legal review:** `YES`.
-- **Ready to publish:** `NO`.
+- **PE-PRIVACY-V1:** `OWNER APPROVED FOR PRODUCT USE`.
+- **Owner approval date:** `2026-10-04`.
+- **External legal review:** `NOT REQUIRED BY OWNER AT THIS STAGE`.
+- **Privacy owner gate:** `CLOSED`.
+- **Ready for external legal review:** `YES` (the retained review questions are not an owner blocker).
+- **Ready to publish privacy notice:** `YES`.
 - **Ready to activate Route B writes:** `NO`.
+- **RB3 build:** `AUTHORIZED TO BEGIN UNDER CONTROLLED CHECKPOINTS`.
 - **Fuente principal:** `PE_PRIVACY_V1_LEGAL_REVIEW_DRAFT.md`, generado en `CHK-ROUTE-B-RB3-PRIVACY-DRAFT-V1`.
 - **Cambios de producto o implementación:** ninguno.
 
-Este paquete no constituye aprobación jurídica ni autoriza publicar el aviso o activar escrituras Route B.
+La aprobación registrada es una decisión operativa del propietario para uso de producto. No constituye opinión legal, certificación de cumplimiento ni aprobación de un abogado. La publicación del aviso y la activación de escrituras Route B siguen siendo acciones separadas.
 
 ## A. PE-PRIVACY-V1 — CLEAN LEGAL REVIEW COPY
 
@@ -285,13 +289,20 @@ Estado: `LEGAL INTERPRETATION REQUIRED`.
 - [x] No email ni WhatsApp automáticos.
 - [x] No Route B AI.
 - [ ] Aviso publicado.
-- [ ] Legal gate cerrado.
+- [x] Privacy owner gate cerrado (operational).
+- [ ] Legal opinion/compliance certification (not claimed).
 
 ## VEREDICTO
 
-- **PE-PRIVACY-V1:** `LEGAL REVIEW DRAFT`.
-- **READY FOR EXTERNAL LEGAL REVIEW:** `YES`.
-- **READY TO PUBLISH:** `NO`.
+- **PE-PRIVACY-V1:** `OWNER APPROVED / READY FOR PUBLICATION`.
+- **OWNER APPROVAL:** `2026-10-04`.
+- **EXTERNAL LEGAL REVIEW:** `NOT REQUIRED BY OWNER AT THIS STAGE`.
+- **PRIVACY OWNER GATE:** `CLOSED`.
+- **READY FOR EXTERNAL LEGAL REVIEW:** `YES` (optional counsel path retained).
+- **READY TO PUBLISH:** `YES`.
 - **READY TO ACTIVATE ROUTE B WRITES:** `NO`.
 - **Files modified by this pack:** `0`.
 - **Production/Supabase changes:** `0`.
+- **RB3 build:** `AUTHORIZED TO BEGIN UNDER CONTROLLED CHECKPOINTS`.
+- **RB3 writes:** `NOT YET ACTIVE`.
+- **Legal status boundary:** this owner approval is not a legal opinion, legal certification or compliance guarantee.

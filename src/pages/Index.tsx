@@ -144,8 +144,13 @@ export default function Index() {
       const id = pendingSection.current;
       pendingSection.current = null;
       // Espera a que la portada termine de montar (categorías cargan async) antes de desplazar.
-      const t = window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 400);
-      return () => window.clearTimeout(t);
+      const go = () => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      const t1 = window.setTimeout(go, 400);
+      const t2 = window.setTimeout(go, 1200);
+      return () => {
+        window.clearTimeout(t1);
+        window.clearTimeout(t2);
+      };
     }
     if (currentView === "landing" || currentView === "cart") {
       window.scrollTo(0, 0);

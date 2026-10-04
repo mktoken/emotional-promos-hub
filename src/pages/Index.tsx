@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { MessageCircle } from "lucide-react";
 import HomeHeader from "@/components/home/HomeHeader";
@@ -123,18 +123,35 @@ export default function Index() {
     setSearchParams(next);
   }, [setSearchParams]);
 
-  const goToHowItWorks = useCallback(() => {
-    const scroll = () => document.getElementById("proceso")?.scrollIntoView({ behavior: "smooth" });
-    if (currentView === "landing") {
-      scroll();
-      return;
-    }
-    setView("landing");
-    window.setTimeout(scroll, 120);
-  }, [currentView, setView]);
+  const pendingSection = useRef<string | null>(null);
+  const goToSection = useCallback(
+    (id: string) => {
+      if (currentView === "landing") {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+        return;
+      }
+      pendingSection.current = id;
+      setView("landing");
+    },
+    [currentView, setView],
+  );
+  const goToHowItWorks = useCallback(() => goToSection("proceso"), [goToSection]);
+  const goToSolutions = useCallback(() => goToSection("soluciones"), [goToSection]);
 
   // Scroll al inicio cuando cambia la vista (excepto pdp→catalog, que restaura scroll dentro del catálogo).
   useEffect(() => {
+    if (currentView === "landing" && pendingSection.current) {
+      const id = pendingSection.current;
+      pendingSection.current = null;
+      // Espera a que la portada termine de montar (categorías cargan async) antes de desplazar.
+      const go = () => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      const t1 = window.setTimeout(go, 400);
+      const t2 = window.setTimeout(go, 1200);
+      return () => {
+        window.clearTimeout(t1);
+        window.clearTimeout(t2);
+      };
+    }
     if (currentView === "landing" || currentView === "cart") {
       window.scrollTo(0, 0);
     }
@@ -147,6 +164,7 @@ export default function Index() {
         quoteCount={quoteCart.length}
         onLogo={() => setView("landing")}
         onCatalog={goToCatalogCategories}
+        onSolutions={goToSolutions}
         onHowItWorks={goToHowItWorks}
         onQuote={() => setView("cart")}
       />

@@ -1,12 +1,10 @@
 import {
-  CheckCircle2,
-  Target,
   ArrowRight,
-  Gift,
   ShieldCheck,
 } from "lucide-react";
 import HomeHero from "@/components/home/HomeHero";
 import HomeCategories from "@/components/home/HomeCategories";
+import HomeSolutions from "@/components/home/HomeSolutions";
 
 interface LandingViewProps {
   onViewChange: (view: string) => void;
@@ -24,52 +22,7 @@ export default function LandingView({ onViewChange }: LandingViewProps) {
 
       <HomeCategories />
 
-      {/* KITS */}
-      <section className="py-16 bg-dark-section text-dark-section-foreground relative overflow-hidden">
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 opacity-10">
-          <Gift size={300} />
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="lg:flex items-center justify-between gap-12">
-            <div className="lg:w-1/2 mb-8 lg:mb-0">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary font-semibold text-xs mb-4 border border-primary/30">
-                <Target size={14} /> Solución Todo en Uno
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                ¿Kits de Bienvenida u Onboarding? <br />
-                <span className="text-primary">Nosotros los armamos.</span>
-              </h2>
-              <p className="text-lg text-dark-section-foreground/70 mb-6">
-                Sube el nivel de tu empresa. En lugar de artículos sueltos, arma una propuesta tipo "Kit Onboarding"
-                completa. Agrega múltiples productos a tu propuesta y nosotros nos encargamos de integrarlos.
-              </p>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center gap-3 text-dark-section-foreground/90">
-                  <CheckCircle2 className="text-success" size={20} /> Artículos coordinados con tu marca
-                </li>
-                <li className="flex items-center gap-3 text-dark-section-foreground/90">
-                  <CheckCircle2 className="text-success" size={20} /> Ahorro logístico: Un solo proveedor
-                </li>
-              </ul>
-            </div>
-            <div className="lg:w-1/2">
-              <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center shadow-2xl">
-                <h3 className="text-2xl font-bold mb-2">Arma tu Kit Multi-Producto</h3>
-                <p className="text-dark-section-foreground/70 mb-6">
-                  Entra al catálogo, agrega los productos que te gusten a tu propuesta y selecciona la opción
-                  "Kit/Paquete" al finalizar tu propuesta.
-                </p>
-                <button
-                  onClick={() => onViewChange("catalog")}
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
-                >
-                  Ir al Catálogo <ArrowRight size={20} />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HomeSolutions />
 
       {/* PROCESO */}
       <section id="proceso" className="py-20 bg-surface">

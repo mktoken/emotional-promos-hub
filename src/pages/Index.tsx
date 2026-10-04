@@ -123,15 +123,20 @@ export default function Index() {
     setSearchParams(next);
   }, [setSearchParams]);
 
-  const goToHowItWorks = useCallback(() => {
-    const scroll = () => document.getElementById("proceso")?.scrollIntoView({ behavior: "smooth" });
-    if (currentView === "landing") {
-      scroll();
-      return;
-    }
-    setView("landing");
-    window.setTimeout(scroll, 120);
-  }, [currentView, setView]);
+  const goToSection = useCallback(
+    (id: string) => {
+      const scroll = () => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      if (currentView === "landing") {
+        scroll();
+        return;
+      }
+      setView("landing");
+      window.setTimeout(scroll, 120);
+    },
+    [currentView, setView],
+  );
+  const goToHowItWorks = useCallback(() => goToSection("proceso"), [goToSection]);
+  const goToSolutions = useCallback(() => goToSection("soluciones"), [goToSection]);
 
   // Scroll al inicio cuando cambia la vista (excepto pdp→catalog, que restaura scroll dentro del catálogo).
   useEffect(() => {
@@ -147,6 +152,7 @@ export default function Index() {
         quoteCount={quoteCart.length}
         onLogo={() => setView("landing")}
         onCatalog={goToCatalogCategories}
+        onSolutions={goToSolutions}
         onHowItWorks={goToHowItWorks}
         onQuote={() => setView("cart")}
       />

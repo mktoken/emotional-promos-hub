@@ -5,6 +5,7 @@ interface HomeHeaderProps {
   quoteCount: number;
   onLogo: () => void;
   onCatalog: () => void;
+  onSolutions: () => void;
   onHowItWorks: () => void;
   onQuote: () => void;
 }
@@ -12,7 +13,7 @@ interface HomeHeaderProps {
 const linkClass =
   "min-h-[44px] inline-flex items-center px-3 text-sm font-semibold text-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded";
 
-export default function HomeHeader({ quoteCount, onLogo, onCatalog, onHowItWorks, onQuote }: HomeHeaderProps) {
+export default function HomeHeader({ quoteCount, onLogo, onCatalog, onSolutions, onHowItWorks, onQuote }: HomeHeaderProps) {
   const [open, setOpen] = useState(false);
   const run = (fn: () => void) => () => {
     setOpen(false);
@@ -30,6 +31,9 @@ export default function HomeHeader({ quoteCount, onLogo, onCatalog, onHowItWorks
           <div className="hidden md:flex items-center gap-2">
             <button type="button" onClick={onCatalog} className={linkClass}>
               Catálogo
+            </button>
+            <button type="button" onClick={onSolutions} className={linkClass}>
+              Soluciones
             </button>
             <button type="button" onClick={onHowItWorks} className={linkClass}>
               Cómo funciona
@@ -70,6 +74,9 @@ export default function HomeHeader({ quoteCount, onLogo, onCatalog, onHowItWorks
           <div className="max-w-7xl mx-auto px-4 py-2 flex flex-col">
             <button type="button" onClick={run(onCatalog)} className={`${linkClass} justify-start`}>
               Catálogo
+            </button>
+            <button type="button" onClick={run(onSolutions)} className={`${linkClass} justify-start`}>
+              Soluciones
             </button>
             <button type="button" onClick={run(onHowItWorks)} className={`${linkClass} justify-start`}>
               Cómo funciona

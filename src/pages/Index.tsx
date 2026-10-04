@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { MessageCircle } from "lucide-react";
 import HomeHeader from "@/components/home/HomeHeader";

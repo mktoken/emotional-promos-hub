@@ -1,5 +1,7 @@
 import { ArrowRight } from "lucide-react";
 
+const T150_HERO_SRC = "/images/home-hero-t150.jpg";
+
 interface HomeHeroProps {
   onExploreCatalog: () => void;
   /** Slot reemplazable: cuando exista el asset final aprobado, pasar su URL aquí. */
@@ -7,7 +9,11 @@ interface HomeHeroProps {
   imageAlt?: string;
 }
 
-export default function HomeHero({ onExploreCatalog, imageSrc, imageAlt = "" }: HomeHeroProps) {
+export default function HomeHero({
+  onExploreCatalog,
+  imageSrc = T150_HERO_SRC,
+  imageAlt = "Vaso térmico promocional en un entorno de escritorio",
+}: HomeHeroProps) {
   return (
     <section className="bg-surface border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24">
@@ -64,7 +70,13 @@ export default function HomeHero({ onExploreCatalog, imageSrc, imageAlt = "" }: 
           <div className="lg:col-span-6">
             <div className="aspect-[4/3] w-full rounded-2xl border border-border bg-card overflow-hidden">
               {imageSrc ? (
-                <img src={imageSrc} alt={imageAlt} className="w-full h-full object-contain" />
+                <img
+                  src={imageSrc}
+                  alt={imageAlt}
+                  loading="eager"
+                  decoding="async"
+                  className="w-full h-full object-contain object-center"
+                />
               ) : (
                 <div className="w-full h-full bg-muted" aria-hidden="true" />
               )}

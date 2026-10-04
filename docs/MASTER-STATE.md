@@ -360,12 +360,27 @@ El gate debe aprobar, como mínimo:
 - **Readiness:** `READY FOR BUILD = NO`; `READY AFTER LEGAL GATE = YES`, subject to controlled implementation and QA.
 - **Canonical specification:** `docs/route-b/RB3_FINAL_MIGRATION_SPEC_V1.md`.
 
+### CHK-ROUTE-B-PRIVACY-LEGAL-REVIEW-PACK-V2
+
+- **PE-PRIVACY-V1:** **LEGAL REVIEW DRAFT**.
+- **Status:** **READY FOR COUNSEL**.
+- **READY FOR EXTERNAL LEGAL REVIEW:** `YES`.
+- **READY TO PUBLISH:** `NO`.
+- **READY TO ACTIVATE ROUTE B WRITES:** `NO`.
+- **LEGAL GATE:** **OPEN**.
+- **RB3 technical design:** **CLOSED / PASS**.
+- **RB3 build:** **BLOCKED BY LEGAL GATE**.
+- **Canonical package:** `docs/route-b/PE_PRIVACY_V1_LEGAL_REVIEW_PACK_V2.md`.
+- **No functional changes:** frontend, backend, Supabase, migrations, Edge Functions, CRM and production remain unchanged.
+- **Legal items still open:** retention legal validation; Supabase/Lovable legal role; processor/subprocessor wording; transfers/international processing; hosting analytics `/~flock.js`; `session-id` classification; Cloudflare `__cf_bm` disclosure; cookie/storage classification; consent copy validation; ARCO/revocation final procedure.
+- **Not reopened:** responsible, domicile, ARCO email, privacy URL, privacy version, marketing deferred, `public_request_type` and the RB3 technical design.
+
 ### Open gates
 
 1. **RB3 WRITE INTEGRATION / ROUTE B FUNCTIONAL CONTRACT** — **BLOCKED BY LEGAL GATE**. The technical design and migration specification are closed; implementation remains inactive until the legal blockers listed below are closed.
 2. **REGALOS EJECUTIVOS PUBLIC INVENTORY**.
 
-3. **RB3 LEGAL GATE** — final legal approval of `PE-PRIVACY-V1`; publication of `/aviso-de-privacidad`; hosting analytics `/~flock.js` disclosure; cookie/storage disclosure; processor/transfer wording; and retention legal review.
+3. **RB3 LEGAL GATE** — final legal approval of `PE-PRIVACY-V1`; publication of `/aviso-de-privacidad`; retention; Supabase/Lovable role; processor/subprocessor wording; transfers/international processing; hosting analytics `/~flock.js`; `session-id`; Cloudflare `__cf_bm`; cookies/storage; consent copy; and ARCO/revocation procedure.
 
 4. **D-013 / CHK-BRAND-WEB-1** permanece **OPEN** y debe cerrarse antes del lanzamiento público, promoción activa, campañas de adquisición o escalamiento significativo de tráfico. Este estado no bloquea la operación comercial controlada ni la preparación documental.
 

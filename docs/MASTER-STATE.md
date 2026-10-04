@@ -331,6 +331,24 @@ El gate debe aprobar, como mínimo:
 - **Scope boundary:** B4 CLOSED / PASS does not mean `BRAND-WEB CLOSED`, `PUBLICATION READY` or `LAUNCH READY`.
 - **Next step:** before starting a new Build phase, evaluate which currently open gate should be resolved; no new Lovable work is implied automatically.
 
+### CHK-ROUTE-B-RB2 — UI no-write / Preview Only
+
+- **Status:** **CLOSED / PASS**.
+- **Scope:** **UI NO-WRITE / PREVIEW ONLY**.
+- **Route B state:** **PARTIALLY IMPLEMENTED**. The UI is available for preview and local/mock interaction; it does not create a real lead, quote, CRM record or external submission.
+- **Implementation:** created `src/components/ProjectBriefView.tsx`, `src/features/project-brief/lib/project-brief.ts` and `src/features/project-brief/lib/project-brief.test.ts`; modified `src/pages/Index.tsx`, `src/components/LandingView.tsx`, `src/components/home/HomeHero.tsx`, `src/components/home/HomeSolutions.tsx` and `src/components/home/HomeFinalCta.tsx`.
+- **Final patch:** `src/components/ProjectBriefView.tsx`, with the approved intro copy and mobile bottom spacing to avoid persistent overlap with the global Asesoría control.
+- **RB2 commits:** `8262765`, `2a1688e`, `913b929`.
+- **Patch commits:** `866a28d`, `97aa6f8`.
+- **Entry points:** Hero, Home Solutions and Home Final CTA → `Contar mi proyecto` → `/?view=brief`. Route A remains unchanged.
+- **Validation:** Vitest `213 / 213 PASS`; Build PASS; Lint PASS; `git diff --check` PASS; 47 pre-existing TypeScript errors; RB2 introduced 0 new errors; unexpected functional files 0; protected surfaces PASS.
+- **No-write contract:** Supabase writes `0`; Edge Function calls `0`; CRM writes `0`; network writes `0`; PII persistence `0`; no email, WhatsApp or real submit. Success state is local/mock only.
+- **Validation contract:** objective and contact name required; email or phone; positive quantity or `quantity_unknown`; valid date or `target_date_unknown`; privacy consent required; no implicit quantity `1`; no required SKU, attachments or payment data.
+- **Privacy:** consent required visually; marketing not included; privacy notice link remains non-functional and `/aviso-de-privacidad` is a future route. Route B is not authorized for production publication.
+- **Route B functional contract:** **NOT CLOSED YET**.
+- **RB3 write integration:** **BLOCKED**.
+- **Scope boundary:** RB2 CLOSED / PASS does not close Route B, authorize production publication, or authorize CRM/backend writes.
+
 ### Open gates
 
 1. **ROUTE B FUNCTIONAL CONTRACT** — consentimiento, idempotencia y mapeo final.

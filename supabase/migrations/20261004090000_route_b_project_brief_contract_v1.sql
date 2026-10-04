@@ -147,7 +147,8 @@ DECLARE
   v_idempotency_lock bigint;
   v_email_lock bigint;
   v_phone_lock bigint;
-  v_recent_count integer;
+  v_recent_email_count integer;
+  v_recent_phone_count integer;
   v_privacy_active text;
   v_privacy_version text;
   v_privacy_url text;
@@ -299,20 +300,32 @@ BEGIN
     PERFORM pg_catalog.pg_advisory_xact_lock(v_phone_lock);
   END IF;
 
-  SELECT count(*)::integer
-  INTO v_recent_count
-  FROM public.cotizaciones_leads
-  WHERE public_submission = true
-    AND created_at >= now() - interval '15 minutes'
-    AND (
-      (v_email_hash IS NOT NULL AND public_email_hash = v_email_hash)
-      OR
-      (v_phone_hash IS NOT NULL AND public_phone_hash = v_phone_hash)
-    );
+  IF v_email_hash IS NOT NULL THEN
+    SELECT count(*)::integer
+    INTO v_recent_email_count
+    FROM public.cotizaciones_leads
+    WHERE public_submission = true
+      AND created_at >= now() - interval '15 minutes'
+      AND public_email_hash = v_email_hash;
 
-  IF v_recent_count >= 3 THEN
-    RAISE EXCEPTION 'rate_limit_exceeded'
-      USING ERRCODE = 'P0001';
+    IF v_recent_email_count >= 3 THEN
+      RAISE EXCEPTION 'rate_limit_exceeded'
+        USING ERRCODE = 'P0001';
+    END IF;
+  END IF;
+
+  IF v_phone_hash IS NOT NULL THEN
+    SELECT count(*)::integer
+    INTO v_recent_phone_count
+    FROM public.cotizaciones_leads
+    WHERE public_submission = true
+      AND created_at >= now() - interval '15 minutes'
+      AND public_phone_hash = v_phone_hash;
+
+    IF v_recent_phone_count >= 3 THEN
+      RAISE EXCEPTION 'rate_limit_exceeded'
+        USING ERRCODE = 'P0001';
+    END IF;
   END IF;
 
   -- El cliente no puede inyectar estado, identidad de request ni metadata de

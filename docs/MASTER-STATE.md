@@ -279,17 +279,29 @@ El gate debe aprobar, como mínimo:
 - **Functional state:** logo preserved; Catálogo and Cómo funciona functional; Soluciones and Nosotros deferred; Mi solicitud preserved; mobile menu active; no bottom navigation. Hero copy lock applied; Route A functional; Route B visible but disabled; no CRM, WhatsApp, submit, or endpoint; replaceable Hero image slot.
 - **TypeScript:** 47 pre-existing errors remain and B1 introduced 0 new errors. The debt is limited to `src/features/agent/lib/agent-attachments.ts`, `src/features/agent/lib/agent-attachments.test.ts`, `src/features/agent/lib/agent-crm.test.ts`, `src/features/agent/lib/agent-quote.test.ts`, `src/features/agent/lib/agent-state.test.ts` and `src/lib/pricing-conversion-shadow.test.ts`. No correction is authorized by this closure.
 - **Scope boundary:** B1 CLOSED / PASS does not mean `BRAND-WEB CLOSED`, `PUBLICATION READY` or `LAUNCH READY`.
-- **Next authorized phase:** `B2 — Categories + Runtime Taxonomy Validation`.
+- **Next authorized phase at B1 closure:** `B2 — Categories + Runtime Taxonomy Validation`.
+
+### CHK-BRAND-WEB-B2 — Home Categories + Runtime Taxonomy Validation
+
+- **Status:** **CLOSED / PASS**.
+- **Canonical implementation HEAD:** `423aca2a9508e7e22fc8c00842da0b19479c9936`.
+- **Closed scope:** Home Categories; five runtime taxonomy mappings; replacement of the legacy `Productos destacados` section.
+- **Evidence:** Copy PASS; routes PASS; runtime safety PASS; legacy claim removal PASS; visual placeholders PASS; responsive PASS at 390 / 768 / 1024 / 1440; Vitest `205 / 205 PASS`; Build PASS; lint PASS for B2 files; protected surfaces PASS.
+- **TypeScript:** 47 pre-existing errors remain; B2 introduced 0 new errors. No TypeScript correction is authorized by this closure.
+- **Runtime-validated mappings:** `Termos y vasos → bebidas-termos-vasos`; `Libretas → libretas-cuadernos`; `Ropa promocional → textiles-ropa`; `Bolsas y mochilas → bolsas-mochilas-viaje`; `Tecnología → tecnologia`.
+- **Regalos ejecutivos:** deferred until public inventory exists. `REGALOS EJECUTIVOS PUBLIC INVENTORY` remains OPEN. The prior observation concerning `premios-regalos-ejecutivos`, `active = true` and public count `0` was not revalidated in B2 and is not treated as new confirmed evidence.
+- **Non-blocking URL note:** `/?view=catalog&choose=categories` opens the catalog/selector and is later normalized by `CatalogView` to `/?view=catalog`. This behavior predates B2, does not produce an error, and was not modified.
+- **Legacy claim:** `favoritos de nuestros clientes corporativos` was removed from Home with the replacement of the old `Productos destacados` section. This does not certify that every legacy claim on the site is resolved.
+- **Next authorized phase:** `B3 — Solutions / Promocionales para cada ocasión`.
 
 ### Open gates
 
 1. **HERO FINAL ASSET**.
 2. **PUBLICATION RIGHTS**.
-3. **SKU / TAXONOMY RUNTIME VALIDATION**.
-4. **ROUTE B FUNCTIONAL CONTRACT** — consentimiento, idempotencia y mapeo final.
-5. **KNOWN LEGACY CLAIMS BELOW B1**.
+3. **ROUTE B FUNCTIONAL CONTRACT** — consentimiento, idempotencia y mapeo final.
+4. **REGALOS EJECUTIVOS PUBLIC INVENTORY**.
 
-6. **D-013 / CHK-BRAND-WEB-1** permanece **OPEN** y debe cerrarse antes del lanzamiento público, promoción activa, campañas de adquisición o escalamiento significativo de tráfico. Este estado no bloquea la operación comercial controlada ni la preparación documental.
+5. **D-013 / CHK-BRAND-WEB-1** permanece **OPEN** y debe cerrarse antes del lanzamiento público, promoción activa, campañas de adquisición o escalamiento significativo de tráfico. Este estado no bloquea la operación comercial controlada ni la preparación documental.
 
 La gobernanza specialist vigente conserva `pe-specialist-orchestrator`, `pe-evidence-claims`, `pe-brand-strategist`, `pe-b2b-buyer-jtbd`, `pe-ux-cro-architect`, `pe-conversion-copy-chief`, `pe-visual-image-director` y `pe-google-ads-intent-miner`. El `SPECIALIST PRE-FLIGHT` es obligatorio antes de cada nueva fase, checkpoint, auditoría, investigación, diseño, copy, preparación de Build o campaña. Se mantiene la regla **NO DEPENDER DE RECORDATORIOS DEL PROPIETARIO**.
 
@@ -301,7 +313,7 @@ El cierre registrado aquí cubre la preparación, activación, alineación y QA 
 
 ## Siguiente checkpoint recomendado
 
-`CHK-AI-SALES-4` está **CERRADO / PASS** con inteligencia comercial inicial estructurada y E2E contextual QA. `CHK-AI-SALES-5` está **CLOSED / PASS** para el E2E visual QA controlado del 2026-09-29; el alcance, evidencia, autoridades y límites están registrados en `docs/10_QA_EVIDENCE.md`. `CHK-BRAND-WEB-B1` está **CLOSED / PASS** para Header + Hero. La siguiente fase autorizada es `B2 — Categories + Runtime Taxonomy Validation`; no equivale a cerrar `BRAND-WEB-1` ni autoriza publicación o lanzamiento. El piloto no se despliega ni se expone al público, los perfiles de empresa no son todavía un producto CRM general y no se ha validado escritura CRM anónima. `CHK-BRAND-WEB-1` continúa como gate obligatorio antes del lanzamiento público. Antes de activar Pricing debe definirse y validarse la canasta competitiva, aprobar parámetros y autorizar un checkpoint posterior.
+`CHK-AI-SALES-4` está **CERRADO / PASS** con inteligencia comercial inicial estructurada y E2E contextual QA. `CHK-AI-SALES-5` está **CLOSED / PASS** para el E2E visual QA controlado del 2026-09-29; el alcance, evidencia, autoridades y límites están registrados en `docs/10_QA_EVIDENCE.md`. `CHK-BRAND-WEB-B1` está **CLOSED / PASS** para Header + Hero y `CHK-BRAND-WEB-B2` está **CLOSED / PASS** para Home Categories y cinco mappings de taxonomía runtime. La siguiente fase autorizada es `B3 — Solutions / Promocionales para cada ocasión`; estos cierres no equivalen a cerrar `BRAND-WEB-1` ni autorizan publicación o lanzamiento. El piloto no se despliega ni se expone al público, los perfiles de empresa no son todavía un producto CRM general y no se ha validado escritura CRM anónima. `CHK-BRAND-WEB-1` continúa como gate obligatorio antes del lanzamiento público. Antes de activar Pricing debe definirse y validarse la canasta competitiva, aprobar parámetros y autorizar un checkpoint posterior.
 
 Hasta contar con ese checkpoint no se debe retirar el backend Legacy ni iniciar trabajo funcional fuera del alcance comercial.
 

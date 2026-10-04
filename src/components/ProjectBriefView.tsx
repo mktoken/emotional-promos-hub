@@ -246,8 +246,7 @@ export default function ProjectBriefView({ onBack }: ProjectBriefViewProps) {
                     />
                     <span>
                       He leído el{" "}
-                      {/* Destino previsto /aviso-de-privacidad (PE-PRIVACY-V1, LEGAL REVIEW DRAFT): no enlazado en RB2. */}
-                      <span className="font-semibold underline" data-href="/aviso-de-privacidad">Aviso de Privacidad</span>{" "}
+                      <a href="/aviso-de-privacidad" target="_blank" rel="noopener" className="font-semibold underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">Aviso de Privacidad</a>{" "}
                       y autorizo el uso de mis datos para revisar esta solicitud y contactarme sobre ella. *
                     </span>
                   </label>

@@ -225,6 +225,11 @@ export default function Index() {
               ✉️ promocionalesemocionales@gmail.com
             </a>
           </div>
+          <p className="text-xs">
+            <a href="/aviso-de-privacidad" className="opacity-80 hover:opacity-100 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">
+              Aviso de Privacidad
+            </a>
+          </p>
           <p className="text-[10px] opacity-50 pt-2">
             © {new Date().getFullYear()} Promocionales Emocionales. Todos los derechos reservados.
           </p>

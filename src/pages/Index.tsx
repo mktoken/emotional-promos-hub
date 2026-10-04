@@ -123,15 +123,15 @@ export default function Index() {
     setSearchParams(next);
   }, [setSearchParams]);
 
+  const pendingSection = useRef<string | null>(null);
   const goToSection = useCallback(
     (id: string) => {
-      const scroll = () => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
       if (currentView === "landing") {
-        scroll();
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
         return;
       }
+      pendingSection.current = id;
       setView("landing");
-      window.setTimeout(scroll, 120);
     },
     [currentView, setView],
   );
@@ -140,6 +140,13 @@ export default function Index() {
 
   // Scroll al inicio cuando cambia la vista (excepto pdp→catalog, que restaura scroll dentro del catálogo).
   useEffect(() => {
+    if (currentView === "landing" && pendingSection.current) {
+      const id = pendingSection.current;
+      pendingSection.current = null;
+      // Espera a que la portada termine de montar (categorías cargan async) antes de desplazar.
+      const t = window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 400);
+      return () => window.clearTimeout(t);
+    }
     if (currentView === "landing" || currentView === "cart") {
       window.scrollTo(0, 0);
     }

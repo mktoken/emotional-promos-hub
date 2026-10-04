@@ -1,37 +1,32 @@
-# CHK-BRAND-WEB-B2-VALIDATION-V1 — Informe (solo inspección)
+# CHK-BRAND-WEB-B3-VALIDATION-V1 — Plan de validación (solo inspección)
 
-No cambié código, no hice commits, no publiqué y no escribí en la base de datos.
+Sin cambios de código, commits, push, publicación ni backend. Solo lectura y pruebas.
 
-- CURRENT HEAD: 3ae6179c20a22fa6c2b5e0f7706b0f0b4c525431
-- ORIGIN MAIN: el mismo hash
-- DIVERGENCE: 0 / 0
-- WORKING TREE: limpio
+## Hallazgos previos (ya verificados en solo lectura)
 
-- B2 FILES (a5865d7..HEAD): src/components/home/HomeCategories.tsx (+100) y src/components/LandingView.tsx (+2/−166). También cambió .lovable/ (plan archivado, no es código funcional).
-- UNEXPECTED FILES: ninguno. Index.tsx y CatalogView no tienen cambios de B2.
-- COPY: PASS. El título "Encuentra lo que necesitas", las 5 tarjetas y el botón "Ver todo el catálogo" coinciden exactamente. "Regalos ejecutivos" no aparece.
-- ROUTES: PASS. Cada tarjeta abre /?view=catalog&category=<slug> con productos (25, 25, 11, 25 y 25 imágenes) y sin errores de página.
-  - Observación: el botón "Ver todo el catálogo" navega a /?view=catalog&choose=categories, pero después el catálogo limpia la URL a /?view=catalog. El catálogo carga bien (25 imágenes). El catálogo ya se comportaba así con la Ruta A de B1, y CatalogView no se tocó.
-- RUNTIME SAFETY: PASS. Solo se hace una lectura de las categorías activas (`is_active = true`) y se registraron 0 escrituras. Si una categoría falta o está inactiva, su tarjeta se oculta. Si la lectura falla, no se muestra ninguna tarjeta, pero el botón de respaldo sigue disponible.
-- REGALOS EJECUTIVOS: tarjeta no mostrada, sin q=ejecutivo, sin redirección y sin cambios a la taxonomía. NO COMPROBADO en la base de datos: el slug activo con 0 productos públicos (mi consulta de solo lectura falló porque el nombre de la tabla no era correcto). Estado: DEFERRED UNTIL PUBLIC INVENTORY EXISTS.
-- LEGACY CLAIM: PASS. "favoritos de nuestros clientes" ya no aparece en la portada. B2 no introdujo claims nuevos.
-- VISUALS: PASS. Marcadores grises neutros en proporción 4:3. No hay imágenes ni URLs de proveedores ni SKUs, y el espacio de imagen se puede reemplazar (imageSrc). PUBLICATION RIGHTS sigue OPEN.
-- RESPONSIVE: PASS en 390, 768, 1024 y 1440 px.
-  - Sin desbordes. 2 columnas en móvil y 3 desde 768 px.
-  - Toda la tarjeta es clicable, con alto mínimo de 181 px.
-  - Las etiquetas son visibles y la sección no depende de pasar el ratón.
-  - Teclado y focus visible sin error.
-- VITEST: 205 / 205 PASS (22 archivos).
-- BUILD: PASS (la vista previa carga sin errores).
-- TYPECHECK: 47 errores en los mismos 6 archivos de siempre. HomeCategories.tsx y LandingView.tsx tienen 0 errores.
-- B2 NEW TYPE ERRORS: 0
-- LINT: PASS en los archivos de B2 (el error anterior de LandingView desapareció junto con el código retirado).
-- PROTECTED SURFACES: PASS. Sin cambios fuera de los dos archivos de B2.
+- HEAD = origin/main = 62b63d50f1a03a6755baca0bb92c7dd029f1d985; divergencia 0/0; working tree limpio.
+- La rama actual se llama `edit/edt-d3168771-…`, no `main`: hay que reportarlo.
+- Commits B3 desde 8455ebe: 39e2578, 9382cc2, fff9fa9, f630062 ("Changes", automáticos de Lovable) y 62b63d5 ("Added Solutions handler").
+- Diff B3: solo los 4 archivos esperados (HomeSolutions +51, LandingView +2/−51, HomeHeader +8/−1, Index +29/−9). No hay archivos inesperados.
+- **Riesgo en Index.tsx (decisión requerida):** el cambio crea una función compartida `goToSection`. Así, "Cómo funciona" desde vistas que no son Home ahora usa el mismo mecanismo (espera 400/1200 ms en vez de 120 ms). Es una mejora del salto, pero toca algo más que `#soluciones`. Según el punto 3, eso puede dar BLOCKED. Lo propongo como **SCOPE NOTE – behavior-preserving**, siempre que el runtime confirme que "Cómo funciona" sigue llegando a `#proceso`. El propietario decide.
+- No se tocan Route A, el carrito, la ficha de producto, el catálogo ni el estado guardado, y no hay escrituras. Se sale del bucle porque `pendingSection` se limpia antes de desplazar la página.
 
-GATE CLOSED: SKU / TAXONOMY RUNTIME VALIDATION para bebidas-termos-vasos, libretas-cuadernos, textiles-ropa, bolsas-mochilas-viaje y tecnologia.
+## Pasos de ejecución
 
-GATES OPEN: HERO FINAL ASSET, PUBLICATION RIGHTS, ROUTE B FUNCTIONAL CONTRACT, REGALOS EJECUTIVOS PUBLIC INVENTORY, D-013 / CHK-BRAND-WEB-1.
+1. Git: `git log --oneline -8`, con la clasificación EXPECTED/UNEXPECTED de cada commit.
+2. Index.tsx: revisar el diff línea por línea según los 8 criterios del punto 3.
+3. Copy: comparar carácter por carácter el texto de HomeSolutions.tsx con la orden y contar los botones (debe haber 1).
+4. Botón "Contar mi proyecto": confirmar con Playwright que está visible y desactivado. Hay que medir que el clic produce 0 peticiones, 0 popups y que la URL no cambia. También leer el texto de `aria-describedby`.
+5. Orden de la portada: leer los h2 en el DOM; debe quedar Hero → Categorías → Soluciones → Cómo funciona, sin repeticiones.
+6. Kits: buscar con `rg` en `src/` y en el DOM las 5 frases, más equivalentes ("kit", "un solo proveedor", "armamos").
+7. Header: probar "Soluciones" en Home (computadora y celular), catálogo, ficha de producto y carrito. Repetir con "Cómo funciona" para descartar regresiones. Confirmar que no existe /soluciones y que no hay bucles. Registrar la diferencia de 1440 px como COSMETIC / NON-BLOCKING si se confirma.
+8. Responsive y accesibilidad a 390, 768, 1024 y 1440 px: número de columnas, desborde, foco con Tab, botón de al menos 44 px y que nada quede tapado por la cabecera.
+9. Visual: confirmar que no hay `<img>`, SKU, URLs de proveedor ni insignias.
+10. Vitest completo (se esperan 205/205).
+11. Build (`vite build`) y typecheck por separado. En el typecheck se esperan 47 errores en los mismos 6 archivos, con 0 en los 4 archivos de B3.
+12. Lint de los 4 archivos de B3, clasificado como PASS, PREEXISTING o B3-RELATED.
+13. Superficies protegidas: correr `git diff --stat 8455ebe..HEAD` sobre CatalogView, ProductDetailView, QuoteCartView, pricing, agent, supabase/ y HomeCategories (se espera vacío).
 
-FINAL: CHK-BRAND-WEB-B2-VALIDATION-V1 — PASS. Quedan dos notas aparte, que no bloquean:
-1. El dato de Regalos ejecutivos en la base de datos no está comprobado.
-2. El catálogo limpia el parámetro choose=categories de la URL (comportamiento anterior a B2).
+## Resultado
+
+El informe final se entrega en el formato de la orden, con el veredicto PASS o BLOCKED [razón]. Siguen OPEN: HERO FINAL ASSET, PUBLICATION RIGHTS, ROUTE B FUNCTIONAL CONTRACT, REGALOS EJECUTIVOS PUBLIC INVENTORY y D-013 / CHK-BRAND-WEB-1.

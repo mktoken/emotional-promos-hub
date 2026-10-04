@@ -83,7 +83,7 @@ export default function ProjectBriefView({ onBack }: ProjectBriefViewProps) {
   ];
 
   return (
-    <main className="py-10 sm:py-14 bg-surface" data-route-b="rb2-demo-no-write">
+    <main className="pt-10 pb-28 sm:py-14 bg-surface" data-route-b="rb2-demo-no-write">
       <div ref={topRef} className="max-w-2xl mx-auto px-4 sm:px-6 scroll-mt-24">
         <button
           type="button"
@@ -111,7 +111,7 @@ export default function ProjectBriefView({ onBack }: ProjectBriefViewProps) {
           <>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-3">Cuéntanos tu proyecto</h1>
             <p className="text-lg text-muted-foreground mb-8">
-              Si aún no sabes qué producto elegir, describe lo que necesitas. Un asesor lo revisará y te contactará con opciones.
+              Cuéntanos qué necesitas, aunque todavía no tengas claro el producto. Con esta información podremos revisar tu solicitud y continuar contigo.
             </p>
 
             {stage === "form" && (

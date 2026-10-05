@@ -427,17 +427,22 @@ export type Database = {
         Row: {
           articulos_cotizados: Json
           assigned_to: string | null
+          consent_at: string | null
           created_at: string | null
           datos_cliente: Json
           estado_cotizacion: string | null
           id: string
           last_contacted_at: string | null
           lost_reason: string | null
+          marketing_consent: boolean
           next_follow_up_at: string | null
+          privacy_url: string | null
+          privacy_version: string | null
           public_email_hash: string | null
           public_phone_hash: string | null
           public_request_fingerprint: string | null
           public_request_id: string | null
+          public_request_type: string
           public_submission: boolean
           total_estimado: number | null
           updated_at: string | null
@@ -445,17 +450,22 @@ export type Database = {
         Insert: {
           articulos_cotizados?: Json
           assigned_to?: string | null
+          consent_at?: string | null
           created_at?: string | null
           datos_cliente?: Json
           estado_cotizacion?: string | null
           id?: string
           last_contacted_at?: string | null
           lost_reason?: string | null
+          marketing_consent?: boolean
           next_follow_up_at?: string | null
+          privacy_url?: string | null
+          privacy_version?: string | null
           public_email_hash?: string | null
           public_phone_hash?: string | null
           public_request_fingerprint?: string | null
           public_request_id?: string | null
+          public_request_type?: string
           public_submission?: boolean
           total_estimado?: number | null
           updated_at?: string | null
@@ -463,17 +473,22 @@ export type Database = {
         Update: {
           articulos_cotizados?: Json
           assigned_to?: string | null
+          consent_at?: string | null
           created_at?: string | null
           datos_cliente?: Json
           estado_cotizacion?: string | null
           id?: string
           last_contacted_at?: string | null
           lost_reason?: string | null
+          marketing_consent?: boolean
           next_follow_up_at?: string | null
+          privacy_url?: string | null
+          privacy_version?: string | null
           public_email_hash?: string | null
           public_phone_hash?: string | null
           public_request_fingerprint?: string | null
           public_request_id?: string | null
+          public_request_type?: string
           public_submission?: boolean
           total_estimado?: number | null
           updated_at?: string | null
@@ -4908,6 +4923,20 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      submit_project_brief_internal: {
+        Args: {
+          p_datos_cliente: Json
+          p_email?: string
+          p_phone?: string
+          p_privacy_consent?: boolean
+          p_request_fingerprint: string
+          p_request_id: string
+        }
+        Returns: {
+          quote_id: string
+          result: string
+        }[]
+      }
       submit_public_quote_request: {
         Args: {
           p_contact: Json

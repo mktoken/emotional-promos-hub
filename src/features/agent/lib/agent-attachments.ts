@@ -95,7 +95,7 @@ export interface CommercialVisualAnalysis {
   productName?: string | null;
   description?: string | null;
   productObservation: Record<string, CommercialVisualObservation>;
-  logoObservation: Record<string, CommercialVisualObservation> & { technicalReviewRequired: true };
+  logoObservation: Record<string, CommercialVisualObservation | true> & { technicalReviewRequired: true };
   competitorObservation: Record<string, CommercialVisualObservation>;
   confidence: Confidence;
   provenance: "attachment";
@@ -131,7 +131,7 @@ function derivedCategory(text: string): string | null {
 export function normalizeCommercialVisionPayload(raw: unknown): CommercialVisualAnalysis | null {
   if (!raw || typeof raw !== "object") return null;
   const value = raw as Record<string, unknown>;
-  if (value.productObservation && value.logoObservation && value.competitorObservation) return value as CommercialVisualAnalysis;
+  if (value.productObservation && value.logoObservation && value.competitorObservation) return value as unknown as CommercialVisualAnalysis;
   const extracted = value.extracted_data && typeof value.extracted_data === "object" ? value.extracted_data as Record<string, unknown> : null;
   if (!extracted) return null;
   const productName = typeof extracted.product_name === "string" ? extracted.product_name : "";
@@ -148,7 +148,7 @@ export function normalizeCommercialVisionPayload(raw: unknown): CommercialVisual
   const usableSignals = Number(Boolean(category)) + Number(Boolean(productName || description)) + Number(Boolean(colors.length)) + Number(Boolean(materials.length)) + Number(Boolean(features.length));
   return { analysisStatus: value.analysisStatus === "completed" ? "completed" : "partial", attachmentType: "product_photo",
     productObservation: { apparentCategory: visualObservation(category), apparentMaterial: visualObservation(materials[0]), apparentStyle: visualObservation(null, "low", "unknown"), apparentColors: visualObservation(colors), apparentFeatures: visualObservation(features), visibleBrand: visualObservation(brandingValue), visibleText: visualObservation(productName || description), possibleUseCase: visualObservation(null, "low", "unknown") },
-    logoObservation: { technicalReviewRequired: true }, competitorObservation: {}, confidence: ["high", "medium", "low"].includes(value.confidence) ? value.confidence : "low",
+    logoObservation: { technicalReviewRequired: true }, competitorObservation: {}, confidence: value.confidence === "high" || value.confidence === "medium" ? value.confidence : "low",
     provenance: "attachment", humanReviewRequired: true, candidateReference: visualObservation(productName || description), commercialCategory: visualObservation(category), searchTerms,
     normalizedColors: colors, primaryMaterial: visualObservation(materials[0]), keyFeatures: features, brandingDetected: visualObservation(brandingValue), usableSignals, queryReady: Boolean(category && usableSignals >= 2) };
 }
@@ -163,9 +163,9 @@ export function applyVisualAnalysis(attachment: CommercialAttachment, visualAnal
     confidence: visualAnalysis.confidence, humanReviewRequired: true,
     analysis: { ...attachment.analysis,
       summary: { value: visualAnalysis.analysisStatus === "completed" ? "Análisis visual estructurado completado" : "No pude identificar suficiente información de esta imagen", certainty: visualAnalysis.analysisStatus === "completed" ? "OBSERVED" : "UNKNOWN", confidence: visualAnalysis.confidence, source: "attachment", attachmentId: attachment.attachmentId, observedAt: new Date().toISOString() },
-      productReference: { category: product.apparentCategory as AttachmentObservation<string>, material: product.apparentMaterial as AttachmentObservation<string>, style: product.apparentStyle as AttachmentObservation<string>, colors: product.apparentColors as AttachmentObservation<string[]>, features: product.apparentFeatures as AttachmentObservation<string[]>, visibleText: product.visibleText as AttachmentObservation<string>, possibleUseCase: product.possibleUseCase as AttachmentObservation<string> },
-      logoArtwork: { dominantColors: logo.dominantColors as AttachmentObservation<string[]>, orientation: logo.orientation as AttachmentObservation<string>, background: logo.backgroundObservation as AttachmentObservation<string>, complexity: logo.apparentComplexity as AttachmentObservation<string>, technicalReviewRequired: true, printingReviewNotes: String((logo.reviewNotes as CommercialVisualObservation).value ?? "Revisión técnica requerida") },
-      competitorReference: { productName: competitor.visibleProductName as AttachmentObservation<string>, quantity: competitor.visibleQuantity as AttachmentObservation<number>, unitPriceMxn: competitor.visibleUnitPrice as AttachmentObservation<number>, totalMxn: competitor.visibleTotal as AttachmentObservation<number>, iva: competitor.ivaStatus as AttachmentObservation<string>, printing: competitor.printingStatus as AttachmentObservation<string>, shipping: competitor.shippingStatus as AttachmentObservation<string>, competitorName: competitor.visibleCompetitorName as AttachmentObservation<string>, comparability: "unknown", humanReviewRequired: true },
+      productReference: { category: product.apparentCategory as unknown as AttachmentObservation<string>, material: product.apparentMaterial as unknown as AttachmentObservation<string>, style: product.apparentStyle as unknown as AttachmentObservation<string>, colors: product.apparentColors as unknown as AttachmentObservation<string[]>, features: product.apparentFeatures as unknown as AttachmentObservation<string[]>, visibleText: product.visibleText as unknown as AttachmentObservation<string>, possibleUseCase: product.possibleUseCase as unknown as AttachmentObservation<string> },
+      logoArtwork: { dominantColors: logo.dominantColors as unknown as AttachmentObservation<string[]>, orientation: logo.orientation as unknown as AttachmentObservation<string>, background: logo.backgroundObservation as unknown as AttachmentObservation<string>, complexity: logo.apparentComplexity as unknown as AttachmentObservation<string>, technicalReviewRequired: true, printingReviewNotes: String((logo.reviewNotes as unknown as CommercialVisualObservation).value ?? "Revisión técnica requerida") },
+      competitorReference: { productName: competitor.visibleProductName as unknown as AttachmentObservation<string>, quantity: competitor.visibleQuantity as unknown as AttachmentObservation<number>, unitPriceMxn: competitor.visibleUnitPrice as unknown as AttachmentObservation<number>, totalMxn: competitor.visibleTotal as unknown as AttachmentObservation<number>, iva: competitor.ivaStatus as unknown as AttachmentObservation<string>, printing: competitor.printingStatus as unknown as AttachmentObservation<string>, shipping: competitor.shippingStatus as unknown as AttachmentObservation<string>, competitorName: competitor.visibleCompetitorName as unknown as AttachmentObservation<string>, comparability: "unknown", humanReviewRequired: true },
     } };
 }
 
@@ -218,7 +218,7 @@ const observation = <T,>(attachmentId: string, value: T | null, certainty: Obser
   source, attachmentId, observedAt: new Date().toISOString(),
 });
 
-export function createCommercialAttachment(file: AttachmentFileMetadata, type: CommercialAttachmentType, attachmentId = crypto.randomUUID()): CommercialAttachment {
+export function createCommercialAttachment(file: AttachmentFileMetadata, type: CommercialAttachmentType, attachmentId: string = crypto.randomUUID()): CommercialAttachment {
   const errors = validateAttachmentFile(file);
   const needsReview = type === "logo" || type === "artwork" || type === "competitor_quote";
   return {

@@ -47,7 +47,7 @@ describe("commercial attachment guardrails", () => {
         apparentFeatures: observation(["cierre"], "inferred"), visibleBrand: observation(null, "unknown"),
         visibleText: observation("K22"), possibleUseCase: observation("evento", "inferred"),
       },
-      logoObservation: { technicalReviewRequired: true }, competitorObservation: {}, confidence: "low" as const,
+      logoObservation: { technicalReviewRequired: true as const }, competitorObservation: {}, confidence: "low" as const,
       provenance: "attachment" as const, humanReviewRequired: true, candidateReference: observation(null, "unknown"),
     };
     expect(buildSearchCriteriaFromVisualAnalysis(visual)).toBe("mochila K22");
@@ -56,7 +56,7 @@ describe("commercial attachment guardrails", () => {
   it("does not search when visual observations are unknown", () => {
     const unknown = { value: null, confidence: "low" as const, provenance: "attachment" as const, certainty: "unknown" as const };
     const visual = { analysisStatus: "partial" as const, attachmentType: "unknown" as const,
-      productObservation: { apparentCategory: unknown, visibleText: unknown }, logoObservation: { technicalReviewRequired: true },
+      productObservation: { apparentCategory: unknown, visibleText: unknown }, logoObservation: { technicalReviewRequired: true as const },
       competitorObservation: {}, confidence: "low" as const, provenance: "attachment" as const,
       humanReviewRequired: true, candidateReference: unknown };
     expect(buildSearchCriteriaFromVisualAnalysis(visual)).toBeNull();

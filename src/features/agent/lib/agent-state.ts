@@ -117,7 +117,7 @@ export function setActiveProductLine(state: OpportunityState, lineId: string | n
 }
 
 export function createProductLine(
-  state: OpportunityState, productInterest: string, quantity: number | null = null, lineId = crypto.randomUUID(),
+  state: OpportunityState, productInterest: string, quantity: number | null = null, lineId: string = crypto.randomUUID(),
 ): OpportunityState {
   const line: AgentProductLine = {
     lineId, productInterest: productInterest.trim(), quantity, candidates: [], selectedProductId: null,

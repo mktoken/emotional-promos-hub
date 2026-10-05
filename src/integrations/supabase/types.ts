@@ -4937,6 +4937,20 @@ export type Database = {
           result: string
         }[]
       }
+      submit_project_brief_internal_core: {
+        Args: {
+          p_datos_cliente: Json
+          p_email?: string
+          p_phone?: string
+          p_privacy_consent?: boolean
+          p_request_fingerprint: string
+          p_request_id: string
+        }
+        Returns: {
+          quote_id: string
+          result: string
+        }[]
+      }
       submit_public_quote_request: {
         Args: {
           p_contact: Json

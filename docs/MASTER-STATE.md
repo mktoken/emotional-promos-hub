@@ -219,6 +219,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 | Super Agente multiproducto | CHK-AI-SALES-3 CERRADO / PASS; E2E runtime multilínea, CRM, borrador y UI desktop/mobile validados |
 | Inteligencia comercial inicial | CHK-AI-SALES-4 CERRADO / PASS; playbooks, perfil QA, provenance y E2E contextual validados |
 | CHK-CAT-1 catálogo, precios y stock | CERRADO / PARCIAL; limitaciones runtime documentadas |
+| CHK-CATALOG-QUALITY-MASTER-AUDIT-V1 | CERRADO / PASS; auditoría read-only completada, sin equivalencia con readiness para Ads |
 | CHK-COM-9 ciclo post-envío y seguimiento comercial | CERRADO / PARCIAL; limitaciones documentadas |
 | CHK-IMP-1-SHADOW-1 Pricing de Conversión México | CERRADO / PASS; shadow-only |
 | CHK-IMP-1 padre | PAUSADO POR PRIORIDAD OPERATIVA; G4, impresión y activación productiva pendientes |
@@ -233,6 +234,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 - Mantener documentadas las limitaciones de CHK-COM-9 y no iniciar correcciones ni otro checkpoint automáticamente.
 - Mantener el resultado de `CHK-IMP-1-SHADOW-1` preservado en Git y el padre pausado hasta definir la canasta competitiva mexicana, validar parámetros y reconciliar el lineage runtime de proveedores antes de cualquier activación. Operar el flujo estable con los guardrails de `docs/07_OPERATIONS_ROADMAP.md`.
 - Preservar la evidencia QA de `CHK-AI-SALES-3` y `CHK-AI-SALES-4`; no emitir ni enviar `COT-2026-00011` ni `COT-2026-00013` y no usar los registros QA como operación comercial real.
+- `CHK-CATALOG-QUALITY-MASTER-AUDIT-V1` queda **CERRADO / PASS** como auditoría completada. Mantener abiertos los riesgos P0 de frescura de stock (`990` productos observados stale >30 días) y trazabilidad de proveedor (`895/992` sin vínculo `provider_raw_products`), además de los `7` gaps de Pricing V2 público. El PASS no certifica readiness comercial, SEO ni Ads.
 
 ### No hacer todavía
 
@@ -241,6 +243,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 - No rediseñar el catálogo.
 - No modificar backend, Supabase, migraciones, RLS, grants, secrets o Edge Functions.
 - No ejecutar rollback.
+- No ejecutar `CHK-CATALOG-P0-STOCK-PROVIDER-TRACEABILITY-V1` dentro de este cierre; queda como siguiente checkpoint autorizado para investigar origen y refresh de stock.
 
 ## Siguiente paso autorizado
 

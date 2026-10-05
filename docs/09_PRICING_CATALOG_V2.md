@@ -114,3 +114,88 @@ No se agregan observaciones competitivas reales ni scraping en esta ejecución. 
 - [Rollback específico](../supabase/qa/rollback_recompute_v2_function.md)
 - [Assertions de release V2](../supabase/qa/catalog_price_v2_release_preparation_assertions.sql)
 - [Assertions de precio público](../supabase/qa/public_product_price_quote_assertions.sql)
+
+## CHK-CATALOG-QUALITY-MASTER-AUDIT-V1 — Cierre documental
+
+**Estado:** **CLOSED / PASS**.
+
+Este PASS significa que la auditoría read-only fue completada. No significa que el catálogo esté listo para Ads, ni certifica la disponibilidad actual, la frescura del stock, la trazabilidad completa de proveedores, la calidad visual real o la readiness comercial/SEO.
+
+### Evidencia consolidada
+
+| Control | Resultado |
+|---|---:|
+| Productos públicos | 992 |
+| Productos con nombre | 992 |
+| Productos con categoría | 992 |
+| Productos con descripción | 990 |
+| Productos con metadata de imagen | 992 |
+| Productos con múltiples imágenes | 936 |
+| Grupos de URLs de imagen compartidas | 141 |
+| Productos con Pricing V2 público válido | 985 |
+| Productos públicos sin Pricing V2 válido | 7 |
+| Filas V2 actuales | 1,524 |
+| Filas V2 sin producto público | 539 |
+| De esas filas V2 huérfanas: `priced` | 521 |
+| De esas filas V2 huérfanas: `request_quote` | 18 |
+| Productos públicos con exactamente un vínculo raw | 97 |
+| Productos públicos con múltiples vínculos raw | 0 |
+| Productos públicos sin vínculo raw/provider | 895 |
+| Productos públicos con stock observado conocido | 990 |
+| Productos públicos con stock desconocido | 2 |
+| Productos públicos con stock cero/agotado observado | 0 |
+| Productos públicos con stock observado stale >30 días | 990 |
+
+Última sincronización de stock observada: `2026-07-28`. Sincronización observada más antigua: `2026-06-29`.
+
+**Regla de interpretación:** stock observado no equivale a disponibilidad actual. La frescura actual del stock queda **NO CERTIFICADA / STALE**.
+
+### Productos públicos sin Pricing V2 válido
+
+| `id_interno` | Nombre |
+|---|---|
+| `CDO_C578` | Mochila Trip Ligera |
+| `CDO_T164` | Libreta Ecológica con Pluma |
+| `CDO_T702` | Mug Termico Magno |
+| `CDO_T723` | Libreta Medium PU |
+| `CDO_T731` | Mug Tommy Doble Pared |
+| `promo_001` | Set de Herramientas Hércules |
+| `promo_002` | Navaja Multiusos Inoxidable |
+
+### Corrección de interpretación de metadata
+
+No se registra como defecto real la lectura heurística de 985 productos con metadata crítica incompleta. La evidencia observada fue:
+
+- nombre: `992/992`;
+- categoría: `992/992`;
+- descripción: `990/992`;
+- `sku_base`: `7/992`.
+
+La obligatoriedad de `sku_base` no está demostrada por el contrato público actual. No se abre remediación masiva de esos 985 registros.
+
+### Regalos ejecutivos
+
+La categoría formal es **Premios y regalos ejecutivos** y tiene actualmente `0` productos asignados. El detector textual amplio encontró `456` candidatos. No se autoriza autoasignación; requiere curaduría comercial posterior.
+
+### Risk register
+
+| ID | Riesgo | Estado |
+|---|---|---|
+| P0-1 | Frescura de stock | `990` productos públicos tienen stock observado stale >30 días. |
+| P0-2 | Trazabilidad de proveedor | `895/992` productos públicos no tienen vínculo `provider_raw_products`; esto no prueba que sean inválidos. |
+| P0-3 | Gaps de precio público | `7` productos públicos no tienen Pricing V2 válido. |
+| P1-1 | Calidad visual | Metadata de imagen `100%`, pero calidad visual real no certificada; `141` grupos de URLs compartidas requieren evaluación. |
+| P1-2 | Regalos ejecutivos | Categoría vacía; `456` candidatos requieren curaduría comercial. |
+
+### Readiness
+
+- Estructura de datos de catálogo: **SUBSTANTIALLY PRESENT**.
+- Readiness comercial del catálogo: **NOT CERTIFIED**.
+- Readiness SEO: **NOT CERTIFIED**.
+- Readiness Ads: **BLOCKED**.
+- Bloqueadores principales de Ads: frescura de stock y trazabilidad de proveedor.
+- No se inventan porcentajes de readiness sin una métrica canónica aprobada.
+
+### Siguiente checkpoint autorizado
+
+`CHK-CATALOG-P0-STOCK-PROVIDER-TRACEABILITY-V1` deberá determinar por qué `895` productos públicos no tienen vínculo `provider_raw_products` y cuál es la fuente/mecanismo real de refresh de stock. No forma parte de este cierre y no queda ejecutado por esta documentación.

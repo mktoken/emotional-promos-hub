@@ -4,6 +4,7 @@
 // NUNCA modifica tablas de productos directamente: solo lee/escribe stock_refresh_*.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { recomputeProductStockStatus } from "../_shared/catalog-stock-status.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,6 +36,47 @@ interface CursorRow {
   cycle_count: number | null;
   last_run_at: string | null;
   last_completed_cycle_at: string | null;
+}
+
+type SupabaseClient = ReturnType<typeof createClient>;
+
+type AffectedScope = {
+  offerIds: string[];
+  productIds: string[];
+};
+
+async function resolveAffectedScope(
+  supabase: SupabaseClient,
+  batchId: string,
+): Promise<AffectedScope> {
+  const { data: rawRows, error: rawError } = await supabase
+    .from("provider_raw_products")
+    .select("id")
+    .eq("batch_id", batchId);
+  if (rawError) throw new Error(`affected raw read: ${rawError.message}`);
+
+  const rawIds = [...new Set((rawRows ?? []).map((row) => row.id as string).filter(Boolean))];
+  if (rawIds.length === 0) return { offerIds: [], productIds: [] };
+
+  const { data: offerRows, error: offerError } = await supabase
+    .from("producto_proveedor_ofertas")
+    .select("id")
+    .in("provider_raw_product_id", rawIds);
+  if (offerError) throw new Error(`affected offers read: ${offerError.message}`);
+
+  const offerIds = [...new Set((offerRows ?? []).map((row) => row.id as string).filter(Boolean))];
+  if (offerIds.length === 0) return { offerIds: [], productIds: [] };
+
+  const { data: mapRows, error: mapError } = await supabase
+    .from("producto_b2b_oferta_map")
+    .select("producto_b2b_id")
+    .in("oferta_id", offerIds);
+  if (mapError) throw new Error(`affected products read: ${mapError.message}`);
+
+  return {
+    offerIds,
+    productIds: [...new Set((mapRows ?? []).map((row) => row.producto_b2b_id as string).filter(Boolean))],
+  };
 }
 
 Deno.serve(async (req) => {
@@ -84,6 +126,10 @@ Deno.serve(async (req) => {
     const offsetOverride = url.searchParams.get("offset");
     const pageOverride = url.searchParams.get("page");
     const resetCursor = (url.searchParams.get("reset_cursor") ?? "false").toLowerCase() === "true";
+    const materializeProductIds = (url.searchParams.get("materialize_product_ids") ?? "")
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
 
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
 
@@ -152,11 +198,24 @@ Deno.serve(async (req) => {
     const summary: Record<string, {
       batches: number; items_seen: number; stock_updated: number;
       cycles_completed: number; last_status: string | null;
+      affected_offers: number; affected_products: number;
+      recomputed_products: number; failed_products: number;
     }> = {};
     let batchesExecuted = 0;
+    let dryRunMaterialization: Record<string, unknown> | null = null;
 
     for (const provider of providers) {
-      summary[provider] = { batches: 0, items_seen: 0, stock_updated: 0, cycles_completed: 0, last_status: null };
+      summary[provider] = {
+        batches: 0,
+        items_seen: 0,
+        stock_updated: 0,
+        cycles_completed: 0,
+        last_status: null,
+        affected_offers: 0,
+        affected_products: 0,
+        recomputed_products: 0,
+        failed_products: 0,
+      };
       const cur = cursorsMap[provider];
 
       for (let b = 1; b <= maxBatches; b++) {
@@ -235,6 +294,51 @@ Deno.serve(async (req) => {
         summary[provider].stock_updated += stockUpdated;
         summary[provider].last_status = itemStatus;
 
+        let materialization: Record<string, unknown> = {
+          dry_run: mode !== "full",
+          affected_offers: 0,
+          affected_products: 0,
+          recomputed_products: 0,
+          failed_products: 0,
+          product_reports: mode === "dry_run" ? [] : undefined,
+        };
+
+        if (itemStatus === "success" && mode === "full") {
+          const batchId = String((respJson as Record<string, unknown> | null)?.["batch_id"] ?? "");
+          if (!batchId) {
+            itemStatus = "failed";
+            itemErr = "materialization requires provider batch_id";
+          } else {
+            try {
+              const affected = await resolveAffectedScope(supabase, batchId);
+              const recompute = await recomputeProductStockStatus(
+                supabase,
+                affected.productIds,
+                { dryRun: false, affectedOfferIds: affected.offerIds },
+              );
+              summary[provider].affected_offers += recompute.affected_offer_ids.length;
+              summary[provider].affected_products += recompute.affected_product_ids.length;
+              summary[provider].recomputed_products += recompute.recomputed_product_ids.length;
+              summary[provider].failed_products += recompute.failed_product_ids.length;
+              materialization = {
+                dry_run: false,
+                affected_offers: recompute.affected_offer_ids.length,
+                affected_products: recompute.affected_product_ids.length,
+                recomputed_products: recompute.recomputed_product_ids.length,
+                failed_products: recompute.failed_product_ids.length,
+                product_reports: [],
+              };
+              if (recompute.failed_product_ids.length > 0) {
+                itemStatus = "failed";
+                itemErr = `status materialization failed for ${recompute.failed_product_ids.length} product(s)`;
+              }
+            } catch (e) {
+              itemStatus = "failed";
+              itemErr = e instanceof Error ? e.message.slice(0, 300) : "status materialization failed";
+            }
+          }
+        }
+
         // Resumen compacto para no guardar payloads gigantes
         const compactResp: Record<string, unknown> = {
           http_status: httpStatus,
@@ -248,7 +352,10 @@ Deno.serve(async (req) => {
           batch_id: (respJson as Record<string, unknown> | null)?.["batch_id"] ?? null,
           status: (respJson as Record<string, unknown> | null)?.["status"] ?? null,
           error_message: (respJson as Record<string, unknown> | null)?.["error_message"] ?? null,
+          materialization,
         };
+
+        summary[provider].last_status = itemStatus;
 
         await supabase.from("stock_refresh_run_items").insert({
           run_id: runId,
@@ -294,6 +401,23 @@ Deno.serve(async (req) => {
       }
 
       cur.last_run_at = new Date().toISOString();
+    }
+
+    if (mode === "dry_run" && materializeProductIds.length > 0) {
+      const recompute = await recomputeProductStockStatus(
+        supabase,
+        materializeProductIds,
+        { dryRun: true },
+      );
+      dryRunMaterialization = {
+        dry_run: true,
+        affected_offers: recompute.affected_offer_ids.length,
+        affected_products: recompute.affected_product_ids.length,
+        recomputed_products: 0,
+        failed_products: recompute.failed_product_ids.length,
+        products: recompute.products,
+        errors: recompute.errors,
+      };
     }
 
     // Persistir cursores SOLO en modo full
@@ -347,9 +471,10 @@ Deno.serve(async (req) => {
       cursors_after: cursorsMap,
       errors,
       summary,
+      materialization_dry_run: dryRunMaterialization,
       note: mode === "dry_run"
-        ? "dry_run: cursores NO se actualizaron; las sync functions ejecutaron en su propio modo dry_run."
-        : "full: cursores actualizados. No se llamó a promote-provider-products-to-catalog.",
+        ? "dry_run: cursores NO se actualizaron; la materialización dry-run requiere materialize_product_ids y no escribe producto_b2b_status."
+        : "full: cursores actualizados; los productos afectados se materializaron desde producto_b2b_oferta_map.",
     });
   } catch (e) {
     console.log("fatal", { stage, error: e instanceof Error ? e.message : "unknown" });

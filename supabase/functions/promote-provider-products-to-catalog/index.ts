@@ -9,6 +9,7 @@
 // Does NOT touch productos_publicos, RLS, or any other Edge Function.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+import { deriveCatalogStockStatus } from "../_shared/catalog-stock-status.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -394,16 +395,6 @@ Deno.serve(async (req) => {
             skipped_reasons.no_stock_row++;
             continue;
           }
-          const stockQty = stockRows.reduce(
-            (a, r) => a + Number(r.cantidad ?? 0),
-            0,
-          );
-          const lastStockSync = stockRows
-            .map((r) => r.updated_at as string | null)
-            .filter(Boolean)
-            .sort()
-            .pop() ?? null;
-
           const { data: scales } = await sb
             .from("producto_precio_escalas")
             .select("oferta_id, min_qty, unit_cost")
@@ -432,7 +423,7 @@ Deno.serve(async (req) => {
             "manual_review";
           let pricing_warning: string | null = null;
           let min_price_before_tax: number | null = null;
-          let source_oferta_id: string = primaryOffer.id as string;
+          const source_oferta_id: string = primaryOffer.id as string;
 
           if (!rule) {
             price_status = "manual_review";
@@ -506,46 +497,22 @@ Deno.serve(async (req) => {
 
           // ----- image / status derivations -----
           const image_available = offers.some((o) => o.imagen_url);
-          const price_valid = price_status === "valid";
-          let stock_status: "disponible" | "bajo" | "agotado" | "consultar";
-          let public_visible = false;
-          let quote_mode:
-            | "cotizable"
-            | "consultar_disponibilidad"
-            | "no_cotizable";
-          let kit_eligible = false;
-
-          if (!raw.activo) {
-            public_visible = false;
-            stock_status = "agotado";
-            quote_mode = "no_cotizable";
-            kit_eligible = false;
-          } else if (price_status === "unavailable") {
-            public_visible = false;
-            stock_status = "consultar";
-            quote_mode = "no_cotizable";
-            kit_eligible = false;
-          } else if (price_status === "manual_review") {
-            public_visible = false;
-            stock_status = "consultar";
-            quote_mode = "consultar_disponibilidad";
-            kit_eligible = false;
-          } else if (stockQty === 0) {
-            public_visible = false;
-            stock_status = "agotado";
-            quote_mode = "consultar_disponibilidad";
-            kit_eligible = false;
-          } else if (stockQty < 50) {
-            public_visible = image_available;
-            stock_status = "bajo";
-            quote_mode = "cotizable";
-            kit_eligible = image_available;
-          } else {
-            public_visible = image_available;
-            stock_status = "disponible";
-            quote_mode = "cotizable";
-            kit_eligible = image_available;
-          }
+          const derivedStatus = deriveCatalogStockStatus({
+            sourceState: raw.activo ? "active" : "inactive",
+            sourceSufficient: true,
+            stockRows,
+            priceState: price_status,
+            imageAvailable: image_available,
+          });
+          const {
+            public_visible,
+            stock_status,
+            stock_qty: derivedStockQty,
+            quote_mode,
+            kit_eligible,
+            price_valid,
+            last_stock_sync_at: derivedLastStockSync,
+          } = derivedStatus;
 
           const id_interno = await buildOpaqueIdInterno(
             code,
@@ -729,12 +696,12 @@ Deno.serve(async (req) => {
             id_interno,
             public_visible,
             stock_status,
-            stock_qty: stockQty,
+            stock_qty: derivedStockQty,
             quote_mode,
             kit_eligible,
             price_valid,
             image_available,
-            last_stock_sync_at: lastStockSync,
+            last_stock_sync_at: derivedLastStockSync,
           };
           const { data: existingStatus } = await sb
             .from("producto_b2b_status")

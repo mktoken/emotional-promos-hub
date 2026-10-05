@@ -362,6 +362,21 @@ El gate debe aprobar, como mínimo:
 - **Readiness:** `READY TO PUBLISH PRIVACY NOTICE = YES`; `READY FOR RB3 CONTROLLED BUILD = YES`; `RB3 WRITES = NOT YET ACTIVE`.
 - **Canonical specification:** `docs/route-b/RB3_FINAL_MIGRATION_SPEC_V1.md`.
 
+### CHK-RB3-B-RUNTIME-GIT-RECONCILE-V1
+
+- **RB3-A:** **CLOSED / PASS**.
+- **RB3-B:** **CLOSED / PASS**.
+- **Edge Function:** `submit-project-brief` **DEPLOYED**.
+- **Runtime QA:** HTTP `201 created`; replay idéntico HTTP `200 replay`.
+- **Persistence QA:** **PASS**. La fila QA validada confirmó `public_request_type = project_brief`, `public_submission = true`, `consent_at` no nulo, `privacy_version = PE-PRIVACY-V1`, `privacy_url = /aviso-de-privacidad`, `marketing_consent = false`, `total_estimado = NULL` y hashes válidos.
+- **Cleanup:** fila QA retirada correctamente. Estado final reportado: `28` registros totales, `8` solicitudes públicas, `28` quotes y `0` project briefs.
+- **Privacy:** activo server-side mediante wrapper versionado; la migración original RB3-A no fue modificada.
+- **Migration:** `supabase/migrations/20261004120000_route_b_privacy_gate_wrapper_v1.sql`.
+- **Frontend Route B:** **STILL NOT CONNECTED**. El frontend no activa escrituras en este checkpoint.
+- **TypeScript:** `0 errors`. La remediación TypeScript de Lovable fue auditada y aceptada; `functional behavior changed = NO`.
+- **No activado:** CRM, email, WhatsApp, automatizaciones, Pricing, stock ni frontend público.
+- **Canonical runtime document:** `docs/route-b/RB3_B_RUNTIME_RECONCILIATION_V1.md`.
+
 ### CHK-ROUTE-B-PRIVACY-LEGAL-REVIEW-PACK-V2
 
 - **PE-PRIVACY-V1:** **OWNER APPROVED / READY FOR PUBLICATION**.
@@ -382,7 +397,7 @@ El gate debe aprobar, como mínimo:
 
 ### Open gates
 
-1. **RB3 WRITE INTEGRATION / ROUTE B FUNCTIONAL CONTRACT** — **OPEN / CONTROLLED BUILD AUTHORIZED**. The design is closed; implementation and QA remain pending, and writes are inactive.
+1. **RB3 WRITE INTEGRATION / ROUTE B FUNCTIONAL CONTRACT** — **OPEN / FRONTEND CONNECTION PENDING**. The server-side Edge/RPC boundary and controlled persistence QA are closed/pass; the frontend Route B remains disconnected and no public UI write is active.
 2. **REGALOS EJECUTIVOS PUBLIC INVENTORY**.
 
 3. **D-013 / CHK-BRAND-WEB-1** permanece **OPEN** y debe cerrarse antes del lanzamiento público, promoción activa, campañas de adquisición o escalamiento significativo de tráfico. Este estado no bloquea la operación comercial controlada ni la preparación documental.

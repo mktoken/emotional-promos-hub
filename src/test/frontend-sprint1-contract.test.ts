@@ -60,4 +60,19 @@ describe("contrato estático del frontend de solicitud de cotización", () => {
   it("muestra Total por confirmar cuando el total del servidor es null", () => {
     expect(quoteView).toContain('"Total por confirmar"');
   });
+
+  it("oculta el asistente solo en brief y lo conserva fuera de Route B", () => {
+    expect(index).toContain('{currentView !== "brief" && <AssistantWidget />}');
+    expect(index).toContain('{currentView === "brief" && <ProjectBriefView onBack={() => setView("landing")} />}');
+    expect(index).toContain('const viewParam = searchParams.get("view");');
+    expect(index).toContain("<AssistantWidget />");
+  });
+
+  it("mantiene conectado el submit real de Route B", () => {
+    const projectBrief = readSource("src/components/ProjectBriefView.tsx");
+    const submitAdapter = readSource("src/features/project-brief/lib/submit-project-brief.ts");
+    expect(projectBrief).toContain("submitProjectBrief");
+    expect(submitAdapter).toContain('"submit-project-brief"');
+    expect(submitAdapter).toContain('result !== "created" && result !== "replay"');
+  });
 });

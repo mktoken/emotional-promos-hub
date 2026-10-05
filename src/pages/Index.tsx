@@ -247,7 +247,7 @@ export default function Index() {
       </a>
 
       {/* Asistente virtual */}
-      <AssistantWidget />
+      {currentView !== "brief" && <AssistantWidget />}
     </div>
   );
 }

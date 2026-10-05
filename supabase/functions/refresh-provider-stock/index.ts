@@ -2,6 +2,7 @@
 // Refresh incremental de stock/precios/raw llamando en lotes a las sync functions existentes.
 // NUNCA llama a promote-provider-products-to-catalog.
 // NUNCA modifica tablas de productos directamente: solo lee/escribe stock_refresh_*.
+// La ruta dry_run con materialize_product_ids es materialización-only y zero-write.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { recomputeProductStockStatus } from "../_shared/catalog-stock-status.ts";
@@ -133,6 +134,27 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
 
+    if (mode === "dry_run" && materializeProductIds.length > 0) {
+      const recompute = await recomputeProductStockStatus(
+        supabase,
+        materializeProductIds,
+        { dryRun: true },
+      );
+
+      return jsonResponse(200, {
+        ok: true,
+        mode: "dry_run",
+        materialization_only: true,
+        writes: 0,
+        affected_offers: recompute.affected_offer_ids.length,
+        affected_products: recompute.affected_product_ids.length,
+        recomputed_products: 0,
+        failed_products: recompute.failed_product_ids.length,
+        products: recompute.products,
+        errors: recompute.errors,
+      });
+    }
+
     stage = "cursors_load";
     const { data: cursorsRaw, error: cursorsErr } = await supabase
       .from("stock_refresh_cursors")
@@ -202,7 +224,6 @@ Deno.serve(async (req) => {
       recomputed_products: number; failed_products: number;
     }> = {};
     let batchesExecuted = 0;
-    let dryRunMaterialization: Record<string, unknown> | null = null;
 
     for (const provider of providers) {
       summary[provider] = {
@@ -403,23 +424,6 @@ Deno.serve(async (req) => {
       cur.last_run_at = new Date().toISOString();
     }
 
-    if (mode === "dry_run" && materializeProductIds.length > 0) {
-      const recompute = await recomputeProductStockStatus(
-        supabase,
-        materializeProductIds,
-        { dryRun: true },
-      );
-      dryRunMaterialization = {
-        dry_run: true,
-        affected_offers: recompute.affected_offer_ids.length,
-        affected_products: recompute.affected_product_ids.length,
-        recomputed_products: 0,
-        failed_products: recompute.failed_product_ids.length,
-        products: recompute.products,
-        errors: recompute.errors,
-      };
-    }
-
     // Persistir cursores SOLO en modo full
     stage = "cursors_save";
     if (mode === "full") {
@@ -471,9 +475,8 @@ Deno.serve(async (req) => {
       cursors_after: cursorsMap,
       errors,
       summary,
-      materialization_dry_run: dryRunMaterialization,
       note: mode === "dry_run"
-        ? "dry_run: cursores NO se actualizaron; la materialización dry-run requiere materialize_product_ids y no escribe producto_b2b_status."
+        ? "dry_run: materialize_product_ids usa la ruta materialization-only zero-write; sin IDs se conserva el flujo de refresh existente."
         : "full: cursores actualizados; los productos afectados se materializaron desde producto_b2b_oferta_map.",
     });
   } catch (e) {

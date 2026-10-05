@@ -3,13 +3,18 @@ import { ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
 import {
   OBJECTIVE_MAX,
   emptyBrief,
+  buildSubmitProjectBriefPayload,
+  createRequestId,
   validateBrief,
-  mockSubmitBrief,
   type BriefErrors,
   type ProjectBriefDraft,
 } from "@/features/project-brief/lib/project-brief";
+import {
+  submitProjectBrief,
+  SubmitProjectBriefError,
+} from "@/features/project-brief/lib/submit-project-brief";
 
-// Route B — RB2 UI NO-WRITE. Envío simulado; ningún dato sale del navegador.
+// Route B — RB3-C. Envío real al Edge Function, sin escribir desde el navegador.
 
 interface ProjectBriefViewProps {
   onBack: () => void;
@@ -36,8 +41,11 @@ export default function ProjectBriefView({ onBack }: ProjectBriefViewProps) {
   const [b, setB] = useState<ProjectBriefDraft>(emptyBrief);
   const [errors, setErrors] = useState<BriefErrors>({});
   const [stage, setStage] = useState<Stage>("form");
+  const [submitError, setSubmitError] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
+  const requestIdRef = useRef<string | null>(null);
+  const sendingRef = useRef(false);
 
   const set = <K extends keyof ProjectBriefDraft>(k: K, v: ProjectBriefDraft[K]) => setB((p) => ({ ...p, [k]: v }));
   const desc = (k: string) => (errors[k as keyof BriefErrors] ? `${k}-error` : undefined);
@@ -63,11 +71,25 @@ export default function ProjectBriefView({ onBack }: ProjectBriefViewProps) {
   };
 
   const send = async () => {
-    if (stage === "sending") return;
+    if (sendingRef.current || stage === "sending") return;
+    sendingRef.current = true;
+    setSubmitError("");
     setStage("sending");
-    await mockSubmitBrief(b);
-    setStage("success");
-    scrollTop();
+    try {
+      requestIdRef.current ??= createRequestId();
+      await submitProjectBrief(buildSubmitProjectBriefPayload(b, requestIdRef.current));
+      setStage("success");
+      scrollTop();
+    } catch (error) {
+      setSubmitError(
+        error instanceof SubmitProjectBriefError
+          ? error.userMessage
+          : "No pudimos enviar tu solicitud. Intenta nuevamente.",
+      );
+      setStage("summary");
+    } finally {
+      sendingRef.current = false;
+    }
   };
 
   const summaryRows: [string, string][] = [
@@ -83,7 +105,7 @@ export default function ProjectBriefView({ onBack }: ProjectBriefViewProps) {
   ];
 
   return (
-    <main className="pt-10 pb-28 sm:py-14 bg-surface" data-route-b="rb2-demo-no-write">
+    <main className="pt-10 pb-28 sm:py-14 bg-surface" data-route-b="rb3-real-submit">
       <div ref={topRef} className="max-w-2xl mx-auto px-4 sm:px-6 scroll-mt-24">
         <button
           type="button"
@@ -262,6 +284,11 @@ export default function ProjectBriefView({ onBack }: ProjectBriefViewProps) {
             {(stage === "summary" || stage === "sending") && (
               <section aria-labelledby="brief-summary-title" className="rounded-2xl border border-border bg-card p-5 sm:p-6">
                 <h2 id="brief-summary-title" className="text-xl font-bold text-foreground mb-4">Revisa tu solicitud</h2>
+                {submitError && (
+                  <p role="alert" className="mb-4 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm font-medium text-destructive">
+                    {submitError}
+                  </p>
+                )}
                 <dl className="divide-y divide-border">
                   {summaryRows.map(([k, v]) => (
                     <div key={k} className="py-3 sm:grid sm:grid-cols-3 sm:gap-4">

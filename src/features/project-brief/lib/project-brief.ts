@@ -1,5 +1,4 @@
-// Route B — Project Brief (RB2: solo UI, sin escritura real).
-// Validación cliente equivalente al contrato aprobado.
+// Route B — Project Brief. Validación cliente y construcción del payload público.
 
 export const OBJECTIVE_MAX = 1000;
 
@@ -105,9 +104,46 @@ export function validateBrief(b: ProjectBriefDraft): BriefErrors {
   return e;
 }
 
-/** RB2: envío simulado. No hace fetch, inserts, RPC, Edge Functions ni persistencia. */
-export const RB2_NO_WRITE = true as const;
-export async function mockSubmitBrief(_b: ProjectBriefDraft): Promise<{ ok: true; demo: true }> {
-  await new Promise((r) => setTimeout(r, 400));
-  return { ok: true, demo: true };
+export type SubmitProjectBriefPayload = Record<string, unknown>;
+
+export function createRequestId(): string {
+  return crypto.randomUUID();
+}
+
+export function buildSubmitProjectBriefPayload(
+  b: ProjectBriefDraft,
+  requestId: string,
+): SubmitProjectBriefPayload {
+  const payload: SubmitProjectBriefPayload = {
+    request_id: requestId,
+    privacy_consent: true,
+    contact_name: b.contact_name.trim(),
+    company_not_applicable: b.company_not_applicable,
+    project_objective: b.project_objective.trim(),
+    quantity_unknown: b.quantity_unknown,
+    target_date_unknown: b.target_date_unknown,
+    honeypot: "",
+  };
+
+  if (!b.quantity_unknown) payload.quantity = Number(b.quantity);
+  if (!b.target_date_unknown) payload.target_date = b.target_date;
+  if (!b.company_not_applicable && b.company.trim()) payload.company = b.company.trim();
+  if (b.email.trim()) payload.email = b.email.trim();
+  if (b.phone.trim()) payload.phone = b.phone.trim();
+
+  const optionalFields: Array<keyof ProjectBriefDraft> = [
+    "audience",
+    "occasion",
+    "budget",
+    "city",
+    "product_interest",
+    "personalization",
+    "comments",
+  ];
+  for (const key of optionalFields) {
+    const value = b[key];
+    if (typeof value === "string" && value.trim()) payload[key] = value.trim();
+  }
+
+  return payload;
 }

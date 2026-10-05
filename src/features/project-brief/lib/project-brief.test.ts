@@ -1,7 +1,12 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { emptyBrief, validateBrief, mockSubmitBrief, type ProjectBriefDraft } from "./project-brief";
+import {
+  buildSubmitProjectBriefPayload,
+  emptyBrief,
+  validateBrief,
+  type ProjectBriefDraft,
+} from "./project-brief";
 
 const valid = (o: Partial<ProjectBriefDraft> = {}): ProjectBriefDraft => ({
   ...emptyBrief(),
@@ -38,20 +43,49 @@ describe("Project Brief validation", () => {
   it("consentimiento requerido", () => {
     expect(validateBrief(valid({ privacy_consent: false })).privacy_consent).toBeTruthy();
   });
-  it("submit mock no hace peticiones de red", async () => {
-    const f = vi.spyOn(globalThis, "fetch");
-    await expect(mockSubmitBrief(valid())).resolves.toEqual({ ok: true, demo: true });
-    expect(f).not.toHaveBeenCalled();
-    f.mockRestore();
+  it("construye el payload real sin metadata controlada por servidor", () => {
+    const payload = buildSubmitProjectBriefPayload(valid({ company: "Empresa SA" }), "11111111-1111-4111-8111-111111111111");
+    expect(payload).toMatchObject({
+      request_id: "11111111-1111-4111-8111-111111111111",
+      privacy_consent: true,
+      quantity: 100,
+      target_date: "2026-12-01",
+      company: "Empresa SA",
+      honeypot: "",
+    });
+    for (const key of [
+      "privacy_version",
+      "privacy_url",
+      "consent_at",
+      "marketing_consent",
+      "public_request_type",
+      "public_submission",
+      "email_hash",
+      "phone_hash",
+      "total_estimado",
+      "estado_cotizacion",
+      "assigned_to",
+    ]) {
+      expect(payload).not.toHaveProperty(key);
+    }
+  });
+
+  it("no inventa cantidad ni fecha cuando son desconocidas", () => {
+    const payload = buildSubmitProjectBriefPayload(
+      valid({ quantity: "", quantity_unknown: true, target_date: "", target_date_unknown: true }),
+      "11111111-1111-4111-8111-111111111111",
+    );
+    expect(payload).toMatchObject({ quantity_unknown: true, target_date_unknown: true });
+    expect(payload).not.toHaveProperty("quantity");
+    expect(payload).not.toHaveProperty("target_date");
   });
 });
 
-describe("Route B RB2 contract", () => {
-  it("sin escrituras en la lógica ni la vista", () => {
-    for (const p of ["src/features/project-brief/lib/project-brief.ts", "src/components/ProjectBriefView.tsx"]) {
-      const s = src(p);
-      expect(s).not.toMatch(/supabase|fetch\(|localStorage|functions\.invoke|wa\.me|mailto:/);
-    }
+describe("Route B RB3-C contract", () => {
+  it("conecta la vista al adaptador real sin tocar el Edge Function desde el cliente", () => {
+    expect(src("src/features/project-brief/lib/project-brief.ts")).not.toMatch(/supabase|fetch\(|localStorage|wa\.me|mailto:/);
+    expect(src("src/components/ProjectBriefView.tsx")).toContain("submitProjectBrief");
+    expect(src("src/components/ProjectBriefView.tsx")).not.toContain("mockSubmitBrief");
   });
   it("entry points navegan a Route B", () => {
     for (const p of ["HomeHero", "HomeSolutions", "HomeFinalCta"]) {

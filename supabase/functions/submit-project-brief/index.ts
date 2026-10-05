@@ -61,14 +61,28 @@ Deno.serve(async (request) => {
     requestId = normalized.requestId;
     const fingerprint = await createProjectBriefFingerprint(normalized);
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const secretKeysRaw = Deno.env.get("SUPABASE_SECRET_KEYS");
+    let adminKey = "";
 
-    if (!supabaseUrl || !serviceRoleKey) {
+    if (secretKeysRaw) {
+      try {
+        const secretKeys = JSON.parse(secretKeysRaw);
+        adminKey = typeof secretKeys.default === "string" ? secretKeys.default : "";
+      } catch {
+        adminKey = "";
+      }
+    }
+
+    if (!adminKey) {
+      adminKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    }
+
+    if (!supabaseUrl || !adminKey) {
       safeLog(requestId, "submit_project_brief_misconfigured");
       return reply(request, 503, { ok: false, error: "service_unavailable" });
     }
 
-    const admin = createClient(supabaseUrl, serviceRoleKey, {
+    const admin = createClient(supabaseUrl, adminKey, {
       auth: { persistSession: false },
     });
     const { data, error } = await admin.rpc("submit_project_brief_internal", {

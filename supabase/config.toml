@@ -1,1 +1,4 @@
 project_id = "unzfwdykdqotiwzihsvc"
+
+[functions.submit-project-brief]
+verify_jwt = false

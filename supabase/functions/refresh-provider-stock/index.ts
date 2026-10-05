@@ -6,6 +6,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { recomputeProductStockStatus } from "../_shared/catalog-stock-status.ts";
+import { decideMaterializationRequest } from "../_shared/refresh-provider-stock-contract.ts";
 import { runMaterializationOnlyDryRun } from "./materialization-only.ts";
 
 const corsHeaders = {
@@ -128,14 +129,52 @@ Deno.serve(async (req) => {
     const offsetOverride = url.searchParams.get("offset");
     const pageOverride = url.searchParams.get("page");
     const resetCursor = (url.searchParams.get("reset_cursor") ?? "false").toLowerCase() === "true";
-    const materializeProductIds = (url.searchParams.get("materialize_product_ids") ?? "")
-      .split(",")
-      .map((value) => value.trim())
-      .filter(Boolean);
+    const materializeProductIds = [...new Set(
+      (url.searchParams.get("materialize_product_ids") ?? "")
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean),
+    )];
+    const materializationOnly = (url.searchParams.get("materialization_only") ?? "false").toLowerCase() === "true";
+    const confirmMaterializationWrite = (url.searchParams.get("confirm_materialization_write") ?? "false").toLowerCase() === "true";
 
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
 
-    if (mode === "dry_run" && materializeProductIds.length > 0) {
+    const materializationDecision = decideMaterializationRequest({
+      mode,
+      materializationOnly,
+      confirmMaterializationWrite,
+      productIds: materializeProductIds,
+    });
+
+    const zeroWriteResponse = {
+      ok: false,
+      mode,
+      materialization_only: materializationOnly,
+      write_scope: "none",
+      requested_products: materializeProductIds.length,
+      affected_products: 0,
+      recomputed_products: 0,
+      failed_products: 0,
+      writes: 0,
+      provider_calls: 0,
+      cursor_writes: 0,
+      run_table_writes: 0,
+      source_stock_writes: 0,
+      pricing_v2_writes: 0,
+      mapping_writes: 0,
+      products: [],
+      errors: [],
+      error: materializationDecision.kind === "reject"
+        ? materializationDecision.reason
+        : "invalid_materialization_request",
+    };
+
+    if (materializationDecision.kind === "reject") {
+      return jsonResponse(400, zeroWriteResponse);
+    }
+
+    if (materializationDecision.kind === "dry_run") {
       return jsonResponse(
         200,
         await runMaterializationOnlyDryRun(
@@ -143,6 +182,38 @@ Deno.serve(async (req) => {
           materializeProductIds,
         ),
       );
+    }
+
+    if (materializationDecision.kind === "targeted_write") {
+      const recompute = await recomputeProductStockStatus(
+        supabase,
+        materializeProductIds,
+        { dryRun: false },
+      );
+      const affectedOfferIds = new Set(
+        recompute.products.flatMap((product) => product.affected_offer_ids),
+      );
+
+      return jsonResponse(200, {
+        ok: recompute.failed_product_ids.length === 0,
+        mode: "full",
+        materialization_only: true,
+        write_scope: "producto_b2b_status",
+        requested_products: materializeProductIds.length,
+        affected_offers: affectedOfferIds.size,
+        affected_products: recompute.affected_product_ids.length,
+        recomputed_products: recompute.recomputed_product_ids.length,
+        failed_products: recompute.failed_product_ids.length,
+        writes: recompute.recomputed_product_ids.length,
+        products: recompute.products,
+        errors: recompute.errors,
+        provider_calls: 0,
+        cursor_writes: 0,
+        run_table_writes: 0,
+        source_stock_writes: 0,
+        pricing_v2_writes: 0,
+        mapping_writes: 0,
+      });
     }
 
     stage = "cursors_load";

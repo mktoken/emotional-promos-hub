@@ -6,6 +6,10 @@ const source = readFileSync(
   resolve(process.cwd(), "supabase/functions/refresh-provider-stock/index.ts"),
   "utf8",
 );
+const materializationSource = readFileSync(
+  resolve(process.cwd(), "supabase/functions/refresh-provider-stock/materialization-only.ts"),
+  "utf8",
+);
 
 describe("refresh-provider-stock materialization-only dry run", () => {
   it("short-circuits before refresh writes and provider invocations", () => {
@@ -20,8 +24,9 @@ describe("refresh-provider-stock materialization-only dry run", () => {
     expect(shortCircuit).toBeLessThan(cursorsLoad);
     expect(shortCircuit).toBeLessThan(runOpen);
     expect(shortCircuit).toBeLessThan(providerFetch);
-    expect(source).toContain('materialization_only: true');
-    expect(source).toContain("writes: 0");
-    expect(source).toContain("{ dryRun: true }");
+    expect(source).toContain("runMaterializationOnlyDryRun");
+    expect(materializationSource).toContain('materialization_only: true');
+    expect(materializationSource).toContain("writes: 0");
+    expect(materializationSource).toContain("{ dryRun: true }");
   });
 });

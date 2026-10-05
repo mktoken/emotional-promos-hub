@@ -1,14 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { recomputeProductStockStatus } from "../../supabase/functions/_shared/catalog-stock-status";
+import { runMaterializationOnlyDryRun } from "../../supabase/functions/refresh-provider-stock/materialization-only";
 
 type Row = Record<string, unknown>;
 
 function createFakeClient(initialTables: Record<string, Row[]>) {
   const tables = new Map(Object.entries(initialTables).map(([name, rows]) => [name, rows.map((row) => ({ ...row }))]));
   const writes: Array<{ table: string; operation: string; row: Row }> = [];
+  const calls: string[] = [];
 
   const client = {
     from(table: string) {
+      calls.push(table);
       let rows = tables.get(table) ?? [];
       let pendingUpdate: Row | null = null;
       let pendingInsert: Row | null = null;
@@ -67,6 +70,7 @@ function createFakeClient(initialTables: Record<string, Row[]>) {
       return query;
     },
     writes,
+    calls,
   };
 
   return client;
@@ -165,5 +169,42 @@ describe("catalog stock status materializer", () => {
     expect(result.products[0].changed).toBe(false);
     expect(result.recomputed_product_ids).toEqual([]);
     expect(client.writes).toEqual([]);
+  });
+
+  it("runs materialization-only dry-run without refresh writes or provider work", async () => {
+    const client = createFakeClient(baseTables);
+    const providerFetch = vi.spyOn(globalThis, "fetch");
+
+    const result = await runMaterializationOnlyDryRun(
+      client as Parameters<typeof runMaterializationOnlyDryRun>[0],
+      ["p1"],
+    );
+
+    expect(result).toMatchObject({
+      ok: true,
+      mode: "dry_run",
+      materialization_only: true,
+      writes: 0,
+      affected_offers: 2,
+      affected_products: 1,
+      recomputed_products: 0,
+      failed_products: 0,
+    });
+    expect(result.products[0]).toMatchObject({
+      product_id: "p1",
+      computed_stock_qty: 55,
+      computed_last_stock_sync_at: "2026-10-03T10:00:00.000Z",
+    });
+    expect(result.errors).toEqual([]);
+    expect(client.writes).toEqual([]);
+    expect(client.calls).not.toEqual(expect.arrayContaining([
+      "stock_refresh_runs",
+      "stock_refresh_run_items",
+      "stock_refresh_cursors",
+      "producto_b2b_status",
+    ]));
+    expect(providerFetch).not.toHaveBeenCalled();
+
+    providerFetch.mockRestore();
   });
 });

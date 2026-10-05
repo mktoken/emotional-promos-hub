@@ -1,11 +1,12 @@
 // Edge Function: refresh-provider-stock
 // Refresh incremental de stock/precios/raw llamando en lotes a las sync functions existentes.
 // NUNCA llama a promote-provider-products-to-catalog.
-// NUNCA modifica tablas de productos directamente: solo lee/escribe stock_refresh_*.
-// La ruta dry_run con materialize_product_ids es materialización-only y zero-write.
+// En full persiste stock_refresh_* y materializa el estado de catálogo.
+// En materialization-only dry_run solo lee datos ya persistidos y no escribe.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { recomputeProductStockStatus } from "../_shared/catalog-stock-status.ts";
+import { runMaterializationOnlyDryRun } from "./materialization-only.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -135,24 +136,13 @@ Deno.serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
 
     if (mode === "dry_run" && materializeProductIds.length > 0) {
-      const recompute = await recomputeProductStockStatus(
-        supabase,
-        materializeProductIds,
-        { dryRun: true },
+      return jsonResponse(
+        200,
+        await runMaterializationOnlyDryRun(
+          supabase as unknown as Parameters<typeof runMaterializationOnlyDryRun>[0],
+          materializeProductIds,
+        ),
       );
-
-      return jsonResponse(200, {
-        ok: true,
-        mode: "dry_run",
-        materialization_only: true,
-        writes: 0,
-        affected_offers: recompute.affected_offer_ids.length,
-        affected_products: recompute.affected_product_ids.length,
-        recomputed_products: 0,
-        failed_products: recompute.failed_product_ids.length,
-        products: recompute.products,
-        errors: recompute.errors,
-      });
     }
 
     stage = "cursors_load";

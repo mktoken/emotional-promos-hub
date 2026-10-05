@@ -366,16 +366,37 @@ El gate debe aprobar, como mínimo:
 
 - **RB3-A:** **CLOSED / PASS**.
 - **RB3-B:** **CLOSED / PASS**.
+- **RB3-C:** **CLOSED / PASS**.
+- **RB3-D:** **CLOSED / PASS**.
 - **Edge Function:** `submit-project-brief` **DEPLOYED**.
 - **Runtime QA:** HTTP `201 created`; replay idéntico HTTP `200 replay`.
 - **Persistence QA:** **PASS**. La fila QA validada confirmó `public_request_type = project_brief`, `public_submission = true`, `consent_at` no nulo, `privacy_version = PE-PRIVACY-V1`, `privacy_url = /aviso-de-privacidad`, `marketing_consent = false`, `total_estimado = NULL` y hashes válidos.
 - **Cleanup:** fila QA retirada correctamente. Estado final reportado: `28` registros totales, `8` solicitudes públicas, `28` quotes y `0` project briefs.
 - **Privacy:** activo server-side mediante wrapper versionado; la migración original RB3-A no fue modificada.
 - **Migration:** `supabase/migrations/20261004120000_route_b_privacy_gate_wrapper_v1.sql`.
-- **Frontend Route B:** **STILL NOT CONNECTED**. El frontend no activa escrituras en este checkpoint.
+- **Frontend Route B:** **CONNECTED** y validado en producción.
 - **TypeScript:** `0 errors`. La remediación TypeScript de Lovable fue auditada y aceptada; `functional behavior changed = NO`.
-- **No activado:** CRM, email, WhatsApp, automatizaciones, Pricing, stock ni frontend público.
+- **No activado:** CRM auto-creation, email automático, WhatsApp automático, cotización automática, marketing consent, reserva de stock ni precio automático.
 - **Canonical runtime document:** `docs/route-b/RB3_B_RUNTIME_RECONCILIATION_V1.md`.
+
+### CHK-ROUTE-B-FINAL-CLOSURE-V1 — Route B production closure
+
+- **Route B:** **PRODUCTION READY / CLOSED**.
+- **Frontend:** **CONNECTED**.
+- **Edge Function:** `submit-project-brief` **DEPLOYED**.
+- **Privacy:** `PE-PRIVACY-V1 ACTIVE`.
+- **Idempotency:** **VALIDATED** — creación HTTP `201 / created` y replay HTTP `200 / replay`.
+- **Persistence:** **VALIDATED**.
+- **Assistant isolation:** **VALIDATED** — oculto en Route B y visible fuera de Route B.
+- **Production E2E:** **PASS** — formulario, aviso de privacidad, consentimiento requerido, submit real y success state canónico.
+- **Success copy:** **PASS**.
+- **CRM auto-creation:** **NO**.
+- **Auto email:** **NO**.
+- **Auto WhatsApp:** **NO**.
+- **Auto quote:** **NO**.
+- **Marketing consent:** `INACTIVE / FALSE`.
+- **Final cleanup:** **PASS** — `28` registros totales, `8` public submissions, `0` project briefs, `28` quotes; la fila QA no permanece.
+- **E2E policy:** la prueba de producción fue ejecutada una vez y limpiada; no debe repetirse como parte de este cierre.
 
 ### CHK-ROUTE-B-PRIVACY-LEGAL-REVIEW-PACK-V2
 
@@ -397,10 +418,9 @@ El gate debe aprobar, como mínimo:
 
 ### Open gates
 
-1. **RB3 WRITE INTEGRATION / ROUTE B FUNCTIONAL CONTRACT** — **OPEN / FRONTEND CONNECTION PENDING**. The server-side Edge/RPC boundary and controlled persistence QA are closed/pass; the frontend Route B remains disconnected and no public UI write is active.
-2. **REGALOS EJECUTIVOS PUBLIC INVENTORY**.
+1. **REGALOS EJECUTIVOS PUBLIC INVENTORY**.
 
-3. **D-013 / CHK-BRAND-WEB-1** permanece **OPEN** y debe cerrarse antes del lanzamiento público, promoción activa, campañas de adquisición o escalamiento significativo de tráfico. Este estado no bloquea la operación comercial controlada ni la preparación documental.
+2. **D-013 / CHK-BRAND-WEB-1** permanece **OPEN** y debe cerrarse antes del lanzamiento público, promoción activa, campañas de adquisición o escalamiento significativo de tráfico. Este estado no reabre ni bloquea el cierre operativo de Route B.
 
 La gobernanza specialist vigente conserva `pe-specialist-orchestrator`, `pe-evidence-claims`, `pe-brand-strategist`, `pe-b2b-buyer-jtbd`, `pe-ux-cro-architect`, `pe-conversion-copy-chief`, `pe-visual-image-director` y `pe-google-ads-intent-miner`. El `SPECIALIST PRE-FLIGHT` es obligatorio antes de cada nueva fase, checkpoint, auditoría, investigación, diseño, copy, preparación de Build o campaña. Se mantiene la regla **NO DEPENDER DE RECORDATORIOS DEL PROPIETARIO**.
 

@@ -6,7 +6,7 @@ import {
   DEFAULT_CONVERSION_PRICING_CONFIG,
   normalizeBenchmarkObservations,
 } from "./pricing-conversion-shadow";
-import type { BenchmarkObservation } from "./pricing-conversion-shadow";
+import type { BenchmarkObservation, ConversionPricingInput } from "./pricing-conversion-shadow";
 
 function observation(
   unitPrice: number,
@@ -30,8 +30,8 @@ function observation(
   };
 }
 
-function shadow(quantity: number, overrides: Parameters<typeof calculateConversionPricingShadow>[0] = {}) {
-  const input = {
+function shadow(quantity: number, overrides: Partial<ConversionPricingInput> = {}) {
+  const input: ConversionPricingInput = {
     sourceCost: 1,
     quantity,
     ...overrides,

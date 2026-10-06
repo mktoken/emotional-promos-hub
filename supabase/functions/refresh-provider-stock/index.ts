@@ -12,6 +12,7 @@ import {
   advanceProviderCursor,
   assessProviderBatch,
   completedToday,
+  createInitialProviderCursor,
   cycleStatus,
   MAX_BATCHES_PER_TICK,
   normalizeProvider,
@@ -42,10 +43,10 @@ function clampInt(raw: string | null, def: number, min: number, max: number): nu
 
 interface CursorRow {
   provider: string;
-  next_offset: number | null;
-  next_page: number | null;
+  next_offset: number;
+  next_page: number;
   next_offer_offset: number | null;
-  cycle_count: number | null;
+  cycle_count: number;
   last_run_at: string | null;
   last_completed_cycle_at: string | null;
 }
@@ -316,12 +317,8 @@ Deno.serve(async (req) => {
       const existing = (cursorsRaw ?? []).find((r: CursorRow) => r.provider === p);
       cursorsMap[p] = existing ?? {
         provider: p,
-        next_offset: p === "cdo_mx" ? null : 0,
-        next_page: p === "cdo_mx" ? 1 : null,
-        next_offer_offset: p === "cdo_mx" ? 0 : null,
-        cycle_count: 0,
+        ...createInitialProviderCursor(p),
         last_run_at: null,
-        last_completed_cycle_at: null,
       };
     }
 

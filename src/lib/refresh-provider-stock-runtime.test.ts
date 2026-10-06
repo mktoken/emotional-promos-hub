@@ -7,6 +7,7 @@ import {
   assessProviderBatch,
   completedToday,
   cycleStatus,
+  createInitialProviderCursor,
   mexicoCityDay,
   normalizeProvider,
 } from "../../supabase/functions/_shared/refresh-provider-stock-runtime";
@@ -78,6 +79,30 @@ describe("refresh-provider-stock runtime contract", () => {
     expect(assessProviderBatch("g4_mx", { ok: true, stock_failed: 1 }, 200)).toMatchObject({ ok: false });
   });
 
+  it("initializes every provider cursor with the production NOT NULL contract", () => {
+    expect(createInitialProviderCursor("cdo_mx")).toEqual({
+      next_offset: 0,
+      next_page: 1,
+      next_offer_offset: 0,
+      cycle_count: 0,
+      last_completed_cycle_at: null,
+    });
+    expect(createInitialProviderCursor("forpromotional")).toEqual({
+      next_offset: 0,
+      next_page: 1,
+      next_offer_offset: null,
+      cycle_count: 0,
+      last_completed_cycle_at: null,
+    });
+    expect(createInitialProviderCursor("g4_mx")).toEqual({
+      next_offset: 0,
+      next_page: 1,
+      next_offer_offset: null,
+      cycle_count: 0,
+      last_completed_cycle_at: null,
+    });
+  });
+
   it("accepts complete batches and requires every provider cycle for completion", () => {
     expect(assessProviderBatch("g4_mx", { ok: true, status: "ok", stock_failed: 0 }, 200)).toEqual({ ok: true });
     expect(cycleStatus({
@@ -102,7 +127,7 @@ describe("refresh-provider-stock runtime contract", () => {
 
   it("keeps CDO offer and page cursors separate until both dimensions finish", () => {
     const initial = {
-      next_offset: null,
+      next_offset: 0,
       next_page: 2,
       next_offer_offset: 0,
       cycle_count: 0,
@@ -156,7 +181,7 @@ describe("refresh-provider-stock runtime contract", () => {
   it("keeps retries on the same non-CDO cursor when next_offset is invalid", () => {
     const cursor = {
       next_offset: 100,
-      next_page: null,
+      next_page: 1,
       next_offer_offset: null,
       cycle_count: 0,
       last_completed_cycle_at: null,
@@ -191,6 +216,9 @@ describe("refresh-provider-stock runtime contract", () => {
     expect(refreshSource).toContain("has_more_offers");
     expect(refreshSource).toContain("next_offer_offset");
     expect(refreshSource).toContain(".upsert(cursorRows");
+    expect(refreshSource).toContain("createInitialProviderCursor(p)");
+    expect(refreshSource).not.toContain('next_offset: p === "cdo_mx" ? null : 0');
+    expect(refreshSource).not.toContain('next_page: p === "cdo_mx" ? 1 : null');
     expect(cdoCursorMigration).toContain("stock_refresh_run_items");
     expect(supabaseConfig).toContain('[functions.refresh-provider-stock]');
     expect(supabaseConfig).toContain('[functions.refresh-provider-stock]\nverify_jwt = false');
@@ -229,7 +257,10 @@ describe("refresh-provider-stock runtime contract", () => {
     expect(cronControl).not.toContain("STOCK_REFRESH_CRON_KEY=");
     expect(cronControl).toContain("cron-preflight-readonly-v1.sql");
     expect(cronPreflight).toContain("current_setting('cron.timezone', true)");
-    expect(cronPreflight).not.toMatch(/INSERT|UPDATE|DELETE|CREATE|ALTER|DROP|cron\.schedule|net\.http_post/i);
+    expect(cronPreflight).toContain("stock_refresh_cursors");
+    expect(cronPreflight).toContain("c.is_nullable = 'NO'");
+    expect(cronPreflight).toContain("c.is_nullable = 'YES'");
+    expect(cronPreflight).not.toMatch(/\b(INSERT|UPDATE|DELETE|CREATE|ALTER|DROP)\b|cron\.schedule|net\.http_post/i);
     expect(cronRollback).toContain("catalog-stock-refresh-cdo");
     expect(cronRollback).toContain("cron.unschedule");
     expect(cronRollback).not.toContain("stock_refresh_runs");

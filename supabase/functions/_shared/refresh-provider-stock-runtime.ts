@@ -44,11 +44,21 @@ export function completedToday(
 export type ProviderBatchResponse = Record<string, unknown> | null;
 
 export interface ProviderCursorState {
-  next_offset: number | null;
-  next_page: number | null;
+  next_offset: number;
+  next_page: number;
   next_offer_offset: number | null;
-  cycle_count: number | null;
+  cycle_count: number;
   last_completed_cycle_at: string | null;
+}
+
+export function createInitialProviderCursor(provider: Provider): ProviderCursorState {
+  return {
+    next_offset: 0,
+    next_page: 1,
+    next_offer_offset: provider === "cdo_mx" ? 0 : null,
+    cycle_count: 0,
+    last_completed_cycle_at: null,
+  };
 }
 
 export function advanceProviderCursor(

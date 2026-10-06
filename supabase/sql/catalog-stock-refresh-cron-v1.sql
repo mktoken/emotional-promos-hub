@@ -5,6 +5,8 @@
 -- a read-only review confirms that exactly three matching jobs exist.
 -- It does not embed STOCK_REFRESH_CRON_KEY. The key is read at runtime
 -- from Supabase Vault and sent in a header.
+-- Current pg_cron runtime timezone is GMT/UTC. The 14–21 UTC window
+-- corresponds to 08:00–15:59 America/Mexico_City under the current setup.
 --
 -- BEFORE EXECUTION, run the read-only companion:
 -- supabase/sql/catalog-stock-refresh-cron-preflight-readonly-v1.sql
@@ -33,7 +35,7 @@ BEGIN
 
   PERFORM cron.schedule(
     'catalog-stock-refresh-cdo',
-    '0-55/5 8-15 * * *',
+    '0-55/5 14-21 * * *',
     $job$
       SELECT net.http_post(
         url := 'https://unzfwdykdqotiwzihsvc.supabase.co/functions/v1/refresh-provider-stock?provider=cdo_mx&mode=full&max_batches=3',
@@ -53,7 +55,7 @@ BEGIN
 
   PERFORM cron.schedule(
     'catalog-stock-refresh-forpromotional',
-    '1-56/5 8-15 * * *',
+    '1-56/5 14-21 * * *',
     $job$
       SELECT net.http_post(
         url := 'https://unzfwdykdqotiwzihsvc.supabase.co/functions/v1/refresh-provider-stock?provider=forpromotional&mode=full&max_batches=3',
@@ -73,7 +75,7 @@ BEGIN
 
   PERFORM cron.schedule(
     'catalog-stock-refresh-g4',
-    '2-57/5 8-15 * * *',
+    '2-57/5 14-21 * * *',
     $job$
       SELECT net.http_post(
         url := 'https://unzfwdykdqotiwzihsvc.supabase.co/functions/v1/refresh-provider-stock?provider=g4_mx&mode=full&max_batches=3',

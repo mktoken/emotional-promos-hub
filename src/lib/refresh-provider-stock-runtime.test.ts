@@ -251,6 +251,10 @@ describe("refresh-provider-stock runtime contract", () => {
     expect(cronControl).toContain("catalog-stock-refresh-forpromotional");
     expect(cronControl).toContain("catalog-stock-refresh-g4");
     expect(cronControl).toContain("max_batches=3");
+    expect(cronControl).toContain("0-55/5 14-21 * * *");
+    expect(cronControl).toContain("1-56/5 14-21 * * *");
+    expect(cronControl).toContain("2-57/5 14-21 * * *");
+    expect(cronControl).not.toContain("0-55/5 8-15 * * *");
     expect(cronControl).toContain("x-stock-refresh-key");
     expect(cronControl).toContain("vault.decrypted_secrets");
     expect(cronControl).not.toContain("cron_key=");
@@ -260,6 +264,15 @@ describe("refresh-provider-stock runtime contract", () => {
     expect(cronPreflight).toContain("stock_refresh_cursors");
     expect(cronPreflight).toContain("c.is_nullable = 'NO'");
     expect(cronPreflight).toContain("c.is_nullable = 'YES'");
+    expect(cronPreflight).toContain("stock_refresh_runs");
+    expect(cronPreflight).toContain("c.column_name = 'result'");
+    expect(cronPreflight).toContain("c.data_type = 'jsonb'");
+    expect(cronPreflight).toContain("c.column_name = 'error'");
+    expect(cronPreflight).toContain("c.column_name = 'finished_at'");
+    expect(cronPreflight).toContain("vault_runtime_capability");
+    expect(cronPreflight).toContain("to_regclass('vault.secrets')");
+    expect(cronPreflight).toContain("secret_metadata");
+    expect(cronPreflight).not.toMatch(/decrypted_secret(?!s)/);
     expect(cronPreflight).not.toMatch(/\b(INSERT|UPDATE|DELETE|CREATE|ALTER|DROP)\b|cron\.schedule|net\.http_post/i);
     expect(cronRollback).toContain("catalog-stock-refresh-cdo");
     expect(cronRollback).toContain("cron.unschedule");

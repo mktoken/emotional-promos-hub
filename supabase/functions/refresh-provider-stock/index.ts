@@ -7,19 +7,27 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { recomputeProductStockStatus } from "../_shared/catalog-stock-status.ts";
 import { decideMaterializationRequest } from "../_shared/refresh-provider-stock-contract.ts";
+import {
+  ALL_PROVIDERS,
+  advanceProviderCursor,
+  assessProviderBatch,
+  completedToday,
+  cycleStatus,
+  MAX_BATCHES_PER_TICK,
+  normalizeProvider,
+  STOCK_REFRESH_LOCK_TTL_SECONDS,
+  type Provider,
+} from "../_shared/refresh-provider-stock-runtime.ts";
 import { runMaterializationOnlyDryRun } from "./materialization-only.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-stock-refresh-key",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Content-Type": "application/json",
 };
 
 type Mode = "dry_run" | "full";
-type Provider = "cdo_mx" | "forpromotional" | "g4_mx";
-
-const ALL_PROVIDERS: Provider[] = ["cdo_mx", "forpromotional", "g4_mx"];
 
 function jsonResponse(status: number, body: Record<string, unknown>) {
   return new Response(JSON.stringify(body), { status, headers: corsHeaders });
@@ -36,6 +44,7 @@ interface CursorRow {
   provider: string;
   next_offset: number | null;
   next_page: number | null;
+  next_offer_offset: number | null;
   cycle_count: number | null;
   last_run_at: string | null;
   last_completed_cycle_at: string | null;
@@ -47,6 +56,55 @@ type AffectedScope = {
   offerIds: string[];
   productIds: string[];
 };
+
+async function acquireLock(
+  supabase: SupabaseClient,
+  scope: string,
+  lockToken: string,
+  runId: string,
+): Promise<boolean> {
+  const { data, error } = await supabase.rpc("acquire_stock_refresh_lock", {
+    p_scope: scope,
+    p_lock_token: lockToken,
+    p_run_id: runId,
+    p_ttl_seconds: STOCK_REFRESH_LOCK_TTL_SECONDS,
+  });
+  return !error && data === true;
+}
+
+async function renewLock(
+  supabase: SupabaseClient,
+  scope: string,
+  lockToken: string,
+): Promise<boolean> {
+  const { data, error } = await supabase.rpc("renew_stock_refresh_lock", {
+    p_scope: scope,
+    p_lock_token: lockToken,
+    p_ttl_seconds: STOCK_REFRESH_LOCK_TTL_SECONDS,
+  });
+  return !error && data === true;
+}
+
+async function releaseLock(
+  supabase: SupabaseClient,
+  scope: string,
+  lockToken: string,
+): Promise<boolean> {
+  const { data, error } = await supabase.rpc("release_stock_refresh_lock", {
+    p_scope: scope,
+    p_lock_token: lockToken,
+  });
+  return !error && data === true;
+}
+
+async function releaseLocks(
+  supabase: SupabaseClient,
+  scopes: string[],
+  lockToken: string | null,
+): Promise<void> {
+  if (!lockToken) return;
+  await Promise.all(scopes.map((scope) => releaseLock(supabase, scope, lockToken)));
+}
 
 async function resolveAffectedScope(
   supabase: SupabaseClient,
@@ -89,6 +147,11 @@ Deno.serve(async (req) => {
 
   const startedAt = new Date().toISOString();
   let stage = "init";
+  let activeSupabase: SupabaseClient | null = null;
+  let activeRunId: string | null = null;
+  let heldLockScopes: string[] = [];
+  let heldLockToken: string | null = null;
+  let materializationLockHeld = false;
 
   try {
     stage = "env";
@@ -107,9 +170,14 @@ Deno.serve(async (req) => {
     stage = "auth";
     const url = new URL(req.url);
     const providedTest = url.searchParams.get("test_key");
-    const providedCron = url.searchParams.get("cron_key");
+    const providedHeaderCron = req.headers.get("x-stock-refresh-key") ?? "";
+    const providedQueryCron = url.searchParams.get("cron_key") ?? "";
     const okTest = !!providedTest && providedTest === TEST_KEY;
-    const okCron = !!CRON_KEY && !!providedCron && providedCron === CRON_KEY;
+    const okCron = !!CRON_KEY && (
+      providedHeaderCron.length > 0
+        ? providedHeaderCron === CRON_KEY
+        : providedQueryCron === CRON_KEY
+    );
     if (!okTest && !okCron) {
       return jsonResponse(401, { ok: false, stage, error_message: "credencial inválida (test_key o cron_key)" });
     }
@@ -119,15 +187,20 @@ Deno.serve(async (req) => {
     const mode: Mode = rawMode === "full" ? "full" : "dry_run";
 
     const rawProv = (url.searchParams.get("provider") ?? "all").toLowerCase();
+    const providerParam = rawProv === "all" ? "all" : normalizeProvider(rawProv);
+    if (!providerParam) {
+      return jsonResponse(400, { ok: false, stage, error_message: `provider inválido: ${rawProv}` });
+    }
+
     let providers: Provider[];
-    if (rawProv === "all") providers = [...ALL_PROVIDERS];
-    else if ((ALL_PROVIDERS as string[]).includes(rawProv)) providers = [rawProv as Provider];
-    else return jsonResponse(400, { ok: false, stage, error_message: `provider inválido: ${rawProv}` });
+    if (providerParam === "all") providers = [...ALL_PROVIDERS];
+    else providers = [providerParam];
 
     const limit = clampInt(url.searchParams.get("limit"), 100, 1, 200);
-    const maxBatches = clampInt(url.searchParams.get("max_batches"), 1, 1, 3);
+    const maxBatches = clampInt(url.searchParams.get("max_batches"), MAX_BATCHES_PER_TICK, 1, MAX_BATCHES_PER_TICK);
     const offsetOverride = url.searchParams.get("offset");
     const pageOverride = url.searchParams.get("page");
+    const offerOffsetOverride = url.searchParams.get("offer_offset");
     const resetCursor = (url.searchParams.get("reset_cursor") ?? "false").toLowerCase() === "true";
     const materializeProductIds = [...new Set(
       (url.searchParams.get("materialize_product_ids") ?? "")
@@ -139,6 +212,19 @@ Deno.serve(async (req) => {
     const confirmMaterializationWrite = (url.searchParams.get("confirm_materialization_write") ?? "false").toLowerCase() === "true";
 
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
+    activeSupabase = supabase;
+
+    if (mode === "full" && resetCursor) {
+      return jsonResponse(400, {
+        ok: false,
+        mode,
+        stage: "params",
+        error: "reset_cursor_not_allowed_in_full_mode",
+        error_message: "reset_cursor=true está prohibido para ejecuciones full productivas",
+        writes: 0,
+        provider_calls: 0,
+      });
+    }
 
     const materializationDecision = decideMaterializationRequest({
       mode,
@@ -219,7 +305,7 @@ Deno.serve(async (req) => {
     stage = "cursors_load";
     const { data: cursorsRaw, error: cursorsErr } = await supabase
       .from("stock_refresh_cursors")
-      .select("provider,next_offset,next_page,cycle_count,last_run_at,last_completed_cycle_at")
+      .select("provider,next_offset,next_page,next_offer_offset,cycle_count,last_run_at,last_completed_cycle_at")
       .in("provider", providers);
     if (cursorsErr) {
       return jsonResponse(500, { ok: false, stage, error_message: `cursors read: ${cursorsErr.message}` });
@@ -232,26 +318,67 @@ Deno.serve(async (req) => {
         provider: p,
         next_offset: p === "cdo_mx" ? null : 0,
         next_page: p === "cdo_mx" ? 1 : null,
+        next_offer_offset: p === "cdo_mx" ? 0 : null,
         cycle_count: 0,
         last_run_at: null,
         last_completed_cycle_at: null,
       };
     }
 
-    if (resetCursor && mode === "full") {
-      for (const p of providers) {
-        cursorsMap[p].next_offset = p === "cdo_mx" ? null : 0;
-        cursorsMap[p].next_page = p === "cdo_mx" ? 1 : null;
-      }
+    if (
+      mode === "full" &&
+      providerParam !== "all" &&
+      !resetCursor &&
+      completedToday(cursorsMap[providerParam].last_completed_cycle_at)
+    ) {
+      return jsonResponse(200, {
+        ok: true,
+        mode,
+        provider: providerParam,
+        cycle_status: "completed",
+        already_completed_today: true,
+        run_id: null,
+        batches_executed: 0,
+        cursors_before: cursorsMap,
+        cursors_after: cursorsMap,
+        errors: [],
+        summary: {},
+        note: "daily gate: provider cycle already completed for the Mexico City operational day",
+      });
     }
 
     const cursorsBefore = JSON.parse(JSON.stringify(cursorsMap));
 
+    const requestedRunId = crypto.randomUUID();
+    const lockScopes = mode === "full"
+      ? (providerParam === "all" ? [...ALL_PROVIDERS] : [providerParam])
+      : [];
+    const lockToken = mode === "full" ? crypto.randomUUID() : null;
+
+    if (lockToken) {
+      for (const scope of lockScopes) {
+        const acquired = await acquireLock(supabase, scope, lockToken, requestedRunId);
+        if (!acquired) {
+          await releaseLocks(supabase, lockScopes, lockToken);
+          return jsonResponse(409, {
+            ok: false,
+            mode,
+            provider: providerParam,
+            cycle_status: "in_progress",
+            error_message: `refresh lock busy: ${scope}`,
+          });
+        }
+        heldLockScopes.push(scope);
+      }
+      heldLockToken = lockToken;
+    }
+
     stage = "run_open";
-    const providerLabel = rawProv === "all" ? "all" : (providers[0] as string);
+    const providerLabel = providerParam;
     const { data: runRow, error: runErr } = await supabase
       .from("stock_refresh_runs")
       .insert({
+        id: requestedRunId,
         provider: providerLabel,
         mode,
         status: "running",
@@ -265,9 +392,13 @@ Deno.serve(async (req) => {
       .select("id")
       .single();
     if (runErr || !runRow?.id) {
+      await releaseLocks(supabase, heldLockScopes, heldLockToken);
+      heldLockScopes = [];
+      heldLockToken = null;
       return jsonResponse(500, { ok: false, stage, error_message: `run insert: ${runErr?.message ?? "unknown"}` });
     }
     const runId = runRow.id as string;
+    activeRunId = runId;
 
     stage = "batches";
     const functionsBase = `${SUPABASE_URL}/functions/v1`;
@@ -300,19 +431,26 @@ Deno.serve(async (req) => {
       };
       const cur = cursorsMap[provider];
 
-      for (let b = 1; b <= maxBatches; b++) {
+      for (let b = 1; b <= maxBatches && batchesExecuted < maxBatches; b++) {
         let endpoint = "";
         let pageUsed: number | null = null;
         let offsetUsed: number | null = null;
+        let offerOffsetUsed: number | null = null;
 
         if (provider === "cdo_mx") {
           const pageParam = b === 1 && pageOverride != null
             ? parseInt(pageOverride, 10)
             : (cur.next_page ?? 1);
           pageUsed = Number.isFinite(pageParam) && pageParam >= 1 ? pageParam : 1;
+          const offerOffsetParam = b === 1 && offerOffsetOverride != null
+            ? parseInt(offerOffsetOverride, 10)
+            : (cur.next_offer_offset ?? 0);
+          offerOffsetUsed = Number.isFinite(offerOffsetParam) && offerOffsetParam >= 0
+            ? offerOffsetParam
+            : 0;
           const qs = new URLSearchParams({
             mode, env: "mx", limit: String(limit), page: String(pageUsed),
-            offer_limit: "500", offer_offset: "0", test_key: TEST_KEY,
+            offer_limit: "500", offer_offset: String(offerOffsetUsed), test_key: TEST_KEY,
           });
           endpoint = `${functionsBase}/sync-cdo-products?${qs.toString()}`;
         } else if (provider === "forpromotional") {
@@ -344,20 +482,26 @@ Deno.serve(async (req) => {
         let itemErr: string | null = null;
         let httpStatus = 0;
 
-        try {
-          const res = await fetch(endpoint, { method: "GET", headers: invokeHeaders });
-          httpStatus = res.status;
-          const text = await res.text();
-          try { respJson = JSON.parse(text) as Record<string, unknown>; }
-          catch { respJson = { raw: text.slice(0, 500) }; }
-          if (!res.ok || respJson?.ok === false) {
-            itemStatus = "failed";
-            itemErr = `HTTP ${res.status}: ${String((respJson as { error_message?: string })?.error_message ?? "").slice(0, 300)}`;
-          }
-        } catch (e) {
+        const locksHealthy = !heldLockToken || await Promise.all(
+          heldLockScopes.map((scope) => renewLock(supabase, scope, heldLockToken as string)),
+        ).then((results) => results.every(Boolean));
+
+        if (!locksHealthy) {
           itemStatus = "failed";
-          itemErr = e instanceof Error ? e.message : "fetch error";
-          respJson = { fetch_error: itemErr };
+          itemErr = "refresh lock expired or could not be renewed";
+          respJson = { ok: false, error_message: itemErr };
+        } else {
+          try {
+            const res = await fetch(endpoint, { method: "GET", headers: invokeHeaders });
+            httpStatus = res.status;
+            const text = await res.text();
+            try { respJson = JSON.parse(text) as Record<string, unknown>; }
+            catch { respJson = { raw: text.slice(0, 500) }; }
+          } catch (e) {
+            itemStatus = "failed";
+            itemErr = e instanceof Error ? e.message : "fetch error";
+            respJson = { fetch_error: itemErr };
+          }
         }
 
         // Resumen del batch
@@ -368,9 +512,26 @@ Deno.serve(async (req) => {
         const stockUpdated = Number(
           (respJson as Record<string, unknown> | null)?.["items_upserted"] ?? 0
         ) || 0;
-        const hasMore = Boolean((respJson as Record<string, unknown> | null)?.["has_more"]);
+        const hasMoreOffers = provider === "cdo_mx"
+          ? Boolean((respJson as Record<string, unknown> | null)?.["has_more_offers"])
+          : false;
+        const hasMorePages = provider === "cdo_mx"
+          ? Boolean((respJson as Record<string, unknown> | null)?.["has_more_pages"])
+          : false;
+        const hasMore = provider === "cdo_mx"
+          ? hasMoreOffers || hasMorePages
+          : Boolean((respJson as Record<string, unknown> | null)?.["has_more"]);
         const nextOffsetResp = (respJson as Record<string, unknown> | null)?.["next_offset"];
         const nextPageResp = (respJson as Record<string, unknown> | null)?.["next_page"];
+        const nextOfferOffsetResp = (respJson as Record<string, unknown> | null)?.["next_offer_offset"];
+
+        if (itemStatus === "success") {
+          const assessment = assessProviderBatch(provider, respJson, httpStatus);
+          if (!assessment.ok) {
+            itemStatus = "failed";
+            itemErr = assessment.reason;
+          }
+        }
 
         summary[provider].items_seen += itemsSeen;
         summary[provider].stock_updated += stockUpdated;
@@ -390,8 +551,18 @@ Deno.serve(async (req) => {
           if (!batchId) {
             itemStatus = "failed";
             itemErr = "materialization requires provider batch_id";
+          } else if (!heldLockToken || !(await acquireLock(supabase, "catalog_materialization", heldLockToken, runId))) {
+            itemStatus = "failed";
+            itemErr = "catalog materialization lock busy";
           } else {
+            materializationLockHeld = true;
             try {
+              const providerLocksHealthy = await Promise.all(
+                heldLockScopes.map((scope) => renewLock(supabase, scope, heldLockToken as string)),
+              ).then((results) => results.every(Boolean));
+              if (!providerLocksHealthy) {
+                throw new Error("provider lock expired or could not be renewed");
+              }
               const affected = await resolveAffectedScope(supabase, batchId);
               const recompute = await recomputeProductStockStatus(
                 supabase,
@@ -417,6 +588,13 @@ Deno.serve(async (req) => {
             } catch (e) {
               itemStatus = "failed";
               itemErr = e instanceof Error ? e.message.slice(0, 300) : "status materialization failed";
+            } finally {
+              const released = await releaseLock(supabase, "catalog_materialization", heldLockToken as string);
+              materializationLockHeld = false;
+              if (!released && itemStatus === "success") {
+                itemStatus = "failed";
+                itemErr = "catalog materialization lock release failed";
+              }
             }
           }
         }
@@ -428,9 +606,14 @@ Deno.serve(async (req) => {
           mode: (respJson as Record<string, unknown> | null)?.["mode"] ?? null,
           items_processed: itemsSeen,
           items_upserted: stockUpdated,
+          items_failed: Number((respJson as Record<string, unknown> | null)?.["items_failed"] ?? 0) || 0,
+          stock_failed: Number((respJson as Record<string, unknown> | null)?.["stock_failed"] ?? 0) || 0,
           has_more: hasMore,
+          has_more_pages: hasMorePages,
+          has_more_offers: hasMoreOffers,
           next_offset: nextOffsetResp ?? null,
           next_page: nextPageResp ?? null,
+          next_offer_offset: nextOfferOffsetResp ?? null,
           batch_id: (respJson as Record<string, unknown> | null)?.["batch_id"] ?? null,
           status: (respJson as Record<string, unknown> | null)?.["status"] ?? null,
           error_message: (respJson as Record<string, unknown> | null)?.["error_message"] ?? null,
@@ -439,12 +622,13 @@ Deno.serve(async (req) => {
 
         summary[provider].last_status = itemStatus;
 
-        await supabase.from("stock_refresh_run_items").insert({
+        const { error: runItemError } = await supabase.from("stock_refresh_run_items").insert({
           run_id: runId,
           provider,
           batch_number: b,
           page_used: pageUsed,
           offset_used: offsetUsed,
+          offer_offset_used: offerOffsetUsed,
           status: itemStatus,
           items_seen: itemsSeen,
           stock_updated: stockUpdated,
@@ -452,83 +636,134 @@ Deno.serve(async (req) => {
           error: itemErr,
         });
 
+        if (runItemError) {
+          itemStatus = "failed";
+          itemErr = `run item insert: ${runItemError.message}`;
+        }
+
         if (itemStatus === "failed") {
           errors.push({ provider, batch: b, message: itemErr ?? "unknown" });
           break; // no seguir con más batches de este proveedor
         }
 
-        // Avanzar cursor en memoria
-        if (provider === "cdo_mx") {
-          if (hasMore && typeof nextPageResp === "number") {
-            cur.next_page = nextPageResp;
-          } else {
-            // ciclo completo
-            cur.next_page = 1;
-            cur.cycle_count = (cur.cycle_count ?? 0) + 1;
-            cur.last_completed_cycle_at = new Date().toISOString();
-            summary[provider].cycles_completed++;
-            break;
-          }
-        } else {
-          if (hasMore && typeof nextOffsetResp === "number") {
-            cur.next_offset = nextOffsetResp;
-          } else {
-            cur.next_offset = 0;
-            cur.cycle_count = (cur.cycle_count ?? 0) + 1;
-            cur.last_completed_cycle_at = new Date().toISOString();
-            summary[provider].cycles_completed++;
-            break;
-          }
+        const cursorAdvance = advanceProviderCursor(provider, {
+          next_offset: cur.next_offset,
+          next_page: cur.next_page,
+          next_offer_offset: cur.next_offer_offset,
+          cycle_count: cur.cycle_count,
+          last_completed_cycle_at: cur.last_completed_cycle_at,
+        }, respJson, pageUsed);
+        if (!cursorAdvance.ok) {
+          errors.push({ provider, batch: b, message: cursorAdvance.reason });
+          break;
+        }
+        Object.assign(cur, cursorAdvance.cursor);
+        if (cursorAdvance.completed) {
+          summary[provider].cycles_completed++;
+          break;
         }
       }
 
       cur.last_run_at = new Date().toISOString();
-    }
-
-    // Persistir cursores SOLO en modo full
-    stage = "cursors_save";
-    if (mode === "full") {
-      for (const p of providers) {
-        const c = cursorsMap[p];
-        const { error: upErr } = await supabase
-          .from("stock_refresh_cursors")
-          .upsert({
-            provider: p,
-            next_offset: c.next_offset,
-            next_page: c.next_page,
-            cycle_count: c.cycle_count,
-            last_run_at: c.last_run_at,
-            last_completed_cycle_at: c.last_completed_cycle_at,
-            updated_at: new Date().toISOString(),
-          }, { onConflict: "provider" });
-        if (upErr) {
-          errors.push({ provider: p, batch: 0, message: `cursor upsert: ${upErr.message}` });
-        }
-      }
+      if (batchesExecuted >= maxBatches) break;
     }
 
     stage = "run_close";
-    const failedCount = errors.length;
-    const finalStatus: "success" | "partial_failed" | "failed" =
-      failedCount === 0 ? "success" :
-      batchesExecuted > failedCount ? "partial_failed" : "failed";
-
-    await supabase.from("stock_refresh_runs").update({
-      status: finalStatus,
+    const preCursorFailedCount = errors.length;
+    const preCursorStatus: "success" | "partial_failed" | "failed" =
+      preCursorFailedCount === 0 ? "success" :
+      batchesExecuted > preCursorFailedCount ? "partial_failed" : "failed";
+    const preCursorCycleStatus = cycleStatus({ providers, summaries, errors });
+    const preCursorRunUpdate = await supabase.from("stock_refresh_runs").update({
+      status: preCursorStatus,
       finished_at: new Date().toISOString(),
       result: {
         batches_executed: batchesExecuted,
+        cycle_status: preCursorCycleStatus,
+        cursors_before: cursorsBefore,
         summary,
         cursors_after: cursorsMap,
         errors,
       },
-      error: failedCount > 0 ? errors.map((e) => `${e.provider}#${e.batch}: ${e.message}`).join(" | ").slice(0, 1000) : null,
+      error: preCursorFailedCount > 0
+        ? errors.map((e) => `${e.provider}#${e.batch}: ${e.message}`).join(" | ").slice(0, 1000)
+        : null,
     }).eq("id", runId);
+    if (preCursorRunUpdate.error) {
+      await releaseLocks(supabase, heldLockScopes, heldLockToken);
+      heldLockScopes = [];
+      heldLockToken = null;
+      return jsonResponse(500, {
+        ok: false,
+        stage,
+        error_message: `run finalization: ${preCursorRunUpdate.error.message}`,
+        writes: 0,
+        provider_calls: batchesExecuted,
+        cursor_writes: 0,
+      });
+    }
+
+    // Los cursores se persisten después de que el run y cada batch tienen evidencia.
+    stage = "cursors_save";
+    if (mode === "full") {
+      const cursorRows = providers.map((p) => {
+        const c = cursorsMap[p];
+        return {
+          provider: p,
+          next_offset: c.next_offset,
+          next_page: c.next_page,
+          next_offer_offset: c.next_offer_offset,
+          cycle_count: c.cycle_count,
+          last_run_at: c.last_run_at,
+          last_completed_cycle_at: c.last_completed_cycle_at,
+          updated_at: new Date().toISOString(),
+        };
+      });
+      const { error: cursorUpsertError } = await supabase
+        .from("stock_refresh_cursors")
+        .upsert(cursorRows, { onConflict: "provider" });
+      if (cursorUpsertError) {
+        errors.push({
+          provider: "runtime",
+          batch: 0,
+          message: `cursor upsert: ${cursorUpsertError.message}`,
+        });
+      }
+    }
+
+    const cursorWriteFailed = errors.length > preCursorFailedCount;
+    const finalFailedCount = errors.length;
+    const finalStatus: "success" | "partial_failed" | "failed" =
+      finalFailedCount === 0 ? preCursorStatus : "failed";
+    const finalCycleStatus = cycleStatus({ providers, summaries, errors });
+
+    if (cursorWriteFailed) {
+      const correction = await supabase.from("stock_refresh_runs").update({
+        status: finalStatus,
+        error: errors.map((e) => `${e.provider}#${e.batch}: ${e.message}`).join(" | ").slice(0, 1000),
+        result: {
+          batches_executed: batchesExecuted,
+          cycle_status: finalCycleStatus,
+          cursors_before: cursorsBefore,
+          summary,
+          cursors_after: cursorsMap,
+          errors,
+        },
+      }).eq("id", runId);
+      if (correction.error) {
+        errors.push({ provider: "runtime", batch: 0, message: `run failure finalization: ${correction.error.message}` });
+      }
+    }
+
+    await releaseLocks(supabase, heldLockScopes, heldLockToken);
+    heldLockScopes = [];
+    heldLockToken = null;
 
     return jsonResponse(200, {
-      ok: finalStatus !== "failed",
+      ok: errors.length === 0,
       mode,
       provider: providerLabel,
+      cycle_status: cycleStatus({ providers, summaries, errors }),
       run_id: runId,
       batches_executed: batchesExecuted,
       providers,
@@ -541,6 +776,21 @@ Deno.serve(async (req) => {
         : "full: cursores actualizados; los productos afectados se materializaron desde producto_b2b_oferta_map.",
     });
   } catch (e) {
+    if (activeSupabase) {
+      if (activeRunId) {
+        await activeSupabase.from("stock_refresh_runs").update({
+          status: "failed",
+          finished_at: new Date().toISOString(),
+          error: e instanceof Error ? e.message.slice(0, 1000) : "fatal error",
+          result: { cycle_status: "failed", stage },
+        }).eq("id", activeRunId);
+      }
+      if (materializationLockHeld && heldLockToken) {
+        await releaseLock(activeSupabase, "catalog_materialization", heldLockToken);
+        materializationLockHeld = false;
+      }
+      await releaseLocks(activeSupabase, heldLockScopes, heldLockToken);
+    }
     console.log("fatal", { stage, error: e instanceof Error ? e.message : "unknown" });
     return jsonResponse(500, {
       ok: false, stage,

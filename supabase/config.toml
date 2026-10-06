@@ -2,3 +2,6 @@ project_id = "unzfwdykdqotiwzihsvc"
 
 [functions.submit-project-brief]
 verify_jwt = false
+
+[functions.refresh-provider-stock]
+verify_jwt = false

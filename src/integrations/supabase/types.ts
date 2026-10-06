@@ -4489,6 +4489,7 @@ export type Database = {
           cycle_count: number
           last_completed_cycle_at: string | null
           last_run_at: string | null
+          next_offer_offset: number | null
           next_offset: number
           next_page: number
           provider: string
@@ -4498,6 +4499,7 @@ export type Database = {
           cycle_count?: number
           last_completed_cycle_at?: string | null
           last_run_at?: string | null
+          next_offer_offset?: number | null
           next_offset?: number
           next_page?: number
           provider: string
@@ -4507,9 +4509,37 @@ export type Database = {
           cycle_count?: number
           last_completed_cycle_at?: string | null
           last_run_at?: string | null
+          next_offer_offset?: number | null
           next_offset?: number
           next_page?: number
           provider?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      stock_refresh_locks: {
+        Row: {
+          acquired_at: string
+          lock_token: string
+          locked_until: string
+          run_id: string | null
+          scope: string
+          updated_at: string
+        }
+        Insert: {
+          acquired_at?: string
+          lock_token: string
+          locked_until: string
+          run_id?: string | null
+          scope: string
+          updated_at?: string
+        }
+        Update: {
+          acquired_at?: string
+          lock_token?: string
+          locked_until?: string
+          run_id?: string | null
+          scope?: string
           updated_at?: string
         }
         Relationships: []
@@ -4521,6 +4551,7 @@ export type Database = {
           error: string | null
           id: string
           items_seen: number
+          offer_offset_used: number | null
           offset_used: number | null
           page_used: number | null
           provider: string
@@ -4535,6 +4566,7 @@ export type Database = {
           error?: string | null
           id?: string
           items_seen?: number
+          offer_offset_used?: number | null
           offset_used?: number | null
           page_used?: number | null
           provider: string
@@ -4549,6 +4581,7 @@ export type Database = {
           error?: string | null
           id?: string
           items_seen?: number
+          offer_offset_used?: number | null
           offset_used?: number | null
           page_used?: number | null
           provider?: string
@@ -4706,6 +4739,15 @@ export type Database = {
       }
     }
     Functions: {
+      acquire_stock_refresh_lock: {
+        Args: {
+          p_lock_token: string
+          p_run_id: string
+          p_scope: string
+          p_ttl_seconds?: number
+        }
+        Returns: boolean
+      }
       admin_preview_product_price_v2: {
         Args: {
           p_producto_b2b_id: string
@@ -4907,6 +4949,14 @@ export type Database = {
           release_id: string
           reused: boolean
         }[]
+      }
+      release_stock_refresh_lock: {
+        Args: { p_lock_token: string; p_scope: string }
+        Returns: boolean
+      }
+      renew_stock_refresh_lock: {
+        Args: { p_lock_token: string; p_scope: string; p_ttl_seconds?: number }
+        Returns: boolean
       }
       rollback_catalog_price_v2_to_legacy: {
         Args: never

@@ -273,7 +273,7 @@ Deno.serve(async (req) => {
 
     if (materializationDecision.kind === "targeted_write") {
       const recompute = await recomputeProductStockStatus(
-        supabase,
+        supabase as unknown as Parameters<typeof recomputeProductStockStatus>[0],
         materializeProductIds,
         { dryRun: false },
       );
@@ -562,7 +562,7 @@ Deno.serve(async (req) => {
               }
               const affected = await resolveAffectedScope(supabase, batchId);
               const recompute = await recomputeProductStockStatus(
-                supabase,
+                supabase as unknown as Parameters<typeof recomputeProductStockStatus>[0],
                 affected.productIds,
                 { dryRun: false, affectedOfferIds: affected.offerIds },
               );

@@ -48,7 +48,8 @@ BEGIN
             LIMIT 1
           )
         ),
-        body := '{}'::jsonb
+        body := '{}'::jsonb,
+        timeout_milliseconds := 150000
       );
     $job$
   );
@@ -68,7 +69,8 @@ BEGIN
             LIMIT 1
           )
         ),
-        body := '{}'::jsonb
+        body := '{}'::jsonb,
+        timeout_milliseconds := 150000
       );
     $job$
   );
@@ -88,7 +90,8 @@ BEGIN
             LIMIT 1
           )
         ),
-        body := '{}'::jsonb
+        body := '{}'::jsonb,
+        timeout_milliseconds := 150000
       );
     $job$
   );

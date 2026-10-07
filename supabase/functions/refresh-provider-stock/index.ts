@@ -4,7 +4,7 @@
 // En full persiste stock_refresh_* y materializa el estado de catálogo.
 // En materialization-only dry_run solo lee datos ya persistidos y no escribe.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient, type SupabaseClient as SupabaseClientGeneric } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { recomputeProductStockStatus } from "../_shared/catalog-stock-status.ts";
 import { decideMaterializationRequest } from "../_shared/refresh-provider-stock-contract.ts";
 import {
@@ -51,7 +51,7 @@ interface CursorRow {
   last_completed_cycle_at: string | null;
 }
 
-type SupabaseClient = ReturnType<typeof createClient>;
+type SupabaseClient = SupabaseClientGeneric<any, any, any>;
 
 type AffectedScope = {
   offerIds: string[];
@@ -273,7 +273,7 @@ Deno.serve(async (req) => {
 
     if (materializationDecision.kind === "targeted_write") {
       const recompute = await recomputeProductStockStatus(
-        supabase,
+        supabase as unknown as Parameters<typeof recomputeProductStockStatus>[0],
         materializeProductIds,
         { dryRun: false },
       );
@@ -562,7 +562,7 @@ Deno.serve(async (req) => {
               }
               const affected = await resolveAffectedScope(supabase, batchId);
               const recompute = await recomputeProductStockStatus(
-                supabase,
+                supabase as unknown as Parameters<typeof recomputeProductStockStatus>[0],
                 affected.productIds,
                 { dryRun: false, affectedOfferIds: affected.offerIds },
               );

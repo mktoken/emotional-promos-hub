@@ -670,7 +670,7 @@ Deno.serve(async (req) => {
     const preCursorStatus: "success" | "partial_failed" | "failed" =
       preCursorFailedCount === 0 ? "success" :
       batchesExecuted > preCursorFailedCount ? "partial_failed" : "failed";
-    const preCursorCycleStatus = cycleStatus({ providers, summaries, errors });
+    const preCursorCycleStatus = cycleStatus({ providers, summaries: summary, errors });
     const preCursorRunUpdate = await supabase.from("stock_refresh_runs").update({
       status: preCursorStatus,
       finished_at: new Date().toISOString(),
@@ -732,7 +732,7 @@ Deno.serve(async (req) => {
     const finalFailedCount = errors.length;
     const finalStatus: "success" | "partial_failed" | "failed" =
       finalFailedCount === 0 ? preCursorStatus : "failed";
-    const finalCycleStatus = cycleStatus({ providers, summaries, errors });
+    const finalCycleStatus = cycleStatus({ providers, summaries: summary, errors });
 
     if (cursorWriteFailed) {
       const correction = await supabase.from("stock_refresh_runs").update({
@@ -760,7 +760,7 @@ Deno.serve(async (req) => {
       ok: errors.length === 0,
       mode,
       provider: providerLabel,
-      cycle_status: cycleStatus({ providers, summaries, errors }),
+      cycle_status: cycleStatus({ providers, summaries: summary, errors }),
       run_id: runId,
       batches_executed: batchesExecuted,
       providers,

@@ -224,6 +224,34 @@ describe("refresh-provider-stock runtime contract", () => {
     expect(supabaseConfig).toContain('[functions.refresh-provider-stock]\nverify_jwt = false');
   });
 
+  it("uses the declared summary through run close and cursor recovery", () => {
+    expect(refreshSource).toContain("const summary: Record<string, {");
+    expect(refreshSource).not.toContain("providers, summaries, errors");
+
+    const cycleStatusArguments = [...refreshSource.matchAll(
+      /cycleStatus\(\{ providers, summaries: (summary), errors \}\)/g,
+    )].map((match) => match[1]);
+    expect(cycleStatusArguments).toEqual(["summary", "summary", "summary"]);
+
+    const runClose = refreshSource.indexOf('stage = "run_close"');
+    const preCursorUpdate = refreshSource.indexOf("const preCursorRunUpdate");
+    const cursorSave = refreshSource.indexOf('stage = "cursors_save"');
+    const finalCycleStatus = refreshSource.indexOf("const finalCycleStatus");
+    const cursorRecovery = refreshSource.indexOf("if (cursorWriteFailed)");
+
+    expect(runClose).toBeGreaterThan(-1);
+    expect(preCursorUpdate).toBeGreaterThan(runClose);
+    expect(cursorSave).toBeGreaterThan(preCursorUpdate);
+    expect(finalCycleStatus).toBeGreaterThan(cursorSave);
+    expect(cursorRecovery).toBeGreaterThan(finalCycleStatus);
+    expect(refreshSource).toContain('next_offset: nextOffsetResp ?? null');
+    expect(refreshSource).toContain('.from("stock_refresh_run_items").insert');
+    expect(refreshSource).toContain("advanceProviderCursor(");
+    expect(refreshSource).toContain("const preCursorRunUpdate");
+    expect(refreshSource).toContain("result: {");
+    expect(refreshSource).toContain("summary,\n        cursors_after: cursorsMap");
+  });
+
   it("does not advance cursors after a failed provider or materialization batch", () => {
     const failedBatchGuard = refreshSource.indexOf('if (itemStatus === "failed")');
     const cursorAdvance = refreshSource.indexOf("advanceProviderCursor(");

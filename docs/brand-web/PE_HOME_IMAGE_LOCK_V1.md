@@ -281,15 +281,15 @@ APPROVED.
 
 ### Estado de decisión
 
-- **Hero:** tres opciones listas para comparar, pero el Hero todavía requiere
-  una decisión sobre si se acepta un contexto de producto ambientado sin
-  persona; no hay ganador.
+- **Hero:** el estado histórico de comparación queda sustituido por la
+  decisión canónica vigente: **CLOSED / PASS — FINAL HERO: `T150`**.
 - **Categorías:** todas tienen primary y alternative visual condicionadas.
 - **Soluciones:** solo hay referencias de producto; no se elevan a masters
   finales de ocasión.
-- **Derechos:** `INTERNAL DESIGN USE: OK`; `PUBLICATION CLEARANCE: PENDING /
-  UNCLEAR`; banco `LIKELY PERMITTED / SCOPE UNCLEAR`.
-- **Owner status:** no aprobado.
+- **Derechos:** `PUBLICATION RIGHTS: CLOSED / PASS` para assets del banco
+  ForPromotional / 4Promotional autorizado por el propietario. La validación
+  de SKU, taxonomía, stock y disponibilidad permanece separada.
+- **Owner status:** `OWNER DIRECTION APPROVED FOR INTERNAL BUILD`.
 
 **PHASE 7D — READY FOR OWNER IMAGE LOCK**
 
@@ -313,8 +313,9 @@ no una afirmación de que los productos no existan. Todos requieren
 ### Gates mantenidos
 
 - **OWNER DIRECTION:** `APPROVED FOR INTERNAL BUILD`.
-- **PUBLICATION RIGHTS GATE:** `OPEN`.
-- **HERO FINAL ASSET:** `OPEN`.
+- **PUBLICATION RIGHTS GATE:** `CLOSED / PASS` para el banco autorizado de
+  ForPromotional / 4Promotional.
+- **HERO FINAL ASSET:** `CLOSED / PASS`; **FINAL HERO: `T150`**.
 - **PUBLIC CATALOG / SKU MAPPING:** pendiente de fuente operativa actual.
 - **SOLUTIONS IMAGE:** no se añade en V1.
 
@@ -322,3 +323,21 @@ El mapa completo está en
 `deliverables/phase-7c/PE_HOME_IMAGE_SKU_TAXONOMY_MAP_V1.md`.
 
 **PHASE 7E — READY FOR BRAND-WEB DOC CHECKPOINT**
+
+## 16. Canonical reconciliation — 2026-10-08
+
+Las secciones históricas de Phase 7C/7D conservan el estado de decisión que
+existía en esas fechas. El estado canónico vigente para Brand/Web es:
+
+- Brand/Web B1–B4: **CLOSED / PASS**.
+- Publication Rights: **CLOSED / PASS** por confirmación amplia del
+  propietario para el banco ForPromotional / 4Promotional.
+- Hero final: **CLOSED / PASS — `T150`**; implementación validada en
+  `src/components/home/HomeHero.tsx` con
+  `public/images/home-hero-t150.jpg`.
+- Derechos de imagen de categoría para `T150`, `O090`, `CH002`, `BL163` y
+  `SO019`: **CLEARED**.
+- Solutions V1: sin fotografía final.
+- El catálogo público, la taxonomía, el stock y la disponibilidad de los SKU
+  permanecen pendientes de revalidación operativa; esta reconciliación no los
+  infiere desde la imagen.

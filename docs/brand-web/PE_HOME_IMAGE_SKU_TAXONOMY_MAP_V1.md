@@ -4,7 +4,7 @@
 **Fase:** PE Strategy OS — Phase 7E  
 **Modo:** auditoría / solo lectura  
 **Fecha:** 2026-10-02  
-**Estado:** `OWNER DIRECTION APPROVED FOR INTERNAL BUILD — PUBLICATION RIGHTS GATE OPEN`
+**Estado:** `OWNER DIRECTION APPROVED FOR INTERNAL BUILD — PUBLICATION RIGHTS CLOSED / PASS — HERO T150 CLOSED / PASS — PUBLIC CATALOG MAPPING PENDING`
 
 ## 1. Alcance y evidencia
 
@@ -41,7 +41,7 @@ Por eso:
 
 | HOME USE | IMAGE SKU | PRODUCT NAME | PROVIDER | PE CATEGORY | PE SUBCATEGORY | PUBLIC STATUS | PUBLIC ROUTE | MATCH STATUS | ACTION NEEDED |
 |---|---|---|---|---|---|---|---|---|---|
-| Hero temporal; Termos y vasos primary | `T_150` | No comprobado; etiqueta visual “T150” | ForPromotional / 4Promotional | Termos y vasos | No comprobada; conceptual `Termos` | `NOT FOUND` en evidencia suministrada | No comprobada | `MAPPING REQUIRED` | Usar solo preview interno; mapear nombre, slug, activo y disponibilidad antes de publicar. |
+| Hero final; Termos y vasos primary | `T_150` | No comprobado; etiqueta visual “T150” | ForPromotional / 4Promotional | Termos y vasos | No comprobada; conceptual `Termos` | `NOT FOUND` en evidencia suministrada | No comprobada | `MAPPING REQUIRED` | Hero final implementado; mapear nombre, slug, activo y disponibilidad antes de enlazar el producto públicamente. |
 | Termos y vasos alternative | `T_327` | No comprobado; etiqueta visual “T327” | ForPromotional / 4Promotional | Termos y vasos | No comprobada; conceptual `Vasos y tarros` | `NOT FOUND` en evidencia suministrada | No comprobada | `MAPPING REQUIRED` | Conciliar contra categoría pública real; no usar la matriz como prueba de disponibilidad. |
 | Libretas primary | `O_090` | No comprobado; etiqueta visual “O090” | ForPromotional / 4Promotional | Libretas | No comprobada | `NOT FOUND` en evidencia suministrada | No comprobada | `MAPPING REQUIRED` | Confirmar ficha PE y ruta de categoría; internal preview only. |
 | Libretas alternative | `LE_OO1` | No comprobado; etiqueta visual “LEOO1” | ForPromotional / 4Promotional | Libretas | No comprobada; proveedor `LIBRETAS_ECOL_GICAS` | `NOT FOUND` en evidencia suministrada | No comprobada | `MAPPING REQUIRED` | Confirmar mapeo y evitar claim “ecológica” sin evidencia de producto. |
@@ -86,9 +86,11 @@ desde la existencia del archivo ZIP.
 ## 6. Gates de uso
 
 - **Internal design / Preview:** `OK`, conforme a la decisión del propietario.
-- **Publicación:** `PENDING / UNCLEAR`.
-- **Rights:** `LIKELY PERMITTED / SCOPE UNCLEAR`.
-- **Hero final:** `OPEN`; T150 es únicamente Hero temporal interno.
+- **Publicación de assets del banco autorizado:** `CLEARED / PASS` por
+  confirmación amplia del propietario.
+- **Rights:** `CLEARED / PASS` para ForPromotional / 4Promotional; esto no
+  valida SKU, taxonomía, disponibilidad ni stock.
+- **Hero final:** `CLOSED / PASS — T150`.
 - **Solutions V1:** sin imagen final.
 - **Catalog mapping:** `MAPPING REQUIRED` antes de cualquier enlace público.
 
@@ -103,3 +105,16 @@ desde la existencia del archivo ZIP.
 4. Mantener soluciones sin fotografía en V1.
 
 **PHASE 7E — READY FOR BRAND-WEB DOC CHECKPOINT**
+
+## 8. Canonical reconciliation — 2026-10-08
+
+El clearance de derechos del propietario aplica a los assets que pertenecen
+efectivamente al banco autorizado de ForPromotional / 4Promotional, incluidos
+web, catálogo, PDP, redes sociales, Ads, email, propuestas, rehosting, crop,
+redimensionado y adaptación gráfica PE. No modifica la validación de producto,
+taxonomía, stock, disponibilidad o ruta pública.
+
+`T150` es el Hero final canónico. La tabla continúa marcando el producto como
+`MAPPING REQUIRED` cuando no existe evidencia operativa del SKU, porque una
+imagen representativa no convierte automáticamente la card en un enlace al
+producto ni prueba su disponibilidad pública.

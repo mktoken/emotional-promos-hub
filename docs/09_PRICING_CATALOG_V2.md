@@ -10,7 +10,10 @@ Este documento consolida el contrato y la evidencia técnica versionada de Prici
 - `CatalogView`: alineado a búsqueda V2.
 - Legacy: conservado como respaldo.
 - Rollback: disponible y no ejecutado en la evidencia histórica.
-- Estado operativo actual de proveedores y stock: **NO COMPROBADO**.
+- Estado operativo global de proveedores y stock: **PARCIALMENTE CERTIFICADO**.
+  ForPromotional tiene `PASS OPERATIVO / PENDING ONLY SCHEDULER-LINEAGE
+  CONFIRMATION`; CDO y G4 permanecen **NO COMPROBADO**. Este documento no
+  certifica la verdad pública global del catálogo.
 
 ## Contrato de precio
 
@@ -146,7 +149,7 @@ Este PASS significa que la auditoría read-only fue completada. No significa que
 | Productos públicos con stock cero/agotado observado | 0 |
 | Productos públicos con stock observado stale >30 días | 990 |
 
-Última sincronización de stock observada: `2026-07-28`. Sincronización observada más antigua: `2026-06-29`.
+Última sincronización del corte histórico documentado: `2026-07-28`. Sincronización observada más antigua en ese corte: `2026-06-29`. Estos valores requieren revalidación y no describen por sí solos el estado runtime actual.
 
 **Regla de interpretación:** stock observado no equivale a disponibilidad actual. La frescura actual del stock queda **NO CERTIFICADA / STALE**.
 
@@ -181,11 +184,11 @@ La categoría formal es **Premios y regalos ejecutivos** y tiene actualmente `0`
 
 | ID | Riesgo | Estado |
 |---|---|---|
-| P0-1 | Frescura de stock | `990` productos públicos tienen stock observado stale >30 días. |
-| P0-2 | Trazabilidad de proveedor | `895/992` productos públicos no tienen vínculo `provider_raw_products`; esto no prueba que sean inválidos. |
-| P0-3 | Gaps de precio público | `7` productos públicos no tienen Pricing V2 válido. |
+| P0-1 | Frescura de stock | Hallazgo histórico: `990` productos públicos tenían stock observado stale >30 días. **HISTORICAL ISSUE — REVALIDATION REQUIRED**. |
+| P0-2 | Trazabilidad de proveedor | Hallazgo histórico: `895/992` productos públicos no tenían vínculo `provider_raw_products`; esto no prueba que sean inválidos. **HISTORICAL ISSUE — REVALIDATION REQUIRED**. |
+| P0-3 | Gaps de precio público | Hallazgo histórico: `7` productos públicos no tenían Pricing V2 válido. **HISTORICAL ISSUE — REVALIDATION REQUIRED**. |
 | P1-1 | Calidad visual | Metadata de imagen `100%`, pero calidad visual real no certificada; `141` grupos de URLs compartidas requieren evaluación. |
-| P1-2 | Regalos ejecutivos | Categoría vacía; `456` candidatos requieren curaduría comercial. |
+| P1-2 | Regalos ejecutivos | Categoría vacía en el corte histórico; `456` candidatos requieren curaduría comercial. **OPEN GATE — REVALIDATION REQUIRED**. |
 
 ### Readiness
 
@@ -199,3 +202,20 @@ La categoría formal es **Premios y regalos ejecutivos** y tiene actualmente `0`
 ### Siguiente checkpoint autorizado
 
 `CHK-CATALOG-P0-STOCK-PROVIDER-TRACEABILITY-V1` deberá determinar por qué `895` productos públicos no tienen vínculo `provider_raw_products` y cuál es la fuente/mecanismo real de refresh de stock. No forma parte de este cierre y no queda ejecutado por esta documentación.
+
+## Canonical closure reconciliation — 2026-10-08
+
+La evidencia runtime suministrada para ForPromotional confirma un ciclo
+operativo completo: `14/14` runs exitosos, `4135` items vistos, `4135` stocks
+actualizados, `0` fallos, `0` errores y cursor `0 → 300 → ... → 3900 → 0`
+con `cycle_count = 3` y cierre completado. El estado es
+**PASS OPERATIVO / PENDING ONLY SCHEDULER-LINEAGE CONFIRMATION**.
+
+La diferencia `affected_products = 16` frente a
+`recomputed_products = 15`, con `failed_products = 0`, queda como
+**OBSERVATION / NON-BLOCKING**. No se identificó un decimosexto producto
+reconstruible con stock stale actual.
+
+Los conteos históricos `895/992`, `7` gaps de Pricing V2 y `990` productos
+stale no se convierten en blockers actuales sin revalidación. CDO y G4 siguen
+**NO COMPROBADO**.

@@ -1392,3 +1392,64 @@ Estado: VIGENTE.
 - Work coordina; Chat Principal integra; el propietario aprueba decisiones de negocio.
 - Lovable construye únicamente checkpoints autorizados y dentro de su alcance aprobado.
 - Se mantiene el principio operativo: **NO DEPENDER DE RECORDATORIOS DEL PROPIETARIO**. Las fuentes canónicas deben recuperar Skills, decisiones cerradas, checkpoints pendientes y superficies protegidas sin exigir que el propietario los recuerde.
+
+## CP-1 — Canonical State Reconciliation (2026-10-08)
+
+**Estado del checkpoint:** **CLOSED / PASS**.
+
+Esta sección incorpora la evidencia runtime suministrada para el ciclo de
+ForPromotional del 2026-10-08 y corrige la clasificación de hallazgos
+históricos. La evidencia runtime fue entregada como evidencia de checkpoint;
+no se ejecutaron consultas, funciones, cron, proveedores ni writes durante
+esta reconciliación documental.
+
+### Auto-Sync de stock
+
+- **ForPromotional:** **PASS OPERATIVO / PENDING ONLY SCHEDULER-LINEAGE CONFIRMATION**.
+- Evidencia: ciclo completo; `14` runs; `14` exitosos; `4135` items vistos;
+  `4135` stocks actualizados; `0` `failed_products`; `0` errores; offsets
+  `0 → 300 → ... → 3900 → 0`; `cycle_count = 3`; `cycle_status = completed`;
+  sin ejecución manual del sync durante el ciclo.
+- `affected_products = 16`, `recomputed_products = 15` y
+  `failed_products = 0`: **OBSERVATION / NON-BLOCKING**. Los `15` productos
+  reconstruibles observados quedaron alineados en stock, timestamp y status;
+  no se demostró stock stale actual ni un producto adicional afectado.
+- La única evidencia pendiente para cerrar ForPromotional completamente es la
+  lineage read-only del scheduler que vincule esos runs con el job activo.
+- **CDO:** **NO COMPROBADO**.
+- **G4:** **NO COMPROBADO**.
+
+### Reclasificación de evidencia histórica
+
+Los siguientes elementos no se consideran blockers actuales demostrados y
+requieren revalidación con evidencia vigente:
+
+- `895/992` sin trazabilidad: **HISTORICAL ISSUE — REVALIDATION REQUIRED**.
+- `7` gaps de Pricing V2: **HISTORICAL ISSUE — REVALIDATION REQUIRED**.
+- stock stale histórico: **HISTORICAL ISSUE — REVALIDATION REQUIRED**;
+  resuelto operativamente para el ciclo actual de ForPromotional, no probado
+  globalmente para CDO/G4.
+- imágenes/hotlinks históricos: **HISTORICAL ISSUE — REVALIDATION REQUIRED**.
+- `D-013 / CHK-BRAND-WEB-1`: **OPEN GATE — REVALIDATION REQUIRED**.
+- Regalos Ejecutivos: **OPEN GATE — REVALIDATION REQUIRED**.
+- documentación Brand/Web antigua contradictoria: **DOCUMENTARY OBSERVATION —
+  RECONCILIATION REQUIRED**.
+
+### Estado Brand/Web preservado
+
+Se mantienen como decisiones canónicas cerradas, sin reabrirlas:
+
+- Brand/Web B1–B4: **CLOSED / PASS**.
+- Publication Rights: **CLOSED / PASS**.
+- Hero final: **CLOSED / PASS**, `T150`.
+- Route B production: **CLOSED / PASS**.
+- RB3-A/B/C/D: **CLOSED / PASS** según la evidencia ya registrada.
+
+### Blockers y siguiente checkpoint
+
+No existe un defecto runtime actual demostrado para ForPromotional. Los gates
+restantes son la confirmación de lineage del scheduler, la certificación
+runtime de CDO/G4, la revalidación de verdad pública del catálogo y los gates
+Brand/Web `D-013` y Regalos Ejecutivos.
+
+**Next authorized checkpoint:** `CP-2 — Auto-Sync Final Certification`.

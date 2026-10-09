@@ -168,3 +168,27 @@ Emotional Promos Hub no debe mezclarse con:
 La producción estable se protege antes de abrir desarrollo nuevo. Usar Pricing V2 como autoridad, conservar estados `request_quote`/`unresolved`/`unavailable`, confirmar manualmente impresión y destinatarios, y no activar motores shadow sin checkpoint posterior.
 
 Antes de declarar un bloqueo P0, distinguir un fallo reproducible que impida vender de una limitación P1/P2 que pueda gestionarse manualmente. Las correcciones focales deben tener rollback y cerrar su propio subcheckpoint.
+
+## CP-2 — Auto-Sync certificado en runtime (2026-10-09)
+
+`CHK-CLOSURE-AUTO-SYNC-FINAL-CERTIFICATION-V1` queda **CLOSED / PASS**.
+ForPromotional, CDO y G4 tienen ciclos automáticos completos certificados con
+materialización PASS. Los jobs activos relevantes son, respectivamente,
+`catalog-stock-refresh-forpromotional`, `catalog-stock-refresh-cdo` y
+`catalog-stock-refresh-g4`; cada proveedor tiene un solo job activo.
+
+La comprobación operativa debe conservar estas reglas:
+
+- usar solo `mode=full` para certificaciones de ciclo;
+- tratar `items_failed` y, para G4, `stock_failed` como métricas obligatorias:
+  ausencia no equivale a cero;
+- excluir los runs históricos `provider=all` de la salud actual;
+- no usar una alineación temporal como FK causal: la lineage queda
+  `TEMPORAL_ALIGNMENT_CANDIDATE`;
+- no mostrar comandos de cron, URLs con credenciales, secretos ni
+  `return_message`;
+- no ejecutar proveedores manualmente para cerrar CP-2.
+
+El siguiente checkpoint autorizado es `CP-3 — PUBLIC CATALOG TRUTH GATE`,
+orientado a la revalidación vigente de trazabilidad, mappings, pricing, stock,
+taxonomía, imágenes, hotlinks y elegibilidad pública.

@@ -1453,3 +1453,51 @@ runtime de CDO/G4, la revalidación de verdad pública del catálogo y los gates
 Brand/Web `D-013` y Regalos Ejecutivos.
 
 **Next authorized checkpoint:** `CP-2 — Auto-Sync Final Certification`.
+
+## CP-2 — Auto-Sync Final Certification (2026-10-09)
+
+**Checkpoint:** `CHK-CLOSURE-AUTO-SYNC-FINAL-CERTIFICATION-V1`
+**Estado:** **CLOSED / PASS**.
+
+La certificación runtime read-only confirmó ciclos automáticos completos para
+ForPromotional, CDO y G4 después de la activación de sus schedulers.
+
+- **ForPromotional:** `PASS`; scheduler `catalog-stock-refresh-forpromotional`,
+  contrato PASS; último ciclo certificado: `14` runs, `42` batches, todos
+  exitosos, `0` `failed_products`, `0` errores, `items_failed = 0`, `0` batch
+  IDs faltantes y materialización PASS.
+- **CDO:** `PASS`; scheduler `catalog-stock-refresh-cdo`, contrato PASS;
+  ciclo `2026-10-09 00:40:01 UTC → 06:41:11 UTC`, `cycle_count = 4`,
+  `2/2` runs exitosos, `5/5` batches exitosos, `1177/1177` items vistos y
+  actualizados, `390/390` productos afectados y recomputados, `0` fallos,
+  `0` errores, `items_failed` explícito en `5` filas con suma `0`, sin batch
+  IDs faltantes, cursor final `next_page = 1`, `next_offer_offset = 0`,
+  `next_offset = 0`, materialización PASS.
+- **G4:** `PASS`; scheduler `catalog-stock-refresh-g4`, contrato PASS;
+  ciclo `2026-10-09 06:10:02 UTC → 07:11:25 UTC`, `cycle_count = 3`,
+  `2/2` runs exitosos, `6/6` batches exitosos, `551/551` items vistos y
+  actualizados, `504/504` productos afectados y recomputados, `0` fallos,
+  `0` errores, `items_failed` explícito en `6` filas con suma `0`,
+  `stock_failed` explícito en `6` filas con suma `0`, sin batch IDs faltantes,
+  cursor final `next_offset = 0`, materialización PASS.
+
+### Scheduler y seguridad
+
+- CDO, ForPromotional y G4 tienen un único job activo relevante cada uno;
+  `duplicate active relevant jobs = 0`.
+- Los jobs legacy CDO/G4 no están activos.
+- `STOCK_REFRESH_CRON_KEY = EXISTS`; no se usa secreto en query string en los
+  contratos aprobados.
+- No se requirieron llamadas manuales a proveedores.
+- La lineage se registra como **TEMPORAL_ALIGNMENT_CANDIDATE**: la evidencia
+  demuestra alineación operativa repetida `cron → runtime → avance de cursor →
+  continuación automática → cierre de ciclo`, pero no existe una FK causal
+  explícita entre cron y runtime.
+
+Los seis runs históricos `provider=all` permanecen como **LEGACY STALE
+OBSERVABILITY / NON-BLOCKING** y no se usaron para certificar proveedores
+actuales. Los hallazgos históricos `895/992`, `7` gaps de Pricing V2, stock
+stale e imágenes/hotlinks permanecen como **HISTORICAL ISSUE — REVALIDATION
+REQUIRED**; su verdad actual corresponde a CP-3.
+
+**Next authorized checkpoint:** `CP-3 — PUBLIC CATALOG TRUTH GATE`.

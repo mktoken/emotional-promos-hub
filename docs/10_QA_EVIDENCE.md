@@ -1592,6 +1592,73 @@ La capa de intake aún admite fotos, screenshots, inspiración, logos, arte, ref
 
 **Conclusión:** `CHK-AI-SALES-1-RUNTIME-1B` **PASS** y `CHK-AI-SALES-1` **CERRADO / PASS para este caso QA acotado**. La exposición pública del agente y las capacidades fuera del caso requieren checkpoint y autorización separados.
 
+## CP-2 — Auto-Sync Final Certification (2026-10-09)
+
+**Checkpoint:** `CHK-CLOSURE-AUTO-SYNC-FINAL-CERTIFICATION-V1`
+**Resultado:** **CLOSED / PASS**.
+
+La evidencia fue obtenida mediante una consulta consolidada `BEGIN TRANSACTION READ ONLY`
+con `ROLLBACK`. Solo se evaluaron runs `mode = 'full'`
+posteriores al límite operativo de activación; los runs históricos `provider=all`
+quedaron excluidos.
+
+### ForPromotional
+
+- Scheduler: `catalog-stock-refresh-forpromotional`; contrato PASS.
+- Último ciclo completo: `14` runs, `42` batches, todos exitosos.
+- `items_seen = 4134`, `stock_updated = 4134`.
+- `affected_products = 853`, `recomputed_products = 852`, `failed_products = 0`.
+- `errors = 0`; `items_failed` explícito en `42` filas, faltantes `0`, suma `0`.
+- Batch IDs faltantes: `0`; materialización: **PASS**.
+
+### CDO
+
+- Scheduler: `catalog-stock-refresh-cdo`; contrato PASS.
+- Ciclo completo: `2026-10-09 00:40:01 UTC → 06:41:11 UTC`.
+- `cycle_count = 4`; runs `2`, exitosos `2`, fallidos `0`.
+- Batches `5`, exitosos `5`, fallidos `0`.
+- `items_seen = 1177`; `stock_updated = 1177`.
+- `affected_products = 390`; `recomputed_products = 390`; `failed_products = 0`.
+- `errors = 0`; `items_failed`: `5` filas explícitas, `0` faltantes, suma `0`.
+- Batch IDs faltantes: `0`.
+- Cursor final: `next_page = 1`, `next_offer_offset = 0`, `next_offset = 0`.
+- Materialización: **PASS**; sin mismatches ni anomalías de cardinalidad de
+  `producto_b2b_status`.
+
+### G4
+
+- Scheduler: `catalog-stock-refresh-g4`; contrato PASS.
+- Ciclo completo: `2026-10-09 06:10:02 UTC → 07:11:25 UTC`.
+- `cycle_count = 3`; runs `2`, exitosos `2`, fallidos `0`.
+- Batches `6`, exitosos `6`, fallidos `0`.
+- `items_seen = 551`; `stock_updated = 551`.
+- `affected_products = 504`; `recomputed_products = 504`; `failed_products = 0`.
+- `errors = 0`; `items_failed`: `6` filas explícitas, `0` faltantes, suma `0`.
+- `stock_failed`: `6` filas explícitas, `0` faltantes, suma `0`.
+- Batch IDs faltantes: `0`; cursor final `next_offset = 0`.
+- Materialización: **PASS**; sin mismatches ni anomalías de cardinalidad de
+  `producto_b2b_status`.
+
+### Scheduler lineage y límites
+
+- CDO, ForPromotional y G4: contrato scheduler PASS.
+- Jobs activos relevantes duplicados: `0`.
+- Jobs legacy CDO/G4 activos: `0`.
+- `STOCK_REFRESH_CRON_KEY`: `EXISTS`.
+- No se expusieron comandos de cron, URLs, secretos ni mensajes crudos.
+- Lineage: **TEMPORAL_ALIGNMENT_CANDIDATE**. La evidencia apoya la cadena
+  operativa repetida `cron execution → runtime execution → cursor advance →
+  automatic continuation → cycle completion`, pero no una FK causal explícita.
+- Llamadas manuales a proveedores: `0`; database/runtime writes: `0`.
+
+Los seis runs históricos `provider=all` siguen siendo **LEGACY STALE
+OBSERVABILITY / NON-BLOCKING**. `895/992`, los `7` gaps históricos de Pricing
+V2, stock stale histórico e imágenes/hotlinks históricos permanecen como
+**HISTORICAL ISSUE — REVALIDATION REQUIRED** y no se convierten en defectos
+actuales sin evidencia CP-3.
+
+**Next checkpoint:** `CP-3 — PUBLIC CATALOG TRUTH GATE`.
+
 ## CHK-AI-SALES-2 — Piloto Web cliente controlado
 
 **Fecha:** 2026-09-27, QA local en `127.0.0.1:8080` con sesión CRM `admin` y backend integrado. **Resultado:** **CERRADO / PASS del piloto local**, sin despliegue público.

@@ -1580,3 +1580,74 @@ producto sin imágenes; los cinco productos P1-A ya no entregan una referencia
 rota a la superficie pública. La elegibilidad pública de estos cinco no se
 reabrió: permanecen fuera por `public_visible=false`, stock no disponible,
 pricing no válido y `quote_mode=consultar_disponibilidad`.
+
+## CP-3 — P1-B Pricing V2 Public Truth (2026-10-09)
+
+**Checkpoint:** `CP-3 — P1-B REMEDIATION PRICING V2 PUBLIC TRUTH`
+**Estado:** **CLOSED / PASS para el alcance P1-B**.
+
+La revalidación se ejecutó contra el runtime Supabase integrado mediante consultas
+`BEGIN TRANSACTION READ ONLY` con `ROLLBACK`. No se modificaron filas, precios,
+costos, márgenes, mappings, stock, imágenes, categorías, schedulers ni providers.
+
+### Verdad pública actual
+
+- productos públicos actuales: `1143`;
+- `PRICE_VALID`: `1143`;
+- `QUOTE_ONLY_APPROVED`: `0` productos públicos;
+- `PRICE_MISSING`: `0`;
+- `PRICE_INVALID`: `0`;
+- `PRICE_STALE`: `0` observados en el contrato vigente; no existe una señal de
+  stale separada en la superficie pública actual;
+- `PRICING_REVIEW_REQUIRED`: `0`;
+- `precio_desde_mxn` positivo en la vista pública: `1143/1143`;
+- intersección con el release V2 actual: `1143/1143` con estado `priced` y valor
+  positivo;
+- productos públicos sin precio numérico seguro: `0`.
+
+El cache V2 actual contiene `1506` filas `priced` y `18` filas de estado
+`request_quote`/`unavailable`; esas `18` filas no pertenecen al catálogo público
+actual. El hallazgo histórico de `7` gaps no se reproduce: los cinco productos CDO
+y los dos registros Legacy previamente identificados permanecen fuera de la vista
+pública canónica.
+
+### Cadena Pricing V2 validada
+
+La cadena comprobada es:
+
+`catalog_price_v2_releases` (un release actual) →
+`catalog_price_v2_current_prices` → `catalog_search_products_v2` →
+`get_public_product_price_quote`.
+
+La vista pública exige simultáneamente `public_visible=true`,
+`stock_status=disponible`, `price_valid=true`, `image_available=true` y
+`quote_mode=cotizable`. La tarjeta de catálogo consume `catalog_search_products_v2`
+y solo muestra un número cuando `public_price_status=priced` y el valor es positivo;
+en otro caso muestra `Precio a cotizar`. El detalle consulta
+`get_public_product_price_quote` por cantidad y solo muestra un importe cuando la
+respuesta es `priced` con importe positivo; los estados no numéricos se presentan
+como confirmación, mínimo o no disponibilidad.
+
+La comprobación dirigida de la RPC con cinco productos públicos y cantidad de prueba
+produjo cuatro respuestas `priced` y una `below_minimum`, sin importe inventado.
+Esto confirma que el estado de precio es dependiente de cantidad y que la UI conserva
+el fallback seguro.
+
+### Resultado de remediación
+
+- productos afectados: `0`;
+- `VALID_PRICE_DERIVABLE`: `0`;
+- `QUOTE_ONLY_APPROVED`: `0`;
+- `PUBLIC_INELIGIBLE_BY_PRICING`: `0` adicionales;
+- `DATA_REVIEW_REQUIRED`: `0`;
+- writes de base de datos: `0`;
+- cambios de runtime: `0`;
+- llamadas a providers: `0`.
+
+La causa de los siete casos históricos fue la deriva de visibilidad Legacy ya
+resuelta por P0, no un defecto Pricing V2 actual. No se inventaron precios ni se
+aplicaron parches de datos.
+
+**Regresiones:** stock `NO`; imágenes `NO`; traceability `NO`; seguridad `NO`.
+Los gates restantes de CP-3 y `D-013`/Regalos Ejecutivos mantienen su estado
+independiente y no se cierran por esta evidencia.

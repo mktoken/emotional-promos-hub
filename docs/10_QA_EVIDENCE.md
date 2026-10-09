@@ -1777,3 +1777,89 @@ fuente de imágenes pública.
 - Validación final: 113/113 tests PASS; 22/22 tests dirigidos PASS; types PASS; lint dirigido PASS; build normal PASS; build piloto PASS; `git diff --check` PASS. Ambos builds mostraron warning no bloqueante de bundle grande.
 
 **Límites:** piloto QA local, no publicación ni escritura CRM anónima; se requiere operador autenticado con rol comercial. No se verificó en runtime un rol no comercial, ni se indujo un fallo de red real durante el guardado; el reintento real de idempotencia no se ejecutó para no duplicar una operación QA. No se certifican impresión, stock final, Company Intelligence ni multiproducto. `CHK-BRAND-WEB-1` sigue como gate de lanzamiento público.
+
+## CHK-CP-3-P1B — Pricing V2 Public Truth (2026-10-09)
+
+**Resultado:** **CLOSED / PASS para el alcance P1-B**.
+
+### Pre-flight y alcance
+
+- branch: `main`;
+- HEAD/origin: `43c7c6b05cbb3f4665f7b12ab9079b9a25b2d12f`;
+- divergence: `0/0`;
+- working tree: limpio;
+- lead: `pe-evidence-claims`;
+- consultas runtime: solo lectura, dentro de `BEGIN TRANSACTION READ ONLY` con
+  `ROLLBACK`.
+
+No hubo writes de base de datos o runtime, llamadas a providers, syncs manuales,
+backfill, cambios de cron, cambios de stock, imágenes, mappings o frontend.
+
+### Clasificación del catálogo público
+
+| Estado | Antes | Después | Evidencia |
+|---|---:|---:|---|
+| `PRICE_VALID` | 1143 | 1143 | status vigente, precio público positivo y release V2 actual |
+| `QUOTE_ONLY_APPROVED` | 0 | 0 | ningún producto público en estado quote-only |
+| `PRICE_MISSING` | 0 | 0 | `precio_desde_mxn` nulo: 0 |
+| `PRICE_INVALID` | 0 | 0 | cero valores nulos, cero no positivos y cero estados desconocidos |
+| `PRICE_STALE` | 0 observado | 0 observado | sin señal stale en el contrato público vigente |
+| `PRICING_REVIEW_REQUIRED` | 0 | 0 | no quedó producto público no explicado |
+
+El universo público actual es `1143`. Los `1143/1143` tienen
+`public_visible=true`, `stock_status=disponible`, `price_valid=true`,
+`image_available=true`, `quote_mode=cotizable` y precio numérico positivo en la
+vista pública. El cruce con `catalog_price_v2_current_prices` también es
+`1143/1143` en estado `priced` con valor positivo.
+
+El release V2 actual contiene `1506` filas `priced` y `18` filas
+`request_quote`/`unavailable`; las `18` no forman parte del catálogo público. El
+conteo histórico de `7` gaps no se reproduce en el runtime actual.
+
+### Causas y clasificación de remediación
+
+| Clase | Productos | Resultado |
+|---|---:|---|
+| `VALID_PRICE_DERIVABLE` | 0 | No hubo producto público afectado |
+| `QUOTE_ONLY_APPROVED` | 0 | No hubo producto público afectado |
+| `PUBLIC_INELIGIBLE_BY_PRICING` | 0 adicionales | La vista canónica ya excluye estados no elegibles |
+| `DATA_REVIEW_REQUIRED` | 0 | No hubo evidencia contradictoria |
+
+Los cinco productos CDO y dos registros Legacy del hallazgo histórico siguen fuera
+de la vista pública canónica por su estado de elegibilidad; no se inventaron
+precios, mappings ni disponibilidad. La causa histórica queda como
+`HISTORICAL ISSUE — REVALIDATION REQUIRED`, no como blocker actual de Pricing V2.
+
+### Cadena y comportamiento público
+
+La cadena runtime comprobada es:
+
+`catalog_price_v2_releases` → `catalog_price_v2_current_prices` →
+`catalog_search_products_v2` → `get_public_product_price_quote`.
+
+Existe un release actual y un rule set activo. `catalog_search_products_v2` devolvió
+filas con `total_count=1143` y estado `priced` en la muestra paginada; el cruce
+completo contra el cache actual confirma `1143/1143` priced. La RPC de detalle fue
+probada con cinco productos públicos y cantidad de prueba: cuatro respuestas
+`priced` y una `below_minimum`, sin exponer ni devolver importes en esta evidencia.
+
+La tarjeta pública solo presenta importe si `public_price_status=priced` y el valor
+es positivo; de lo contrario presenta `Precio a cotizar`. El detalle usa la RPC
+autoritativa por cantidad y presenta `Por confirmar`, `Cantidad mínima` o
+`No disponible para cotización` cuando no existe precio numérico autoritativo. El
+cliente no deriva precios.
+
+### Regresiones y cierre
+
+- `DATABASE WRITES`: `0`;
+- `RUNTIME WRITES`: `0`;
+- `PROVIDER CALLS`: `0`;
+- `STOCK REGRESSION`: `NO`;
+- `IMAGE REGRESSION`: `NO`;
+- `TRACEABILITY REGRESSION`: `NO`;
+- `SECURITY REGRESSION`: `NO`;
+- `FILES CHANGED`: únicamente documentación de cierre.
+
+**Decisión:** no se requiere remediation write. Pricing V2 public truth queda
+cerrado para el alcance P1-B. CP-3 permanece abierto únicamente para sus gates
+independientes y no se reabre ninguna decisión canónica previa.

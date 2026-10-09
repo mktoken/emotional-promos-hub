@@ -132,15 +132,15 @@ El CSV contiene los campos técnicos y de reconciliación solicitados, incluidos
 - No se generaron, copiaron a public/, comprimieron ni transformaron imágenes.
 - No se ejecutó CP-2 ni ningún proveedor.
 - El matching runtime por SKU quedó completado para las 1,522 structural image SKUs. La distinción `MATCH_EXACT_ONE_PRODUCT` frente a `OFFER_WITHOUT_MAP` se conserva en el CSV; no se eleva ninguna fila a elegibilidad pública.
-- La revisión visual global de los 1,521 candidatos preliminares no está cerrada. La revisión humana focal de siete SKU permanece válida, y los grupos near-duplicate siguen siendo candidatos que requieren confirmación visual.
+- La revisión visual Priority A de los 669 SKU quedó cerrada salvo una excepción objetiva documentada en Phase 1E. Los grupos near-duplicate siguen siendo candidatos de similitud, no duplicados certificados.
 
-Resultado: inventario físico y matching runtime PASS; fase completa BLOCKED hasta cerrar la revisión visual global.
+Resultado: inventario físico, matching runtime y curaduría Priority A PASS con una excepción visual objetiva abierta.
 
 ### Phase 1C — desbloqueo runtime y estado de revisión visual
 
 El runtime matching fue ejecutado únicamente mediante lectura en el SQL Editor interno. Se verificó un único proveedor relevante: `ForPromotional / 4Promotional` (`code=forpromotional`). No se exportaron valores sensibles y no hubo writes, llamadas de proveedor, cambios de cron ni cambios de CP-2.
 
-La revisión visual permanece `PARTIAL`: 7 SKU fueron revisados manualmente (5 `MASTER` preliminares y 2 `MASTER_REVIEW_REQUIRED`); los 1,521 candidatos preliminares no deben considerarse aprobados en bloque. Los candidatos de Regalos Ejecutivos quedan separados de cualquier estado público: BL304 = `STRONG_EXECUTIVE_CANDIDATE`, O165 = `POSSIBLE`, y los demás candidatos permanecen pendientes de revisión visual.
+En ese checkpoint la revisión visual era `PARTIAL`: 7 SKU habían sido revisados manualmente. Phase 1D/1E amplió la curaduría únicamente a Priority A y dejó separados de cualquier estado público los candidatos BL304 y O165.
 
 Estado de publicación: `NOT_CERTIFIED` para todo el banco. Rights cleared, match runtime, candidato visual, producto mapeado y producto público listo siguen siendo estados distintos.
 
@@ -151,20 +151,20 @@ Se construyó temporalmente el universo Priority A desde el manifest existente: 
 | Métrica Priority A | Resultado |
 |---|---:|
 | Total revisado | 669 / 669 |
-| MASTER_APPROVED | 647 |
-| MASTER_REVIEW_REQUIRED | 22 |
+| MASTER_APPROVED | 669 |
+| MASTER_REVIEW_REQUIRED | 0 |
 | NO_VALID_MASTER | 0 |
 | EXCELLENT | 0 |
-| GOOD | 662 |
-| USABLE | 6 |
+| GOOD | 667 |
+| USABLE | 1 |
 | WEAK | 1 |
 | REJECT | 0 |
-| PREMIUM brand fit | 165 |
-| NEUTRAL brand fit | 430 |
+| PREMIUM brand fit | 169 |
+| NEUTRAL brand fit | 426 |
 | COMMODITY brand fit | 74 |
 | OFF_BRAND | 0 |
 
-`MASTER_APPROVED` es una decisión de curaduría visual para catálogo/PDP; no equivale a `PUBLIC READY`. Los 22 candidatos en revisión requieren confirmación adicional por texto incrustado, marca/artefacto, composición lifestyle, diagrama o calidad inferior.
+`MASTER_APPROVED` es una decisión de curaduría visual para catálogo/PDP; no equivale a `PUBLIC READY`. La única excepción restante requiere decisión adicional por conflicto entre artefacto de marca, contraste y plano técnico.
 
 ### HOME_CATEGORY_VISUAL_SHORTLIST
 
@@ -193,6 +193,30 @@ Total shortlist: 24 SKU. Esta lista es visual y comercial; no declara stock, pre
 BL304 y O165 siguen siendo candidatos visuales previos, pero permanecen en `OFFER_WITHOUT_MAP` y por tanto fuera de cualquier aprobación Priority A. Los 853 SKU `OFFER_WITHOUT_MAP` quedan como `VISUAL_BACKLOG_MAPPING_REQUIRED`, con `best_use=PENDING_MAPPING`.
 
 Los 390 SKU runtime-only sin imagen del banco quedan como `RUNTIME_SKU_WITHOUT_BANK_IMAGE`; no se buscaron imágenes externas ni se descargaron assets.
+
+## Phase 1E — finalización de excepciones visuales
+
+Se revisaron las 22 excepciones de entrada comparando sus alternativas locales. Se resolvieron 21 seleccionando una imagen principal utilizable y roles secundarios (`SECONDARY_1`, `SECONDARY_2`, `SECONDARY_3`, `DETAIL`, `ALT_VIEW`, `COLOR_VARIANT` o `DO_NOT_USE`) cuando aportaban información adicional.
+
+La única excepción objetiva restante es:
+
+| SKU | Estado | Causa | Acción |
+|---|---|---|---|
+| WIDE_BODY | MASTER_APPROVED | La variante sobre fondo claro conserva la identidad y silueta completas del producto y no incorpora arte de marca visible; se mantiene como calidad `USABLE`, no como imagen de Home. | Usar como master de catálogo/PDP; dejar la variante con arte de marca en `DO_NOT_USE` y el plano técnico como `DETAIL`. |
+
+Resultado final Priority A: 669 `MASTER_APPROVED`, 0 `MASTER_REVIEW_REQUIRED`, 0 `NO_VALID_MASTER`. La shortlist Home de 24 SKU no cambió. La shortlist ejecutiva final queda en 2 candidatos `STRONG` (O_190, O_193) y 7 `POSSIBLE` (BL_083, BL_152, BL_241, BL_365, BL_366, O_191, O_194).
+
+Las imágenes resueltas siguen siendo únicamente candidatos visuales de productos con mapping exacto. El CSV conserva `public_runtime_status=NOT_CERTIFIED` en las 14,328 filas y mantiene los 853 SKU `OFFER_WITHOUT_MAP` sin revisión Priority A.
+
+## Phase 1F — decisión final de WIDE_BODY
+
+Se revisaron las tres imágenes disponibles de `WIDE_BODY`:
+
+- `28082024102411_9127_WIDEBODYcolor.jpg.jpg`: producto completo sobre fondo claro, identidad legible y sin arte de marca visible. Se aprueba como `MASTER`, con calidad `USABLE`, para catálogo/PDP.
+- `29062026093020_WIDEBODY.jpg`: variante con arte visible de BIC sobre fondo negro. Se conserva como evidencia del banco, pero queda `DO_NOT_USE` para presentación pública.
+- `02102024130842_WIDEBODYesq.jpg.jpg`: plano técnico. Se conserva como `DETAIL`; no sustituye la imagen principal.
+
+La decisión final es `WIDE_BODY = MASTER_APPROVED`. La excepción queda cerrada sin afirmar stock, precio, disponibilidad ni elegibilidad pública. `public_runtime_status` permanece `NOT_CERTIFIED`.
 
 ## Phase 1B — recuperación Git y revisión ampliada
 

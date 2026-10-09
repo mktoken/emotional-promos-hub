@@ -1711,6 +1711,59 @@ Los 1,143 productos canónicos visibles permanecieron disponibles; los siete reg
 
 **Límite:** este cierre resuelve el primer P0 de bypass Legacy. CP-3 continúa abierto para los gates P1 de pricing/stock/frescura, imágenes/hotlinks y otras verificaciones de verdad pública pendientes.
 
+## CHK-CP-3-P1A-CDO-IMAGE-TRUTH (2026-10-09)
+
+**Resultado:** **CLOSED / PASS para el alcance P1-A**. CP-3 no se cierra
+completamente; permanecen los gates P1 no relacionados.
+
+### Auditoría y fuente determinística
+
+Se revisaron individualmente C578, T164, T702, T723 y T731. Cada referencia
+CDO original (`https://mexico.cdopromocionales.com/img/productos/<SKU>.jpg`)
+redireccionó a `mexico.stocksur.com` y terminó en HTTP 404. No se descargaron
+reemplazos ni se llamó al proveedor.
+
+La búsqueda de fuentes existentes encontró únicamente variantes ya
+persistidas en `productos_b2b.variantes`, asociadas al mismo SKU/producto.
+Se comprobaron `31/31` URLs CloudFront con HTTP 200 y `image/jpeg`:
+
+| SKU | Variantes válidas comprobadas | Clasificación |
+|---|---:|---|
+| `C578` | 6 | `VALID_REPLACEMENT_FOUND` |
+| `T164` | 4 | `VALID_REPLACEMENT_FOUND` |
+| `T702` | 6 | `VALID_REPLACEMENT_FOUND` |
+| `T723` | 9 | `VALID_REPLACEMENT_FOUND` |
+| `T731` | 6 | `VALID_REPLACEMENT_FOUND` |
+
+No hubo `NO_VALID_REPLACEMENT_USE_FALLBACK` ni `IDENTITY_AMBIGUOUS_REVIEW_REQUIRED`.
+
+### Corrección acotada
+
+Se aplicó `supabase/migrations/20261009110000_cp3_p1a_cdo_public_image_truth_v1.sql`.
+La migración reemplaza solo `productos_b2b.imagenes` de esos cinco productos
+por sus variantes existentes y establece `producto_b2b_status.image_available=true`.
+No modifica stock, pricing, mappings, categorías, schedulers, providers ni
+la elegibilidad pública.
+
+### Validación post-fix
+
+| Control | Resultado |
+|---|---:|
+| Productos actualizados | 5 |
+| Status actualizados | 5 |
+| Targets `image_available=true` | 5 |
+| Targets con URL CDO antigua | 0 |
+| Targets presentes en `productos_publicos` | 0 |
+| Catálogo público total | 1143 |
+| Público sin imágenes | 0 |
+| Catálogo canónico `image_available=true` / null | 1143 / 0 |
+| Provider calls | 0 |
+| Regresión stock/pricing/mapping | 0 |
+
+El componente `SafeProductImage` mantiene fallback seguro cuando no hay
+imágenes; ninguno de los cinco targets conserva la referencia CDO rota en su
+fuente de imágenes pública.
+
 ## CHK-AI-SALES-2 — Piloto Web cliente controlado
 
 **Fecha:** 2026-09-27, QA local en `127.0.0.1:8080` con sesión CRM `admin` y backend integrado. **Resultado:** **CERRADO / PASS del piloto local**, sin despliegue público.

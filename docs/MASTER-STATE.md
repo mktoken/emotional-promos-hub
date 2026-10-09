@@ -1536,3 +1536,47 @@ stale e imágenes/hotlinks permanecen como **HISTORICAL ISSUE — REVALIDATION
 REQUIRED**; su verdad actual corresponde a CP-3.
 
 **Next authorized checkpoint:** `CP-3 — PUBLIC CATALOG TRUTH GATE`.
+
+## CP-3 — P1-A CDO Public Image Truth (2026-10-09)
+
+**Checkpoint:** `CHK-CP-3-P1A-CDO-IMAGE-TRUTH`
+**Estado del alcance:** **CLOSED / PASS**. **CP-3 completo:** permanece
+**OPEN** hasta resolver los gates P1 restantes.
+
+Se auditaron individualmente los cinco productos CDO afectados. Sus URLs
+CDO antiguas redirigieron a `mexico.stocksur.com` y terminaron en HTTP 404.
+No se usaron fuentes externas para reemplazarlas: se reutilizaron únicamente
+las variantes ya persistidas del mismo producto en `productos_b2b.variantes`.
+Se comprobaron `31/31` URLs CloudFront existentes con HTTP 200 y
+`content-type=image/jpeg`.
+
+| SKU | Producto | Resultado | Evidencia |
+|---|---|---|---|
+| `C578` | Mochila Trip Ligera | `VALID_REPLACEMENT_FOUND` | 6 variantes persistidas, 200 |
+| `T164` | Libreta Ecológica con Pluma | `VALID_REPLACEMENT_FOUND` | 4 variantes persistidas, 200 |
+| `T702` | Mug Termico Magno | `VALID_REPLACEMENT_FOUND` | 6 variantes persistidas, 200 |
+| `T723` | Libreta Medium PU | `VALID_REPLACEMENT_FOUND` | 9 variantes persistidas, 200 |
+| `T731` | Mug Tommy Doble Pared | `VALID_REPLACEMENT_FOUND` | 6 variantes persistidas, 200 |
+
+**Remediación aplicada:** migración
+`supabase/migrations/20261009110000_cp3_p1a_cdo_public_image_truth_v1.sql`.
+La referencia rota de `productos_b2b.imagenes` fue reemplazada por las
+variantes determinísticas ya persistidas y el status vigente se marcó
+`image_available=true`. No se tocaron stock, pricing, mappings, categorías,
+schedulers ni proveedores.
+
+**Validación runtime posterior:**
+
+- targets actualizados: `5`; status actualizados: `5`;
+- targets con `image_available=true`: `5`; false/null: `0/0`;
+- targets aún en `productos_publicos`: `0`;
+- targets con URL antigua `cdopromocionales.com`: `0`;
+- catálogo público total: `1143`; público sin imágenes: `0`;
+- catálogo canónico: `1143` con `image_available=true`, sin nulls;
+- llamadas a proveedores: `0`; cambios de stock/pricing/mapping: `0`.
+
+`SafeProductImage` conserva el fallback de paquete para cualquier futuro
+producto sin imágenes; los cinco productos P1-A ya no entregan una referencia
+rota a la superficie pública. La elegibilidad pública de estos cinco no se
+reabrió: permanecen fuera por `public_visible=false`, stock no disponible,
+pricing no válido y `quote_mode=consultar_disponibilidad`.

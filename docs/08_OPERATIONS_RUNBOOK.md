@@ -192,3 +192,13 @@ La comprobación operativa debe conservar estas reglas:
 El siguiente checkpoint autorizado es `CP-3 — PUBLIC CATALOG TRUTH GATE`,
 orientado a la revalidación vigente de trazabilidad, mappings, pricing, stock,
 taxonomía, imágenes, hotlinks y elegibilidad pública.
+
+## CP-3 — P0 Legacy Public Truth Remediation (2026-10-09)
+
+El P0 de bypass Legacy queda **CLOSED / PASS para este alcance**. La vista pública ya no puede devolver productos únicamente porque `productos_b2b.activo=true`: la elegibilidad exige el estado canónico vigente (`public_visible`, stock, precio, imagen y modo de cotización).
+
+La vista anterior se conserva como `public.productos_publicos_legacy_v1` solo para rollback técnico y no tiene SELECT para `anon` ni `authenticated`. La superficie operativa pública continúa siendo `public.productos_publicos`; las RPC y el frontend no requieren un cambio de contrato.
+
+Resultado runtime posterior: `1143` productos públicos canónicos, `0` false-but-public, `0` sin estado, `0` Legacy-only, `0` anomalías de cardinalidad, `0` mismatches de stock y `0` fallos de seguridad/pricing en el control ejecutado. No hubo sync manual, llamada a provider, backfill ni modificación de cron.
+
+Guardrail operativo: cualquier nuevo producto público debe entrar por estado canónico vigente y no por una rama Legacy. CP-3 completo permanece **OPEN** hasta resolver los gates P1 de pricing/stock/frescura, imágenes/hotlinks y demás verdad pública; no declarar cierre global por este P0 aislado.

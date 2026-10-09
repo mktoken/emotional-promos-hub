@@ -1659,6 +1659,58 @@ actuales sin evidencia CP-3.
 
 **Next checkpoint:** `CP-3 — PUBLIC CATALOG TRUTH GATE`.
 
+## CP-3 — P0 Legacy Public Truth Remediation (2026-10-09)
+
+**Checkpoint:** `CP-3 — PUBLIC CATALOG TRUTH GATE`
+**Resultado P0:** **PASS / CLOSED FOR THIS P0**
+**Resultado CP-3 completo:** **OPEN**; los gates P1 de verdad de catálogo siguen pendientes.
+
+### Universo exacto y clasificación
+
+La consulta runtime identificó siete productos que aparecían en el catálogo efectivo por la rama Legacy de `public.productos_publicos`:
+
+| Producto | Evidencia canónica | Clase |
+|---|---|---|
+| C578 — Mochila Trip Ligera | `public_visible=false`, `image_available=false`, `price_valid=false`, `quote_mode=consultar_disponibilidad`; tenía mapping/ofertas fuente | `CANONICALIZE_AND_HIDE` |
+| T164 — Libreta Ecológica con Pluma | misma condición de elegibilidad no pública | `CANONICALIZE_AND_HIDE` |
+| T702 — Mug Termico Magno | misma condición de elegibilidad no pública | `CANONICALIZE_AND_HIDE` |
+| T723 — Libreta Medium PU | misma condición de elegibilidad no pública | `CANONICALIZE_AND_HIDE` |
+| T731 — Mug Tommy Doble Pared | misma condición de elegibilidad no pública | `CANONICALIZE_AND_HIDE` |
+| HR 038 / `promo_002` | sin fila `producto_b2b_status`, sin mapping ni base canónica | `EXCLUDE_LEGACY_ONLY` |
+| T746 / `promo_001` | sin fila `producto_b2b_status`, sin mapping ni base canónica | `EXCLUDE_LEGACY_ONLY` |
+
+No se inventó mapping, precio, stock ni disponibilidad. Los cinco primeros fueron ocultados por su estado canónico no elegible; los dos últimos quedaron fuera por ausencia de base canónica.
+
+### Causa raíz y remediación
+
+La rama Legacy de la vista devolvía todo `productos_b2b.activo=true` y no respetaba `producto_b2b_status`. La RPC y el frontend consumían esa vista; no se encontró un fallback frontend independiente. La segunda rama de la vista ya era canónica y conservó los 1,143 productos elegibles.
+
+Se aplicó `supabase/migrations/20261009100000_cp3_public_catalog_canonical_visibility_v1.sql`. La vista pública mantiene su contrato de 11 columnas y OID; la definición previa quedó preservada en `public.productos_publicos_legacy_v1` para rollback técnico, sin SELECT para `anon` ni `authenticated`. La vista pública ahora exige estado vigente `public_visible=true`, `stock_status=disponible`, `price_valid=true`, `image_available=true` y `quote_mode=cotizable`.
+
+### Validación runtime posterior
+
+Consulta ejecutada dentro de `BEGIN TRANSACTION READ ONLY` con `ROLLBACK`; no se ejecutaron providers, syncs, cron ni backfill.
+
+| Control | Resultado |
+|---|---:|
+| Total público efectivo | 1143 |
+| `public_visible=true` | 1143 |
+| `public_visible=false` pero público | 0 |
+| Público sin estado vigente | 0 |
+| Legacy-only público | 0 |
+| Trazabilidad single / multi | 793 / 350 |
+| No trazables | 0 |
+| Estado 0 / 1 / >1 filas | 0 / 1143 / 0 |
+| Broken mapping / no active source | 0 |
+| Stock quantity/status mismatch | 0 / 0 |
+| Pricing safety failures | 0 |
+| Targets ocultos aún públicos | 0 |
+| Columnas públicas prohibidas | 0 |
+
+Los 1,143 productos canónicos visibles permanecieron disponibles; los siete registros Legacy anómalos dejaron de aparecer en la vista pública. `anon` y `authenticated` mantienen SELECT sobre `productos_publicos` y no sobre `productos_publicos_legacy_v1`. No se observó regresión en el conjunto canónico visible.
+
+**Límite:** este cierre resuelve el primer P0 de bypass Legacy. CP-3 continúa abierto para los gates P1 de pricing/stock/frescura, imágenes/hotlinks y otras verificaciones de verdad pública pendientes.
+
 ## CHK-AI-SALES-2 — Piloto Web cliente controlado
 
 **Fecha:** 2026-09-27, QA local en `127.0.0.1:8080` con sesión CRM `admin` y backend integrado. **Resultado:** **CERRADO / PASS del piloto local**, sin despliegue público.

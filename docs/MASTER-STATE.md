@@ -119,6 +119,41 @@ Evidencia de cierre:
 
 Este documento es la fuente de verdad de reentrada del proceso Pricing V2 / CatalogView V2. Consolida la historia verificable en Git, los reportes históricos versionados y el estado operativo reportado desde Lovable/Supabase interno. No sustituye las pruebas funcionales pendientes ni convierte documentación histórica en evidencia de producción actual.
 
+## CP-3 — P0 Legacy Public Truth Remediation (2026-10-09)
+
+**Estado del P0:** **CLOSED / PASS**. **CP-3 completo:** permanece **OPEN** hasta resolver los gates P1 de verdad de catálogo.
+
+La auditoría runtime identificó exactamente siete productos que entraban por la rama Legacy de `public.productos_publicos` sin que esa rama respetara el estado canónico:
+
+- `C578` — `Mochila Trip Ligera`: `CANONICALIZE_AND_HIDE` (`public_visible=false`, `image_available=false`, `price_valid=false`, `quote_mode=consultar_disponibilidad`).
+- `T164` — `Libreta Ecológica con Pluma`: `CANONICALIZE_AND_HIDE` (mismo patrón de elegibilidad no pública).
+- `T702` — `Mug Termico Magno`: `CANONICALIZE_AND_HIDE` (mismo patrón de elegibilidad no pública).
+- `T723` — `Libreta Medium PU`: `CANONICALIZE_AND_HIDE` (mismo patrón de elegibilidad no pública).
+- `T731` — `Mug Tommy Doble Pared`: `CANONICALIZE_AND_HIDE` (mismo patrón de elegibilidad no pública).
+- `HR 038` / `promo_002`: `EXCLUDE_LEGACY_ONLY`; sin estado, mapping ni base canónica vigente.
+- `T746` / `promo_001`: `EXCLUDE_LEGACY_ONLY`; sin estado, mapping ni base canónica vigente.
+
+**Causa raíz:** la vista pública tenía una `UNION ALL` cuya primera rama devolvía todos los `productos_b2b.activo=true` sin consultar `producto_b2b_status`; la segunda rama sí aplicaba elegibilidad canónica. Esto permitía que los cinco estados explícitamente ocultos y los dos productos sin estado/mapping siguieran apareciendo. No fue un fallback de frontend.
+
+**Remediación aplicada:** migración `supabase/migrations/20261009100000_cp3_public_catalog_canonical_visibility_v1.sql`. La definición previa se conserva como `public.productos_publicos_legacy_v1` sin privilegios para `anon`/`authenticated`; `public.productos_publicos` conserva su contrato y exige estado vigente `public_visible=true`, `stock_status=disponible`, `price_valid=true`, `image_available=true` y `quote_mode=cotizable`. No se modificaron filas, providers, stock, pricing, imágenes, categorías ni schedulers.
+
+**Validación runtime read-only posterior:**
+
+- total público efectivo: `1143`;
+- `public_visible=true`: `1143`;
+- false pero público: `0`;
+- público sin estado vigente: `0`;
+- Legacy-only público: `0`;
+- trazabilidad: `793` single-source / `350` multi-source / `0` no trazables;
+- estado: `0` filas sin estado / `1143` con una fila / `0` con cardinalidad múltiple;
+- broken mapping/no active source: `0`;
+- stock quantity/status mismatches: `0` / `0`;
+- pricing safety failures: `0`;
+- targets ocultos aún públicos: `0`;
+- columnas públicas prohibidas: `0`; `anon`/`authenticated` conservan SELECT solo sobre la vista pública y no sobre la vista Legacy interna.
+
+**Alcance de la evidencia:** se ejecutó únicamente DDL de vista autorizado y consultas `READ ONLY`; no hubo writes de datos, llamadas a providers, sync manual, backfill, cambios de cron ni cambios frontend. `CP-3` no se marca completo: permanecen los gates P1 de revalidación de pricing/stock/frescura, imágenes/hotlinks y demás verdad operativa pendiente.
+
 ## Clasificación de evidencia
 
 - **Confirmado por Git:** ramas, commits, archivos, diffs y código presente en este checkout.

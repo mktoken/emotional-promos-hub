@@ -94,13 +94,40 @@ Deno.serve(async (request) => {
   }
 
   const input = body as Record<string, unknown>;
-  const action = input.action === "upload" ? "upload" : input.action === "preflight" ? "preflight" : null;
+  const ACTIONS = new Set(["upload", "preflight", "delete", "validate_image_update"]);
+  const action = typeof input.action === "string" && ACTIONS.has(input.action) ? input.action : null;
   const productId = typeof input.producto_b2b_id === "string" ? input.producto_b2b_id : "";
   if (!action || !productId) return json(400, { ok: false, error: "invalid_payload" }, origin);
 
+  // Only durable masters inside this product's namespace are accepted (no traversal, no other bucket).
+  const masterPathFor = (value: unknown): string | null => {
+    if (typeof value !== "string") return null;
+    const path = value.trim();
+    const pattern = new RegExp(`^products/${safePathPart(productId)}/master-[0-9a-f]{16}\\.(webp|jpg|png)$`);
+    return pattern.test(path) ? path : null;
+  };
+  const publicPrefix = `${supabaseUrl}/storage/v1/object/public/${BUCKET}/`;
+
+  if (action === "delete") {
+    if (input.bucket !== undefined && input.bucket !== BUCKET) return json(400, { ok: false, error: "bucket_not_allowed" }, origin);
+    const objectPath = masterPathFor(input.object_path);
+    if (!objectPath) return json(400, { ok: false, error: "invalid_object_path" }, origin);
+    const { data: removed, error: removeError } = await admin.storage.from(BUCKET).remove([objectPath]);
+    if (removeError) return json(500, { ok: false, error: "asset_delete_failed" }, origin);
+    return json(200, {
+      ok: true,
+      action,
+      producto_b2b_id: productId,
+      bucket: BUCKET,
+      object_path: objectPath,
+      deleted: (removed ?? []).length === 1,
+      image_reference_updated: false,
+    }, origin);
+  }
+
   const { data: product, error: productError } = await admin
     .from("productos_b2b")
-    .select("id, activo")
+    .select("id, activo, imagenes")
     .eq("id", productId)
     .maybeSingle();
   if (productError) return json(500, { ok: false, error: "product_lookup_failed" }, origin);
@@ -129,6 +156,36 @@ Deno.serve(async (request) => {
       public_visible: Boolean(status?.public_visible),
       image_available: Boolean(status?.image_available),
       canonical_eligibility: eligible,
+    }, origin);
+  }
+
+  if (action === "validate_image_update") {
+    // DRY RUN ONLY: builds the payload Phase 3B would write. Never executes UPDATE.
+    const proposedUrl = typeof input.proposed_url === "string" ? input.proposed_url.trim() : "";
+    const objectPath = proposedUrl.startsWith(publicPrefix) ? masterPathFor(proposedUrl.slice(publicPrefix.length)) : null;
+    const current = Array.isArray(product.imagenes) ? product.imagenes as Record<string, unknown>[] : null;
+    const contractOk = current !== null && current.every((item) => item && typeof item === "object" && typeof item.url === "string");
+    const proposedUrlValid = Boolean(objectPath);
+    const alreadyPresent = Boolean(current?.some((item) => item?.url === proposedUrl));
+    // Contract: master first as "principal" (rank 0 + earliest order in normalizeProductImages);
+    // all existing provider images (principal/ambientada/adicional hotlinks) kept, order preserved.
+    const proposed = proposedUrlValid && current
+      ? [{ url: proposedUrl, type: "principal", source: "catalog_master" }, ...current.filter((item) => item?.url !== proposedUrl)]
+      : null;
+    return json(200, {
+      ok: true,
+      action,
+      dry_run: true,
+      producto_b2b_id: productId,
+      product_exists: true,
+      public_visible: Boolean(status?.public_visible),
+      eligible,
+      images_contract_valid: contractOk,
+      proposed_url_valid: proposedUrlValid,
+      would_update: eligible && contractOk && proposedUrlValid && !alreadyPresent,
+      current_images: current,
+      proposed_images: proposed,
+      database_write: false,
     }, origin);
   }
 

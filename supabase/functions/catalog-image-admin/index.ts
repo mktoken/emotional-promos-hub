@@ -108,14 +108,17 @@ Deno.serve(async (request) => {
 
   const { data: status, error: statusError } = await admin
     .from("producto_b2b_status")
-    .select("public_visible, image_available, price_valid, quote_mode, stock_status, updated_at")
+    .select("id, public_visible, image_available, price_valid, quote_mode, stock_status, updated_at")
     .eq("producto_b2b_id", productId)
-    .order("updated_at", { ascending: false })
+    .order("updated_at", { ascending: false, nullsFirst: false })
+    .order("id", { ascending: false })
     .limit(1)
     .maybeSingle();
   if (statusError) return json(500, { ok: false, error: "status_lookup_failed" }, origin);
 
-  const eligible = Boolean(product.activo) && Boolean(status?.public_visible);
+  // CP-3 P0: canonical authority is the latest producto_b2b_status row (same ordering as
+  // public.productos_publicos). productos_b2b.activo is NOT part of current public eligibility.
+  const eligible = Boolean(status?.public_visible);
   if (action === "preflight") {
     return json(200, {
       ok: true,

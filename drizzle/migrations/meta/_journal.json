@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791601008390,
+      "tag": "0000_cp3_catalog_image_storage_v1_policies",
+      "breakpoints": true
+    }
+  ]
+}

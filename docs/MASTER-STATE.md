@@ -1651,3 +1651,12 @@ aplicaron parches de datos.
 **Regresiones:** stock `NO`; imágenes `NO`; traceability `NO`; seguridad `NO`.
 Los gates restantes de CP-3 y `D-013`/Regalos Ejecutivos mantienen su estado
 independiente y no se cierran por esta evidencia.
+
+### CP-3 P1-C — G4 catalog image infrastructure (2026-10-09)
+
+- `CHK-CP-3-P1C-G4-IMAGE-TRUTH`: Phase 3A.1 **IMPLEMENTED IN GIT / RUNTIME VALIDATION PENDING**.
+- Bucket canónico versionado: `catalog-product-images`, lectura pública y escritura confiable solo mediante `catalog-image-admin`.
+- Autoridad de upload: `service_role` o usuario validado por `public.is_staff`; no hay escritura anónima ni escritura autenticada directa.
+- Ruta neutral: `products/<producto_b2b_id>/master-<sha256_prefix>.<extension>`.
+- `productos_b2b.imagenes` no fue modificado; Phase 3B aún debe validar en runtime, cargar masters y actualizar referencias de forma separada.
+- Assets G4 subidos: `0`; product image references changed: `0`; stock/pricing/visibility changes: `0`.

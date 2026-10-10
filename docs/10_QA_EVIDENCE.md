@@ -1863,3 +1863,17 @@ cliente no deriva precios.
 **Decisión:** no se requiere remediation write. Pricing V2 public truth queda
 cerrado para el alcance P1-B. CP-3 permanece abierto únicamente para sus gates
 independientes y no se reabre ninguna decisión canónica previa.
+
+## CP-3 P1-C Phase 3A.1 — infraestructura canónica de imágenes
+
+- Bucket versionado: `catalog-product-images`.
+- Lectura anónima: permitida para assets públicos.
+- INSERT/UPDATE/DELETE anónimos: denegados por ausencia de políticas de escritura.
+- Escritura confiable: `catalog-image-admin`, con `service_role` o `public.is_staff`.
+- Rutas: `products/<producto_b2b_id>/master-<sha256_prefix>.<extension>`.
+- Preflight y upload: implementados; actualización de `productos_b2b.imagenes`:
+  separada y no automática.
+- Fixtures y productos G4 subidos: `0`.
+- Cambios en referencias de imagen, stock, pricing y visibilidad: `0`.
+- Validación runtime del bucket y despliegue de la Edge Function: pendiente del
+  workflow interno Supabase/Lovable.

@@ -106,6 +106,25 @@ RPCs relevantes:
 
 La matriz completa vigente de columnas, políticas RLS y grants no está consolidada en un documento único. Consultar migraciones y QA específicos antes de afirmar una configuración actual completa.
 
+## Imágenes canónicas de catálogo — CP-3 P1-C Phase 3A.1
+
+La infraestructura versionada para imágenes de catálogo usa el bucket público
+de lectura `catalog-product-images`. Sus objetos tienen rutas neutrales:
+`products/<producto_b2b_id>/master-<sha256_prefix>.<extension>`.
+
+El bucket permite lectura anónima para renderizado público, pero no concede
+INSERT, UPDATE ni DELETE a `anon` o `authenticated`. La escritura confiable se
+realiza únicamente mediante la Edge Function interna
+`catalog-image-admin`, que acepta `service_role` o un usuario cuya autoridad
+sea validada por `public.is_staff`. La función valida producto, estado público,
+MIME, tamaño y SHA-256; nunca modifica automáticamente la referencia del
+producto.
+
+El contrato de producto sigue siendo `productos_b2b.imagenes` como JSON
+compatible con URLs HTTP, arrays y objetos con roles `primary`/`secondary`.
+`normalizeProductImages`, `CatalogView` y `ProductDetailView` conservan
+compatibilidad hacia atrás con las URLs proveedoras durante la transición.
+
 ## Pricing y catálogo
 
 - `CatalogView` usa la búsqueda V2.

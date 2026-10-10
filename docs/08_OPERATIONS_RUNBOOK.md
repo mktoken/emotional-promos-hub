@@ -202,3 +202,15 @@ La vista anterior se conserva como `public.productos_publicos_legacy_v1` solo pa
 Resultado runtime posterior: `1143` productos públicos canónicos, `0` false-but-public, `0` sin estado, `0` Legacy-only, `0` anomalías de cardinalidad, `0` mismatches de stock y `0` fallos de seguridad/pricing en el control ejecutado. No hubo sync manual, llamada a provider, backfill ni modificación de cron.
 
 Guardrail operativo: cualquier nuevo producto público debe entrar por estado canónico vigente y no por una rama Legacy. CP-3 completo permanece **OPEN** hasta resolver los gates P1 de pricing/stock/frescura, imágenes/hotlinks y demás verdad pública; no declarar cierre global por este P0 aislado.
+
+### CP-3 P1-C Phase 3A.1 — almacenamiento canónico de imágenes
+
+La infraestructura versionada usa el bucket `catalog-product-images` con lectura
+pública y sin políticas de escritura para `anon` o `authenticated`. Las cargas
+internas pasan por `catalog-image-admin`, que exige `service_role` o un usuario
+validado por `public.is_staff`. La ruta neutral es
+`products/<producto_b2b_id>/master-<sha256_prefix>.<extension>`.
+
+La función soporta `preflight` y `upload`, pero no modifica automáticamente
+`productos_b2b.imagenes`. La actualización de referencias se mantiene separada
+para Phase 3B, con revalidación de elegibilidad, verificación HTTP y rollback.

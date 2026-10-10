@@ -4737,6 +4737,22 @@ export type Database = {
         }
         Relationships: []
       }
+      productos_publicos_legacy_v1: {
+        Row: {
+          activo: boolean | null
+          categoria_principal: string | null
+          datos_generales: Json | null
+          id: string | null
+          id_interno: string | null
+          imagenes: Json | null
+          motor_de_personalizacion: Json | null
+          precio_desde_mxn: number | null
+          sku_base: string | null
+          updated_at: string | null
+          variantes: Json | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       acquire_stock_refresh_lock: {

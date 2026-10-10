@@ -14,6 +14,355 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_events: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_type: string
+          after_ref: string | null
+          before_ref: string | null
+          checkpoint: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          metadata: Json
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_type: string
+          after_ref?: string | null
+          before_ref?: string | null
+          checkpoint?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          metadata?: Json
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_type?: string
+          after_ref?: string | null
+          before_ref?: string | null
+          checkpoint?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          metadata?: Json
+        }
+        Relationships: []
+      }
+      catalog_approvals: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          decided_at: string
+          decision: string
+          id: string
+          is_current: boolean
+          notes: string | null
+          scope: string
+          source_evidence_id: string | null
+          subject_id: string
+          subject_type: string
+          updated_at: string
+          version_ref: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          decided_at?: string
+          decision: string
+          id?: string
+          is_current?: boolean
+          notes?: string | null
+          scope: string
+          source_evidence_id?: string | null
+          subject_id: string
+          subject_type: string
+          updated_at?: string
+          version_ref?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          decided_at?: string
+          decision?: string
+          id?: string
+          is_current?: boolean
+          notes?: string | null
+          scope?: string
+          source_evidence_id?: string | null
+          subject_id?: string
+          subject_type?: string
+          updated_at?: string
+          version_ref?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_approvals_source_evidence_id_fkey"
+            columns: ["source_evidence_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_source_evidence"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_asset_registry: {
+        Row: {
+          approval_status: string
+          created_at: string
+          file_size_bytes: number | null
+          height: number | null
+          id: string
+          identity_status: string
+          metadata: Json
+          mime_type: string | null
+          original_filename: string | null
+          proveedor_id: string | null
+          public_url: string | null
+          rights_status: string
+          sha256: string
+          source_document_id: string | null
+          source_uri: string | null
+          technical_status: string
+          updated_at: string
+          version: number
+          visual_status: string
+          width: number | null
+        }
+        Insert: {
+          approval_status?: string
+          created_at?: string
+          file_size_bytes?: number | null
+          height?: number | null
+          id?: string
+          identity_status?: string
+          metadata?: Json
+          mime_type?: string | null
+          original_filename?: string | null
+          proveedor_id?: string | null
+          public_url?: string | null
+          rights_status?: string
+          sha256: string
+          source_document_id?: string | null
+          source_uri?: string | null
+          technical_status?: string
+          updated_at?: string
+          version?: number
+          visual_status?: string
+          width?: number | null
+        }
+        Update: {
+          approval_status?: string
+          created_at?: string
+          file_size_bytes?: number | null
+          height?: number | null
+          id?: string
+          identity_status?: string
+          metadata?: Json
+          mime_type?: string | null
+          original_filename?: string | null
+          proveedor_id?: string | null
+          public_url?: string | null
+          rights_status?: string
+          sha256?: string
+          source_document_id?: string | null
+          source_uri?: string | null
+          technical_status?: string
+          updated_at?: string
+          version?: number
+          visual_status?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_asset_registry_proveedor_id_fkey"
+            columns: ["proveedor_id"]
+            isOneToOne: false
+            referencedRelation: "proveedores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_asset_registry_source_document_id_fkey"
+            columns: ["source_document_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_source_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_attribute_definitions: {
+        Row: {
+          active: boolean
+          created_at: string
+          data_type: string
+          family_scope: string | null
+          id: string
+          is_required: boolean
+          key: string
+          label: string
+          unit_type: string
+          updated_at: string
+          validation_metadata: Json
+          version: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          data_type: string
+          family_scope?: string | null
+          id?: string
+          is_required?: boolean
+          key: string
+          label: string
+          unit_type?: string
+          updated_at?: string
+          validation_metadata?: Json
+          version?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          data_type?: string
+          family_scope?: string | null
+          id?: string
+          is_required?: boolean
+          key?: string
+          label?: string
+          unit_type?: string
+          updated_at?: string
+          validation_metadata?: Json
+          version?: number
+        }
+        Relationships: []
+      }
+      catalog_attribute_values: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          confidence: number | null
+          created_at: string
+          definition_id: string
+          id: string
+          is_current: boolean
+          normalization_status: string
+          normalized_value: Json | null
+          raw_value: string | null
+          source_evidence_id: string | null
+          subject_id: string
+          subject_type: string
+          unit: string | null
+          updated_at: string
+          value_version: number
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          confidence?: number | null
+          created_at?: string
+          definition_id: string
+          id?: string
+          is_current?: boolean
+          normalization_status?: string
+          normalized_value?: Json | null
+          raw_value?: string | null
+          source_evidence_id?: string | null
+          subject_id: string
+          subject_type: string
+          unit?: string | null
+          updated_at?: string
+          value_version?: number
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          confidence?: number | null
+          created_at?: string
+          definition_id?: string
+          id?: string
+          is_current?: boolean
+          normalization_status?: string
+          normalized_value?: Json | null
+          raw_value?: string | null
+          source_evidence_id?: string | null
+          subject_id?: string
+          subject_type?: string
+          unit?: string | null
+          updated_at?: string
+          value_version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_attribute_values_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_attribute_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_attribute_values_source_evidence_id_fkey"
+            columns: ["source_evidence_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_source_evidence"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_governance_state: {
+        Row: {
+          content_status: string
+          created_at: string
+          data_status: string
+          id: string
+          identity_status: string
+          image_status: string
+          last_reviewed_at: string | null
+          last_reviewed_by: string | null
+          producto_b2b_id: string
+          review_status: string
+          updated_at: string
+        }
+        Insert: {
+          content_status?: string
+          created_at?: string
+          data_status?: string
+          id?: string
+          identity_status?: string
+          image_status?: string
+          last_reviewed_at?: string | null
+          last_reviewed_by?: string | null
+          producto_b2b_id: string
+          review_status?: string
+          updated_at?: string
+        }
+        Update: {
+          content_status?: string
+          created_at?: string
+          data_status?: string
+          id?: string
+          identity_status?: string
+          image_status?: string
+          last_reviewed_at?: string | null
+          last_reviewed_by?: string | null
+          producto_b2b_id?: string
+          review_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_governance_state_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: true
+            referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       catalog_price_cache: {
         Row: {
           calculated_at: string | null
@@ -265,6 +614,471 @@ export type Database = {
             columns: ["generation_id"]
             isOneToOne: true
             referencedRelation: "catalog_price_cache_v2_generations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_product_asset_links: {
+        Row: {
+          asset_id: string
+          created_at: string
+          display_order: number
+          evidence_id: string | null
+          id: string
+          link_status: string
+          model_id: string | null
+          oferta_id: string | null
+          producto_b2b_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          role: string
+          target_type: string
+          updated_at: string
+        }
+        Insert: {
+          asset_id: string
+          created_at?: string
+          display_order?: number
+          evidence_id?: string | null
+          id?: string
+          link_status?: string
+          model_id?: string | null
+          oferta_id?: string | null
+          producto_b2b_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role: string
+          target_type: string
+          updated_at?: string
+        }
+        Update: {
+          asset_id?: string
+          created_at?: string
+          display_order?: number
+          evidence_id?: string | null
+          id?: string
+          link_status?: string
+          model_id?: string | null
+          oferta_id?: string | null
+          producto_b2b_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role?: string
+          target_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_product_asset_links_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_asset_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_product_asset_links_evidence_id_fkey"
+            columns: ["evidence_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_source_evidence"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_product_asset_links_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_product_models"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_product_asset_links_oferta_id_fkey"
+            columns: ["oferta_id"]
+            isOneToOne: false
+            referencedRelation: "producto_proveedor_ofertas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_product_asset_links_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_product_content: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          available_colors: Json
+          canonical_name: string | null
+          created_at: string
+          id: string
+          is_current: boolean
+          model_id: string | null
+          producto_b2b_id: string | null
+          short_description: string | null
+          status: string
+          structured_features: Json
+          technical_specifications: Json
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          available_colors?: Json
+          canonical_name?: string | null
+          created_at?: string
+          id?: string
+          is_current?: boolean
+          model_id?: string | null
+          producto_b2b_id?: string | null
+          short_description?: string | null
+          status?: string
+          structured_features?: Json
+          technical_specifications?: Json
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          available_colors?: Json
+          canonical_name?: string | null
+          created_at?: string
+          id?: string
+          is_current?: boolean
+          model_id?: string | null
+          producto_b2b_id?: string | null
+          short_description?: string | null
+          status?: string
+          structured_features?: Json
+          technical_specifications?: Json
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_product_content_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_product_models"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_product_content_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_product_model_members: {
+        Row: {
+          created_at: string
+          evidence_id: string | null
+          id: string
+          membership_status: string
+          model_id: string
+          oferta_id: string | null
+          producto_b2b_id: string
+          reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          updated_at: string
+          variant_label: string | null
+        }
+        Insert: {
+          created_at?: string
+          evidence_id?: string | null
+          id?: string
+          membership_status?: string
+          model_id: string
+          oferta_id?: string | null
+          producto_b2b_id: string
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+          variant_label?: string | null
+        }
+        Update: {
+          created_at?: string
+          evidence_id?: string | null
+          id?: string
+          membership_status?: string
+          model_id?: string
+          oferta_id?: string | null
+          producto_b2b_id?: string
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+          variant_label?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_product_model_members_evidence_id_fkey"
+            columns: ["evidence_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_source_evidence"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_product_model_members_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_product_models"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_product_model_members_oferta_id_fkey"
+            columns: ["oferta_id"]
+            isOneToOne: false
+            referencedRelation: "producto_proveedor_ofertas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_product_model_members_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_product_models: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          family_key: string | null
+          id: string
+          label: string
+          model_key: string
+          reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          family_key?: string | null
+          id?: string
+          label: string
+          model_key: string
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          family_key?: string | null
+          id?: string
+          label?: string
+          model_key?: string
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      catalog_quality_issues: {
+        Row: {
+          created_at: string
+          details: Json
+          id: string
+          issue_code: string
+          opened_at: string
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          source_evidence_id: string | null
+          status: string
+          subject_id: string
+          subject_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          id?: string
+          issue_code: string
+          opened_at?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity: string
+          source_evidence_id?: string | null
+          status?: string
+          subject_id: string
+          subject_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          id?: string
+          issue_code?: string
+          opened_at?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          source_evidence_id?: string | null
+          status?: string
+          subject_id?: string
+          subject_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_quality_issues_source_evidence_id_fkey"
+            columns: ["source_evidence_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_source_evidence"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_source_documents: {
+        Row: {
+          created_at: string
+          file_size_bytes: number | null
+          id: string
+          ingested_at: string
+          metadata: Json
+          mime_type: string | null
+          observed_at: string | null
+          original_filename: string | null
+          proveedor_id: string | null
+          rights_status: string
+          sha256: string | null
+          source_type: string
+          source_uri: string | null
+          source_version: string | null
+          supersedes_document_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          file_size_bytes?: number | null
+          id?: string
+          ingested_at?: string
+          metadata?: Json
+          mime_type?: string | null
+          observed_at?: string | null
+          original_filename?: string | null
+          proveedor_id?: string | null
+          rights_status?: string
+          sha256?: string | null
+          source_type: string
+          source_uri?: string | null
+          source_version?: string | null
+          supersedes_document_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          file_size_bytes?: number | null
+          id?: string
+          ingested_at?: string
+          metadata?: Json
+          mime_type?: string | null
+          observed_at?: string | null
+          original_filename?: string | null
+          proveedor_id?: string | null
+          rights_status?: string
+          sha256?: string | null
+          source_type?: string
+          source_uri?: string | null
+          source_version?: string | null
+          supersedes_document_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_source_documents_proveedor_id_fkey"
+            columns: ["proveedor_id"]
+            isOneToOne: false
+            referencedRelation: "proveedores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_source_documents_supersedes_document_id_fkey"
+            columns: ["supersedes_document_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_source_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_source_evidence: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          evidence_excerpt: string | null
+          field_path: string | null
+          id: string
+          locator: string | null
+          observed_at: string | null
+          page_number: number | null
+          raw_value: string | null
+          reference_uri: string | null
+          source_document_id: string
+          status: string
+          subject_id: string
+          subject_type: string
+          updated_at: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          evidence_excerpt?: string | null
+          field_path?: string | null
+          id?: string
+          locator?: string | null
+          observed_at?: string | null
+          page_number?: number | null
+          raw_value?: string | null
+          reference_uri?: string | null
+          source_document_id: string
+          status?: string
+          subject_id: string
+          subject_type: string
+          updated_at?: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          evidence_excerpt?: string | null
+          field_path?: string | null
+          id?: string
+          locator?: string | null
+          observed_at?: string | null
+          page_number?: number | null
+          raw_value?: string | null
+          reference_uri?: string | null
+          source_document_id?: string
+          status?: string
+          subject_id?: string
+          subject_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_source_evidence_source_document_id_fkey"
+            columns: ["source_document_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_source_documents"
             referencedColumns: ["id"]
           },
         ]
@@ -4831,6 +5645,22 @@ export type Database = {
       can_access_deal: { Args: { _deal_id: string }; Returns: boolean }
       can_access_lead: { Args: { _lead_id: string }; Returns: boolean }
       can_manage_formal_quote: { Args: { _quote_id: string }; Returns: boolean }
+      catalog_governance_readiness_v1: {
+        Args: { p_producto_b2b_id?: string }
+        Returns: {
+          blocking_issue_count: number
+          completeness_score: number
+          content_pass: boolean
+          data_completeness_pass: boolean
+          editorial_readiness: string
+          evaluated_at: string
+          identity_pass: boolean
+          image_pass: boolean
+          pricing_pass: boolean
+          producto_b2b_id: string
+          stock_public_eligibility_pass: boolean
+        }[]
+      }
       catalog_search_products: {
         Args: {
           p_category_slug?: string

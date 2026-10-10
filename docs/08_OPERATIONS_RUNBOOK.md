@@ -214,3 +214,15 @@ validado por `public.is_staff`. La ruta neutral es
 La función soporta `preflight` y `upload`, pero no modifica automáticamente
 `productos_b2b.imagenes`. La actualización de referencias se mantiene separada
 para Phase 3B, con revalidación de elegibilidad, verificación HTTP y rollback.
+
+## CHK-CP-3-P1C-G4-PHASE3A-CATALOG-IMAGE-INFRASTRUCTURE — CLOSED / PASS (2026-10-10)
+
+- Bucket `catalog-product-images` público (solo lectura anónima); escrituras anónimas DENIED.
+- `catalog-image-admin` (staff/service_role): `preflight`, `upload`, `delete`, `validate_image_update` (dry run, sin UPDATE).
+- Elegibilidad canónica: último `producto_b2b_status.public_visible` (mismo orden que `productos_publicos`); `productos_b2b.activo` NO se usa.
+- `delete`: solo bucket `catalog-product-images`, solo `products/<producto_b2b_id>/master-<16 hex>.(webp|jpg|png)`; traversal, otro bucket y otro namespace → 400.
+- Contrato Phase 3B para `productos_b2b.imagenes` (no ejecutado): anteponer `{url: <master público>, type: "principal", source: "catalog_master"}` y conservar todas las imágenes existentes del proveedor (principal/ambientada/adicional, hotlinks históricos) en su orden. `normalizeProductImages` da prioridad al master (rango 0 + primer orden).
+- BUCKET MIME NATIVE RESTRICTION: NOT AVAILABLE IN CURRENT LOVABLE TOOLING. APPLICATION MIME ENFORCEMENT: PASS — catalog-image-admin (webp/jpeg/png; gif → 400).
+- Fixtures del canario `011f5dc8` borrados; bucket con 0 objetos; producto canario sin cambios (hash de `imagenes` + `activo` idénticos).
+- La URL pública de un objeto borrado puede seguir saliendo de la CDN hasta que expire la caché; el origen responde "no encontrado".
+- G4 masters subidos: 0. Referencias G4 cambiadas: 0. G4 P1-C y CP-3 siguen ABIERTOS.

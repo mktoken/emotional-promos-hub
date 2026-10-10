@@ -94,7 +94,7 @@ Deno.serve(async (request) => {
   }
 
   const input = body as Record<string, unknown>;
-  const ACTIONS = new Set(["upload", "preflight", "delete", "validate_image_update"]);
+  const ACTIONS = new Set(["upload", "preflight", "delete", "validate_image_update", "apply_image_update"]);
   const action = typeof input.action === "string" && ACTIONS.has(input.action) ? input.action : null;
   const productId = typeof input.producto_b2b_id === "string" ? input.producto_b2b_id : "";
   if (!action || !productId) return json(400, { ok: false, error: "invalid_payload" }, origin);
@@ -159,8 +159,8 @@ Deno.serve(async (request) => {
     }, origin);
   }
 
-  if (action === "validate_image_update") {
-    // DRY RUN ONLY: builds the payload Phase 3B would write. Never executes UPDATE.
+  if (action === "validate_image_update" || action === "apply_image_update") {
+    // validate_image_update: DRY RUN. apply_image_update: same contract, then writes ONLY productos_b2b.imagenes.
     const proposedUrl = typeof input.proposed_url === "string" ? input.proposed_url.trim() : "";
     const objectPath = proposedUrl.startsWith(publicPrefix) ? masterPathFor(proposedUrl.slice(publicPrefix.length)) : null;
     const current = Array.isArray(product.imagenes) ? product.imagenes as Record<string, unknown>[] : null;
@@ -172,20 +172,42 @@ Deno.serve(async (request) => {
     const proposed = proposedUrlValid && current
       ? [{ url: proposedUrl, type: "principal", source: "catalog_master" }, ...current.filter((item) => item?.url !== proposedUrl)]
       : null;
+    const wouldUpdate = eligible && contractOk && proposedUrlValid && !alreadyPresent;
+    if (action === "validate_image_update") {
+      return json(200, {
+        ok: true,
+        action,
+        dry_run: true,
+        producto_b2b_id: productId,
+        product_exists: true,
+        public_visible: Boolean(status?.public_visible),
+        eligible,
+        images_contract_valid: contractOk,
+        proposed_url_valid: proposedUrlValid,
+        would_update: wouldUpdate,
+        current_images: current,
+        proposed_images: proposed,
+        database_write: false,
+      }, origin);
+    }
+    if (!wouldUpdate || !proposed || !objectPath) {
+      return json(409, { ok: false, action, error: "image_update_not_allowed", eligible, images_contract_valid: contractOk, proposed_url_valid: proposedUrlValid, already_present: alreadyPresent }, origin);
+    }
+    // The master must exist in storage before referencing it.
+    const head = await fetch(proposedUrl, { method: "HEAD" });
+    const headType = head.headers.get("content-type") ?? "";
+    if (!head.ok || !headType.startsWith("image/")) {
+      return json(409, { ok: false, action, error: "master_not_available", http_status: head.status }, origin);
+    }
+    const { error: updateError } = await admin.from("productos_b2b").update({ imagenes: proposed }).eq("id", productId);
+    if (updateError) return json(500, { ok: false, action, error: "image_update_failed" }, origin);
     return json(200, {
       ok: true,
       action,
-      dry_run: true,
       producto_b2b_id: productId,
-      product_exists: true,
-      public_visible: Boolean(status?.public_visible),
-      eligible,
-      images_contract_valid: contractOk,
-      proposed_url_valid: proposedUrlValid,
-      would_update: eligible && contractOk && proposedUrlValid && !alreadyPresent,
-      current_images: current,
-      proposed_images: proposed,
-      database_write: false,
+      images_before: current!.length,
+      images_after: proposed.length,
+      image_reference_updated: true,
     }, origin);
   }
 

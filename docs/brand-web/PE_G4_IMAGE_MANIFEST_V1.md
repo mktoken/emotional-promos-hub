@@ -100,3 +100,36 @@ controlled Phase 3 integration review. The 28 certified multi-variant
 products require explicit visual identity review before any master is locked.
 The 147 unresolved bank-match identities remain deferred and are not silently
 promoted.
+
+## Phase 2B — Multi-variant resolution
+
+Phase 2B reviewed exactly the 28 certified multi-variant products and did not
+reopen the 106 previously approved products.
+
+| Final state | Count |
+|---|---:|
+| MASTER_APPROVED before Phase 2B | 106 |
+| New MASTER_APPROVED | 16 |
+| MASTER_REVIEW_REQUIRED | 0 |
+| NO_VALID_MASTER | 12 |
+| MASTER_APPROVED total | 122 |
+| PHASE_3_READY total | 122 |
+| VISUAL_REVIEW_REQUIRED total | 0 |
+| New optimized masters | 16 |
+| Derived library total | 216 |
+
+The 16 approved SKUs were resolved through the certified family relationship
+plus explicit source filename/color evidence. The 12 without a safe exact
+variant image are deliberately not promoted:
+
+`imp-neg-oro`, `lib-bor-gri`, `lib-smi-acl`, `lib-smi-mie`, `lib-sks-aaq`,
+`lib-sks-nar`, `lib-tre-acl`, `miz-sol-bla`, `miz-tra-azu`, `moc-sac-neg`,
+`vas-ven-ace`, `vas-ven-bla`.
+
+No generic family image was assigned to those SKUs. The targeted PDF text
+extractor was unavailable in the local environment, so no PDF page claim was
+added; the approved cases rely only on the existing certified family evidence
+and explicit source-image markers.
+
+Phase 2B remains **PARTIAL** because 12 products have `NO_VALID_MASTER` and
+need a new exact source image or stronger variant evidence before Phase 3.

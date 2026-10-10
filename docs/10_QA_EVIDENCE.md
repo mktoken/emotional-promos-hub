@@ -1889,3 +1889,67 @@ independientes y no se reabre ninguna decisión canónica previa.
 - Fixtures del canario `011f5dc8` borrados; bucket con 0 objetos; producto canario sin cambios (hash de `imagenes` + `activo` idénticos).
 - La URL pública de un objeto borrado puede seguir saliendo de la CDN hasta que expire la caché; el origen responde "no encontrado".
 - G4 masters subidos: 0. Referencias G4 cambiadas: 0. G4 P1-C y CP-3 siguen ABIERTOS.
+
+## CHK-CATGOV-01A — BUILD 1 + READINESS HOTFIX (2026-10-10)
+
+**Resultado:** CLOSED / PASS.
+
+### Artefactos y alcance
+
+- Build 1: `00b807c7566e496444cd0e99bdaf681cbd696b96`.
+- Hotfix integrado: `953050b7d4ba7fd94d32e95d5208b0bfd3a21b4e`.
+- Migrations: `0001_catalog_governance_shadow_foundation_v1` y
+  `0002_catalog_governance_readiness_stock_eligibility_fix_v1`.
+- Las copias Drizzle/Supabase de 0002 son byte a byte idénticas; 0001 no fue
+  modificada y `drizzle/schema.ts` permanece sin cambios.
+- El hotfix solo reemplaza la función `catalog_governance_readiness_v1` y
+  conserva sus `REVOKE`/`GRANT` de seguridad.
+
+### Readiness y defecto corregido
+
+La versión corregida selecciona una sola fila vigente por producto con
+`updated_at DESC NULLS LAST, id DESC`, incorpora `stock_status` y exige:
+
+`COALESCE(public_visible, false) AND COALESCE(stock_status, '') = 'disponible'`.
+
+La función continúa siendo `STABLE`, `SECURITY DEFINER`, staff-only, con
+`search_path = public, pg_temp`, sin ejecución para `PUBLIC`/`anon` y sin
+mutación de datos. Los gates de identidad, completitud, contenido, imagen,
+pricing y elegibilidad pública de stock permanecen separados. La ausencia de
+contrato/aplicabilidad de atributos no produce un pase vacuo.
+
+### Evidencia de escenarios
+
+Sobre 1,815 registros de status consultados —universo de readiness, no conteo
+del catálogo público— se reportó:
+
+| Escenario | Casos | PASS |
+|---|---:|---:|
+| Visible + disponible | 1,141 | `true` |
+| Visible + bajo | 63 | `false` |
+| No visible + disponible | 169 | `false` |
+| Sin estado | 43 | `false` |
+| No visible + agotado/bajo/consultar | 399 | `false` |
+
+La unicidad completa DB-side queda diferida al piloto G4: validar
+`count(*) = count(distinct producto_b2b_id)` sobre la salida completa de la RPC.
+
+### Seguridad, no regresión y desviaciones
+
+- 13 tablas, 40 índices efectivos y partial unique indexes: PASS.
+- No existe UNIQUE global sobre `sha256`; la provenance no se colapsa por hash.
+- No hay `ON DELETE CASCADE` hacia runtime, triggers de publicación ni herencia
+  implícita de contenido/imágenes de modelo.
+- RLS privado: anon DENIED, non-staff DENIED BY POLICY, staff SELECT-only y
+  DML directo denegado; service role reservado al backend.
+- Database writes, runtime writes, provider calls, backfill, fixtures, cambios
+  de frontend, Edge Functions, G4, ForPromotional y CDO/StockSur: `0` durante
+  este checkpoint.
+- D1: `PASS_BY_POLICY / LIVE_ACCOUNT_TEST_DEFERRED`.
+- D2: `STRUCTURAL_PASS / LIVE_DATA_QA_DEFERRED_TO_G4_PILOT`.
+- D3: `ALTERNATE_PROOF_ACCEPTED`.
+- D4: `FULL_CENSUS_ASSERTION_DEFERRED_TO_G4_PILOT`.
+- G4 Phase 3B: `RECONCILIATION_REQUIRED / INCONCLUSIVE`.
+
+No se modificaron productos, imágenes, estados, mappings, stock, Pricing V2,
+categorías, collections, vista pública ni objetos de storage.

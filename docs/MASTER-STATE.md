@@ -1706,3 +1706,44 @@ El estado G4 Phase 3B no se cierra por antecedentes históricos: el baseline
 actual demuestra la infraestructura Phase 3A y mantiene `G4 masters subidos: 0`
 y `G4 P1-C / CP-3 abiertos`. No se modifica esa evidencia ni se afirma una
 publicación no demostrada.
+
+## CHK-CATGOV-01A — BUILD 1 / READINESS HOTFIX (2026-10-10)
+
+**Estado:** CLOSED / PASS.
+
+- `CHK-CATGOV-00 — ARCHITECTURE RECONCILIATION`: CLOSED / PASS.
+- `CHK-CATGOV-01 — BUILD 1 TECHNICAL DESIGN`: CLOSED / PASS.
+- `BUILD 1 — SHADOW GOVERNANCE FOUNDATION`: CLOSED / PASS.
+- Implementation commit: `00b807c7566e496444cd0e99bdaf681cbd696b96`.
+- Readiness stock eligibility hotfix: `953050b7d4ba7fd94d32e95d5208b0bfd3a21b4e`.
+- Hotfix migration: `0002_catalog_governance_readiness_stock_eligibility_fix_v1`.
+
+La regla canónica de `stock_public_eligibility_pass` queda explícitamente:
+`public_visible = true` AND `stock_status = 'disponible'`. El hotfix conserva
+la función shadow/read-only, `STABLE`, `SECURITY DEFINER`, `search_path = public,
+pg_temp`, guard de staff, selección del estado vigente por `updated_at DESC NULLS
+LAST, id DESC` y permisos sin ejecución para `PUBLIC`/`anon`.
+
+La base conserva 13 tablas de governance, RLS privado, lectura de staff,
+denegación de DML directo para staff, cero publicación y ninguna autoridad nueva
+sobre stock, pricing, mappings, categorías o visibilidad. `blocking_issue_count`
+y `completeness_score` son valores calculados de la salida, no columnas
+persistidas.
+
+Evidencia de readiness reportada para el universo consultado de 1,815 estados
+(no equivale al conteo de catálogo público): 1,141 visibles/disponibles con
+`PASS=true`; 63 visibles/bajo con `PASS=false`; 169 no visibles/disponibles con
+`PASS=false`; 43 sin estado con `PASS=false`; y 399 no visibles con stock
+agotado/bajo/consultar con `PASS=false`.
+
+Desviaciones diferidas: D1 `PASS_BY_POLICY` con cuenta non-staff pendiente; D2
+`STRUCTURAL_PASS` con QA de datos reales diferido al piloto G4; D3
+`ALTERNATE_PROOF_ACCEPTED`; D4 `FULL_CENSUS_ASSERTION_DEFERRED_TO_G4_PILOT` por
+no ejecutar en este checkpoint la comparación DB-side `count(*)` contra
+`count(distinct producto_b2b_id)`.
+
+G4 Phase 3B permanece `RECONCILIATION_REQUIRED / INCONCLUSIVE`. ForPromotional,
+CDO/StockSur y el runtime productivo permanecen sin cambios; no hubo backfill,
+provider calls, fixtures ni writes durante la certificación.
+
+**NEXT:** `CHK-CATGOV-02 — GOVERNANCE CONSOLE DESIGN / READ-ONLY`.

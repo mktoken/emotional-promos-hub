@@ -226,3 +226,28 @@ para Phase 3B, con revalidación de elegibilidad, verificación HTTP y rollback.
 - Fixtures del canario `011f5dc8` borrados; bucket con 0 objetos; producto canario sin cambios (hash de `imagenes` + `activo` idénticos).
 - La URL pública de un objeto borrado puede seguir saliendo de la CDN hasta que expire la caché; el origen responde "no encontrado".
 - G4 masters subidos: 0. Referencias G4 cambiadas: 0. G4 P1-C y CP-3 siguen ABIERTOS.
+
+## Catalog Governance — readiness operativa (2026-10-10)
+
+`catalog_governance_readiness_v1` es una capa shadow/read-only. No publica, no
+escribe en el catálogo y no sustituye las autoridades runtime existentes.
+
+El gate `stock_public_eligibility_pass` requiere siempre las dos condiciones:
+
+- `public_visible = true`;
+- `stock_status = 'disponible'`.
+
+Nunca tratar `public_visible` por sí solo como equivalente de stock elegible.
+El estado vigente se selecciona por `updated_at DESC NULLS LAST, id DESC`.
+
+La Governance no controla stock, pricing, mappings, categorías ni publicación.
+`producto_b2b_status` sigue siendo la autoridad runtime de elegibilidad, Pricing
+V2 la autoridad de pricing y `catalog-image-admin` el writer autorizado de
+imágenes runtime. No iniciar un workflow de publicación o mutación desde la
+readiness RPC; cualquier console futura debe permanecer read-only hasta un
+checkpoint específico.
+
+D1 (cuenta non-staff), D2 (QA con datos reales) y D4 (censo DB-side completo)
+permanecen diferidos al piloto G4. D3 se mantiene como prueba alternativa sin
+fingerprint directo de `productos_publicos`. G4 Phase 3B continúa
+`RECONCILIATION_REQUIRED / INCONCLUSIVE`.

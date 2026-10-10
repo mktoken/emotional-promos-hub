@@ -1672,3 +1672,37 @@ independiente y no se cierran por esta evidencia.
 - Fixtures del canario `011f5dc8` borrados; bucket con 0 objetos; producto canario sin cambios (hash de `imagenes` + `activo` idénticos).
 - La URL pública de un objeto borrado puede seguir saliendo de la CDN hasta que expire la caché; el origen responde "no encontrado".
 - G4 masters subidos: 0. Referencias G4 cambiadas: 0. G4 P1-C y CP-3 siguen ABIERTOS.
+
+## CATALOG GOVERNANCE / PRODUCT EXPERIENCE — DOCUMENTATION FOUNDATION (2026-10-10)
+
+**Status:** DOCUMENTATION FOUNDATION / ARCHITECTURE DESIGN
+
+Se establece como directriz maestra:
+
+- Governance overlay sobre el runtime existente.
+- No existe una segunda autoridad de stock, pricing, mappings, categorías o publicación.
+- La abstracción Product Model / Variant se planifica sin destruir IDs actuales.
+- Raw source, provenance, normalización y aprobación humana se conservan como capas separadas.
+- La gobernanza no publica directamente; la publication integration requiere un gate explícito.
+- La readiness inicial será shadow/computed.
+- La card futura prioriza modelo, precio, IVA, personalización no incluida, MOQ, variantes, disponibilidad y CTA.
+- El PDP futuro usa una buybox comercial y mantiene la personalización técnica fuera del bloque público dominante.
+- La cantidad inicial futura será el MOQ real vigente y los presets serán dinámicos.
+- El Delivery Contract queda definido como regla condicionada, con overrides futuros por proveedor, familia o producto.
+- G4 es el primer piloto; después siguen ForPromotional y CDO/StockSur.
+
+La directriz completa está en
+`docs/11_CATALOG_GOVERNANCE_AND_PRODUCT_EXPERIENCE_DIRECTIVE.md`.
+
+```text
+PUBLIC IMPLEMENTATION: BLOCKED
+GOVERNANCE BUILD: NOT STARTED
+PRODUCT EXPERIENCE BUILD: NOT STARTED
+NEXT CHECKPOINT: CHK-CATGOV-00 — ARCHITECTURE RECONCILIATION
+G4_PHASE3B_RUNTIME_STATE: RECONCILIATION_REQUIRED
+```
+
+El estado G4 Phase 3B no se cierra por antecedentes históricos: el baseline
+actual demuestra la infraestructura Phase 3A y mantiene `G4 masters subidos: 0`
+y `G4 P1-C / CP-3 abiertos`. No se modifica esa evidencia ni se afirma una
+publicación no demostrada.

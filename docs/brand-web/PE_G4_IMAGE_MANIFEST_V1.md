@@ -1,82 +1,119 @@
-# G4 Image Manifest V1 — Phase 1 Identity & Asset Mapping
+# G4 Image Manifest V1 — Phase 1B Public Identity Reconciliation
 
-Estado: `PHASE 1 COMPLETE / IDENTITY MAP PARTIAL`
+Estado: `PHASE 1B PARTIAL / PUBLIC IDENTITY REVIEW REQUIRED`
 
-Este documento registra inventario técnico y conciliación read-only del banco G4. No autoriza publicación, reemplazo de imágenes, cambio de URLs, cambio de runtime ni aprobación MASTER.
+Este documento conserva el inventario técnico del banco G4 y añade un snapshot
+read-only de la identidad pública. No autoriza publicación, reemplazo de
+imágenes, cambio de URLs, cambios de runtime, mappings, precios o stock.
 
 ## Specialist pre-flight
 
-- Lead: `pe-visual-image-director`
-- Support: `pe-evidence-claims`, `pe-brand-strategist`
-- Skills disponibles y cargados: sí.
+- Orchestrator: `pe-specialist-orchestrator` — AVAILABLE / LOADED.
+- Lead: `pe-evidence-claims` — AVAILABLE / LOADED.
+- Support: `pe-visual-image-director`, `pe-brand-strategist` — AVAILABLE / LOADED.
 
 ## Fuente y preservación
 
-- Directorio fuente: `/Users/macbookpro/Downloads/G4_Image_Bank_2026`
-- ZIP fuente: 9; entradas totales: 1,868; imágenes raster: 1,839.
-- Método: lectura directa de entradas ZIP; no se conserva extracción completa.
+- Directorio fuente: `/Users/macbookpro/Downloads/G4_Image_Bank_2026`.
+- ZIP fuente: 9; raster: 1,839.
+- Método: lectura directa del inventario técnico; no se conserva extracción completa.
 - ZIP originales modificados: no.
+- PDF dirigido: no se utilizó todavía; no se hizo OCR masivo.
 
-### Conteo por ZIP
+## Inventario técnico preservado
 
-| ZIP | Raster |
+- Grupos deterministas: 346.
+- SHA-256 completo: 1,839/1,839.
+- Dimensiones completas: 1,839/1,839.
+- Grupos exact duplicate: 6; archivos: 12.
+- Near/perceptual duplicate: no calculado.
+
+## Snapshot público congelado
+
+La exportación disponible contiene 281 registros no vacíos, con 281
+`producto_b2b_id` y 281 `offer_id` únicos. Se congela como:
+
+`PUBLIC_G4_SNAPSHOT_281`
+
+Este número es evidencia de snapshot, no afirmación de cardinalidad live. La
+revalidación contra runtime queda requerida antes del cierre final de CP-3.
+
+El conteo previamente mencionado de 280 no está respaldado por el artefacto
+disponible y no se usa.
+
+## Estado de identidad del snapshot
+
+| Estado final | Productos |
 |---|---:|
-| Bebidas y Alimentos.zip | 335 |
-| Boligrafos metal.zip | 218 |
-| Boligrafos plastico.zip | 504 |
-| Electronicos.zip | 27 |
-| Libretas.zip | 282 |
-| Llaveros.zip | 38 |
-| Mochilas.zip | 261 |
-| Oficina.zip | 94 |
-| Viaje y Accesorios.zip | 80 |
+| `CERTIFIED_BANK_MATCH` | 106 |
+| `CERTIFIED_MULTI_VARIANT_BANK_MATCH` | 0 |
+| `BANK_MATCH_REVIEW_REQUIRED` | 175 |
+| `NO_BANK_ASSET_FOUND` | 0 |
+| **Total snapshot** | **281** |
 
-## Inventario técnico
+Las 106 certificaciones conservan evidencia explícita ya presente en el
+manifiesto anterior: identidad runtime y asociación con el banco. Los otros
+175 productos no se promueven por similitud visual o por nombre parcial.
 
-Cada fila de `data/g4-image-manifest.csv` contiene ruta, extensión, tamaño, SHA-256, dimensiones, ratio, orientación, nombre derivado, color/view heurísticos y estado de conciliación.
+### Revisión pendiente
 
-- Grupos deterministas: 346
-- SHA-256 completo: sí (1839/1839)
-- Dimensiones completas: sí (1839/1839)
-- Grupos exact duplicate: 6; archivos en ellos: 12
-- Near/perceptual duplicate: no calculado en esta fase.
+- Múltiples matches reportados previamente: 14; permanecen como
+  `BANK_MATCH_REVIEW_REQUIRED` porque no se conserva en el snapshot una
+  relación inequívoca SKU/variante para cada caso.
+- Sin coincidencia exacta reportados previamente: 147; permanecen como
+  `BANK_MATCH_REVIEW_REQUIRED`. La ausencia de coincidencia nominal no prueba
+  que no exista un asset en el banco.
+- Casos adicionales del snapshot sin evidencia row-level preservada: 14.
 
-## Runtime G4 observado
+No se asigna `NO_BANK_ASSET_FOUND` sin evidencia negativa suficiente.
 
-- Provider: `g4_mx`; raw products: 557; offers: 557; offers con mapping: 504; offers sin mapping: 53; productos B2B mapeados: 504.
-- Productos públicos G4 en la exportación de la vista canónica: 281. El baseline del checkpoint reporta 281; la diferencia de una unidad queda explícitamente pendiente de reconciliación y no se inventa.
+## Phase 2 eligibility
 
-## Matching estricto
+| Estado | Productos |
+|---|---:|
+| `PUBLIC_PHASE_2_READY` | 106 |
+| `PUBLIC_REVIEW_REQUIRED` | 175 |
+| `PUBLIC_NO_BANK_ASSET` | 0 |
 
-Se aplicaron nombres normalizados exactos y, cuando había múltiples SKU para un nombre exacto, color explícito del filename contra el sufijo del SKU. No se certificó fuzzy matching.
+La tabla completa de los 281 productos públicos congelados está en
+`data/g4-image-manifest.csv` como registros `PUBLIC_SNAPSHOT`, con:
 
-- Filas certificadas: 637
-- `NAME_EXACT_UNIQUE`: 244
-- `NAME_VARIANT_UNIQUE`: 393
-- `MULTIPLE_RUNTIME_MATCHES`: 147
-- `NO_RUNTIME_MATCH`: 1055
-- Grupos certificados: 76
-- Grupos con múltiples matches: 5
-- Grupos sin match exacto: 265
-- `MATCH_CANDIDATE_REVIEW`: 0: no se promovieron fuzzy matches.
+- `snapshot_public_product_id`;
+- `snapshot_offer_id`;
+- `public_snapshot_status`;
+- `identity_certification_method`;
+- `variant_family_id`;
+- `variant_relationship`;
+- `phase2_eligibility`;
+- `review_reason`.
 
-## Intersección pública
+No se agregaron claims de master, optimización, ruta pública, stock, precio o
+disponibilidad.
 
-Distribución calculada sobre la evidencia exportada de la vista pública canónica; no implica que una imagen sea publicable ni que una URL haya sido reemplazada.
+## Evidencia previa de contexto
 
-- PUBLIC + CERTIFIED BANK MATCH: 120
-- PUBLIC + MATCH CANDIDATE REVIEW: 0
-- PUBLIC + MULTIPLE MATCHES: 14
-- PUBLIC + NO BANK MATCH: 147
+- Public certified bank match previo: 120.
+- Public multiple matches previo: 14.
+- Public no exact bank match previo: 147.
 
-## Naming plan futuro (no aplicado)
-
-`g4-web/<provider_sku>/<provider_sku>_master.webp`, con `_02`, `_detail` o `_color_<slug>` cuando Phase 2 apruebe el rol visual. Los originales no se renombran.
-
-## Límites y siguiente fase
-
-No se hizo OCR masivo ni se usó PDF para sobreescribir runtime. Los grupos sin match exacto, múltiples matches y la diferencia de una unidad en el conteo público requieren revisión dirigida antes de cualquier decisión MASTER o reemplazo público.
+Esas cifras se conservan como métricas de entrada del checkpoint; el estado
+final de esta reconciliación se reporta sobre `PUBLIC_G4_SNAPSHOT_281` y sobre
+la evidencia row-level actualmente preservada.
 
 ## Invariantes
 
-Database writes: 0; runtime writes: 0; provider calls: 0; public image changes: 0; stock/pricing/mapping changes: 0.
+- Database writes: 0.
+- Runtime writes: 0.
+- Provider calls: 0.
+- Public image changes: 0.
+- Optimization: no.
+- Renaming: no.
+- Mappings, stock y precios: sin cambios.
+- `public_runtime_status`: no certificado.
+
+## Deferred final gate
+
+`LIVE_RUNTIME_PUBLIC_G4_COUNT: REVALIDATION REQUIRED BEFORE CP-3 FINAL CLOSURE`
+
+Esta verificación se difiere; no bloquea esta reconciliación snapshot-based,
+pero sí el cierre final de CP-3.

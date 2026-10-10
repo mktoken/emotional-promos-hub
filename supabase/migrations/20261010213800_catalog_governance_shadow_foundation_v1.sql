@@ -338,7 +338,6 @@ BEGIN
       AND q.issue_code IN ('IDENTITY_AMBIGUOUS','SOURCE_CONFLICT')
     GROUP BY q.subject_id
   ),
-  -- Applicable family: exactly one CONFIRMED membership in an APPROVED model with a family_key.
   families AS (
     SELECT m.producto_b2b_id AS pid, min(md.family_key) AS family_key, count(DISTINCT md.family_key) AS n
     FROM public.catalog_product_model_members m

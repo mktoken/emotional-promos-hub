@@ -18,14 +18,14 @@ const STAFF = ["admin", "sales_manager", "sales_agent"];
 const PAGE = 25;
 
 const SELECTS: { key: keyof QueueFilters; label: string; options: string[] }[] = [
-  { key: "governance_status", label: "Governance status", options: ["NOT_REVIEWED", "IN_REVIEW", "APPROVED", "REJECTED"] },
+  { key: "governance_status", label: "Governance status", options: ["NOT_REVIEWED", "PASS", "NEEDS_REVIEW", "BLOCKED"] },
   { key: "readiness", label: "Readiness", options: ["NEEDS_REVIEW", "EDITORIAL_READY", "BLOCKED"] },
   { key: "pricing_status", label: "Pricing status", options: ["priced", "request_quote", "unresolved"] },
   { key: "stock_eligibility", label: "Stock eligibility", options: ["true", "false"] },
-  { key: "source_type", label: "Source type", options: ["PDF", "API", "SPREADSHEET", "WEB", "MANUAL"] },
-  { key: "rights_status", label: "Rights status", options: ["CLEARED", "PENDING", "RESTRICTED", "UNKNOWN"] },
-  { key: "visual_status", label: "Visual status", options: ["PASS", "FAIL", "PENDING"] },
-  { key: "asset_role", label: "Asset role", options: ["MASTER", "SECONDARY", "LIFESTYLE", "DETAIL"] },
+  { key: "source_type", label: "Source type", options: ["PDF", "CSV", "XLS", "XLSX", "JSON", "API_SNAPSHOT", "ZIP", "WEB_SNAPSHOT", "IMAGE_BANK", "OTHER"] },
+  { key: "rights_status", label: "Rights status", options: ["UNKNOWN", "PENDING", "CLEARED", "RESTRICTED", "REJECTED"] },
+  { key: "visual_status", label: "Visual status", options: ["UNREVIEWED", "PASS", "REVIEW_REQUIRED", "FAIL"] },
+  { key: "asset_role", label: "Asset role", options: ["MASTER", "VARIANT", "ALT", "DETAIL", "LIFESTYLE"] },
 ];
 
 function Metric({ label, value, hint }: { label: string; value: number | string; hint?: string }) {

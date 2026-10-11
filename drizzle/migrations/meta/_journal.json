@@ -29,6 +29,13 @@
       "when": 1791677698977,
       "tag": "0003_catalog_governance_admin_console_rpcs_v1",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791679687000,
+      "tag": "0004_catalog_governance_admin_console_contract_fix_v1",
+      "breakpoints": true
     }
   ]
 }

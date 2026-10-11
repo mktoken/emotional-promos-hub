@@ -121,8 +121,94 @@ export const fetchQueue = (f: QueueFilters, sort: string, dir: "asc" | "desc", l
     p_offset: offset,
   });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type DetailData = Record<string, any> | null;
+export interface DetailCollectionMeta {
+  returned: number;
+  limit: number;
+  truncated: boolean;
+}
+
+export type DetailRow = Record<string, unknown>;
+
+export interface DetailOverview {
+  producto_b2b_id: string;
+  id_interno: string | null;
+  sku_base: string | null;
+  provider: string | null;
+  name: string | null;
+  categoria_principal: string | null;
+  updated_at: string | null;
+  image_count: number;
+  primary_image_url: string | null;
+  models_count: number;
+  memberships_count: number;
+  offers_count: number;
+}
+
+export interface DetailRuntime {
+  public_visible: boolean | null;
+  stock_status: string | null;
+  stock_qty: number | null;
+  quote_mode: string | null;
+  price_valid: boolean | null;
+  image_available: boolean | null;
+  last_stock_sync_at: string | null;
+  updated_at: string | null;
+}
+
+export interface DetailPricing {
+  public_price_status: string | null;
+  price_before_tax_mxn: number | null;
+  currency: string | null;
+  minimum_quantity: number | null;
+  computed_at: string | null;
+}
+
+export interface DetailReadiness {
+  editorial_readiness: string | null;
+  identity_pass: boolean;
+  data_completeness_pass: boolean;
+  content_pass: boolean;
+  image_pass: boolean;
+  pricing_pass: boolean;
+  stock_public_eligibility_pass: boolean;
+  blocking_issue_count: number;
+  completeness_score: number | null;
+  evaluated_at: string | null;
+}
+
+export type DetailCollectionKey =
+  | "sources"
+  | "evidence"
+  | "attributes"
+  | "content"
+  | "assets"
+  | "issues"
+  | "approvals"
+  | "models"
+  | "memberships"
+  | "offers";
+
+export type DetailCollectionMetaMap = Record<DetailCollectionKey, DetailCollectionMeta>;
+
+export interface DetailData {
+  overview: DetailOverview;
+  readiness: DetailReadiness | null;
+  sources: DetailRow[];
+  evidence: DetailRow[];
+  attributes: DetailRow[];
+  content: DetailRow[];
+  assets: DetailRow[];
+  issues: DetailRow[];
+  approvals: DetailRow[];
+  runtime: DetailRuntime | null;
+  models: DetailRow[];
+  memberships: DetailRow[];
+  offers: DetailRow[];
+  governance_state: Record<string, unknown> | null;
+  published: boolean;
+  pricing: DetailPricing | null;
+  collection_meta: DetailCollectionMetaMap;
+}
 
 export const fetchDetail = (id: string) =>
   call<DetailData>("catalog_governance_admin_detail_v1", { p_producto_b2b_id: id });

@@ -52,3 +52,7 @@ Cuando una decisión sea superada, se conserva el registro y se añade una nueva
 - Un reporte histórico no demuestra automáticamente el estado actual de producción.
 - La existencia de un commit en Git no demuestra que Lovable lo tenga seleccionado ni que producción lo esté sirviendo.
 - No existe en la evidencia versionada una decisión aprobada sobre roadmap, descuentos, estrategia de conversión o confiabilidad operativa actual de stock/precios.
+
+| D-033 | 2026-10-10 | Permitir seeds data-only de Governance mediante el query executor interno de Lovable cuando el esquema no cambia | Requiere archivo versionado, hash, IDs deterministas, precheck, apply estrecho, postcheck, rollback, QA y cero targets runtime; no equivale a capacidad DML universal | `CHK-CATGOV-03G`, `docs/10_QA_EVIDENCE.md`, Package V3 | VIGENTE solo para operaciones Governance autorizadas |
+
+La decisión no autoriza ejecución externa de Supabase, migraciones de fallback, nuevos APPLY sin precheck ni publicación automática. El siguiente paso es revisión humana del piloto G4.

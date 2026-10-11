@@ -1,0 +1,429 @@
+-- CHK-CATGOV-03F — read-only exact postcheck
+-- Compares deterministic rows and relationships; no writes are present.
+WITH
+expected_products(id) AS (
+  VALUES
+    ('dc7cc3e7-aa00-47a3-b4e8-edde4bc0b6d0'::uuid),
+    ('7e09a141-a116-48a9-bc9b-35f2b0898045'::uuid),
+    ('eb35ff6c-1d67-4630-8799-2df62b95e79a'::uuid),
+    ('7955df9c-8e9c-4203-9f65-505faf5d69cb'::uuid),
+    ('16dfa60b-f22f-4304-9899-14bdc4d63de4'::uuid),
+    ('0b889781-de86-4115-9a62-ae1540e1140d'::uuid),
+    ('a8214d09-27a5-48b0-aa7e-68ec8a2707d9'::uuid),
+    ('b7d2252a-9a16-4caa-9651-d8d7fdc7fe11'::uuid),
+    ('115f29be-eb6d-4606-aa48-1c2ec82a550d'::uuid),
+    ('3b1efba6-a127-49f4-b98b-fa4eb0b84249'::uuid),
+    ('38edd673-b077-4c9a-a0f1-ceb4e3d8a9aa'::uuid),
+    ('6a4f917b-f915-4da2-ae22-58ef089b2ecc'::uuid),
+    ('0c5fd12d-e232-4c0c-ae64-5524da62cdf9'::uuid),
+    ('d129e6c7-ec52-4d0b-a304-33f7c9c1b316'::uuid),
+    ('9287b3dd-d356-4bf6-b41c-c0728cbfaadb'::uuid),
+    ('5a3b2909-d914-49e9-943c-b189f93b99b6'::uuid),
+    ('045d2c3e-4d9d-4594-b941-d9ecce15a6b6'::uuid),
+    ('e20c1edf-3015-4b9d-bbd5-b283ad0a0f44'::uuid),
+    ('9acc5a78-2b14-4db9-94df-a8dc2112fa60'::uuid),
+    ('2e43d69f-5b79-45c6-9a73-d71f27dc2a02'::uuid),
+    ('7b347c71-0cc9-41de-ad29-d8674fb5da1e'::uuid),
+    ('5e03ff91-3b06-467c-a4ea-0d1f061b7eb4'::uuid),
+    ('8c318ffb-b6ad-4568-a158-9c381051190a'::uuid),
+    ('ce09b0d8-0fb9-4616-974a-db6b77f8e97d'::uuid),
+    ('b71bc6f7-1b56-4405-9035-c7e5c59ed0bf'::uuid),
+    ('2ec3bee5-e6eb-461c-b865-53a281a5bbdf'::uuid),
+    ('bedfed32-c529-4fb4-80f2-75be2ca8c09d'::uuid),
+    ('84c5e928-4005-4909-afbf-ee7fba3ccd19'::uuid),
+    ('3f011890-ce8f-4294-a715-762858c8221d'::uuid),
+    ('e4bb005b-f7f2-45eb-81e1-ddcdd842a55d'::uuid)
+)
+,expected_docs(id, source_type, source_uri, original_filename, sha256, rights_status, metadata) AS (
+  VALUES
+    ('06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'CSV', 'docs/brand-web/data/g4-image-manifest.csv', 'g4-image-manifest.csv', '209b62e3595127e61116cb338e21f6454eecf620a245e6117e8480b738d5b20d', 'PENDING', '{"provider":"g4_mx","role":"canonical identity/image-bank manifest","operation_id":"G4_GOVERNANCE_PILOT_V1"}'::jsonb),
+    ('b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'CSV', 'docs/brand-web/data/g4-web-assets-v1.csv', 'g4-web-assets-v1.csv', 'aa3dc4000296fdf1ee7f77a6c7c272d11a6839e85af2fe090ca057079c3c41db', 'PENDING', '{"provider":"g4_mx","role":"derived web asset manifest","operation_id":"G4_GOVERNANCE_PILOT_V1"}'::jsonb)
+)
+,expected_evidence(id, source_document_id, subject_type, subject_id, field_path, raw_value, evidence_excerpt, confidence, status) AS (
+  VALUES
+    ('ac309908-28e7-5e9a-bada-69ad837b3664'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', 'dc7cc3e7-aa00-47a3-b4e8-edde4bc0b6d0'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=lob-sol-azu; product_name=lobby; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for lob-sol-azu', 1, 'EXTRACTED'),
+    ('68ea5e2d-d818-5c95-a1d3-554d97f9c91b'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '7e09a141-a116-48a9-bc9b-35f2b0898045'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=jbi-con-azu; product_name=jello colors bio; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for jbi-con-azu', 1, 'EXTRACTED'),
+    ('d42ebe19-8ac4-5bdc-9922-50d9d33c86ca'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', 'eb35ff6c-1d67-4630-8799-2df62b95e79a'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=jel-zen-azu; product_name=jello zen; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for jel-zen-azu', 1, 'EXTRACTED'),
+    ('6f63f209-ae2d-54ec-b4e9-3e7eb1a35ed7'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '7955df9c-8e9c-4203-9f65-505faf5d69cb'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=lib-bor-azu; product_name=libreta border; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for lib-bor-azu', 1, 'EXTRACTED'),
+    ('ec2ed8b4-abbb-5a27-8435-9711621f779b'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '16dfa60b-f22f-4304-9899-14bdc4d63de4'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=moc-dia-azu; product_name=mochila takayama diagonal; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for moc-dia-azu', 1, 'EXTRACTED'),
+    ('c97eee8b-7391-5bb4-a2f6-3c6a0c83c709'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '0b889781-de86-4115-9a62-ae1540e1140d'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=vas-nom-az1; product_name=Vaso Nomi; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for vas-nom-az1', 1, 'EXTRACTED'),
+    ('a8f03b06-72dc-5167-8fc4-ddddca3f2371'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', 'a8214d09-27a5-48b0-aa7e-68ec8a2707d9'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=spl-sol-azu; product_name=Splash; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for spl-sol-azu', 1, 'EXTRACTED'),
+    ('2dbe8f87-1641-525f-becc-134e2db45292'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', 'b7d2252a-9a16-4caa-9651-d8d7fdc7fe11'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=lon-del-gob; product_name=lonchera takayama deli; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for lon-del-gob', 1, 'EXTRACTED'),
+    ('2c3ed48c-d6e2-5758-a6c2-016c16e15743'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '115f29be-eb6d-4606-aa48-1c2ec82a550d'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=cen-met-neg; product_name=century; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for cen-met-neg', 1, 'EXTRACTED'),
+    ('faa25723-d44b-5645-99e6-63b03fa41829'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '3b1efba6-a127-49f4-b98b-fa4eb0b84249'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=imp-neg-cro; product_name=Imperial; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for imp-neg-cro', 1, 'EXTRACTED'),
+    ('e31213fc-b071-57fb-a0eb-4d7f98e8bce8'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '38edd673-b077-4c9a-a0f1-ceb4e3d8a9aa'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=lob-sol-neg; product_name=lobby; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for lob-sol-neg', 1, 'EXTRACTED'),
+    ('7a4adb69-b4b4-5a1f-9cdc-45c7ae4c2062'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '6a4f917b-f915-4da2-ae22-58ef089b2ecc'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=lob-sol-bla; product_name=lobby; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for lob-sol-bla', 1, 'EXTRACTED'),
+    ('c15d01cb-652c-5513-9bc3-843a0698aadf'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '0c5fd12d-e232-4c0c-ae64-5524da62cdf9'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=jbi-con-neg; product_name=jello colors bio; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for jbi-con-neg', 1, 'EXTRACTED'),
+    ('b84289f3-b3f2-5bb9-b34d-ea686fd9a006'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', 'd129e6c7-ec52-4d0b-a304-33f7c9c1b316'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=jbi-con-ros; product_name=jello colors bio; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for jbi-con-ros', 1, 'EXTRACTED'),
+    ('dbc7d795-ead0-55ba-8b71-85f444cef95e'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '9287b3dd-d356-4bf6-b41c-c0728cbfaadb'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=jel-zen-ver; product_name=jello zen; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for jel-zen-ver', 1, 'EXTRACTED'),
+    ('88e9fcb0-2a85-549a-88d6-0faa7d7324cf'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '5a3b2909-d914-49e9-943c-b189f93b99b6'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=vas-nom-ro1; product_name=Vaso Nomi; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for vas-nom-ro1', 1, 'EXTRACTED'),
+    ('4998e130-27fb-5cd2-a1a3-b557e8c8f682'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '045d2c3e-4d9d-4594-b941-d9ecce15a6b6'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=vas-nom-ve1; product_name=Vaso Nomi; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for vas-nom-ve1', 1, 'EXTRACTED'),
+    ('1d6d265c-891d-582c-a092-0a5153d9a19f'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', 'e20c1edf-3015-4b9d-bbd5-b283ad0a0f44'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=spl-sol-roj; product_name=Splash; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for spl-sol-roj', 1, 'EXTRACTED'),
+    ('dad0296f-80be-59b8-b9b6-2095e9eb24b6'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '9acc5a78-2b14-4db9-94df-a8dc2112fa60'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=lib-pea-aob; product_name=Libreta Peach; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for lib-pea-aob', 1, 'EXTRACTED'),
+    ('dc88ad2a-2c7e-50f5-baf5-ee5f3646be58'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '2e43d69f-5b79-45c6-9a73-d71f27dc2a02'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=lib-ski-vec; product_name=Libreta Skin; manifest_status=PHASE_3_READY', 'Canonical G4 manifest row for lib-ski-vec', 1, 'EXTRACTED'),
+    ('d01becba-02d1-5244-b0b2-c76096467434'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '7b347c71-0cc9-41de-ad29-d8674fb5da1e'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=imp-neg-oro; product_name=Imperial; manifest_status=NO_VALID_MASTER', 'Canonical G4 manifest row for imp-neg-oro', 1, 'EXTRACTED'),
+    ('a2c76b43-7965-5cf6-a397-c54cd7cece88'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '5e03ff91-3b06-467c-a4ea-0d1f061b7eb4'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=lib-bor-gri; product_name=Libreta Border; manifest_status=NO_VALID_MASTER', 'Canonical G4 manifest row for lib-bor-gri', 1, 'EXTRACTED'),
+    ('f3d79381-e1b2-52c7-997b-1ad42cf8b2c0'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '8c318ffb-b6ad-4568-a158-9c381051190a'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=moc-sac-neg; product_name=Mochila Takayama Sack; manifest_status=NO_VALID_MASTER', 'Canonical G4 manifest row for moc-sac-neg', 1, 'EXTRACTED'),
+    ('b06d9394-8011-535c-a4db-0f73c0096d94'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', 'ce09b0d8-0fb9-4616-974a-db6b77f8e97d'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=vas-ven-ace; product_name=Vaso Venti; manifest_status=NO_VALID_MASTER', 'Canonical G4 manifest row for vas-ven-ace', 1, 'EXTRACTED'),
+    ('5393a357-20dd-57c2-ae35-1cd222b13321'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', 'b71bc6f7-1b56-4405-9035-c7e5c59ed0bf'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=jet-met-neg; product_name=Bolígrafo Jet; manifest_status=BANK_MATCH_REVIEW_REQUIRED', 'Canonical G4 manifest row for jet-met-neg', 1, 'EXTRACTED'),
+    ('f7501dc3-b40c-5fe7-8de7-fd14868785d7'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '2ec3bee5-e6eb-461c-b865-53a281a5bbdf'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=kbi-tra-ama; product_name=Koi Bio Translúcida Tinta Azul; manifest_status=BANK_MATCH_REVIEW_REQUIRED', 'Canonical G4 manifest row for kbi-tra-ama', 1, 'EXTRACTED'),
+    ('d37dbbfc-5dd9-5e36-bf25-4db5839f0d8b'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', 'bedfed32-c529-4fb4-80f2-75be2ca8c09d'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=lob-so2-aob; product_name=Lobby 2; manifest_status=BANK_MATCH_REVIEW_REQUIRED', 'Canonical G4 manifest row for lob-so2-aob', 1, 'EXTRACTED'),
+    ('c3c765e2-eee8-58b3-a123-7a719362f1b3'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '84c5e928-4005-4909-afbf-ee7fba3ccd19'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=moc-atd-neg; product_name=Mochila Takayama Atomik Deluxe; manifest_status=BANK_MATCH_REVIEW_REQUIRED', 'Canonical G4 manifest row for moc-atd-neg', 1, 'EXTRACTED'),
+    ('d207c6d5-bdf5-500b-b2f0-5c53a13212c8'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', '3f011890-ce8f-4294-a715-762858c8221d'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=lon-ben-gri; product_name=Lonchera Takayama Bento; manifest_status=BANK_MATCH_REVIEW_REQUIRED', 'Canonical G4 manifest row for lon-ben-gri', 1, 'EXTRACTED'),
+    ('3e4d7ba7-866d-58a7-801f-96ddd94f522c'::uuid, '06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'PRODUCT', 'e4bb005b-f7f2-45eb-81e1-ddcdd842a55d'::uuid, 'provider_sku/product_name/manifest_status', 'provider_sku=jbi-min-azu; product_name=Jello Milky Bio tinta negra; manifest_status=BANK_MATCH_REVIEW_REQUIRED', 'Canonical G4 manifest row for jbi-min-azu', 1, 'EXTRACTED'),
+    ('cf5638d4-4929-5be5-8cd8-b806083c2f71'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '9fe2f3b9-0234-50e0-894f-c129bc2b2c21'::uuid, 'derived_path/sha256/role', 'derived_path=cen-met-neg/cen-met-neg_master.webp; sha256=9ea5a6af69d7ba0843e985493ebb47c678a0ad259822be070c70a967719208b8; role=MASTER', 'Canonical G4 web asset manifest row for cen-met-neg', 1, 'EXTRACTED'),
+    ('10b61599-d227-5cd3-b6df-5ad6f1759a89'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '59ad20f1-c6ec-5d94-964d-d0699fbf4e36'::uuid, 'derived_path/sha256/role', 'derived_path=cen-met-neg/cen-met-neg_secondary_1.webp; sha256=86fff382a2db698be30e3c4baf0fbd08d95ac45bc09095ab2bc161cbf2de8e44; role=SECONDARY_1', 'Canonical G4 web asset manifest row for cen-met-neg', 1, 'EXTRACTED'),
+    ('3b0b66d0-82e7-59a3-b6af-c741913a6ee9'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '3bcf16b3-645b-598f-a423-59cefcc71a21'::uuid, 'derived_path/sha256/role', 'derived_path=jbi-con-azu/jbi-con-azu_master.webp; sha256=42f16da57b5adfc1f0cb74fa144db73e090724dfe27564eb4bc912b56735b04a; role=MASTER', 'Canonical G4 web asset manifest row for jbi-con-azu', 1, 'EXTRACTED'),
+    ('acc7deed-ef54-5767-b8e3-1adc6cee0476'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '7020b71f-a07f-5814-9048-d0e3c9463f00'::uuid, 'derived_path/sha256/role', 'derived_path=jbi-con-azu/jbi-con-azu_secondary_1.webp; sha256=382bdb4ed35c5d1c4d8975f250750ea547db5fbed8baf443c1606110d01cc27d; role=SECONDARY_1', 'Canonical G4 web asset manifest row for jbi-con-azu', 1, 'EXTRACTED'),
+    ('08c230c4-ed5f-5fd1-9348-d83a50e19d53'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', 'a59ff464-2fc4-5652-b9bc-8e5152587859'::uuid, 'derived_path/sha256/role', 'derived_path=jbi-con-neg/jbi-con-neg_master.webp; sha256=8a576934ce8609c31cd3c21d8c721b0c85eb31ee9d25cf132fbeb8f3e3d067c4; role=MASTER', 'Canonical G4 web asset manifest row for jbi-con-neg', 1, 'EXTRACTED'),
+    ('7cd9a556-5dcf-51b0-8073-82fab967220e'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', 'b59e3dc5-a499-54b7-8b4f-3687c8ba1e19'::uuid, 'derived_path/sha256/role', 'derived_path=jbi-con-neg/jbi-con-neg_secondary_1.webp; sha256=a8b1979f1d3eecdac551066b9ad1de5477a3df21a5f9e52ccb82ed0bc20e1b51; role=SECONDARY_1', 'Canonical G4 web asset manifest row for jbi-con-neg', 1, 'EXTRACTED'),
+    ('2f4e73b8-d8b5-5a95-8884-3fe5d69214df'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '83b603d0-f854-5e10-941c-a1acc6b131c2'::uuid, 'derived_path/sha256/role', 'derived_path=jbi-con-ros/jbi-con-ros_master.webp; sha256=b3e3616f28efed436fad6bd220d2ec108ee6ff73988b1227d26fb57d324dadf6; role=MASTER', 'Canonical G4 web asset manifest row for jbi-con-ros', 1, 'EXTRACTED'),
+    ('9481ffae-dea3-5854-bf30-1b39d1d01703'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '9c998f3c-247f-5a20-b55c-180c4708fb5e'::uuid, 'derived_path/sha256/role', 'derived_path=jel-zen-azu/jel-zen-azu_master.webp; sha256=62ad2450ad92327d7dbbf3daf9e3582179996acc9dd7fc07abd98966493f4c3c; role=MASTER', 'Canonical G4 web asset manifest row for jel-zen-azu', 1, 'EXTRACTED'),
+    ('b54d62a4-dd6c-52a0-9995-800ba5b0783b'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '33535c4f-4096-5f68-8545-484b47526476'::uuid, 'derived_path/sha256/role', 'derived_path=jel-zen-azu/jel-zen-azu_secondary_1.webp; sha256=3bb0c3bda10a6d33433ba131a2ec43c253eae543184d5d989a860c3ad4cc675c; role=SECONDARY_1', 'Canonical G4 web asset manifest row for jel-zen-azu', 1, 'EXTRACTED'),
+    ('27a79deb-b413-5f96-8514-47da49588117'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', 'e208dfff-4fd1-5b86-8aa3-63157fb87535'::uuid, 'derived_path/sha256/role', 'derived_path=jel-zen-ver/jel-zen-ver_master.webp; sha256=3c15b0454a361be90b276d80c7e41d971e5826020a5f55e0f0f1be2b33aa23cf; role=MASTER', 'Canonical G4 web asset manifest row for jel-zen-ver', 1, 'EXTRACTED'),
+    ('d171801f-bfd7-5750-a5ba-3bc5739c3699'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '18e5fb26-6efc-5ac6-b82c-9a42ec5f5dc2'::uuid, 'derived_path/sha256/role', 'derived_path=jel-zen-ver/jel-zen-ver_secondary_1.webp; sha256=c39264a777bef61aff47fa2d53bf3371a054107b0ea5a14e9abe47c30132f9f8; role=SECONDARY_1', 'Canonical G4 web asset manifest row for jel-zen-ver', 1, 'EXTRACTED'),
+    ('91b62969-254f-5c1c-bbdb-4c689f7f7da4'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '1512725a-98cf-572d-9a1f-075b98526d63'::uuid, 'derived_path/sha256/role', 'derived_path=lib-bor-azu/lib-bor-azu_master.webp; sha256=a8511c53b7c1657371e898e6995e3a5cb6c14bf01d5a78b8e7a95c083668ae4f; role=MASTER', 'Canonical G4 web asset manifest row for lib-bor-azu', 1, 'EXTRACTED'),
+    ('8d77d399-c296-5314-ab7b-731dad3103f0'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', 'b47e2f1b-c38d-50f5-8df5-86b112930c0a'::uuid, 'derived_path/sha256/role', 'derived_path=lib-bor-azu/lib-bor-azu_secondary_1.webp; sha256=4319f224c6b5d049954b9b44b16c987401a1b903fedf65e0b69893a162440392; role=SECONDARY_1', 'Canonical G4 web asset manifest row for lib-bor-azu', 1, 'EXTRACTED'),
+    ('c0fefaa1-38df-51f3-b565-ee8bb6077b92'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', 'ff69b369-f4a8-5af7-afb9-7b31345b151e'::uuid, 'derived_path/sha256/role', 'derived_path=lob-sol-azu/lob-sol-azu_master.webp; sha256=b849d198375a283a19b8b88d53d4a6c0fb691c8e95e9e5d4b86327afd2ce6b6e; role=MASTER', 'Canonical G4 web asset manifest row for lob-sol-azu', 1, 'EXTRACTED'),
+    ('c94d5ac8-60c0-5fb2-9cff-2442096d7b65'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', 'a625a89e-cd86-5aff-81d2-b11788f5b00f'::uuid, 'derived_path/sha256/role', 'derived_path=lob-sol-azu/lob-sol-azu_secondary_1.webp; sha256=d3656e94f6fc1908abada46ee54e8ec6ab0d2e5b095b28e9079cc7de7a317631; role=SECONDARY_1', 'Canonical G4 web asset manifest row for lob-sol-azu', 1, 'EXTRACTED'),
+    ('6fcd2716-6ff6-5712-b5f1-d8bbb3b5abb7'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '51a451f6-0b61-5f80-a021-8911f3d14bda'::uuid, 'derived_path/sha256/role', 'derived_path=lob-sol-bla/lob-sol-bla_master.webp; sha256=ed3a58b24ee991270af6a0f9ec4e503d8e4acb401d3c1371c4d52073edd14514; role=MASTER', 'Canonical G4 web asset manifest row for lob-sol-bla', 1, 'EXTRACTED'),
+    ('58131cdb-cbff-5f7a-bfee-73d100ae7168'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', 'ba25357d-7a41-5738-a345-2fb33e743566'::uuid, 'derived_path/sha256/role', 'derived_path=lob-sol-bla/lob-sol-bla_secondary_1.webp; sha256=9be142270d30c1d63916e72d25fc42da654c91c892d2569af51b804529427f87; role=SECONDARY_1', 'Canonical G4 web asset manifest row for lob-sol-bla', 1, 'EXTRACTED'),
+    ('15afb908-9f31-534a-98df-70705c6270c1'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '8598e0eb-5628-53e3-9997-d5f3c0a88bb8'::uuid, 'derived_path/sha256/role', 'derived_path=lob-sol-neg/lob-sol-neg_master.webp; sha256=07fe117fe1b8b8118da9b093c7fc4ac4b5c01a671310c4fe7d0f5b6970d26d2e; role=MASTER', 'Canonical G4 web asset manifest row for lob-sol-neg', 1, 'EXTRACTED'),
+    ('d9778d12-679e-56e9-8d20-f2d5a3b6ad26'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '3f37f573-4d96-52f0-92c5-74437c475ed3'::uuid, 'derived_path/sha256/role', 'derived_path=lob-sol-neg/lob-sol-neg_secondary_1.webp; sha256=574cb1ba1c51a133b952078ffe8a335952b7a5d072ab5efda01d21d46cb5d502; role=SECONDARY_1', 'Canonical G4 web asset manifest row for lob-sol-neg', 1, 'EXTRACTED'),
+    ('1242df6d-be34-5029-b900-4e690daab3b2'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '3d48c990-935a-5ec4-afb7-3e4f0c442a13'::uuid, 'derived_path/sha256/role', 'derived_path=lon-del-gob/lon-del-gob_master.webp; sha256=2fc6d32fe72f14bd8bc444dfaebee409849b5b0e7b0f1005e08191583d75c6d9; role=MASTER', 'Canonical G4 web asset manifest row for lon-del-gob', 1, 'EXTRACTED'),
+    ('71276fda-b793-5277-9688-883a4db873b4'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '78cdbe8e-b6b6-576e-92b4-4e1bb48423bf'::uuid, 'derived_path/sha256/role', 'derived_path=lon-del-gob/lon-del-gob_secondary_1.webp; sha256=33da84915ab01bcf7cf03c634d9a32e4aa91fdd214f854fec1697efde2f15dfe; role=SECONDARY_1', 'Canonical G4 web asset manifest row for lon-del-gob', 1, 'EXTRACTED'),
+    ('01ec0210-03c6-556a-87e1-3106de8715a1'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', 'a3e33332-6bc7-50f3-9975-90961fdd339c'::uuid, 'derived_path/sha256/role', 'derived_path=moc-dia-azu/moc-dia-azu_master.webp; sha256=fabdffe5d887b6948e9d466f0aa42557ad18456bacd61a92137e69659e8a7cba; role=MASTER', 'Canonical G4 web asset manifest row for moc-dia-azu', 1, 'EXTRACTED'),
+    ('fc0bc16f-74d7-5140-9f1d-b1769c30617b'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '528d9420-74b6-5715-9119-05c8cb835b04'::uuid, 'derived_path/sha256/role', 'derived_path=moc-dia-azu/moc-dia-azu_secondary_1.webp; sha256=fc4d095f1f9de16ff6532cd423d7cee32e6dbfc02ade78b4d97d2acc19a038d4; role=SECONDARY_1', 'Canonical G4 web asset manifest row for moc-dia-azu', 1, 'EXTRACTED'),
+    ('ff8e379b-cd1e-56e3-94d8-efefdb32faed'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', 'b856f5fb-66f6-5fa0-bfa1-31d9df639555'::uuid, 'derived_path/sha256/role', 'derived_path=imp-neg-cro/imp-neg-cro_master.webp; sha256=936a3186deaf870b115c7a057ed66cf2c9198f5d92cf36e35aa762f8b5f3b3d5; role=MASTER', 'Canonical G4 web asset manifest row for imp-neg-cro', 1, 'EXTRACTED'),
+    ('e2af8534-f8f9-5065-a399-746b44026529'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '2fc25ae6-fca9-5710-b45c-273f20da214b'::uuid, 'derived_path/sha256/role', 'derived_path=lib-pea-aob/lib-pea-aob_master.webp; sha256=49439f06cb83aede2b9f0da1ab2273bb7d5e8f951408fd5a1b616eef12aa8ce5; role=MASTER', 'Canonical G4 web asset manifest row for lib-pea-aob', 1, 'EXTRACTED'),
+    ('4e10b80c-e980-5208-bd34-d102d0a53b08'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', 'c7112c67-395c-5bfa-a094-6e05de40c6df'::uuid, 'derived_path/sha256/role', 'derived_path=lib-ski-vec/lib-ski-vec_master.webp; sha256=f52444d7b628cbdd319990edf42501a49e52979898597249d7fb9cc4583f225e; role=MASTER', 'Canonical G4 web asset manifest row for lib-ski-vec', 1, 'EXTRACTED'),
+    ('c42fb28f-ed37-5c36-a112-7a8dfe11f84a'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '10b9ca13-04e6-5fcd-8a39-02c9e1e2bf8b'::uuid, 'derived_path/sha256/role', 'derived_path=spl-sol-azu/spl-sol-azu_master.webp; sha256=d99604c33a6147c99015045ffa0fc450226d248334fae4275b200f92d43e162e; role=MASTER', 'Canonical G4 web asset manifest row for spl-sol-azu', 1, 'EXTRACTED'),
+    ('b74bebb7-006d-5aea-ae00-3348afd94a89'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '7ad2e72d-48ef-5d2d-a30c-465a95e9fe93'::uuid, 'derived_path/sha256/role', 'derived_path=spl-sol-roj/spl-sol-roj_master.webp; sha256=609784db451af9da33177b9aa5fed46bf029794e6a9086003fc1167fb26684c8; role=MASTER', 'Canonical G4 web asset manifest row for spl-sol-roj', 1, 'EXTRACTED'),
+    ('f9b77736-3ae3-5328-9993-6c3f952704de'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '79c303c0-dbbc-52a4-a445-8952a6277c89'::uuid, 'derived_path/sha256/role', 'derived_path=vas-nom-az1/vas-nom-az1_master.webp; sha256=501e6277cea23866a54886a2e97e899c74e20ead21a102e9e670f13b00bbe92a; role=MASTER', 'Canonical G4 web asset manifest row for vas-nom-az1', 1, 'EXTRACTED'),
+    ('3ad1b38a-70c7-5580-b13c-9b36351afe5a'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '9c6eb492-2b26-5f0e-9edc-968ee6d20549'::uuid, 'derived_path/sha256/role', 'derived_path=vas-nom-ro1/vas-nom-ro1_master.webp; sha256=e9a6a42913617e0ce80944770d1e3e2ad661331846ca7701909892a439706f99; role=MASTER', 'Canonical G4 web asset manifest row for vas-nom-ro1', 1, 'EXTRACTED'),
+    ('f46719ed-1f57-5494-b32f-57bff9627580'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'ASSET', '884e176e-3917-5bb1-a8e2-ceb57ca89ca6'::uuid, 'derived_path/sha256/role', 'derived_path=vas-nom-ve1/vas-nom-ve1_master.webp; sha256=74fa8be2ebc777116e76562e3c8819298b16b11397ecf9802ebfac8a1ea2ceaf; role=MASTER', 'Canonical G4 web asset manifest row for vas-nom-ve1', 1, 'EXTRACTED')
+)
+,expected_content(id, producto_b2b_id, version, is_current, canonical_name, short_description, structured_features, technical_specifications, available_colors, status) AS (
+  VALUES
+    ('a26e4a0d-7140-5909-a9fd-68b6ac866dc6'::uuid, 'dc7cc3e7-aa00-47a3-b4e8-edde4bc0b6d0'::uuid, 1, TRUE, 'lobby', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('624d83ee-8911-548d-968f-f9c4fdf0d5be'::uuid, '7e09a141-a116-48a9-bc9b-35f2b0898045'::uuid, 1, TRUE, 'jello colors bio', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('55581e6c-e4f2-5385-9378-6dddc1c7cffa'::uuid, 'eb35ff6c-1d67-4630-8799-2df62b95e79a'::uuid, 1, TRUE, 'jello zen', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('d8458d58-492b-5129-85a4-85e8eba68132'::uuid, '7955df9c-8e9c-4203-9f65-505faf5d69cb'::uuid, 1, TRUE, 'libreta border', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('fdd58d6a-0329-5066-be40-bc2acaf9b3ad'::uuid, '16dfa60b-f22f-4304-9899-14bdc4d63de4'::uuid, 1, TRUE, 'mochila takayama diagonal', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('28ea6087-70e2-56b2-a869-87dfb4919bab'::uuid, '0b889781-de86-4115-9a62-ae1540e1140d'::uuid, 1, TRUE, 'Vaso Nomi', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('14edf9cf-b47d-52f4-a0ef-1fdaf62876b1'::uuid, 'a8214d09-27a5-48b0-aa7e-68ec8a2707d9'::uuid, 1, TRUE, 'Splash', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('dda61b9c-4fb1-530c-a877-4da224543259'::uuid, 'b7d2252a-9a16-4caa-9651-d8d7fdc7fe11'::uuid, 1, TRUE, 'lonchera takayama deli', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('f19178bd-4464-5032-88f3-29a8f88f8e11'::uuid, '115f29be-eb6d-4606-aa48-1c2ec82a550d'::uuid, 1, TRUE, 'century', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('94883c7d-455a-556b-9a65-a209315ebf9b'::uuid, '3b1efba6-a127-49f4-b98b-fa4eb0b84249'::uuid, 1, TRUE, 'Imperial', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('0b0a8a4d-7ebf-59d8-978c-db4ea7dae99d'::uuid, '38edd673-b077-4c9a-a0f1-ceb4e3d8a9aa'::uuid, 1, TRUE, 'lobby', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('44c1b268-f65c-5bcd-8764-d7cb97881394'::uuid, '6a4f917b-f915-4da2-ae22-58ef089b2ecc'::uuid, 1, TRUE, 'lobby', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('dcdfcc78-a574-557b-a0af-32e814bc2e36'::uuid, '0c5fd12d-e232-4c0c-ae64-5524da62cdf9'::uuid, 1, TRUE, 'jello colors bio', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('bef2b6a4-dbab-597f-b1a9-9a489054192e'::uuid, 'd129e6c7-ec52-4d0b-a304-33f7c9c1b316'::uuid, 1, TRUE, 'jello colors bio', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('eb6c3e7d-fb58-56fe-8232-613e4aea5810'::uuid, '9287b3dd-d356-4bf6-b41c-c0728cbfaadb'::uuid, 1, TRUE, 'jello zen', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('67e00baf-1eb2-596d-9df5-3d31906bd5f0'::uuid, '5a3b2909-d914-49e9-943c-b189f93b99b6'::uuid, 1, TRUE, 'Vaso Nomi', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('9676e591-88e6-5c25-a763-97c2452b95aa'::uuid, '045d2c3e-4d9d-4594-b941-d9ecce15a6b6'::uuid, 1, TRUE, 'Vaso Nomi', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('2643bb0c-8e98-5659-bdc3-34d2e3169cdd'::uuid, 'e20c1edf-3015-4b9d-bbd5-b283ad0a0f44'::uuid, 1, TRUE, 'Splash', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('9b13d819-3313-55c0-a160-235fe67fb94e'::uuid, '9acc5a78-2b14-4db9-94df-a8dc2112fa60'::uuid, 1, TRUE, 'Libreta Peach', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('03ae4efa-9233-5fb7-bf0b-15d8030d41fa'::uuid, '2e43d69f-5b79-45c6-9a73-d71f27dc2a02'::uuid, 1, TRUE, 'Libreta Skin', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('61959990-6b97-523d-831b-4f01e08d090e'::uuid, '7b347c71-0cc9-41de-ad29-d8674fb5da1e'::uuid, 1, TRUE, 'Imperial', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('ea15ac0d-c23d-5b99-b0ef-9c3f6239b08a'::uuid, '5e03ff91-3b06-467c-a4ea-0d1f061b7eb4'::uuid, 1, TRUE, 'Libreta Border', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('49acf514-3d54-536f-8924-0ff9862b8748'::uuid, '8c318ffb-b6ad-4568-a158-9c381051190a'::uuid, 1, TRUE, 'Mochila Takayama Sack', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('eb7a559b-a8a8-52f4-a9ab-c3ac35a2b783'::uuid, 'ce09b0d8-0fb9-4616-974a-db6b77f8e97d'::uuid, 1, TRUE, 'Vaso Venti', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('bcec04e4-c241-5740-86fe-92cdf4c89b19'::uuid, 'b71bc6f7-1b56-4405-9035-c7e5c59ed0bf'::uuid, 1, TRUE, 'Bolígrafo Jet', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('efc2bed0-bbbb-565c-b414-3c5067dc6f62'::uuid, '2ec3bee5-e6eb-461c-b865-53a281a5bbdf'::uuid, 1, TRUE, 'Koi Bio Translúcida Tinta Azul', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('67ebd9d7-69cf-5b65-8e7f-c4cf5454f0f6'::uuid, 'bedfed32-c529-4fb4-80f2-75be2ca8c09d'::uuid, 1, TRUE, 'Lobby 2', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('94022b12-474e-5e08-9b7e-173f41fc8070'::uuid, '84c5e928-4005-4909-afbf-ee7fba3ccd19'::uuid, 1, TRUE, 'Mochila Takayama Atomik Deluxe', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('c9950a22-1982-522b-95ab-3af1cd7dd883'::uuid, '3f011890-ce8f-4294-a715-762858c8221d'::uuid, 1, TRUE, 'Lonchera Takayama Bento', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED'),
+    ('9df1de24-6867-5408-8328-3bf1997a0c3e'::uuid, 'e4bb005b-f7f2-45eb-81e1-ddcdd842a55d'::uuid, 1, TRUE, 'Jello Milky Bio tinta negra', NULL, '[]'::jsonb, '{}'::jsonb, '[]'::jsonb, 'HUMAN_REVIEW_REQUIRED')
+)
+,expected_assets(id, source_document_id, source_uri, original_filename, sha256, file_size_bytes, mime_type, width, height, rights_status, identity_status, technical_status, visual_status, approval_status, public_url, version, metadata) AS (
+  VALUES
+    ('9fe2f3b9-0234-50e0-894f-c129bc2b2c21'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'cen-met-neg/cen-met-neg_master.webp', 'Boligrafos metal/century negra costado.jpg', '9ea5a6af69d7ba0843e985493ebb47c678a0ad259822be070c70a967719208b8', 54682, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"cen-met-neg","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('59ad20f1-c6ec-5d94-964d-d0699fbf4e36'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'cen-met-neg/cen-met-neg_secondary_1.webp', 'Boligrafos metal/Century Negra sin clip.jpg', '86fff382a2db698be30e3c4baf0fbd08d95ac45bc09095ab2bc161cbf2de8e44', 42794, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"cen-met-neg","role":"SECONDARY_1","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('3bcf16b3-645b-598f-a423-59cefcc71a21'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'jbi-con-azu/jbi-con-azu_master.webp', 'Boligrafos plastico/Jello Colors Bio Azul Frente.jpg', '42f16da57b5adfc1f0cb74fa144db73e090724dfe27564eb4bc912b56735b04a', 25126, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"jbi-con-azu","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('7020b71f-a07f-5814-9048-d0e3c9463f00'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'jbi-con-azu/jbi-con-azu_secondary_1.webp', 'Boligrafos plastico/Jello Colors Bio Azul Rosa Frente.jpg', '382bdb4ed35c5d1c4d8975f250750ea547db5fbed8baf443c1606110d01cc27d', 27718, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"jbi-con-azu","role":"SECONDARY_1","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('a59ff464-2fc4-5652-b9bc-8e5152587859'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'jbi-con-neg/jbi-con-neg_master.webp', 'Boligrafos plastico/Jello Colors Bio Negra Frente.jpg', '8a576934ce8609c31cd3c21d8c721b0c85eb31ee9d25cf132fbeb8f3e3d067c4', 18934, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"jbi-con-neg","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('b59e3dc5-a499-54b7-8b4f-3687c8ba1e19'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'jbi-con-neg/jbi-con-neg_secondary_1.webp', 'Boligrafos plastico/Jello Colors Bio Negra Clip.jpg', 'a8b1979f1d3eecdac551066b9ad1de5477a3df21a5f9e52ccb82ed0bc20e1b51', 20846, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"jbi-con-neg","role":"SECONDARY_1","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('83b603d0-f854-5e10-941c-a1acc6b131c2'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'jbi-con-ros/jbi-con-ros_master.webp', 'Boligrafos plastico/Jello Colors Bio Rosa Costado.jpg', 'b3e3616f28efed436fad6bd220d2ec108ee6ff73988b1227d26fb57d324dadf6', 26090, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"jbi-con-ros","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('9c998f3c-247f-5a20-b55c-180c4708fb5e'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'jel-zen-azu/jel-zen-azu_master.webp', 'Boligrafos plastico/Jello zen azul clip copy.jpg', '62ad2450ad92327d7dbbf3daf9e3582179996acc9dd7fc07abd98966493f4c3c', 33980, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"jel-zen-azu","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('33535c4f-4096-5f68-8545-484b47526476'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'jel-zen-azu/jel-zen-azu_secondary_1.webp', 'Boligrafos plastico/Jello zen azul copy.jpg', '3bb0c3bda10a6d33433ba131a2ec43c253eae543184d5d989a860c3ad4cc675c', 33014, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"jel-zen-azu","role":"SECONDARY_1","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('e208dfff-4fd1-5b86-8aa3-63157fb87535'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'jel-zen-ver/jel-zen-ver_master.webp', 'Boligrafos plastico/Jello zen verde clip copy.jpg', '3c15b0454a361be90b276d80c7e41d971e5826020a5f55e0f0f1be2b33aa23cf', 33562, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"jel-zen-ver","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('18e5fb26-6efc-5ac6-b82c-9a42ec5f5dc2'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'jel-zen-ver/jel-zen-ver_secondary_1.webp', 'Boligrafos plastico/Jello zen verde copy.jpg', 'c39264a777bef61aff47fa2d53bf3371a054107b0ea5a14e9abe47c30132f9f8', 32602, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"jel-zen-ver","role":"SECONDARY_1","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('1512725a-98cf-572d-9a1f-075b98526d63'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'lib-bor-azu/lib-bor-azu_master.webp', 'Libretas/Libreta border azul frente copy.jpg', 'a8511c53b7c1657371e898e6995e3a5cb6c14bf01d5a78b8e7a95c083668ae4f', 26516, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"lib-bor-azu","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('b47e2f1b-c38d-50f5-8df5-86b112930c0a'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'lib-bor-azu/lib-bor-azu_secondary_1.webp', 'Libretas/libreta border azul costado copy.jpg', '4319f224c6b5d049954b9b44b16c987401a1b903fedf65e0b69893a162440392', 46764, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"lib-bor-azu","role":"SECONDARY_1","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('ff69b369-f4a8-5af7-afb9-7b31345b151e'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'lob-sol-azu/lob-sol-azu_master.webp', 'Boligrafos plastico/lobby azul clip.jpg', 'b849d198375a283a19b8b88d53d4a6c0fb691c8e95e9e5d4b86327afd2ce6b6e', 29258, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"lob-sol-azu","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('a625a89e-cd86-5aff-81d2-b11788f5b00f'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'lob-sol-azu/lob-sol-azu_secondary_1.webp', 'Boligrafos plastico/lobby azul atras.jpg', 'd3656e94f6fc1908abada46ee54e8ec6ab0d2e5b095b28e9079cc7de7a317631', 43338, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"lob-sol-azu","role":"SECONDARY_1","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('51a451f6-0b61-5f80-a021-8911f3d14bda'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'lob-sol-bla/lob-sol-bla_master.webp', 'Boligrafos plastico/lobby blanco clip.jpg', 'ed3a58b24ee991270af6a0f9ec4e503d8e4acb401d3c1371c4d52073edd14514', 20996, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"lob-sol-bla","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('ba25357d-7a41-5738-a345-2fb33e743566'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'lob-sol-bla/lob-sol-bla_secondary_1.webp', 'Boligrafos plastico/lobby blanco costado.jpg', '9be142270d30c1d63916e72d25fc42da654c91c892d2569af51b804529427f87', 20748, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"lob-sol-bla","role":"SECONDARY_1","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('8598e0eb-5628-53e3-9997-d5f3c0a88bb8'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'lob-sol-neg/lob-sol-neg_master.webp', 'Boligrafos plastico/lobby negro clip.jpg', '07fe117fe1b8b8118da9b093c7fc4ac4b5c01a671310c4fe7d0f5b6970d26d2e', 35572, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"lob-sol-neg","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('3f37f573-4d96-52f0-92c5-74437c475ed3'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'lob-sol-neg/lob-sol-neg_secondary_1.webp', 'Boligrafos plastico/lobby negro atras.jpg', '574cb1ba1c51a133b952078ffe8a335952b7a5d072ab5efda01d21d46cb5d502', 44452, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"lob-sol-neg","role":"SECONDARY_1","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('3d48c990-935a-5ec4-afb7-3e4f0c442a13'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'lon-del-gob/lon-del-gob_master.webp', 'Bebidas y Alimentos/Lonchera Takayama Deli 2.jpg', '2fc6d32fe72f14bd8bc444dfaebee409849b5b0e7b0f1005e08191583d75c6d9', 62114, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"lon-del-gob","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('78cdbe8e-b6b6-576e-92b4-4e1bb48423bf'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'lon-del-gob/lon-del-gob_secondary_1.webp', 'Bebidas y Alimentos/Lonchera Takayama Deli 5.jpg', '33da84915ab01bcf7cf03c634d9a32e4aa91fdd214f854fec1697efde2f15dfe', 46782, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"lon-del-gob","role":"SECONDARY_1","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('a3e33332-6bc7-50f3-9975-90961fdd339c'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'moc-dia-azu/moc-dia-azu_master.webp', 'Mochilas/Mochila Takayama Diagonal Azul Frente.jpg', 'fabdffe5d887b6948e9d466f0aa42557ad18456bacd61a92137e69659e8a7cba', 113736, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"moc-dia-azu","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('528d9420-74b6-5715-9119-05c8cb835b04'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'moc-dia-azu/moc-dia-azu_secondary_1.webp', 'Mochilas/Mochila Takayama Diagonal Azul Perspectiva 3.jpg', 'fc4d095f1f9de16ff6532cd423d7cee32e6dbfc02ade78b4d97d2acc19a038d4', 232774, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"moc-dia-azu","role":"SECONDARY_1","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_BANK_MATCH"}'::jsonb),
+    ('b856f5fb-66f6-5fa0-bfa1-31d9df639555'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'imp-neg-cro/imp-neg-cro_master.webp', 'Boligrafos metal/imperial negra plata clip.jpg', '936a3186deaf870b115c7a057ed66cf2c9198f5d92cf36e35aa762f8b5f3b3d5', 56868, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"imp-neg-cro","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_MULTI_VARIANT_BANK_MATCH"}'::jsonb),
+    ('2fc25ae6-fca9-5710-b45c-273f20da214b'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'lib-pea-aob/lib-pea-aob_master.webp', 'Libretas/LIbreta Peach Azul Frente.jpg', '49439f06cb83aede2b9f0da1ab2273bb7d5e8f951408fd5a1b616eef12aa8ce5', 56972, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"lib-pea-aob","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_MULTI_VARIANT_BANK_MATCH"}'::jsonb),
+    ('c7112c67-395c-5bfa-a094-6e05de40c6df'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'lib-ski-vec/lib-ski-vec_master.webp', 'Libretas/Libreta skin verde copia.jpg', 'f52444d7b628cbdd319990edf42501a49e52979898597249d7fb9cc4583f225e', 72070, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"lib-ski-vec","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_MULTI_VARIANT_BANK_MATCH"}'::jsonb),
+    ('10b9ca13-04e6-5fcd-8a39-02c9e1e2bf8b'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'spl-sol-azu/spl-sol-azu_master.webp', 'Boligrafos plastico/splash azul  clip.jpg', 'd99604c33a6147c99015045ffa0fc450226d248334fae4275b200f92d43e162e', 44198, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"spl-sol-azu","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_MULTI_VARIANT_BANK_MATCH"}'::jsonb),
+    ('7ad2e72d-48ef-5d2d-a30c-465a95e9fe93'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'spl-sol-roj/spl-sol-roj_master.webp', 'Boligrafos plastico/splash rojo  clip.jpg', '609784db451af9da33177b9aa5fed46bf029794e6a9086003fc1167fb26684c8', 43816, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"spl-sol-roj","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_MULTI_VARIANT_BANK_MATCH"}'::jsonb),
+    ('79c303c0-dbbc-52a4-a445-8952a6277c89'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'vas-nom-az1/vas-nom-az1_master.webp', 'Bebidas y Alimentos/Vaso Nomi Azul.jpg', '501e6277cea23866a54886a2e97e899c74e20ead21a102e9e670f13b00bbe92a', 53008, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"vas-nom-az1","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_MULTI_VARIANT_BANK_MATCH"}'::jsonb),
+    ('9c6eb492-2b26-5f0e-9edc-968ee6d20549'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'vas-nom-ro1/vas-nom-ro1_master.webp', 'Bebidas y Alimentos/Vaso Nomi Rojo.jpg', 'e9a6a42913617e0ce80944770d1e3e2ad661331846ca7701909892a439706f99', 49068, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"vas-nom-ro1","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_MULTI_VARIANT_BANK_MATCH"}'::jsonb),
+    ('884e176e-3917-5bb1-a8e2-ceb57ca89ca6'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid, 'vas-nom-ve1/vas-nom-ve1_master.webp', 'Bebidas y Alimentos/Vaso Nomi Verde.jpg', '74fa8be2ebc777116e76562e3c8819298b16b11397ecf9802ebfac8a1ea2ceaf', 53598, 'image/webp', 1600, 1600, 'PENDING', 'MATCHED', 'PASS', 'PASS', 'CANDIDATE', NULL, 1, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","provider_sku":"vas-nom-ve1","role":"MASTER","public_integration_status":"NOT_INTEGRATED","rights_source_status":"INHERITED_FROM_CERTIFIED_MULTI_VARIANT_BANK_MATCH"}'::jsonb)
+)
+,expected_links(id, asset_id, target_type, model_id, producto_b2b_id, oferta_id, role, display_order, link_status, evidence_id) AS (
+  VALUES
+    ('1c2b3dd5-b137-5c0a-9600-efc19e743694'::uuid, '9fe2f3b9-0234-50e0-894f-c129bc2b2c21'::uuid, 'PRODUCT', NULL::uuid, '115f29be-eb6d-4606-aa48-1c2ec82a550d'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', 'cf5638d4-4929-5be5-8cd8-b806083c2f71'::uuid),
+    ('08d4a78f-b209-582c-b6dc-835288be4827'::uuid, '59ad20f1-c6ec-5d94-964d-d0699fbf4e36'::uuid, 'PRODUCT', NULL::uuid, '115f29be-eb6d-4606-aa48-1c2ec82a550d'::uuid, NULL::uuid, 'ALT', 1, 'REVIEW_REQUIRED', '10b61599-d227-5cd3-b6df-5ad6f1759a89'::uuid),
+    ('79ea500a-6ab0-5bdf-9195-cd1f2ae417ed'::uuid, '3bcf16b3-645b-598f-a423-59cefcc71a21'::uuid, 'PRODUCT', NULL::uuid, '7e09a141-a116-48a9-bc9b-35f2b0898045'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', '3b0b66d0-82e7-59a3-b6af-c741913a6ee9'::uuid),
+    ('d8746838-a96e-5c85-aa98-cb962781eff3'::uuid, '7020b71f-a07f-5814-9048-d0e3c9463f00'::uuid, 'PRODUCT', NULL::uuid, '7e09a141-a116-48a9-bc9b-35f2b0898045'::uuid, NULL::uuid, 'ALT', 1, 'REVIEW_REQUIRED', 'acc7deed-ef54-5767-b8e3-1adc6cee0476'::uuid),
+    ('769a1b6d-6d9c-520d-98b0-f1ae87169af5'::uuid, 'a59ff464-2fc4-5652-b9bc-8e5152587859'::uuid, 'PRODUCT', NULL::uuid, '0c5fd12d-e232-4c0c-ae64-5524da62cdf9'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', '08c230c4-ed5f-5fd1-9348-d83a50e19d53'::uuid),
+    ('2998a798-6004-52d2-b0cc-e2bb1d299417'::uuid, 'b59e3dc5-a499-54b7-8b4f-3687c8ba1e19'::uuid, 'PRODUCT', NULL::uuid, '0c5fd12d-e232-4c0c-ae64-5524da62cdf9'::uuid, NULL::uuid, 'ALT', 1, 'REVIEW_REQUIRED', '7cd9a556-5dcf-51b0-8073-82fab967220e'::uuid),
+    ('eb7a83e4-a9f6-5577-bf38-7d92e60ea6ff'::uuid, '83b603d0-f854-5e10-941c-a1acc6b131c2'::uuid, 'PRODUCT', NULL::uuid, 'd129e6c7-ec52-4d0b-a304-33f7c9c1b316'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', '2f4e73b8-d8b5-5a95-8884-3fe5d69214df'::uuid),
+    ('fbf7ad26-7ae3-5760-82a6-be8cfb091bfc'::uuid, '9c998f3c-247f-5a20-b55c-180c4708fb5e'::uuid, 'PRODUCT', NULL::uuid, 'eb35ff6c-1d67-4630-8799-2df62b95e79a'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', '9481ffae-dea3-5854-bf30-1b39d1d01703'::uuid),
+    ('b2536692-5247-5653-9258-0a93cca0143d'::uuid, '33535c4f-4096-5f68-8545-484b47526476'::uuid, 'PRODUCT', NULL::uuid, 'eb35ff6c-1d67-4630-8799-2df62b95e79a'::uuid, NULL::uuid, 'ALT', 1, 'REVIEW_REQUIRED', 'b54d62a4-dd6c-52a0-9995-800ba5b0783b'::uuid),
+    ('37425695-867c-5402-89b5-65d58519de1e'::uuid, 'e208dfff-4fd1-5b86-8aa3-63157fb87535'::uuid, 'PRODUCT', NULL::uuid, '9287b3dd-d356-4bf6-b41c-c0728cbfaadb'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', '27a79deb-b413-5f96-8514-47da49588117'::uuid),
+    ('9b9f0604-9dcb-566e-a9c6-37c071a9d38f'::uuid, '18e5fb26-6efc-5ac6-b82c-9a42ec5f5dc2'::uuid, 'PRODUCT', NULL::uuid, '9287b3dd-d356-4bf6-b41c-c0728cbfaadb'::uuid, NULL::uuid, 'ALT', 1, 'REVIEW_REQUIRED', 'd171801f-bfd7-5750-a5ba-3bc5739c3699'::uuid),
+    ('10ffc86b-118f-5d38-9ed7-2d65def16d50'::uuid, '1512725a-98cf-572d-9a1f-075b98526d63'::uuid, 'PRODUCT', NULL::uuid, '7955df9c-8e9c-4203-9f65-505faf5d69cb'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', '91b62969-254f-5c1c-bbdb-4c689f7f7da4'::uuid),
+    ('ba826c70-1971-5c76-b7a3-cd10b27e77ae'::uuid, 'b47e2f1b-c38d-50f5-8df5-86b112930c0a'::uuid, 'PRODUCT', NULL::uuid, '7955df9c-8e9c-4203-9f65-505faf5d69cb'::uuid, NULL::uuid, 'ALT', 1, 'REVIEW_REQUIRED', '8d77d399-c296-5314-ab7b-731dad3103f0'::uuid),
+    ('28512c63-1139-5f9e-9a24-7a7812374575'::uuid, 'ff69b369-f4a8-5af7-afb9-7b31345b151e'::uuid, 'PRODUCT', NULL::uuid, 'dc7cc3e7-aa00-47a3-b4e8-edde4bc0b6d0'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', 'c0fefaa1-38df-51f3-b565-ee8bb6077b92'::uuid),
+    ('5be8f01e-ead7-5648-8190-e930c710ce6d'::uuid, 'a625a89e-cd86-5aff-81d2-b11788f5b00f'::uuid, 'PRODUCT', NULL::uuid, 'dc7cc3e7-aa00-47a3-b4e8-edde4bc0b6d0'::uuid, NULL::uuid, 'ALT', 1, 'REVIEW_REQUIRED', 'c94d5ac8-60c0-5fb2-9cff-2442096d7b65'::uuid),
+    ('287686bf-1838-5473-8ae7-d21d012d0077'::uuid, '51a451f6-0b61-5f80-a021-8911f3d14bda'::uuid, 'PRODUCT', NULL::uuid, '6a4f917b-f915-4da2-ae22-58ef089b2ecc'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', '6fcd2716-6ff6-5712-b5f1-d8bbb3b5abb7'::uuid),
+    ('9f372c65-6c2b-5677-bc3f-822c3c3f2d94'::uuid, 'ba25357d-7a41-5738-a345-2fb33e743566'::uuid, 'PRODUCT', NULL::uuid, '6a4f917b-f915-4da2-ae22-58ef089b2ecc'::uuid, NULL::uuid, 'ALT', 1, 'REVIEW_REQUIRED', '58131cdb-cbff-5f7a-bfee-73d100ae7168'::uuid),
+    ('509f10bf-330e-5731-b087-6409324f8c67'::uuid, '8598e0eb-5628-53e3-9997-d5f3c0a88bb8'::uuid, 'PRODUCT', NULL::uuid, '38edd673-b077-4c9a-a0f1-ceb4e3d8a9aa'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', '15afb908-9f31-534a-98df-70705c6270c1'::uuid),
+    ('f0142a96-4a2c-5ae2-9dba-e19ec598dc18'::uuid, '3f37f573-4d96-52f0-92c5-74437c475ed3'::uuid, 'PRODUCT', NULL::uuid, '38edd673-b077-4c9a-a0f1-ceb4e3d8a9aa'::uuid, NULL::uuid, 'ALT', 1, 'REVIEW_REQUIRED', 'd9778d12-679e-56e9-8d20-f2d5a3b6ad26'::uuid),
+    ('f376f637-2141-5563-9f52-4e82392b0883'::uuid, '3d48c990-935a-5ec4-afb7-3e4f0c442a13'::uuid, 'PRODUCT', NULL::uuid, 'b7d2252a-9a16-4caa-9651-d8d7fdc7fe11'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', '1242df6d-be34-5029-b900-4e690daab3b2'::uuid),
+    ('80484dd0-c304-56c4-9151-7929fd014791'::uuid, '78cdbe8e-b6b6-576e-92b4-4e1bb48423bf'::uuid, 'PRODUCT', NULL::uuid, 'b7d2252a-9a16-4caa-9651-d8d7fdc7fe11'::uuid, NULL::uuid, 'ALT', 1, 'REVIEW_REQUIRED', '71276fda-b793-5277-9688-883a4db873b4'::uuid),
+    ('de64343d-c2a6-5cbb-be75-42bfda14cade'::uuid, 'a3e33332-6bc7-50f3-9975-90961fdd339c'::uuid, 'PRODUCT', NULL::uuid, '16dfa60b-f22f-4304-9899-14bdc4d63de4'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', '01ec0210-03c6-556a-87e1-3106de8715a1'::uuid),
+    ('b02885c6-05f6-57dd-a2b0-546ec5c9d06d'::uuid, '528d9420-74b6-5715-9119-05c8cb835b04'::uuid, 'PRODUCT', NULL::uuid, '16dfa60b-f22f-4304-9899-14bdc4d63de4'::uuid, NULL::uuid, 'ALT', 1, 'REVIEW_REQUIRED', 'fc0bc16f-74d7-5140-9f1d-b1769c30617b'::uuid),
+    ('5b7d20fe-03fb-5df3-95fb-61390a0e0530'::uuid, 'b856f5fb-66f6-5fa0-bfa1-31d9df639555'::uuid, 'PRODUCT', NULL::uuid, '3b1efba6-a127-49f4-b98b-fa4eb0b84249'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', 'ff8e379b-cd1e-56e3-94d8-efefdb32faed'::uuid),
+    ('b0f511a4-fc0d-5d10-8058-df2dfc1d87ad'::uuid, '2fc25ae6-fca9-5710-b45c-273f20da214b'::uuid, 'PRODUCT', NULL::uuid, '9acc5a78-2b14-4db9-94df-a8dc2112fa60'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', 'e2af8534-f8f9-5065-a399-746b44026529'::uuid),
+    ('16e67a24-b9bb-534a-912e-c07edeed77f8'::uuid, 'c7112c67-395c-5bfa-a094-6e05de40c6df'::uuid, 'PRODUCT', NULL::uuid, '2e43d69f-5b79-45c6-9a73-d71f27dc2a02'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', '4e10b80c-e980-5208-bd34-d102d0a53b08'::uuid),
+    ('5e71ecb1-8bcf-5fc9-bfda-222a7c6e6cca'::uuid, '10b9ca13-04e6-5fcd-8a39-02c9e1e2bf8b'::uuid, 'PRODUCT', NULL::uuid, 'a8214d09-27a5-48b0-aa7e-68ec8a2707d9'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', 'c42fb28f-ed37-5c36-a112-7a8dfe11f84a'::uuid),
+    ('0017189e-296b-5746-9e4d-00addda7b435'::uuid, '7ad2e72d-48ef-5d2d-a30c-465a95e9fe93'::uuid, 'PRODUCT', NULL::uuid, 'e20c1edf-3015-4b9d-bbd5-b283ad0a0f44'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', 'b74bebb7-006d-5aea-ae00-3348afd94a89'::uuid),
+    ('f2dff67f-66cb-5da1-9393-8e0807484c5e'::uuid, '79c303c0-dbbc-52a4-a445-8952a6277c89'::uuid, 'PRODUCT', NULL::uuid, '0b889781-de86-4115-9a62-ae1540e1140d'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', 'f9b77736-3ae3-5328-9993-6c3f952704de'::uuid),
+    ('9e16def8-71e5-52e5-9efa-97624aab426d'::uuid, '9c6eb492-2b26-5f0e-9edc-968ee6d20549'::uuid, 'PRODUCT', NULL::uuid, '5a3b2909-d914-49e9-943c-b189f93b99b6'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', '3ad1b38a-70c7-5580-b13c-9b36351afe5a'::uuid),
+    ('ec90000b-b3f4-5d76-9392-ed386a3d5cb3'::uuid, '884e176e-3917-5bb1-a8e2-ceb57ca89ca6'::uuid, 'PRODUCT', NULL::uuid, '045d2c3e-4d9d-4594-b941-d9ecce15a6b6'::uuid, NULL::uuid, 'MASTER', 0, 'REVIEW_REQUIRED', 'f46719ed-1f57-5494-b32f-57bff9627580'::uuid)
+)
+,expected_issues(id, issue_code, severity, subject_type, subject_id, status, source_evidence_id, details) AS (
+  VALUES
+    ('7159d07f-c20d-59f6-b732-c498d054b208'::uuid, 'WRONG_MASTER', 'BLOCKER', 'PRODUCT', '7b347c71-0cc9-41de-ad29-d8674fb5da1e'::uuid, 'OPEN', 'd01becba-02d1-5244-b0b2-c76096467434'::uuid, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","manifest_status":"NO_VALID_MASTER","blocking_reason":"No unambiguous source image for exact SKU/variant"}'::jsonb),
+    ('87db6493-976b-5d03-8042-e1d8643c2f44'::uuid, 'WRONG_MASTER', 'BLOCKER', 'PRODUCT', '5e03ff91-3b06-467c-a4ea-0d1f061b7eb4'::uuid, 'OPEN', 'a2c76b43-7965-5cf6-a397-c54cd7cece88'::uuid, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","manifest_status":"NO_VALID_MASTER","blocking_reason":"No unambiguous source image for exact SKU/variant"}'::jsonb),
+    ('57ff4c1e-8e43-578f-99b8-f43770c4ae91'::uuid, 'WRONG_MASTER', 'BLOCKER', 'PRODUCT', '8c318ffb-b6ad-4568-a158-9c381051190a'::uuid, 'OPEN', 'f3d79381-e1b2-52c7-997b-1ad42cf8b2c0'::uuid, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","manifest_status":"NO_VALID_MASTER","blocking_reason":"No unambiguous source image for exact SKU/variant"}'::jsonb),
+    ('d2a98e31-a3de-528f-a92a-a2b5ba82eb95'::uuid, 'WRONG_MASTER', 'BLOCKER', 'PRODUCT', 'ce09b0d8-0fb9-4616-974a-db6b77f8e97d'::uuid, 'OPEN', 'b06d9394-8011-535c-a4db-0f73c0096d94'::uuid, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","manifest_status":"NO_VALID_MASTER","blocking_reason":"No unambiguous source image for exact SKU/variant"}'::jsonb),
+    ('214c4661-c949-5671-a6db-3bdf6dd3bfdf'::uuid, 'IDENTITY_AMBIGUOUS', 'BLOCKER', 'PRODUCT', 'b71bc6f7-1b56-4405-9035-c7e5c59ed0bf'::uuid, 'OPEN', '5393a357-20dd-57c2-ae35-1cd222b13321'::uuid, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","manifest_status":"BANK_MATCH_REVIEW_REQUIRED","blocking_reason":"No deterministic bank identity established from available snapshot and manifest evidence"}'::jsonb),
+    ('38b461e4-f125-59ab-8674-58638ffb8991'::uuid, 'IDENTITY_AMBIGUOUS', 'BLOCKER', 'PRODUCT', '2ec3bee5-e6eb-461c-b865-53a281a5bbdf'::uuid, 'OPEN', 'f7501dc3-b40c-5fe7-8de7-fd14868785d7'::uuid, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","manifest_status":"BANK_MATCH_REVIEW_REQUIRED","blocking_reason":"No deterministic bank identity established from available snapshot and manifest evidence"}'::jsonb),
+    ('c1ec4d76-88e6-50d3-a2ba-87a130d45efc'::uuid, 'IDENTITY_AMBIGUOUS', 'BLOCKER', 'PRODUCT', 'bedfed32-c529-4fb4-80f2-75be2ca8c09d'::uuid, 'OPEN', 'd37dbbfc-5dd9-5e36-bf25-4db5839f0d8b'::uuid, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","manifest_status":"BANK_MATCH_REVIEW_REQUIRED","blocking_reason":"No deterministic bank identity established from available snapshot and manifest evidence"}'::jsonb),
+    ('b4a27f6e-daae-500d-87e6-8b125496101c'::uuid, 'IDENTITY_AMBIGUOUS', 'BLOCKER', 'PRODUCT', '84c5e928-4005-4909-afbf-ee7fba3ccd19'::uuid, 'OPEN', 'c3c765e2-eee8-58b3-a123-7a719362f1b3'::uuid, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","manifest_status":"BANK_MATCH_REVIEW_REQUIRED","blocking_reason":"No deterministic bank identity established from available snapshot and manifest evidence"}'::jsonb),
+    ('54fb6a6f-02e1-5fd9-a92c-6f8a4c80877a'::uuid, 'IDENTITY_AMBIGUOUS', 'BLOCKER', 'PRODUCT', '3f011890-ce8f-4294-a715-762858c8221d'::uuid, 'OPEN', 'd207c6d5-bdf5-500b-b2f0-5c53a13212c8'::uuid, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","manifest_status":"BANK_MATCH_REVIEW_REQUIRED","blocking_reason":"No deterministic bank identity established from available snapshot and manifest evidence"}'::jsonb),
+    ('44e197b3-007b-55c2-9fae-b84b41041fa2'::uuid, 'IDENTITY_AMBIGUOUS', 'BLOCKER', 'PRODUCT', 'e4bb005b-f7f2-45eb-81e1-ddcdd842a55d'::uuid, 'OPEN', '3e4d7ba7-866d-58a7-801f-96ddd94f522c'::uuid, '{"operation_id":"G4_GOVERNANCE_PILOT_V1","manifest_status":"BANK_MATCH_REVIEW_REQUIRED","blocking_reason":"No deterministic bank identity established from available snapshot and manifest evidence"}'::jsonb)
+)
+,expected_state(id, producto_b2b_id, identity_status, data_status, content_status, image_status, review_status) AS (
+  VALUES
+    ('86b8ce0b-3ccd-503d-916b-b3514bc1c345'::uuid, 'dc7cc3e7-aa00-47a3-b4e8-edde4bc0b6d0'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('fb7fc290-e005-5440-9a33-c3f4f0dc5389'::uuid, '7e09a141-a116-48a9-bc9b-35f2b0898045'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('c93b851e-e892-559c-8416-4344cdc51bce'::uuid, 'eb35ff6c-1d67-4630-8799-2df62b95e79a'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('379f2bf6-5327-5c37-abab-6e29aa30d484'::uuid, '7955df9c-8e9c-4203-9f65-505faf5d69cb'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('2f224bc1-21f3-55bc-a18e-956b13e9afa8'::uuid, '16dfa60b-f22f-4304-9899-14bdc4d63de4'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('77c18e4a-3da3-533b-a8bc-09150d1819f0'::uuid, '0b889781-de86-4115-9a62-ae1540e1140d'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('42f7cef8-dda8-534a-bb8f-1a8bcda1ab4e'::uuid, 'a8214d09-27a5-48b0-aa7e-68ec8a2707d9'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('56052ba2-f9ee-5abd-b682-87374dd8433d'::uuid, 'b7d2252a-9a16-4caa-9651-d8d7fdc7fe11'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('c9046ebb-2a2f-58f9-abaf-674c89f43b00'::uuid, '115f29be-eb6d-4606-aa48-1c2ec82a550d'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('7e16d2cd-5eb0-5809-b7e5-4ba69520eec0'::uuid, '3b1efba6-a127-49f4-b98b-fa4eb0b84249'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('c33e77eb-ef6b-54df-a7b4-f1ae5c17b75b'::uuid, '38edd673-b077-4c9a-a0f1-ceb4e3d8a9aa'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('046cf6de-5f1e-53c7-a694-71a46721afa4'::uuid, '6a4f917b-f915-4da2-ae22-58ef089b2ecc'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('8aafd120-56cf-58bd-ba08-cc80057a2b61'::uuid, '0c5fd12d-e232-4c0c-ae64-5524da62cdf9'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('aa4f8bde-bf67-5ab3-af98-129e06258863'::uuid, 'd129e6c7-ec52-4d0b-a304-33f7c9c1b316'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('82a0f052-d0c9-5ea6-89e5-9b8402967a47'::uuid, '9287b3dd-d356-4bf6-b41c-c0728cbfaadb'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('da66af4a-6cbc-5030-a7cf-2f4df16a72fe'::uuid, '5a3b2909-d914-49e9-943c-b189f93b99b6'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('ca698e67-5bb5-5740-925e-51a622fbca6b'::uuid, '045d2c3e-4d9d-4594-b941-d9ecce15a6b6'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('8c307840-856a-5cff-a0e4-31e69862e037'::uuid, 'e20c1edf-3015-4b9d-bbd5-b283ad0a0f44'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('3e1013a1-1a1d-53d0-8426-f2091ef68482'::uuid, '9acc5a78-2b14-4db9-94df-a8dc2112fa60'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('f889c192-39cc-51e0-8966-666e5b2a065f'::uuid, '2e43d69f-5b79-45c6-9a73-d71f27dc2a02'::uuid, 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW', 'NEEDS_REVIEW'),
+    ('e8b6988a-be40-5714-baef-a40a57e6ef4a'::uuid, '7b347c71-0cc9-41de-ad29-d8674fb5da1e'::uuid, 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED'),
+    ('1306bf11-3fd1-5290-9b1a-b82fbef54e5c'::uuid, '5e03ff91-3b06-467c-a4ea-0d1f061b7eb4'::uuid, 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED'),
+    ('f87feacf-63c8-5c23-bbd6-9ff821c480cb'::uuid, '8c318ffb-b6ad-4568-a158-9c381051190a'::uuid, 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED'),
+    ('208b3dd8-4c9a-5b05-83d9-406c15104c5a'::uuid, 'ce09b0d8-0fb9-4616-974a-db6b77f8e97d'::uuid, 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED'),
+    ('c257442f-0f4e-514b-9f03-c6bae4d68592'::uuid, 'b71bc6f7-1b56-4405-9035-c7e5c59ed0bf'::uuid, 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED'),
+    ('531442b4-8b65-502f-ab57-5fda3d68ef43'::uuid, '2ec3bee5-e6eb-461c-b865-53a281a5bbdf'::uuid, 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED'),
+    ('620c8a22-e061-56a8-a640-72dbf20c6582'::uuid, 'bedfed32-c529-4fb4-80f2-75be2ca8c09d'::uuid, 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED'),
+    ('a7dd9c0d-7458-58e9-8f5c-86e982af44c8'::uuid, '84c5e928-4005-4909-afbf-ee7fba3ccd19'::uuid, 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED'),
+    ('61d6061c-403d-5a8c-9f37-91e980e01a83'::uuid, '3f011890-ce8f-4294-a715-762858c8221d'::uuid, 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED'),
+    ('11d424e0-3a12-518e-82ef-7e0b59e72b4f'::uuid, 'e4bb005b-f7f2-45eb-81e1-ddcdd842a55d'::uuid, 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED', 'BLOCKED')
+)
+,expected_audits(id, actor_type, action, entity_type, entity_id, checkpoint, metadata) AS (
+  VALUES
+    ('aef21182-94c6-5e0d-95fd-fb51cd3e23f8'::uuid, 'SYSTEM', 'PILOT_PACKAGE_PREPARED', 'CATALOG_GOVERNANCE_PILOT', NULL::uuid, 'CHK-CATGOV-03D', '{"operation_id":"G4_GOVERNANCE_PILOT_V1","product_count":30,"source_document_count":2}'::jsonb),
+    ('3336142b-eefa-55f1-b6db-22dd9574a1a5'::uuid, 'SYSTEM', 'SOURCE_REGISTRATION_PLANNED', 'CATALOG_SOURCE_DOCUMENTS', NULL::uuid, 'CHK-CATGOV-03D', '{"operation_id":"G4_GOVERNANCE_PILOT_V1","count":2}'::jsonb),
+    ('c0260501-0049-5283-a3bc-43972e300aa6'::uuid, 'SYSTEM', 'SOURCE_EVIDENCE_PLANNED', 'CATALOG_SOURCE_EVIDENCE', NULL::uuid, 'CHK-CATGOV-03D', '{"operation_id":"G4_GOVERNANCE_PILOT_V1","count":61}'::jsonb),
+    ('ecd5fb57-c7e9-599c-9fcd-89f1c209d9aa'::uuid, 'SYSTEM', 'GOVERNANCE_STATE_INITIALIZATION_PLANNED', 'CATALOG_GOVERNANCE_STATE', NULL::uuid, 'CHK-CATGOV-03D', '{"operation_id":"G4_GOVERNANCE_PILOT_V1","needs_review":20,"blocked":10}'::jsonb)
+)
+,actual_docs AS (SELECT id, source_type, source_uri, original_filename, sha256, rights_status, metadata FROM public.catalog_source_documents WHERE id IN (SELECT id FROM expected_docs))
+,actual_evidence AS (SELECT id, source_document_id, subject_type, subject_id, field_path, raw_value, evidence_excerpt, confidence, status FROM public.catalog_source_evidence WHERE id IN (SELECT id FROM expected_evidence))
+,actual_content AS (SELECT id, producto_b2b_id, version, is_current, canonical_name, short_description, structured_features, technical_specifications, available_colors, status FROM public.catalog_product_content WHERE id IN (SELECT id FROM expected_content))
+,actual_assets AS (SELECT id, source_document_id, source_uri, original_filename, sha256, file_size_bytes, mime_type, width, height, rights_status, identity_status, technical_status, visual_status, approval_status, public_url, version, metadata FROM public.catalog_asset_registry WHERE id IN (SELECT id FROM expected_assets))
+,actual_links AS (SELECT id, asset_id, target_type, model_id, producto_b2b_id, oferta_id, role, display_order, link_status, evidence_id FROM public.catalog_product_asset_links WHERE id IN (SELECT id FROM expected_links))
+,actual_issues AS (SELECT id, issue_code, severity, subject_type, subject_id, status, source_evidence_id, details FROM public.catalog_quality_issues WHERE id IN (SELECT id FROM expected_issues))
+,actual_state AS (SELECT id, producto_b2b_id, identity_status, data_status, content_status, image_status, review_status FROM public.catalog_governance_state WHERE id IN (SELECT id FROM expected_state))
+,actual_audits AS (SELECT id, actor_type, action, entity_type, entity_id, checkpoint, metadata FROM public.audit_events WHERE id IN (SELECT id FROM expected_audits))
+,scoped_content AS (SELECT id, producto_b2b_id FROM public.catalog_product_content WHERE producto_b2b_id IN (SELECT id FROM expected_products))
+,scoped_state AS (SELECT id, producto_b2b_id FROM public.catalog_governance_state WHERE producto_b2b_id IN (SELECT id FROM expected_products))
+,docs_diff AS (
+  SELECT count(*)::bigint AS n FROM (
+    (
+    SELECT id, source_type, source_uri, original_filename, sha256, rights_status, metadata FROM expected_docs
+    EXCEPT
+    SELECT id, source_type, source_uri, original_filename, sha256, rights_status, metadata FROM actual_docs
+    )
+    UNION ALL
+    (
+    SELECT id, source_type, source_uri, original_filename, sha256, rights_status, metadata FROM actual_docs
+    EXCEPT
+    SELECT id, source_type, source_uri, original_filename, sha256, rights_status, metadata FROM expected_docs
+    )
+  ) d
+)
+,evidence_diff AS (
+  SELECT count(*)::bigint AS n FROM (
+    (
+    SELECT id, source_document_id, subject_type, subject_id, field_path, raw_value, evidence_excerpt, confidence, status FROM expected_evidence
+    EXCEPT
+    SELECT id, source_document_id, subject_type, subject_id, field_path, raw_value, evidence_excerpt, confidence, status FROM actual_evidence
+    )
+    UNION ALL
+    (
+    SELECT id, source_document_id, subject_type, subject_id, field_path, raw_value, evidence_excerpt, confidence, status FROM actual_evidence
+    EXCEPT
+    SELECT id, source_document_id, subject_type, subject_id, field_path, raw_value, evidence_excerpt, confidence, status FROM expected_evidence
+    )
+  ) d
+)
+,content_diff AS (
+  SELECT count(*)::bigint AS n FROM (
+    (
+    SELECT id, producto_b2b_id, version, is_current, canonical_name, short_description, structured_features, technical_specifications, available_colors, status FROM expected_content
+    EXCEPT
+    SELECT id, producto_b2b_id, version, is_current, canonical_name, short_description, structured_features, technical_specifications, available_colors, status FROM actual_content
+    )
+    UNION ALL
+    (
+    SELECT id, producto_b2b_id, version, is_current, canonical_name, short_description, structured_features, technical_specifications, available_colors, status FROM actual_content
+    EXCEPT
+    SELECT id, producto_b2b_id, version, is_current, canonical_name, short_description, structured_features, technical_specifications, available_colors, status FROM expected_content
+    )
+  ) d
+)
+,assets_diff AS (
+  SELECT count(*)::bigint AS n FROM (
+    (
+    SELECT id, source_document_id, source_uri, original_filename, sha256, file_size_bytes, mime_type, width, height, rights_status, identity_status, technical_status, visual_status, approval_status, public_url, version, metadata FROM expected_assets
+    EXCEPT
+    SELECT id, source_document_id, source_uri, original_filename, sha256, file_size_bytes, mime_type, width, height, rights_status, identity_status, technical_status, visual_status, approval_status, public_url, version, metadata FROM actual_assets
+    )
+    UNION ALL
+    (
+    SELECT id, source_document_id, source_uri, original_filename, sha256, file_size_bytes, mime_type, width, height, rights_status, identity_status, technical_status, visual_status, approval_status, public_url, version, metadata FROM actual_assets
+    EXCEPT
+    SELECT id, source_document_id, source_uri, original_filename, sha256, file_size_bytes, mime_type, width, height, rights_status, identity_status, technical_status, visual_status, approval_status, public_url, version, metadata FROM expected_assets
+    )
+  ) d
+)
+,links_diff AS (
+  SELECT count(*)::bigint AS n FROM (
+    (
+    SELECT id, asset_id, target_type, model_id, producto_b2b_id, oferta_id, role, display_order, link_status, evidence_id FROM expected_links
+    EXCEPT
+    SELECT id, asset_id, target_type, model_id, producto_b2b_id, oferta_id, role, display_order, link_status, evidence_id FROM actual_links
+    )
+    UNION ALL
+    (
+    SELECT id, asset_id, target_type, model_id, producto_b2b_id, oferta_id, role, display_order, link_status, evidence_id FROM actual_links
+    EXCEPT
+    SELECT id, asset_id, target_type, model_id, producto_b2b_id, oferta_id, role, display_order, link_status, evidence_id FROM expected_links
+    )
+  ) d
+)
+,issues_diff AS (
+  SELECT count(*)::bigint AS n FROM (
+    (
+    SELECT id, issue_code, severity, subject_type, subject_id, status, source_evidence_id, details FROM expected_issues
+    EXCEPT
+    SELECT id, issue_code, severity, subject_type, subject_id, status, source_evidence_id, details FROM actual_issues
+    )
+    UNION ALL
+    (
+    SELECT id, issue_code, severity, subject_type, subject_id, status, source_evidence_id, details FROM actual_issues
+    EXCEPT
+    SELECT id, issue_code, severity, subject_type, subject_id, status, source_evidence_id, details FROM expected_issues
+    )
+  ) d
+)
+,state_diff AS (
+  SELECT count(*)::bigint AS n FROM (
+    (
+    SELECT id, producto_b2b_id, identity_status, data_status, content_status, image_status, review_status FROM expected_state
+    EXCEPT
+    SELECT id, producto_b2b_id, identity_status, data_status, content_status, image_status, review_status FROM actual_state
+    )
+    UNION ALL
+    (
+    SELECT id, producto_b2b_id, identity_status, data_status, content_status, image_status, review_status FROM actual_state
+    EXCEPT
+    SELECT id, producto_b2b_id, identity_status, data_status, content_status, image_status, review_status FROM expected_state
+    )
+  ) d
+)
+,audits_diff AS (
+  SELECT count(*)::bigint AS n FROM (
+    (
+    SELECT id, actor_type, action, entity_type, entity_id, checkpoint, metadata FROM expected_audits
+    EXCEPT
+    SELECT id, actor_type, action, entity_type, entity_id, checkpoint, metadata FROM actual_audits
+    )
+    UNION ALL
+    (
+    SELECT id, actor_type, action, entity_type, entity_id, checkpoint, metadata FROM actual_audits
+    EXCEPT
+    SELECT id, actor_type, action, entity_type, entity_id, checkpoint, metadata FROM expected_audits
+    )
+  ) d
+)
+,metrics AS (
+  SELECT
+    (SELECT count(*) FROM actual_docs) AS source_documents,
+    (SELECT count(*) FROM actual_evidence) AS source_evidence,
+    (SELECT count(*) FROM actual_content) AS content,
+    (SELECT count(*) FROM actual_assets) AS assets,
+    (SELECT count(*) FROM actual_links) AS asset_links,
+    (SELECT count(*) FROM actual_issues) AS issues,
+    (SELECT count(*) FROM actual_state) AS governance_state,
+    (SELECT count(*) FROM actual_audits) AS audit_events,
+    (SELECT count(*) FROM actual_state WHERE identity_status = 'NEEDS_REVIEW' AND data_status = 'NEEDS_REVIEW' AND content_status = 'NEEDS_REVIEW' AND image_status = 'NEEDS_REVIEW' AND review_status = 'NEEDS_REVIEW') AS needs_review,
+    (SELECT count(*) FROM actual_state WHERE identity_status = 'BLOCKED' AND data_status = 'BLOCKED' AND content_status = 'BLOCKED' AND image_status = 'BLOCKED' AND review_status = 'BLOCKED') AS blocked,
+    (SELECT count(*) FROM actual_state WHERE identity_status = 'EDITORIAL_READY' OR data_status = 'EDITORIAL_READY' OR content_status = 'EDITORIAL_READY' OR image_status = 'EDITORIAL_READY' OR review_status = 'EDITORIAL_READY') AS editorial_ready,
+    (SELECT count(*) FROM public.catalog_product_models WHERE model_key IN ('G4_LOBBY','G4_JELLO_COLORS_BIO','G4_JELLO_ZEN','G4_VASO_NOMI','G4_SPLASH')) AS models,
+    (SELECT count(*) FROM public.catalog_product_model_members WHERE producto_b2b_id IN (SELECT id FROM expected_products)) AS memberships,
+    (SELECT count(*) FROM public.catalog_approvals WHERE subject_id IN (SELECT id FROM expected_products)) AS approvals,
+    (SELECT count(*) FROM public.catalog_attribute_values WHERE subject_type = 'PRODUCT' AND subject_id IN (SELECT id FROM expected_products)) AS attribute_values,
+    (SELECT count(*) FROM (SELECT producto_b2b_id FROM scoped_state GROUP BY producto_b2b_id HAVING count(*) <> 1) d) AS duplicate_product_count,
+    (SELECT count(*) FROM scoped_state s WHERE s.id NOT IN (SELECT id FROM expected_state)) + (SELECT count(*) FROM scoped_content c WHERE c.id NOT IN (SELECT id FROM expected_content)) AS unexpected_pilot_ids
+  )
+,fk AS (
+  SELECT
+    (SELECT count(*) FROM actual_evidence e LEFT JOIN actual_docs d ON d.id = e.source_document_id WHERE d.id IS NULL) +
+    (SELECT count(*) FROM actual_assets a LEFT JOIN actual_docs d ON d.id = a.source_document_id WHERE d.id IS NULL) +
+    (SELECT count(*) FROM actual_content c LEFT JOIN expected_products p ON p.id = c.producto_b2b_id WHERE p.id IS NULL) +
+    (SELECT count(*) FROM actual_state s LEFT JOIN expected_products p ON p.id = s.producto_b2b_id WHERE p.id IS NULL) +
+    (SELECT count(*) FROM actual_links l LEFT JOIN actual_assets a ON a.id = l.asset_id WHERE a.id IS NULL) +
+    (SELECT count(*) FROM actual_links l LEFT JOIN actual_evidence e ON e.id = l.evidence_id WHERE e.id IS NULL) +
+    (SELECT count(*) FROM actual_links l LEFT JOIN expected_products p ON p.id = l.producto_b2b_id WHERE p.id IS NULL) +
+    (SELECT count(*) FROM actual_issues i LEFT JOIN actual_evidence e ON e.id = i.source_evidence_id WHERE e.id IS NULL) AS invalid_fk_count
+)
+SELECT
+  m.source_documents, m.source_evidence, m.content, m.assets, m.asset_links, m.issues, m.governance_state, m.audit_events,
+  0 AS attribute_definitions, m.attribute_values, m.models, m.memberships, m.approvals,
+  m.needs_review, m.blocked, m.editorial_ready,
+  30 AS canonical_product_ids_expected, (SELECT count(DISTINCT producto_b2b_id) FROM scoped_state) AS canonical_product_ids_found,
+  m.duplicate_product_count, m.unexpected_pilot_ids, fk.invalid_fk_count,
+  docs_diff.n AS docs_field_differences, evidence_diff.n AS evidence_field_differences, content_diff.n AS content_field_differences, assets_diff.n AS asset_field_differences, links_diff.n AS asset_link_field_differences, issues_diff.n AS issue_field_differences, state_diff.n AS state_field_differences, audits_diff.n AS audit_field_differences,
+  (m.source_documents = 2 AND m.source_evidence = 61 AND m.content = 30 AND m.assets = 31 AND m.asset_links = 31 AND m.issues = 10 AND m.governance_state = 30 AND m.audit_events = 4 AND m.needs_review = 20 AND m.blocked = 10 AND m.editorial_ready = 0 AND m.attribute_values = 0 AND m.models = 0 AND m.memberships = 0 AND m.approvals = 0 AND m.duplicate_product_count = 0 AND m.unexpected_pilot_ids = 0 AND fk.invalid_fk_count = 0 AND (SELECT count(DISTINCT producto_b2b_id) FROM scoped_state) = 30 AND docs_diff.n = 0 AND evidence_diff.n = 0 AND content_diff.n = 0 AND assets_diff.n = 0 AND links_diff.n = 0 AND issues_diff.n = 0 AND state_diff.n = 0 AND audits_diff.n = 0) AS postcheck_pass
+FROM metrics m CROSS JOIN fk CROSS JOIN docs_diff CROSS JOIN evidence_diff CROSS JOIN content_diff CROSS JOIN assets_diff CROSS JOIN links_diff CROSS JOIN issues_diff CROSS JOIN state_diff CROSS JOIN audits_diff;

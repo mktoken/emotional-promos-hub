@@ -307,3 +307,23 @@ negativos fuera del conjunto, sin insertarlos.
 No crear approvals ficticias, no transformar un master integrado en
 `IMAGE_PASS`, no agrupar Imperial/Border/Koi automáticamente y no marcar
 `EDITORIAL_READY` por defecto.
+
+## Controlled Governance Seed — operación certificada en Build 3
+
+Para imports data-only sobre tablas Governance, el patrón aprobado es:
+
+1. versionar payload y archivos SQL;
+2. usar IDs deterministas y hash manifest;
+3. ejecutar un PRECHECK SELECT-only;
+4. ejecutar APPLY INSERT-only solo si el precheck pasa;
+5. ejecutar POSTCHECK SELECT-only;
+6. conservar rollback compensatorio determinista;
+7. ejecutar live QA de queue/detail/D4;
+8. verificar explícitamente que runtime, Storage, providers y publicación no cambiaron;
+9. evitar migración cuando no se requiere DDL.
+
+El query executor interno de Lovable tiene `SELECT = CONFIRMED` e `INSERT = CONFIRMED` para esta operación concreta. Esta capacidad no se generaliza a SQL/DML arbitrario.
+
+Cada uso futuro exige archivo versionado, hash verificado, precondiciones, tablas autorizadas de alcance estrecho, postcheck, rollback y autorización explícita. No usar Supabase externo, CLI externo, migración fallback, retry automático ni un segundo APPLY.
+
+Build 3 quedó `CLOSED / PASS`; el siguiente paso autorizado es `G4 PILOT HUMAN REVIEW`. No realizar nuevas escrituras hasta aprobar el plan de revisión humana.

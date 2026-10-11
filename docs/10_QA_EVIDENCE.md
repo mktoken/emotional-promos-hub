@@ -2186,3 +2186,50 @@ Work debe preparar, sin aplicar:
 Lovable aplicaría únicamente el paquete interno aprobado, con transacción,
 auditoría y rollback controlado. No se crea ningún artefacto de ejecución en
 03C.
+
+## CHK-CATGOV-03G — Final Build 3 Certification (2026-10-10)
+
+### Provenance
+
+La evidencia está dividida entre `REPRODUCED_BY_WORK` y `LIVE_RUNTIME_EVIDENCE_FROM_LOVABLE`. Work no reprodujo runtime, no ejecutó SQL, no usó Lovable y no debe presentar la evidencia live como ejecución propia.
+
+### Lineage de ejecución
+
+- R1: `PRECHECK_V1` falló con PostgreSQL `42601` por ausencia de row constructors en `VALUES`; se detuvo antes de APPLY; DB writes `0`.
+- R2: `PRECHECK_V2` falló con PostgreSQL `42601` por alias CTE tipados; se detuvo antes de APPLY; DB writes `0`.
+- R3: `PRECHECK_V3 PASS`, `APPLY_V1 PASS`, 199 filas, postcheck runtime verificado, console QA PASS y D4 PASS.
+
+### Resultado live
+
+- Query executor INSERT: `AVAILABLE` para este seed controlado.
+- Rows: 2/61/30/31/31/10/30/4.
+- Estados: 20 `NEEDS_REVIEW`, 10 `BLOCKED`, 0 `EDITORIAL_READY`.
+- Coverage: 30/30, unexpected IDs `0`, duplicate Governance products `0`, invalid FKs `0`.
+- Queue: `PASS`; detail: `PASS`; D4: `PASS`.
+- D4: `readiness_row_count = 1815`, `distinct_product_count = 1815`, `duplicate_product_count = 0`.
+
+### Detalle representativo
+
+- `lob-sol-azu` (`PHASE_3_READY`): `NEEDS_REVIEW`, sin issues, 2 assets (`MASTER` + `ALT`), content presente.
+- `imp-neg-oro` (`NO_VALID_MASTER`): `BLOCKED`, `WRONG_MASTER`, `BLOCKER / OPEN`, sin assets.
+- `jet-met-neg` (`BANK_MATCH_REVIEW_REQUIRED`): `BLOCKED`, `IDENTITY_AMBIGUOUS`, `BLOCKER / OPEN`, sin assets.
+
+### Zero-write y replay
+
+Live evidence reportó 0 writes en productos runtime, imágenes, pricing, stock, offers/mappings, categorías, publicación y Storage; 0 provider calls y 0 cambios frontend. Esta es evidencia live de Lovable complementada por verificación estática de targets en Work.
+
+El replay del PRECHECK fue `false` porque el seed determinista ya existía. `REPLAY SAFETY = PASS BY PRECONDITION GUARD`; no se ejecutó APPLY nuevamente.
+
+Rollback no ejecutado. `ROLLBACK READINESS = PASS` por hash aprobado, IDs deterministas, orden inverso seguro para FK y ausencia de targets runtime.
+
+### Defecto documentado de POSTCHECK_V2
+
+`POSTCHECK_V2` tenía un defecto de artefacto no mutante: usaba `FROM docs`, `FROM evidence`, `FROM content`, `FROM assets`, `FROM links`, `FROM issues`, `FROM state` y `FROM audits` en lugar de los CTE `expected_*`. La consulta read-only corregida durante el QA live devolvió `postcheck_pass = true` y cero diferencias.
+
+`POSTCHECK_V2` permanece sin modificar como evidencia histórica. `POSTCHECK_V3` corrige únicamente esas 16 referencias; hash SHA-256: `9efccf1e5063be88bf4e222e9b28a6c72d904913c4fac384a2b77e69765b16ee`. V3 no fue ejecutado contra producción.
+
+### Phase 3B
+
+`G4_PHASE3B_RUNTIME_STATE = VERIFIED WITH EXACT EVIDENCE`: 121 integrados y 1 skip documentado (`lla-SiO-azu`). Build 3 no modificó assets runtime ni referencias productivas.
+
+Build 3 fue un `CONTROLLED GOVERNANCE SEED / SHADOW IMPORT` aplicado mediante el query executor interno de Lovable, no una migración, no un runtime catalog migration y no una operación externa de Supabase.

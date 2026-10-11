@@ -1868,3 +1868,53 @@ autorización posterior.
 
 **NEXT:** preparar el paquete controlado de Build 3 para revisión; **NO
 EJECUTAR BUILD 3** y no iniciar una fase pública.
+
+## CHK-CATGOV-03G — Final Build 3 Certification (2026-10-10)
+
+Build 3 queda **CLOSED / PASS** como **CONTROLLED GOVERNANCE SEED / SHADOW IMPORT**. Esta sección supersede el estado de planificación previa que indicaba que Build 3 aún no se había ejecutado.
+
+La procedencia de evidencia queda separada:
+
+- `REPRODUCED_BY_WORK`: baseline Git, archivos, hashes, payload, SQL, IDs deterministas, counts codificados, seguridad estática y ausencia de targets runtime.
+- `LIVE_RUNTIME_EVIDENCE_FROM_LOVABLE`: PRECHECK, aceptación de INSERT, filas insertadas, estado post-apply, QA de console/detail/D4, replay guard y zero-write runtime.
+
+### Resultado live canónico
+
+- Fuente: `CHK-CATGOV-03F-R3`.
+- PRECHECK_V3: `PASS`; `precheck_pass = true`; 30/30 productos runtime; preexistentes Governance `0`; colisiones deterministas `0`.
+- Query executor INSERT: `AVAILABLE` para esta operación controlada.
+- APPLY_V1: `PASS`; 8 statements; 199 filas; partial apply `NO`; rollback `NOT EXECUTED`.
+- Counts: 2 source documents, 61 evidence, 30 content, 31 assets, 31 asset links, 10 issues, 30 Governance state y 4 audit events.
+- Governance states: 20 `NEEDS_REVIEW`, 10 `BLOCKED`, 0 `EDITORIAL_READY`.
+- Coverage: 30/30 productos canónicos exactamente una vez; unexpected IDs `0`; duplicate products `0`; invalid FKs `0`.
+- Queue, detail y D4: `PASS`; `readiness_row_count = 1815`, `distinct_product_count = 1815`, `duplicate_product_count = 0`.
+- Runtime products restantes `NOT_REVIEWED`: `1785`; ningún producto fue aprobado o publicado automáticamente.
+
+### Evidencia representativa
+
+- `PHASE_3_READY` `lob-sol-azu`: `NEEDS_REVIEW`, 0 issues, 2 assets (`MASTER` + `ALT`), content presente.
+- `NO_VALID_MASTER` `imp-neg-oro`: `BLOCKED`, `WRONG_MASTER`, `BLOCKER / OPEN`, 0 assets, content `Imperial`.
+- `BANK_MATCH_REVIEW_REQUIRED` `jet-met-neg`: `BLOCKED`, `IDENTITY_AMBIGUOUS`, `BLOCKER / OPEN`, 0 assets, content `Bolígrafo Jet`.
+
+### Inmutabilidad runtime y replay
+
+Live QA reportó cero writes en `productos_b2b`, imágenes runtime, pricing, stock, offers/mappings, categorías, publicación y Storage; cero provider calls y cero cambios de frontend público. La clasificación es `ZERO-RUNTIME-WRITE = LIVE_RUNTIME_EVIDENCE_FROM_LOVABLE + STATIC_TARGET_VERIFICATION_BY_WORK`.
+
+El replay del PRECHECK devolvió `precheck_pass = false` porque los IDs deterministas ya existían: `REPLAY SAFETY = PASS BY PRECONDITION GUARD`. APPLY no debe repetirse.
+
+### Postcheck y Phase 3B
+
+`POSTCHECK_V2` queda registrado honestamente como `ARTIFACT DEFECT / NON-MUTATING`: contenía referencias a CTE inexistentes (`docs`, `evidence`, `content`, `assets`, `links`, `issues`, `state`, `audits`). Durante el QA live, una consulta read-only corregida devolvió `postcheck_pass = true` con cero diferencias. `POSTCHECK_V2` permanece histórico y `POSTCHECK_V3` es el artefacto corregido; no se ejecutó V3 contra producción en Work.
+
+`G4_PHASE3B_RUNTIME_STATE = VERIFIED WITH EXACT EVIDENCE`: 121 integraciones, 1 skip documentado (`lla-SiO-azu`). Build 3 no modificó assets runtime de Phase 3B.
+
+### Estado canónico
+
+- `CHK-CATGOV-03C`: `CLOSED / PASS`.
+- `CHK-CATGOV-03D`: `CLOSED / PASS`.
+- `CHK-CATGOV-03E` y su remediation lineage: `CLOSED / PASS`.
+- `CHK-CATGOV-03F-R3`: `CLOSED / PASS`.
+- `BUILD 3 — G4 GOVERNANCE PILOT`: `CLOSED / PASS`.
+- Próximo paso: **G4 PILOT HUMAN REVIEW**.
+
+No iniciar otro Build, no ejecutar Lovable Build y no realizar nuevas escrituras de DB hasta que se apruebe el plan de revisión humana.

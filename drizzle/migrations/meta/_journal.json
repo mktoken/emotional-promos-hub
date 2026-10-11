@@ -36,6 +36,13 @@
       "when": 1791679687000,
       "tag": "0004_catalog_governance_admin_console_contract_fix_v1",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791682194484,
+      "tag": "0005_catalog_governance_admin_console_contract_fix_v1_runtime_deploy",
+      "breakpoints": true
     }
   ]
 }

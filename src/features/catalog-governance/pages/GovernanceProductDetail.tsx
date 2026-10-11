@@ -93,7 +93,7 @@ export default function GovernanceProductDetail() {
         <h1 className="text-xl sm:text-2xl font-semibold">{p.name ?? p.producto_b2b_id}</h1>
         <p className="text-xs text-muted-foreground font-mono">{p.provider} · {p.sku_base ?? p.id_interno} · {p.producto_b2b_id}</p>
         <div className="flex flex-wrap gap-2" aria-label="Estados separados">
-          <span className="text-xs text-muted-foreground self-center">Governance status:</span><TextBadge value={gs?.review_status ?? "NOT_REVIEWED"} />
+          <span className="text-xs text-muted-foreground self-center">Governance status:</span><TextBadge value={String(gs?.review_status ?? "NOT_REVIEWED")} />
           <span className="text-xs text-muted-foreground self-center">Public eligibility:</span><StatusBadge ok={r.stock_public_eligibility_pass} yes="Elegible" no="No elegible" />
           <span className="text-xs text-muted-foreground self-center">Publication status:</span><StatusBadge ok={d.published} yes="Publicado" no="No publicado" />
         </div>

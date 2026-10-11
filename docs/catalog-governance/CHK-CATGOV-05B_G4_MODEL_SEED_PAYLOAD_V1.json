@@ -1,0 +1,59 @@
+{
+  "operation_id": "CHK-CATGOV-05B_G4_MODEL_MEMBERSHIP_SEED_V1",
+  "checkpoint": "CHK-CATGOV-05B",
+  "baseline": "910d9ce4915e7455fce321a592557f17458c0f00",
+  "mode": "DESIGN_ONLY_NO_EXECUTION",
+  "source_contract": [
+    "docs/catalog-governance/CHK-CATGOV-05A_MODEL_VARIANT_STANDARDIZATION.md",
+    "docs/catalog-governance/CHK-CATGOV-05A_G4_MODEL_VARIANT_MATRIX_V1.csv",
+    "docs/catalog-governance/CATALOG_MODEL_VARIANT_CONTRACT_V1.md"
+  ],
+  "id_strategy": {
+    "algorithm": "RFC4122_UUID_V5",
+    "namespace": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+    "model_name_template": "catalog-model-v1:<model_key>",
+    "membership_name_template": "catalog-model-member-v1:<model_key>:<producto_b2b_id>",
+    "randomness": false
+  },
+  "expected_counts": {
+    "catalog_product_models": 8,
+    "catalog_product_model_members": 18,
+    "total": 26
+  },
+  "models": [
+    {"id":"8691e041-0da3-5d8b-9407-29b6ad0a1f75","model_key":"G4_LOBBY","label":"Lobby","family_key":"lobby","status":"REVIEW_REQUIRED","reason":"CHK-CATGOV-05B / seed-v1 / MODEL_COMPATIBLE from frozen 05A family decision; color variants remain commercial-specific.","created_by":null,"reviewed_by":null,"reviewed_at":null},
+    {"id":"4837aa49-03cc-5dd3-9f51-5b451f60ab2a","model_key":"G4_JELLO_COLORS_BIO","label":"Jello Colors Bio","family_key":"jello_colors_bio","status":"REVIEW_REQUIRED","reason":"CHK-CATGOV-05B / seed-v1 / MODEL_COMPATIBLE from frozen 05A exact family/color evidence; variant image gates remain independent.","created_by":null,"reviewed_by":null,"reviewed_at":null},
+    {"id":"1f11a9a8-f283-5e55-b03a-e796afb3a8fa","model_key":"G4_JELLO_ZEN","label":"Jello Zen","family_key":"jello_zen","status":"REVIEW_REQUIRED","reason":"CHK-CATGOV-05B / seed-v1 / MODEL_COMPATIBLE from frozen 05A exact family/color evidence; variant image gates remain independent.","created_by":null,"reviewed_by":null,"reviewed_at":null},
+    {"id":"dba78f0a-a7c4-5b73-9195-e4108772ce8b","model_key":"G4_VASO_NOMI","label":"Vaso Nomi","family_key":"vaso_nomi","status":"REVIEW_REQUIRED","reason":"CHK-CATGOV-05B / seed-v1 / MODEL_COMPATIBLE from frozen 05A certified multi-variant family evidence.","created_by":null,"reviewed_by":null,"reviewed_at":null},
+    {"id":"022199c9-a46c-512d-899a-a7dd1ab2c484","model_key":"G4_SPLASH","label":"Splash","family_key":"splash","status":"REVIEW_REQUIRED","reason":"CHK-CATGOV-05B / seed-v1 / MODEL_COMPATIBLE from frozen 05A certified multi-variant family evidence.","created_by":null,"reviewed_by":null,"reviewed_at":null},
+    {"id":"260a6f7f-740f-5c53-aaad-22330805f2f3","model_key":"G4_IMPERIAL","label":"Imperial","family_key":"imperial","status":"REVIEW_REQUIRED","reason":"CHK-CATGOV-05B / seed-v1 / MODEL_COMPATIBLE family proposal; imp-neg-oro remains NO_VALID_MASTER and is not publishable.","created_by":null,"reviewed_by":null,"reviewed_at":null},
+    {"id":"b8a0cc81-23c0-50cb-8d34-e7aa509055bc","model_key":"G4_LIBRETA_BORDER","label":"Libreta Border","family_key":"libreta_border","status":"REVIEW_REQUIRED","reason":"CHK-CATGOV-05B / seed-v1 / MODEL_COMPATIBLE family proposal; lib-bor-gri remains NO_VALID_MASTER and is not publishable.","created_by":null,"reviewed_by":null,"reviewed_at":null},
+    {"id":"bbe08fb7-318d-5e99-8c0b-343f9db9201d","model_key":"G4_KOI_TRA_AMA","label":"Koi Bio Translúcida Tinta Azul","family_key":"koi_tra_ama","status":"REVIEW_REQUIRED","reason":"CHK-CATGOV-05B / seed-v1 / KEEP_SEPARATE single-member candidate; identity remains BANK_MATCH_REVIEW_REQUIRED.","created_by":null,"reviewed_by":null,"reviewed_at":null}
+  ],
+  "memberships": [
+    {"id":"2ededb2f-c123-5a29-9569-2e83d454ad25","model_id":"8691e041-0da3-5d8b-9407-29b6ad0a1f75","producto_b2b_id":"dc7cc3e7-aa00-47a3-b4e8-edde4bc0b6d0","oferta_id":null,"variant_label":"COLOR: AZUL","membership_status":"CANDIDATE","evidence_id":"ac309908-28e7-5e9a-bada-69ad837b3664","reason":"CHK-CATGOV-05B / seed-v1 / frozen 05A membership; asset and publication gates remain independent.","reviewed_by":null,"reviewed_at":null},
+    {"id":"35d2be8b-ed7c-5979-882f-a92fa641c46f","model_id":"8691e041-0da3-5d8b-9407-29b6ad0a1f75","producto_b2b_id":"38edd673-b077-4c9a-a0f1-ceb4e3d8a9aa","oferta_id":null,"variant_label":"COLOR: NEGRO","membership_status":"CANDIDATE","evidence_id":"e31213fc-b071-57fb-a0eb-4d7f98e8bce8","reason":"CHK-CATGOV-05B / seed-v1 / frozen 05A membership; asset and publication gates remain independent.","reviewed_by":null,"reviewed_at":null},
+    {"id":"8ce4ad62-167d-574c-bcdf-77287711f42e","model_id":"8691e041-0da3-5d8b-9407-29b6ad0a1f75","producto_b2b_id":"6a4f917b-f915-4da2-ae22-58ef089b2ecc","oferta_id":null,"variant_label":"COLOR: BLANCO","membership_status":"CANDIDATE","evidence_id":"7a4adb69-b4b4-5a1f-9cdc-45c7ae4c2062","reason":"CHK-CATGOV-05B / seed-v1 / frozen 05A membership; asset and publication gates remain independent.","reviewed_by":null,"reviewed_at":null},
+    {"id":"2fc70bd1-8628-542f-a687-84dad4e786a0","model_id":"4837aa49-03cc-5dd3-9f51-5b451f60ab2a","producto_b2b_id":"7e09a141-a116-48a9-bc9b-35f2b0898045","oferta_id":null,"variant_label":"COLOR: AZUL","membership_status":"CANDIDATE","evidence_id":"68ea5e2d-d818-5c95-a1d3-554d97f9c91b","reason":"CHK-CATGOV-05B / seed-v1 / frozen 05A membership; SOURCE_MASTER_INSUFFICIENT remains independent.","reviewed_by":null,"reviewed_at":null},
+    {"id":"5e99b3a0-0e98-5cdd-bd5f-f256b5260a35","model_id":"4837aa49-03cc-5dd3-9f51-5b451f60ab2a","producto_b2b_id":"0c5fd12d-e232-4c0c-ae64-5524da62cdf9","oferta_id":null,"variant_label":"COLOR: NEGRO","membership_status":"CANDIDATE","evidence_id":"c15d01cb-652c-5513-9bc3-843a0698aadf","reason":"CHK-CATGOV-05B / seed-v1 / frozen 05A membership; SOURCE_MASTER_INSUFFICIENT remains independent.","reviewed_by":null,"reviewed_at":null},
+    {"id":"bd2c4a96-7df5-58e3-8fc1-ee6179644e3c","model_id":"4837aa49-03cc-5dd3-9f51-5b451f60ab2a","producto_b2b_id":"d129e6c7-ec52-4d0b-a304-33f7c9c1b316","oferta_id":null,"variant_label":"COLOR: ROSA","membership_status":"CANDIDATE","evidence_id":"b84289f3-b3f2-5bb9-b34d-ea686fd9a006","reason":"CHK-CATGOV-05B / seed-v1 / frozen 05A membership; SOURCE_MASTER_INSUFFICIENT remains independent.","reviewed_by":null,"reviewed_at":null},
+    {"id":"b94bb42b-a05a-5661-8ff0-8a1fc44f70da","model_id":"1f11a9a8-f283-5e55-b03a-e796afb3a8fa","producto_b2b_id":"eb35ff6c-1d67-4630-8799-2df62b95e79a","oferta_id":null,"variant_label":"COLOR: AZUL","membership_status":"CANDIDATE","evidence_id":"d42ebe19-8ac4-5bdc-9922-50d9d33c86ca","reason":"CHK-CATGOV-05B / seed-v1 / frozen 05A membership; SOURCE_MASTER_INSUFFICIENT remains independent.","reviewed_by":null,"reviewed_at":null},
+    {"id":"2240c17c-4950-56c1-ab6e-76ae4bd84111","model_id":"1f11a9a8-f283-5e55-b03a-e796afb3a8fa","producto_b2b_id":"9287b3dd-d356-4bf6-b41c-c0728cbfaadb","oferta_id":null,"variant_label":"COLOR: VERDE","membership_status":"CANDIDATE","evidence_id":"dbc7d795-ead0-55ba-8b71-85f444cef95e","reason":"CHK-CATGOV-05B / seed-v1 / frozen 05A membership; SOURCE_MASTER_INSUFFICIENT remains independent.","reviewed_by":null,"reviewed_at":null},
+    {"id":"f6e08953-e8b3-55a4-82d3-2bc9c6983a1a","model_id":"dba78f0a-a7c4-5b73-9195-e4108772ce8b","producto_b2b_id":"0b889781-de86-4115-9a62-ae1540e1140d","oferta_id":null,"variant_label":"COLOR: AZUL","membership_status":"CANDIDATE","evidence_id":"c97eee8b-7391-5bb4-a2f6-3c6a0c83c709","reason":"CHK-CATGOV-05B / seed-v1 / frozen 05A membership; asset and publication gates remain independent.","reviewed_by":null,"reviewed_at":null},
+    {"id":"01939076-72a7-5b30-ab9b-3a3577f62bf0","model_id":"dba78f0a-a7c4-5b73-9195-e4108772ce8b","producto_b2b_id":"5a3b2909-d914-49e9-943c-b189f93b99b6","oferta_id":null,"variant_label":"COLOR: ROJO","membership_status":"CANDIDATE","evidence_id":"88e9fcb0-2a85-549a-88d6-0faa7d7324cf","reason":"CHK-CATGOV-05B / seed-v1 / frozen 05A membership; asset and publication gates remain independent.","reviewed_by":null,"reviewed_at":null},
+    {"id":"e250608d-96a0-5563-a8d7-4c617b937dba","model_id":"dba78f0a-a7c4-5b73-9195-e4108772ce8b","producto_b2b_id":"045d2c3e-4d9d-4594-b941-d9ecce15a6b6","oferta_id":null,"variant_label":"COLOR: VERDE","membership_status":"CANDIDATE","evidence_id":"4998e130-27fb-5cd2-a1a3-b557e8c8f682","reason":"CHK-CATGOV-05B / seed-v1 / frozen 05A membership; asset and publication gates remain independent.","reviewed_by":null,"reviewed_at":null},
+    {"id":"ebc73594-8ce9-54c2-93cf-1c75fb74d6a6","model_id":"022199c9-a46c-512d-899a-a7dd1ab2c484","producto_b2b_id":"a8214d09-27a5-48b0-aa7e-68ec8a2707d9","oferta_id":null,"variant_label":"COLOR: AZUL","membership_status":"CANDIDATE","evidence_id":"a8f03b06-72dc-5167-8fc4-ddddca3f2371","reason":"CHK-CATGOV-05B / seed-v1 / frozen 05A membership; asset and publication gates remain independent.","reviewed_by":null,"reviewed_at":null},
+    {"id":"8090c7f6-4fa6-573e-88a7-90e9e3777428","model_id":"022199c9-a46c-512d-899a-a7dd1ab2c484","producto_b2b_id":"e20c1edf-3015-4b9d-bbd5-b283ad0a0f44","oferta_id":null,"variant_label":"COLOR: ROJO","membership_status":"CANDIDATE","evidence_id":"1d6d265c-891d-582c-a092-0a5153d9a19f","reason":"CHK-CATGOV-05B / seed-v1 / frozen 05A membership; asset and publication gates remain independent.","reviewed_by":null,"reviewed_at":null},
+    {"id":"5a020e3c-4792-5baf-af29-ea92342d72cc","model_id":"260a6f7f-740f-5c53-aaad-22330805f2f3","producto_b2b_id":"3b1efba6-a127-49f4-b98b-fa4eb0b84249","oferta_id":null,"variant_label":"FINISH: NEGRA/PLATA","membership_status":"CANDIDATE","evidence_id":"faa25723-d44b-5645-99e6-63b03fa41829","reason":"CHK-CATGOV-05B / seed-v1 / frozen 05A membership; imp-neg-oro remains blocked separately.","reviewed_by":null,"reviewed_at":null},
+    {"id":"311236c7-4e52-55c5-a02c-215cbc8ba7fc","model_id":"260a6f7f-740f-5c53-aaad-22330805f2f3","producto_b2b_id":"7b347c71-0cc9-41de-ad29-d8674fb5da1e","oferta_id":null,"variant_label":"FINISH: NEGRA/ORO","membership_status":"CANDIDATE","evidence_id":"d01becba-02d1-5244-b0b2-c76096467434","reason":"CHK-CATGOV-05B / seed-v1 / exact family membership only; NO_VALID_MASTER remains a blocker.","reviewed_by":null,"reviewed_at":null},
+    {"id":"afe15ee1-5139-57ad-aca8-ddd12f1bd8f3","model_id":"b8a0cc81-23c0-50cb-8d34-e7aa509055bc","producto_b2b_id":"7955df9c-8e9c-4203-9f65-505faf5d69cb","oferta_id":null,"variant_label":"COLOR: AZUL","membership_status":"CANDIDATE","evidence_id":"6f63f209-ae2d-54ec-b4e9-3e7eb1a35ed7","reason":"CHK-CATGOV-05B / seed-v1 / frozen 05A membership; lib-bor-gri remains blocked separately.","reviewed_by":null,"reviewed_at":null},
+    {"id":"3ea100d7-18aa-5412-b908-85e8662f6f51","model_id":"b8a0cc81-23c0-50cb-8d34-e7aa509055bc","producto_b2b_id":"5e03ff91-3b06-467c-a4ea-0d1f061b7eb4","oferta_id":null,"variant_label":"COLOR: GRIS","membership_status":"CANDIDATE","evidence_id":"a2c76b43-7965-5cf6-a397-c54cd7cece88","reason":"CHK-CATGOV-05B / seed-v1 / exact family membership only; NO_VALID_MASTER remains a blocker.","reviewed_by":null,"reviewed_at":null},
+    {"id":"77cb3478-d4d1-5e5b-9d64-9bb2dbaa4547","model_id":"bbe08fb7-318d-5e99-8c0b-343f9db9201d","producto_b2b_id":"2ec3bee5-e6eb-461c-b865-53a281a5bbdf","oferta_id":null,"variant_label":"OTHER: UNRESOLVED","membership_status":"CANDIDATE","evidence_id":"f7501dc3-b40c-5fe7-8de7-fd14868785d7","reason":"CHK-CATGOV-05B / seed-v1 / KEEP_SEPARATE single-member candidate; BANK_MATCH_REVIEW_REQUIRED remains open.","reviewed_by":null,"reviewed_at":null}
+  ],
+  "execution_contract": {
+    "apply_authorized": false,
+    "expected_replay_new_rows": 0,
+    "destructive_upsert": false,
+    "rollback_order": ["catalog_product_model_members", "catalog_product_models"]
+  }
+}

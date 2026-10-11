@@ -1,0 +1,222 @@
+# CHK-CATGOV-03E-R4 — One-Shot Lovable Query-Executor Contract V5
+
+## Operation
+
+`G4_GOVERNANCE_PILOT_V1`
+
+Classification: **CONTROLLED GOVERNANCE SEED / SHADOW IMPORT**.
+
+This is repository-versioned DML over Governance shadow tables. It is not a
+schema migration, runtime catalog migration, or publication operation. The
+operation is permitted only through the internal Lovable query surface using
+repository files. Do not use external Supabase, an external CLI, Work SQL, or
+manual copy/paste of the large SQL payload.
+
+## R1/R2 incident history and Package V3 resolution
+
+CHK-CATGOV-03F-R1 stopped before APPLY after PostgreSQL returned error `42601`
+at the first product UUID in PRECHECK_V1. The confirmed cause was invalid
+PostgreSQL `VALUES` syntax: scalar expressions were supplied without row
+constructors. APPLY was not executed and database writes were `0`.
+
+CHK-CATGOV-03F-R2 stopped before APPLY after PostgreSQL returned error `42601`
+on typed CTE column alias lists. PostgreSQL permits column names in a CTE
+alias list, not declarations such as `id uuid` or `source_uri text`.
+PRECHECK_V2 and POSTCHECK_V1 remain preserved as historical evidence; APPLY
+was not executed and database writes were `0`.
+
+Package V3 removes only the type declarations from CTE alias lists:
+PRECHECK_V3 is derived from PRECHECK_V2 and POSTCHECK_V2 from POSTCHECK_V1.
+The existing casts remain in the `VALUES` expressions. Deterministic IDs,
+guards, counts, relationships, states, and PASS conditions are unchanged.
+
+## Exact inputs
+
+- Repository baseline: `f1d27845494e1ea65a2921cbd56821edde660c73`
+- Payload: `docs/catalog-governance/CHK-CATGOV-03D_G4_GOVERNANCE_PILOT_PAYLOAD_V1.json`
+- Expected matrix: `docs/catalog-governance/CHK-CATGOV-03D_G4_GOVERNANCE_PILOT_EXPECTED_MATRIX_V1.md`
+- Precheck V3: `docs/catalog-governance/CHK-CATGOV-03F_G4_PILOT_PRECHECK_V3.sql`
+- Apply V1: `docs/catalog-governance/CHK-CATGOV-03F_G4_PILOT_APPLY_INSERTS_V1.sql`
+- Postcheck V2: `docs/catalog-governance/CHK-CATGOV-03F_G4_PILOT_POSTCHECK_V2.sql`
+- Rollback V1: `docs/catalog-governance/CHK-CATGOV-03F_G4_PILOT_ROLLBACK_V1.sql`
+- Hash manifest: `docs/catalog-governance/CHK-CATGOV-03F_G4_PILOT_QUERY_PACKAGE_HASH_MANIFEST_V3.md`
+
+Before execution, compare every Package V3 artifact byte-for-byte with the
+approved V3 hash manifest. If any hash, path, baseline, or file content
+differs, STOP.
+
+## Static validation status
+
+No PostgreSQL parser, `psql`, or database connection was available in Work
+for this checkpoint. The package was therefore validated with a reproducible
+PostgreSQL-oriented static lexer/parser that masks comments and quoted
+literals and checks:
+
+- statement classes and forbidden statement types;
+- balanced parentheses;
+- CTE alias/projection arity and duplicate aliases;
+- `VALUES` row constructors, row arity, and row counts;
+- explicit INSERT column/value arity;
+- deterministic DELETE structure and FK-safe rollback ordering;
+- semantic normalization from PRECHECK_V2 to PRECHECK_V3 and from
+  POSTCHECK_V1 to POSTCHECK_V2.
+
+This is not runtime proof and does not replace the next internal Lovable
+execution.
+
+## Package V3 composition
+
+- PRECHECK: `CHK-CATGOV-03F_G4_PILOT_PRECHECK_V3.sql`
+- APPLY: `CHK-CATGOV-03F_G4_PILOT_APPLY_INSERTS_V1.sql`
+- POSTCHECK: `CHK-CATGOV-03F_G4_PILOT_POSTCHECK_V2.sql`
+- ROLLBACK: `CHK-CATGOV-03F_G4_PILOT_ROLLBACK_V1.sql`
+
+PRECHECK_V1, PRECHECK_V2, POSTCHECK_V1, APPLY_INSERTS_V1, and ROLLBACK_V1
+remain preserved historical/versioned artifacts. No previous artifact is
+replaced.
+
+## Step A — internal read-only preflight
+
+1. Confirm the project and repository baseline are the expected ones.
+2. Confirm the Governance shadow tables exist with the columns required by the
+   package.
+3. Confirm runtime catalog authorities are readable but are not targets of
+   this operation.
+4. Confirm the query surface can read repository SQL files.
+5. Do not call a provider, Edge Function, Storage API, scheduler, or runtime
+   catalog write path.
+
+## Step B — PRECHECK_V3
+
+Run the exact PRECHECK_V3 file through the supported internal query-executor
+file path. It must return `precheck_pass = true` and all of the following:
+
+- `runtime_products_found = 30`;
+- all pre-existing pilot Governance counts are 0;
+- every deterministic-ID collision count is 0;
+- all expected semantic-collision counts are 0.
+
+If PRECHECK fails, STOP. Do not submit APPLY.
+
+Operational replay safety is **REPLAY-SAFE BY PRECONDITION GUARD**. A second
+attempt after a successful seed must stop because PRECHECK detects the pilot,
+not silently replay inserts.
+
+## Step C — APPLY capability and execution
+
+Submit the exact APPLY V1 file through the supported repository-file execution
+path only after PRECHECK_V3 passes. This first attempt is also the capability
+check for query-executor DML.
+
+- The file is INSERT-only.
+- It inserts exactly 2 source documents, 61 evidence rows, 30 content rows,
+  31 assets, 31 links, 10 issues, 30 Governance-state rows, and 4 audit rows.
+- It inserts 0 attribute definitions, 0 attribute values, 0 models, 0
+  memberships, and 0 approvals.
+- It does not use random IDs, DDL, updates, deletes, network calls, Storage,
+  provider calls, or runtime catalog tables.
+- It is **compensatable, not assumed atomic**. The query surface may execute
+  statements without a multi-statement transaction.
+
+Do not retry APPLY automatically and do not submit it a second time. If the
+executor rejects DML before any INSERT, classify the result as
+`QUERY_EXECUTOR_DML_UNAVAILABLE`, STOP, and return for architectural
+decision. Do not fall back automatically to a migration tool and do not
+create `drizzle/migrations/0007*`.
+
+## Step D — POSTCHECK_V2
+
+Run the exact POSTCHECK_V2 file through the same internal query surface. It
+must return `postcheck_pass = true` and prove:
+
+- every expected row matches the payload field-by-field;
+- all deterministic IDs are present exactly once;
+- counts are 2/61/30/31/31/10/30/4;
+- Governance states are 20 `NEEDS_REVIEW`, 10 `BLOCKED`, 0
+  `EDITORIAL_READY`;
+- 30 canonical product IDs are represented exactly once;
+- duplicate product count is 0;
+- all expected FK relationships are valid;
+- models, memberships, approvals, and scoped attribute values remain 0;
+- no unexpected pilot IDs exist.
+
+If POSTCHECK fails, inspect first. Do not automatically retry APPLY. Roll back
+only under the deterministic conditions in Step E.
+
+## Step E — same-session recovery
+
+If APPLY partially executes and then errors, first run a read-only
+partial-state inspection. Execute the approved ROLLBACK V1 file in the same
+Lovable session only if all conditions hold:
+
+1. every detected inserted row belongs to an explicit deterministic pilot ID;
+2. no unrelated Governance row changed during the session;
+3. the rollback file hash equals the approved manifest hash;
+4. FK-safe reverse ordering is preserved.
+
+After rollback, run the PRECHECK-equivalent zero-state verification. If any
+condition is uncertain, STOP and report; do not broaden the delete scope.
+
+## Step F — live QA after POSTCHECK PASS
+
+Read-only QA only:
+
+- Governance console queue: PASS;
+- detail for one `PHASE_3_READY`, one `NO_VALID_MASTER`, and one
+  `BANK_MATCH_REVIEW_REQUIRED` product;
+- sources/evidence, content, assets, issues, and Governance state visible and
+  consistent;
+- D4 `readiness_row_count = distinct_product_count`;
+- D4 `duplicate_product_count = 0`.
+
+Record current values. Confirm unchanged runtime authorities:
+
+- catalog product data;
+- pricing;
+- stock;
+- publication/visibility;
+- images and mappings;
+- Storage;
+- provider data and schedulers.
+
+No provider call, Storage upload, frontend change, or runtime catalog mutation
+is authorized by this operation.
+
+## Step G — final report
+
+Report the internal query-executor operation identifier, artifact hashes, actual
+counts, PRECHECK/POSTCHECK results, whether DML was accepted, whether rollback
+was required, and live-QA evidence. State explicitly that this was a
+controlled Governance seed and not a schema migration.
+
+After PASS, Work may document the execution in the canonical state. Do not
+update `docs/MASTER-STATE.md` as part of this package preparation.
+
+## Capability and safety gates
+
+Current capability state before this checkpoint:
+
+- SELECT file execution: **CONFIRMED**;
+- INSERT file execution: **NOT YET TESTED**.
+
+The next step is one Lovable session only:
+
+`HASH VERIFY → PRECHECK_V3 → IF TRUE APPLY_V1 → POSTCHECK_V2 → LIVE QA`.
+
+No automatic retry, second APPLY, migration fallback, or `0007` migration
+is permitted.
+
+## Forbidden actions
+
+- No external Supabase project, CLI, dashboard, login, or link.
+- No migration tool fallback and no `0007` migration.
+- No schema, journal, snapshot, frontend, backend, Edge Function, Storage,
+  scheduler, provider, stock, pricing, mapping, category, visibility, or
+  publication changes.
+- No automatic retry, second apply, broad rollback, or silent conflict ignore.
+
+## Current checkpoint execution state
+
+- DB execution: `0`.
+- Lovable execution: `0`.
+- Drizzle migrations, journal, and snapshots modified: `0`.

@@ -1794,3 +1794,77 @@ G4, ForPromotional y CDO/StockSur permanecen sin cambios. La publicación de
 Governance sigue bloqueada hasta su gate específico.
 
 **NEXT:** `G4 PILOT RUNTIME SNAPSHOT — READ-ONLY`. **DO NOT START BUILD 3.**
+
+## CHK-CATGOV-03C — G4 RUNTIME SNAPSHOT CLOSEOUT / BUILD 3 DESIGN (2026-10-11)
+
+**Status:** DOCUMENTATION + DESIGN CLOSED / BUILD 3 NOT EXECUTED.
+
+La evidencia runtime de `CHK-CATGOV-03B — G4 LIVE RUNTIME SNAPSHOT — PASS`
+se registra como `LIVE_RUNTIME_EVIDENCE_FROM_LOVABLE`; Work no reproduce las
+consultas runtime.
+
+### G4 Phase 3B — estado canónico
+
+- `catalog-product-images`: `121` objetos.
+- Carpetas de producto distintas: `121`.
+- `productos_b2b` con URL `catalog-product-images`: `121`.
+- `121` productos integrados con master WebP en posición `0` y preservación de
+  imágenes originales del proveedor.
+- Orphans/inconsistencies: `0`.
+- `lla-SiO-azu` (`e5fb9fbd-8268-4266-b847-8cafc059399f`): `SKIP BY DESIGN`
+  por discrepancia de identidad.
+- `G4_PHASE3B_RUNTIME_STATE`: **VERIFIED WITH EXACT EVIDENCE**.
+- Phase 3B no debe reejecutarse.
+
+### Cierre del piloto de 30 productos
+
+`CHK-CATGOV-03A`: `PARTIAL due to Work runtime unavailability`.
+`CHK-CATGOV-03B`: `CLOSED / PASS`.
+
+La muestra canónica de 30 productos queda congelada sin sustituciones:
+
+- existencia, categoría, provider, provider SKU, offers, pricing, MOQ, stock,
+  public eligibility, publication y runtime image: `30/30`.
+- grupos de asset: `20 PHASE_3_READY`, `4 NO_VALID_MASTER`,
+  `6 BANK_MATCH_REVIEW_REQUIRED`.
+- distribución observada: `30 priced`, `30 stock disponible`, `30 eligible`,
+  `30 published`; no hubo `request_quote`, `unresolved`, stock bajo,
+  agotado/consultar dentro de los 30.
+
+Clasificación preliminar de modelos: `Lobby`, `Jello Colors Bio`, `Jello Zen`,
+`Vaso Nomi` y `Splash` como `SAFE_MODEL_CANDIDATE`; `Imperial` y `Libreta
+Border` como `NEEDS_HUMAN_REVIEW`; `Koi Bio Translúcida` y productos sin
+relación demostrada como `KEEP_SEPARATE`. Ningún membership se crea por esta
+clasificación.
+
+### Build 3 — G4 Governance Pilot
+
+Build 3 queda diseñado como inserción **shadow-only** para únicamente los 30
+productos congelados. No modifica publicación, imágenes runtime, pricing,
+stock, mappings, categorías ni visibilidad.
+
+Tablas de inserción futura, únicamente si un checkpoint posterior la autoriza:
+
+`catalog_source_documents`, `catalog_source_evidence`,
+`catalog_attribute_definitions`, `catalog_attribute_values`,
+`catalog_product_models`, `catalog_product_model_members`,
+`catalog_product_content`, `catalog_asset_registry`,
+`catalog_product_asset_links`, `catalog_quality_issues`, `catalog_approvals`,
+`catalog_governance_state` y `audit_events`.
+
+Estados iniciales futuros: los `20 PHASE_3_READY` entran como `NEEDS_REVIEW`;
+los `4 NO_VALID_MASTER` y los `6 BANK_MATCH_REVIEW_REQUIRED` como `BLOCKED`.
+Ninguno entra automáticamente como `EDITORIAL_READY` ni `PUBLIC_READY`.
+
+La superficie recomendada es **WORK + LOVABLE APPLY**: Work prepara el paquete
+determinista de fuentes/evidencia y la validación; Lovable aplica únicamente la
+operación interna que requiera el runtime. No se crea ni ejecuta migration,
+seed, RPC o inserción en este checkpoint.
+
+QA adicional futuro: una prueba read-only suplementaria de máximo 2–3 productos
+fuera de los 30, solo si existen casos `request_quote`/`unresolved`, stock bajo
+o agotado/consultar. Esos productos no se insertan en Governance sin
+autorización posterior.
+
+**NEXT:** preparar el paquete controlado de Build 3 para revisión; **NO
+EJECUTAR BUILD 3** y no iniciar una fase pública.

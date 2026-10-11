@@ -44,6 +44,8 @@ Cuando una decisión sea superada, se conserva el registro y se añade una nueva
 
 | D-031 | 2026-10-11 | Aceptar certificación cross-surface de runtime para Catalog Governance cuando Work no tenga acceso directo al Supabase interno | La evidencia Git/SQL/arquitectura se verifica en Work y la evidencia live de migraciones, RPC, D4, auth y zero-write proviene del checkpoint autorizado de Lovable; la procedencia queda separada y no se inventan pruebas duplicadas | `CHK-CATGOV-02H`, `docs/10_QA_EVIDENCE.md`, `docs/MASTER-STATE.md` | VIGENTE para CHK-CATGOV-02A |
 
+| D-032 | 2026-10-11 | Congelar el piloto G4 de 30 productos y diseñar Build 3 como shadow-only, con inserción futura limitada a tablas Governance y aplicación interna controlada | CHK-CATGOV-03B demuestra 121 integraciones exactas y un skip intencional; el set contiene 20 PHASE_3_READY, 4 NO_VALID_MASTER y 6 BANK_MATCH_REVIEW_REQUIRED. La inserción no puede publicar, cambiar imágenes runtime, pricing, stock, mappings o visibilidad; primero requiere paquete determinista, idempotencia y QA | `CHK-CATGOV-03B`, `docs/MASTER-STATE.md`, `docs/10_QA_EVIDENCE.md` | VIGENTE; Build 3 no ejecutado |
+
 ## Decisiones que no deben inferirse
 
 - La presencia de una RPC, pantalla, Edge Function o botón no demuestra por sí sola que el comportamiento completo esté validado.

@@ -277,3 +277,33 @@ La console permanece staff-only/read-only. No publica, no escribe catálogo y no
 se convierte en autoridad de stock, pricing, mappings, categorías o visibilidad.
 El siguiente paso autorizado es `G4 PILOT RUNTIME SNAPSHOT — READ-ONLY`; no
 iniciar Build 3.
+
+## CHK-CATGOV-03C — diseño operativo de G4 Governance Pilot
+
+El runtime de Phase 3B queda `VERIFIED WITH EXACT EVIDENCE`: 121 assets y 121
+productos integrados, una omisión intencional por discrepancia de identidad,
+sin huérfanos. No repetir Phase 3B.
+
+El conjunto de Build 3 está congelado en 30 productos: 20 `PHASE_3_READY`, 4
+`NO_VALID_MASTER` y 6 `BANK_MATCH_REVIEW_REQUIRED`. La observación reportada es
+positiva para los 30 —priced, disponible, eligible y published—, por lo que el
+QA posterior debe añadir una lectura suplementaria de hasta tres productos
+negativos fuera del conjunto, sin insertarlos.
+
+### Secuencia futura, no ejecutada
+
+1. Work valida el manifiesto congelado, IDs, hashes, fuentes y claves
+   deterministas.
+2. Work genera el paquete source/evidence/attribute/content/asset/model y una
+   matriz QA; no toca runtime.
+3. Un checkpoint posterior autoriza la aplicación interna de Lovable.
+4. La aplicación escribe únicamente las tablas Governance autorizadas y
+   `audit_events`, nunca tablas runtime ni storage productivo.
+5. Se ejecuta QA por producto y se conserva la separación entre Governance,
+   pricing, stock/public eligibility y publication.
+6. Si falla, el rollback usa exclusivamente `operation_id` del piloto y se
+   detiene ante cualquier fila preexistente o dependencia externa.
+
+No crear approvals ficticias, no transformar un master integrado en
+`IMAGE_PASS`, no agrupar Imperial/Border/Koi automáticamente y no marcar
+`EDITORIAL_READY` por defecto.

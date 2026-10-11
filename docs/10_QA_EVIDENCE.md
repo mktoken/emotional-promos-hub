@@ -1998,3 +1998,191 @@ consistencia con el código/migraciones y ausencia de evidencia contradictoria.
 DML, reporte QA de Lovable y cero llamadas a providers. La validación de
 Governance con memberships/assets/evidence no vacíos queda diferida al piloto
 G4 y no es un defecto del estado vacío certificado.
+
+## CHK-CATGOV-03C — G4 SNAPSHOT CLOSEOUT / BUILD 3 EXECUTION DESIGN (2026-10-11)
+
+### Evidencia runtime aceptada
+
+Fuente: `CHK-CATGOV-03B — G4 LIVE RUNTIME SNAPSHOT — PASS`.
+Procedencia: `LIVE_RUNTIME_EVIDENCE_FROM_LOVABLE`; Work no ejecutó nuevamente
+las consultas live.
+
+- Bucket `catalog-product-images`: `121` objetos y `121` carpetas de producto.
+- `121` filas de `productos_b2b` con URL canónica.
+- Los `121` productos integrados tienen el master WebP en posición `0` y
+  conservan las imágenes originales del proveedor.
+- Orphans/inconsistencies: `0`.
+- Target `lla-SiO-azu`, ID `e5fb9fbd-8268-4266-b847-8cafc059399f`:
+  `SKIP BY DESIGN / identity case discrepancy`.
+- `G4_PHASE3B_RUNTIME_STATE = VERIFIED WITH EXACT EVIDENCE`.
+- No repetir Phase 3B.
+
+### Snapshot congelado de 30 productos
+
+La cobertura runtime reportada por 03B es `30/30` para existencia, categoría,
+provider, provider SKU, offers, pricing, MOQ, stock, public eligibility,
+publication y runtime image. La muestra contiene:
+
+- `20 PHASE_3_READY`;
+- `4 NO_VALID_MASTER`;
+- `6 BANK_MATCH_REVIEW_REQUIRED`.
+
+La distribución negativa es un gap de cobertura del set, no un pase falso:
+
+- priced: `30`; request_quote: `0`; unavailable: `0`; unresolved: `0`;
+- stock disponible: `30`; bajo: `0`; agotado: `0`; consultar: `0`;
+- eligible: `30`; published: `30`.
+
+Debe ejecutarse posteriormente una prueba read-only de máximo 2–3 productos
+fuera del set si el runtime ofrece casos negativos. Esa prueba no amplía la
+inserción Governance de los 30.
+
+### Diseño exacto de Build 3
+
+**Alcance:** shadow Governance únicamente para los 30 IDs congelados. No toca
+`productos_b2b`, `productos_b2b.imagenes`, `producto_b2b_status`, pricing,
+stock, mappings, categorías, visibilidad, storage productivo, frontend ni
+schedulers.
+
+**Tablas permitidas:**
+
+`catalog_source_documents`, `catalog_source_evidence`,
+`catalog_attribute_definitions`, `catalog_attribute_values`,
+`catalog_product_models`, `catalog_product_model_members`,
+`catalog_product_content`, `catalog_asset_registry`,
+`catalog_product_asset_links`, `catalog_quality_issues`, `catalog_approvals`,
+`catalog_governance_state`, `audit_events`.
+
+No todas requieren filas por producto. Los datos de pricing, MOQ, stock y
+publicación se conservan como evidencia diagnóstica; no se copian como
+autoridad Governance.
+
+#### Contrato de fuentes y evidencia
+
+Por cada producto se puede registrar, cuando exista:
+
+1. PDF/ficha técnica G4 (`source_type = PDF`);
+2. manifest de identidad (`CSV` o `WEB_SNAPSHOT`);
+3. provenance del image bank autorizado (`IMAGE_BANK`/`ZIP`);
+4. observación runtime de 03B (`WEB_SNAPSHOT` o `API_SNAPSHOT`).
+
+Cada evidencia conserva `subject_type`, `subject_id`, `field_path`, locator,
+referencia, observed_at, confidence y status. Una observación runtime nunca se
+convierte en source de stock o pricing Governance.
+
+#### Atributos por familia
+
+Las definiciones futuras se limitan a datos demostrados por fuente:
+
+| Familia | Requeridos cuando aplique | Opcionales | Fuentes prioritarias |
+|---|---|---|---|
+| Bolígrafos plástico | modelo, color, material si consta | tinta, clip, dimensiones | PDF, evidencia de oferta, imagen |
+| Bolígrafos metal | modelo, color/acabado, material si consta | clip, dimensiones, tinta | PDF, ficha técnica |
+| Libretas | modelo, color, tamaño si consta | material, páginas, encuadernado | PDF, imagen, ficha |
+| Bebidas/alimentos | modelo, color, material si consta | capacidad, tapa, dimensiones | PDF, ficha técnica |
+| Mochilas/viajes | modelo, color, material si consta | dimensiones, capacidad, compartimentos | PDF, ficha |
+| Otras | solo atributos explícitamente observados | ninguno por defecto | fuente específica |
+
+La ausencia de aplicabilidad o de fuente no produce un
+`DATA_COMPLETENESS_PASS` vacuo; se conserva como `NEEDS_REVIEW` o
+`MISSING_ATTRIBUTE` con evidencia.
+
+#### Contenido shadow
+
+`canonical_name`, `short_description`, `structured_features`,
+`technical_specifications` y `available_colors` se guardan como contenido
+`DRAFT`/`HUMAN_REVIEW_REQUIRED`. Cada valor se separa en `FACT`,
+`NORMALIZATION` o `COMMERCIAL COPY`; ningún claim no verificado se publica ni
+se marca como aprobado.
+
+#### Assets
+
+- `20 PHASE_3_READY`: se registra provenance y se reevalúan por separado
+  identidad, QA técnico, QA visual-comercial y derechos. La presencia del
+  master runtime no equivale a `IMAGE_PASS` Governance.
+- `4 NO_VALID_MASTER`: no se crea link público; issue `WRONG_MASTER` o
+  `VISUAL_INCONSISTENCY` solo si la evidencia concreta lo sustenta; estado
+  `BLOCKED`.
+- `6 BANK_MATCH_REVIEW_REQUIRED`: asset `UNREVIEWED`/`AMBIGUOUS`, link
+  `REVIEW_REQUIRED`, issue `IDENTITY_AMBIGUOUS` o `WRONG_VARIANT` solo con
+  evidencia; estado `BLOCKED`.
+
+No se actualiza `productos_b2b.imagenes`.
+
+#### Models y memberships
+
+`Lobby`, `Jello Colors Bio`, `Jello Zen`, `Vaso Nomi` y `Splash` son candidatos
+seguros para revisión de modelo, no aprobaciones automáticas. Antes de crear
+un membership `CANDIDATE` se exige identidad de modelo consistente, material y
+especificaciones compatibles, relación de variante, relación de oferta y
+evidencia. `Imperial`/`Libreta Border` no se agrupan automáticamente. `Koi`
+permanece separado.
+
+#### Issues, approvals y estado
+
+- Issues únicamente con evidencia: `IDENTITY_AMBIGUOUS`, `SOURCE_CONFLICT`,
+  `MISSING_ATTRIBUTE`, `MISSING_CONTENT`, `WRONG_MASTER`, `WRONG_VARIANT`,
+  `VISUAL_INCONSISTENCY`, `RIGHTS_UNCONFIRMED` o `LOW_CONFIDENCE`.
+- `catalog_approvals` recibe filas solo tras revisión humana real; `PENDING
+  REVIEW` no es `APPROVED`.
+- Governance inicial: 20 `NEEDS_REVIEW`; 4 `BLOCKED`; 6 `BLOCKED`.
+- `catalog_governance_state.review_status` nunca se inicializa como
+  `EDITORIAL_READY`/`PUBLIC_READY`; la publicación sigue fuera del alcance.
+
+#### Idempotencia
+
+El paquete futuro debe usar IDs deterministas derivados de
+`checkpoint + product_id + semantic key + version` y reintentos por claves
+existentes:
+
+- documents/evidence/assets: preflight por hash, source key y referencia antes
+  de insertar; no duplicar si ya existe una fila equivalente;
+- attribute definitions/values, content, models, memberships, links, issues y
+  approvals: respetar las unique/partial indexes de 0001 y usar
+  `ON CONFLICT` solo donde el índice correspondiente existe;
+- `catalog_governance_state`: no sobrescribir una fila preexistente sin gate
+  explícito;
+- `audit_events`: conservar historial con `checkpoint` y `operation_id`, sin
+  usarlo como fuente de readiness.
+
+Si una clave natural no tiene constraint único —por ejemplo source documents o
+assets por hash— el runner debe bloquear la ejecución ante una coincidencia
+ambigua; no resolverla con una inserción ciega.
+
+#### Rollback
+
+El rollback futuro solo puede retirar filas creadas por el `operation_id` del
+piloto, en orden inverso de dependencias: approvals, issues, links, content,
+attribute values, memberships, assets, evidence, documents, models y state.
+Debe abortar si encuentra una fila preexistente o una dependencia externa.
+Conserva `audit_events` con el evento de rollback y nunca toca tablas runtime,
+storage productivo, imágenes, pricing, stock o publicación.
+
+#### QA matrix y gates
+
+Para cada uno de los 30 se debe registrar: identity, model, source, PDF,
+attributes, content, asset, technical QA, visual QA, rights, pricing read, MOQ
+read, stock read, issues, approval y readiness. Los checks de pricing/stock son
+lecturas independientes; no forman parte de la autoridad Governance.
+
+PASS futuro requiere identidad no ambigua, fuente trazable, atributos aplicables
+sin completar vacuamente, contenido factual separado, cuatro gates de asset
+(identity/technical/visual/rights) y estado Governance coherente. Ningún PASS
+publica ni altera runtime.
+
+### Superficie y artefactos futuros
+
+Recomendación: **WORK + LOVABLE APPLY**.
+
+Work debe preparar, sin aplicar:
+
+- manifiesto congelado de los 30 IDs;
+- source/evidence map con PDFs, manifests, image bank y runtime references;
+- attribute dictionary por familia;
+- content/asset/model review package;
+- paquete determinista de seed/migration solo después de una autorización
+  posterior.
+
+Lovable aplicaría únicamente el paquete interno aprobado, con transacción,
+auditoría y rollback controlado. No se crea ningún artefacto de ejecución en
+03C.

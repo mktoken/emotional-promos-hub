@@ -1,0 +1,107 @@
+-- CHK-CATGOV-03E — exact rollback payload
+-- Repository artifact only. Do not execute from Work.
+BEGIN;
+SET LOCAL search_path = public, pg_temp;
+
+DO $g4_rollback$
+DECLARE
+  v_state_ids uuid[] := ARRAY['86b8ce0b-3ccd-503d-916b-b3514bc1c345'::uuid, 'fb7fc290-e005-5440-9a33-c3f4f0dc5389'::uuid, 'c93b851e-e892-559c-8416-4344cdc51bce'::uuid, '379f2bf6-5327-5c37-abab-6e29aa30d484'::uuid, '2f224bc1-21f3-55bc-a18e-956b13e9afa8'::uuid, '77c18e4a-3da3-533b-a8bc-09150d1819f0'::uuid, '42f7cef8-dda8-534a-bb8f-1a8bcda1ab4e'::uuid, '56052ba2-f9ee-5abd-b682-87374dd8433d'::uuid, 'c9046ebb-2a2f-58f9-abaf-674c89f43b00'::uuid, '7e16d2cd-5eb0-5809-b7e5-4ba69520eec0'::uuid, 'c33e77eb-ef6b-54df-a7b4-f1ae5c17b75b'::uuid, '046cf6de-5f1e-53c7-a694-71a46721afa4'::uuid, '8aafd120-56cf-58bd-ba08-cc80057a2b61'::uuid, 'aa4f8bde-bf67-5ab3-af98-129e06258863'::uuid, '82a0f052-d0c9-5ea6-89e5-9b8402967a47'::uuid, 'da66af4a-6cbc-5030-a7cf-2f4df16a72fe'::uuid, 'ca698e67-5bb5-5740-925e-51a622fbca6b'::uuid, '8c307840-856a-5cff-a0e4-31e69862e037'::uuid, '3e1013a1-1a1d-53d0-8426-f2091ef68482'::uuid, 'f889c192-39cc-51e0-8966-666e5b2a065f'::uuid, 'e8b6988a-be40-5714-baef-a40a57e6ef4a'::uuid, '1306bf11-3fd1-5290-9b1a-b82fbef54e5c'::uuid, 'f87feacf-63c8-5c23-bbd6-9ff821c480cb'::uuid, '208b3dd8-4c9a-5b05-83d9-406c15104c5a'::uuid, 'c257442f-0f4e-514b-9f03-c6bae4d68592'::uuid, '531442b4-8b65-502f-ab57-5fda3d68ef43'::uuid, '620c8a22-e061-56a8-a640-72dbf20c6582'::uuid, 'a7dd9c0d-7458-58e9-8f5c-86e982af44c8'::uuid, '61d6061c-403d-5a8c-9f37-91e980e01a83'::uuid, '11d424e0-3a12-518e-82ef-7e0b59e72b4f'::uuid]::uuid[];
+  v_content_ids uuid[] := ARRAY['a26e4a0d-7140-5909-a9fd-68b6ac866dc6'::uuid, '624d83ee-8911-548d-968f-f9c4fdf0d5be'::uuid, '55581e6c-e4f2-5385-9378-6dddc1c7cffa'::uuid, 'd8458d58-492b-5129-85a4-85e8eba68132'::uuid, 'fdd58d6a-0329-5066-be40-bc2acaf9b3ad'::uuid, '28ea6087-70e2-56b2-a869-87dfb4919bab'::uuid, '14edf9cf-b47d-52f4-a0ef-1fdaf62876b1'::uuid, 'dda61b9c-4fb1-530c-a877-4da224543259'::uuid, 'f19178bd-4464-5032-88f3-29a8f88f8e11'::uuid, '94883c7d-455a-556b-9a65-a209315ebf9b'::uuid, '0b0a8a4d-7ebf-59d8-978c-db4ea7dae99d'::uuid, '44c1b268-f65c-5bcd-8764-d7cb97881394'::uuid, 'dcdfcc78-a574-557b-a0af-32e814bc2e36'::uuid, 'bef2b6a4-dbab-597f-b1a9-9a489054192e'::uuid, 'eb6c3e7d-fb58-56fe-8232-613e4aea5810'::uuid, '67e00baf-1eb2-596d-9df5-3d31906bd5f0'::uuid, '9676e591-88e6-5c25-a763-97c2452b95aa'::uuid, '2643bb0c-8e98-5659-bdc3-34d2e3169cdd'::uuid, '9b13d819-3313-55c0-a160-235fe67fb94e'::uuid, '03ae4efa-9233-5fb7-bf0b-15d8030d41fa'::uuid, '61959990-6b97-523d-831b-4f01e08d090e'::uuid, 'ea15ac0d-c23d-5b99-b0ef-9c3f6239b08a'::uuid, '49acf514-3d54-536f-8924-0ff9862b8748'::uuid, 'eb7a559b-a8a8-52f4-a9ab-c3ac35a2b783'::uuid, 'bcec04e4-c241-5740-86fe-92cdf4c89b19'::uuid, 'efc2bed0-bbbb-565c-b414-3c5067dc6f62'::uuid, '67ebd9d7-69cf-5b65-8e7f-c4cf5454f0f6'::uuid, '94022b12-474e-5e08-9b7e-173f41fc8070'::uuid, 'c9950a22-1982-522b-95ab-3af1cd7dd883'::uuid, '9df1de24-6867-5408-8328-3bf1997a0c3e'::uuid]::uuid[];
+  v_document_ids uuid[] := ARRAY['06535114-4d5d-518e-8c2c-daeec7f286dd'::uuid, 'b31dd38e-1f4a-5ef9-8fd7-153156da14cf'::uuid]::uuid[];
+  v_evidence_ids uuid[] := ARRAY['ac309908-28e7-5e9a-bada-69ad837b3664'::uuid, '68ea5e2d-d818-5c95-a1d3-554d97f9c91b'::uuid, 'd42ebe19-8ac4-5bdc-9922-50d9d33c86ca'::uuid, '6f63f209-ae2d-54ec-b4e9-3e7eb1a35ed7'::uuid, 'ec2ed8b4-abbb-5a27-8435-9711621f779b'::uuid, 'c97eee8b-7391-5bb4-a2f6-3c6a0c83c709'::uuid, 'a8f03b06-72dc-5167-8fc4-ddddca3f2371'::uuid, '2dbe8f87-1641-525f-becc-134e2db45292'::uuid, '2c3ed48c-d6e2-5758-a6c2-016c16e15743'::uuid, 'faa25723-d44b-5645-99e6-63b03fa41829'::uuid, 'e31213fc-b071-57fb-a0eb-4d7f98e8bce8'::uuid, '7a4adb69-b4b4-5a1f-9cdc-45c7ae4c2062'::uuid, 'c15d01cb-652c-5513-9bc3-843a0698aadf'::uuid, 'b84289f3-b3f2-5bb9-b34d-ea686fd9a006'::uuid, 'dbc7d795-ead0-55ba-8b71-85f444cef95e'::uuid, '88e9fcb0-2a85-549a-88d6-0faa7d7324cf'::uuid, '4998e130-27fb-5cd2-a1a3-b557e8c8f682'::uuid, '1d6d265c-891d-582c-a092-0a5153d9a19f'::uuid, 'dad0296f-80be-59b8-b9b6-2095e9eb24b6'::uuid, 'dc88ad2a-2c7e-50f5-baf5-ee5f3646be58'::uuid, 'd01becba-02d1-5244-b0b2-c76096467434'::uuid, 'a2c76b43-7965-5cf6-a397-c54cd7cece88'::uuid, 'f3d79381-e1b2-52c7-997b-1ad42cf8b2c0'::uuid, 'b06d9394-8011-535c-a4db-0f73c0096d94'::uuid, '5393a357-20dd-57c2-ae35-1cd222b13321'::uuid, 'f7501dc3-b40c-5fe7-8de7-fd14868785d7'::uuid, 'd37dbbfc-5dd9-5e36-bf25-4db5839f0d8b'::uuid, 'c3c765e2-eee8-58b3-a123-7a719362f1b3'::uuid, 'd207c6d5-bdf5-500b-b2f0-5c53a13212c8'::uuid, '3e4d7ba7-866d-58a7-801f-96ddd94f522c'::uuid, 'cf5638d4-4929-5be5-8cd8-b806083c2f71'::uuid, '10b61599-d227-5cd3-b6df-5ad6f1759a89'::uuid, '3b0b66d0-82e7-59a3-b6af-c741913a6ee9'::uuid, 'acc7deed-ef54-5767-b8e3-1adc6cee0476'::uuid, '08c230c4-ed5f-5fd1-9348-d83a50e19d53'::uuid, '7cd9a556-5dcf-51b0-8073-82fab967220e'::uuid, '2f4e73b8-d8b5-5a95-8884-3fe5d69214df'::uuid, '9481ffae-dea3-5854-bf30-1b39d1d01703'::uuid, 'b54d62a4-dd6c-52a0-9995-800ba5b0783b'::uuid, '27a79deb-b413-5f96-8514-47da49588117'::uuid, 'd171801f-bfd7-5750-a5ba-3bc5739c3699'::uuid, '91b62969-254f-5c1c-bbdb-4c689f7f7da4'::uuid, '8d77d399-c296-5314-ab7b-731dad3103f0'::uuid, 'c0fefaa1-38df-51f3-b565-ee8bb6077b92'::uuid, 'c94d5ac8-60c0-5fb2-9cff-2442096d7b65'::uuid, '6fcd2716-6ff6-5712-b5f1-d8bbb3b5abb7'::uuid, '58131cdb-cbff-5f7a-bfee-73d100ae7168'::uuid, '15afb908-9f31-534a-98df-70705c6270c1'::uuid, 'd9778d12-679e-56e9-8d20-f2d5a3b6ad26'::uuid, '1242df6d-be34-5029-b900-4e690daab3b2'::uuid, '71276fda-b793-5277-9688-883a4db873b4'::uuid, '01ec0210-03c6-556a-87e1-3106de8715a1'::uuid, 'fc0bc16f-74d7-5140-9f1d-b1769c30617b'::uuid, 'ff8e379b-cd1e-56e3-94d8-efefdb32faed'::uuid, 'e2af8534-f8f9-5065-a399-746b44026529'::uuid, '4e10b80c-e980-5208-bd34-d102d0a53b08'::uuid, 'c42fb28f-ed37-5c36-a112-7a8dfe11f84a'::uuid, 'b74bebb7-006d-5aea-ae00-3348afd94a89'::uuid, 'f9b77736-3ae3-5328-9993-6c3f952704de'::uuid, '3ad1b38a-70c7-5580-b13c-9b36351afe5a'::uuid, 'f46719ed-1f57-5494-b32f-57bff9627580'::uuid]::uuid[];
+  v_asset_ids uuid[] := ARRAY['9fe2f3b9-0234-50e0-894f-c129bc2b2c21'::uuid, '59ad20f1-c6ec-5d94-964d-d0699fbf4e36'::uuid, '3bcf16b3-645b-598f-a423-59cefcc71a21'::uuid, '7020b71f-a07f-5814-9048-d0e3c9463f00'::uuid, 'a59ff464-2fc4-5652-b9bc-8e5152587859'::uuid, 'b59e3dc5-a499-54b7-8b4f-3687c8ba1e19'::uuid, '83b603d0-f854-5e10-941c-a1acc6b131c2'::uuid, '9c998f3c-247f-5a20-b55c-180c4708fb5e'::uuid, '33535c4f-4096-5f68-8545-484b47526476'::uuid, 'e208dfff-4fd1-5b86-8aa3-63157fb87535'::uuid, '18e5fb26-6efc-5ac6-b82c-9a42ec5f5dc2'::uuid, '1512725a-98cf-572d-9a1f-075b98526d63'::uuid, 'b47e2f1b-c38d-50f5-8df5-86b112930c0a'::uuid, 'ff69b369-f4a8-5af7-afb9-7b31345b151e'::uuid, 'a625a89e-cd86-5aff-81d2-b11788f5b00f'::uuid, '51a451f6-0b61-5f80-a021-8911f3d14bda'::uuid, 'ba25357d-7a41-5738-a345-2fb33e743566'::uuid, '8598e0eb-5628-53e3-9997-d5f3c0a88bb8'::uuid, '3f37f573-4d96-52f0-92c5-74437c475ed3'::uuid, '3d48c990-935a-5ec4-afb7-3e4f0c442a13'::uuid, '78cdbe8e-b6b6-576e-92b4-4e1bb48423bf'::uuid, 'a3e33332-6bc7-50f3-9975-90961fdd339c'::uuid, '528d9420-74b6-5715-9119-05c8cb835b04'::uuid, 'b856f5fb-66f6-5fa0-bfa1-31d9df639555'::uuid, '2fc25ae6-fca9-5710-b45c-273f20da214b'::uuid, 'c7112c67-395c-5bfa-a094-6e05de40c6df'::uuid, '10b9ca13-04e6-5fcd-8a39-02c9e1e2bf8b'::uuid, '7ad2e72d-48ef-5d2d-a30c-465a95e9fe93'::uuid, '79c303c0-dbbc-52a4-a445-8952a6277c89'::uuid, '9c6eb492-2b26-5f0e-9edc-968ee6d20549'::uuid, '884e176e-3917-5bb1-a8e2-ceb57ca89ca6'::uuid]::uuid[];
+  v_link_ids uuid[] := ARRAY['1c2b3dd5-b137-5c0a-9600-efc19e743694'::uuid, '08d4a78f-b209-582c-b6dc-835288be4827'::uuid, '79ea500a-6ab0-5bdf-9195-cd1f2ae417ed'::uuid, 'd8746838-a96e-5c85-aa98-cb962781eff3'::uuid, '769a1b6d-6d9c-520d-98b0-f1ae87169af5'::uuid, '2998a798-6004-52d2-b0cc-e2bb1d299417'::uuid, 'eb7a83e4-a9f6-5577-bf38-7d92e60ea6ff'::uuid, 'fbf7ad26-7ae3-5760-82a6-be8cfb091bfc'::uuid, 'b2536692-5247-5653-9258-0a93cca0143d'::uuid, '37425695-867c-5402-89b5-65d58519de1e'::uuid, '9b9f0604-9dcb-566e-a9c6-37c071a9d38f'::uuid, '10ffc86b-118f-5d38-9ed7-2d65def16d50'::uuid, 'ba826c70-1971-5c76-b7a3-cd10b27e77ae'::uuid, '28512c63-1139-5f9e-9a24-7a7812374575'::uuid, '5be8f01e-ead7-5648-8190-e930c710ce6d'::uuid, '287686bf-1838-5473-8ae7-d21d012d0077'::uuid, '9f372c65-6c2b-5677-bc3f-822c3c3f2d94'::uuid, '509f10bf-330e-5731-b087-6409324f8c67'::uuid, 'f0142a96-4a2c-5ae2-9dba-e19ec598dc18'::uuid, 'f376f637-2141-5563-9f52-4e82392b0883'::uuid, '80484dd0-c304-56c4-9151-7929fd014791'::uuid, 'de64343d-c2a6-5cbb-be75-42bfda14cade'::uuid, 'b02885c6-05f6-57dd-a2b0-546ec5c9d06d'::uuid, '5b7d20fe-03fb-5df3-95fb-61390a0e0530'::uuid, 'b0f511a4-fc0d-5d10-8058-df2dfc1d87ad'::uuid, '16e67a24-b9bb-534a-912e-c07edeed77f8'::uuid, '5e71ecb1-8bcf-5fc9-bfda-222a7c6e6cca'::uuid, '0017189e-296b-5746-9e4d-00addda7b435'::uuid, 'f2dff67f-66cb-5da1-9393-8e0807484c5e'::uuid, '9e16def8-71e5-52e5-9efa-97624aab426d'::uuid, 'ec90000b-b3f4-5d76-9392-ed386a3d5cb3'::uuid]::uuid[];
+  v_issue_ids uuid[] := ARRAY['7159d07f-c20d-59f6-b732-c498d054b208'::uuid, '87db6493-976b-5d03-8042-e1d8643c2f44'::uuid, '57ff4c1e-8e43-578f-99b8-f43770c4ae91'::uuid, 'd2a98e31-a3de-528f-a92a-a2b5ba82eb95'::uuid, '214c4661-c949-5671-a6db-3bdf6dd3bfdf'::uuid, '38b461e4-f125-59ab-8674-58638ffb8991'::uuid, 'c1ec4d76-88e6-50d3-a2ba-87a130d45efc'::uuid, 'b4a27f6e-daae-500d-87e6-8b125496101c'::uuid, '54fb6a6f-02e1-5fd9-a92c-6f8a4c80877a'::uuid, '44e197b3-007b-55c2-9fae-b84b41041fa2'::uuid]::uuid[];
+  v_audit_ids uuid[] := ARRAY['aef21182-94c6-5e0d-95fd-fb51cd3e23f8'::uuid, '3336142b-eefa-55f1-b6db-22dd9574a1a5'::uuid, 'c0260501-0049-5283-a3bc-43972e300aa6'::uuid, 'ecd5fb57-c7e9-599c-9fcd-89f1c209d9aa'::uuid]::uuid[];
+  v_count bigint;
+BEGIN
+  -- Fail closed if package rows no longer have their initial, unapproved state.
+  IF (SELECT count(*) FROM public.catalog_governance_state WHERE id = ANY(v_state_ids)) <> 30
+     OR EXISTS (
+       SELECT 1 FROM public.catalog_governance_state
+       WHERE id = ANY(v_state_ids)
+         AND (identity_status NOT IN ('NEEDS_REVIEW','BLOCKED')
+           OR data_status NOT IN ('NEEDS_REVIEW','BLOCKED')
+           OR content_status NOT IN ('NEEDS_REVIEW','BLOCKED')
+           OR image_status NOT IN ('NEEDS_REVIEW','BLOCKED')
+           OR review_status NOT IN ('NEEDS_REVIEW','BLOCKED')
+           OR last_reviewed_at IS NOT NULL OR last_reviewed_by IS NOT NULL)
+     )
+  THEN
+    RAISE EXCEPTION 'CHK-CATGOV-03E rollback: governance state changed or missing';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM public.catalog_product_content
+    WHERE id = ANY(v_content_ids)
+      AND (status <> 'HUMAN_REVIEW_REQUIRED' OR approved_by IS NOT NULL OR approved_at IS NOT NULL)
+  ) THEN
+    RAISE EXCEPTION 'CHK-CATGOV-03E rollback: content was reviewed';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM public.catalog_asset_registry
+    WHERE id = ANY(v_asset_ids)
+      AND (approval_status <> 'CANDIDATE' OR rights_status <> 'PENDING')
+  ) THEN
+    RAISE EXCEPTION 'CHK-CATGOV-03E rollback: asset was advanced';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM public.catalog_product_asset_links
+    WHERE id = ANY(v_link_ids) AND link_status <> 'REVIEW_REQUIRED'
+  ) THEN
+    RAISE EXCEPTION 'CHK-CATGOV-03E rollback: asset link was reviewed';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM public.catalog_quality_issues
+    WHERE id = ANY(v_issue_ids) AND (status <> 'OPEN' OR resolved_at IS NOT NULL OR resolved_by IS NOT NULL)
+  ) THEN
+    RAISE EXCEPTION 'CHK-CATGOV-03E rollback: issue was resolved';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM public.catalog_source_evidence
+    WHERE id = ANY(v_evidence_ids) AND status <> 'EXTRACTED'
+  ) THEN
+    RAISE EXCEPTION 'CHK-CATGOV-03E rollback: evidence was reviewed';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM public.catalog_source_documents
+    WHERE id = ANY(v_document_ids) AND rights_status <> 'PENDING'
+  ) THEN
+    RAISE EXCEPTION 'CHK-CATGOV-03E rollback: source rights state changed';
+  END IF;
+
+  DELETE FROM public.audit_events WHERE id = ANY(v_audit_ids);
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  IF v_count <> 4 THEN RAISE EXCEPTION 'CHK-CATGOV-03E rollback: audit count mismatch'; END IF;
+
+  DELETE FROM public.catalog_product_asset_links WHERE id = ANY(v_link_ids);
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  IF v_count <> 31 THEN RAISE EXCEPTION 'CHK-CATGOV-03E rollback: asset-link count mismatch'; END IF;
+
+  DELETE FROM public.catalog_quality_issues WHERE id = ANY(v_issue_ids);
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  IF v_count <> 10 THEN RAISE EXCEPTION 'CHK-CATGOV-03E rollback: issue count mismatch'; END IF;
+
+  DELETE FROM public.catalog_product_content WHERE id = ANY(v_content_ids);
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  IF v_count <> 30 THEN RAISE EXCEPTION 'CHK-CATGOV-03E rollback: content count mismatch'; END IF;
+
+  DELETE FROM public.catalog_asset_registry WHERE id = ANY(v_asset_ids);
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  IF v_count <> 31 THEN RAISE EXCEPTION 'CHK-CATGOV-03E rollback: asset count mismatch'; END IF;
+
+  DELETE FROM public.catalog_source_evidence WHERE id = ANY(v_evidence_ids);
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  IF v_count <> 61 THEN RAISE EXCEPTION 'CHK-CATGOV-03E rollback: evidence count mismatch'; END IF;
+
+  DELETE FROM public.catalog_source_documents WHERE id = ANY(v_document_ids);
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  IF v_count <> 2 THEN RAISE EXCEPTION 'CHK-CATGOV-03E rollback: source-document count mismatch'; END IF;
+
+  DELETE FROM public.catalog_governance_state WHERE id = ANY(v_state_ids);
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  IF v_count <> 30 THEN RAISE EXCEPTION 'CHK-CATGOV-03E rollback: state count mismatch'; END IF;
+END
+$g4_rollback$;
+
+COMMIT;

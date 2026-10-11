@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""Create non-destructive, aspect-preserving G4 pilot derivatives.
+"""Create non-destructive, aspect-preserving G4 derivatives.
 
 The script reads the exact source members from their ZIP archives, never edits
-those archives, and refuses to overwrite an existing pilot output. It has no
+those archives, and refuses to overwrite an existing output. It has no
 network, database, provider, or storage dependencies.
 """
 
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import io
 import json
@@ -21,6 +22,7 @@ from PIL import Image, ImageOps
 
 
 CANVAS_SIZE = 1600
+PILOT_SKUS = {"lob-sol-azu", "cen-met-neg", "vas-nom-az1"}
 PILOT_PRODUCTS = (
     {
         "producto_b2b_id": "dc7cc3e7-aa00-47a3-b4e8-edde4bc0b6d0",
@@ -81,8 +83,16 @@ def build_candidate(source_root: Path, product: dict[str, str]) -> Candidate:
         CANVAS_SIZE / source_width,
         CANVAS_SIZE / source_height,
     )
-    rendered_width = max(1, round(source_width * scale))
-    rendered_height = max(1, round(source_height * scale))
+    scale_x = scale
+    scale_y = scale
+    if abs(scale_x - scale_y) > 1e-12:
+        raise ValueError(
+            f"anisotropic scale rejected for {product['sku']}: "
+            f"scale_x={scale_x} scale_y={scale_y}"
+        )
+
+    rendered_width = max(1, round(source_width * scale_x))
+    rendered_height = max(1, round(source_height * scale_y))
 
     # A single scale factor is mandatory. The <= 1.0 cap enforces NO_UPSCALE.
     rendered = source.resize(
@@ -122,8 +132,8 @@ def build_candidate(source_root: Path, product: dict[str, str]) -> Candidate:
         # These are the intended transform factors. They are exactly equal;
         # pixel_scale_x/y below expose only the unavoidable integer rounding
         # of output pixel dimensions.
-        "scale_x": scale,
-        "scale_y": scale,
+        "scale_x": scale_x,
+        "scale_y": scale_y,
         "pixel_scale_x": round(rendered_width / source_width, 8),
         "pixel_scale_y": round(rendered_height / source_height, 8),
         "padding_left": left,
@@ -136,6 +146,41 @@ def build_candidate(source_root: Path, product: dict[str, str]) -> Candidate:
         "geometric_integrity": "TECHNICALLY_VERIFIED",
     }
     return Candidate(payload=payload, metadata=metadata)
+
+
+def load_scale_up_products(matrix_path: Path) -> tuple[dict[str, str], ...]:
+    with matrix_path.open(newline="", encoding="utf-8") as stream:
+        rows = list(csv.DictReader(stream))
+
+    if len(rows) != 20:
+        raise ValueError(f"expected 20 frozen 04D rows, found {len(rows)}")
+    skus = [row.get("sku", "") for row in rows]
+    if len(set(skus)) != 20 or any(not sku for sku in skus):
+        raise ValueError("04D matrix must contain 20 unique non-empty SKUs")
+
+    scale_up: list[dict[str, str]] = []
+    for row in rows:
+        if row.get("governance_state_unchanged") != "PHASE_3_READY / NEEDS_REVIEW":
+            raise ValueError(
+                f"unexpected governance state for {row.get('sku', '<missing>')}"
+            )
+        if row["sku"] in PILOT_SKUS:
+            continue
+        scale_up.append(
+            {
+                "producto_b2b_id": row["producto_b2b_id"],
+                "sku": row["sku"],
+                "name": row["product_name"],
+                "source_zip": row["source_zip"],
+                "source_member": row["source_member"],
+            }
+        )
+
+    if len(scale_up) != 17:
+        raise ValueError(f"expected 17 scale-up products, found {len(scale_up)}")
+    if {row["sku"] for row in scale_up} & PILOT_SKUS:
+        raise ValueError("scale-up scope contains a certified pilot SKU")
+    return tuple(scale_up)
 
 
 def write_non_destructive(path: Path, payload: bytes) -> str:
@@ -152,24 +197,44 @@ def write_non_destructive(path: Path, payload: bytes) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--scope", choices=("pilot", "scale-up"), default="pilot")
     parser.add_argument(
         "--source-root",
         type=Path,
         default=Path("/Users/macbookpro/Downloads/G4_Image_Bank_2026"),
     )
     parser.add_argument(
-        "--output-root",
+        "--matrix",
         type=Path,
         default=Path(
-            "/Users/macbookpro/Downloads/G4_GEOMETRIC_REMEDIATION_PILOT_04E"
+            "docs/catalog-governance/CHK-CATGOV-04D_G4_GEOMETRIC_INTEGRITY_MATRIX_V1.csv"
         ),
+    )
+    parser.add_argument(
+        "--output-root",
+        type=Path,
+        default=None,
     )
     args = parser.parse_args()
 
+    products = (
+        PILOT_PRODUCTS
+        if args.scope == "pilot"
+        else load_scale_up_products(args.matrix)
+    )
+    output_root = args.output_root or Path(
+        "/Users/macbookpro/Downloads/"
+        + (
+            "G4_GEOMETRIC_REMEDIATION_PILOT_04E"
+            if args.scope == "pilot"
+            else "G4_GEOMETRIC_REMEDIATION_04F"
+        )
+    )
+
     results: list[dict[str, object]] = []
-    for product in PILOT_PRODUCTS:
+    for product in products:
         candidate = build_candidate(args.source_root, product)
-        output_path = args.output_root / str(product["sku"]) / str(
+        output_path = output_root / str(product["sku"]) / str(
             candidate.metadata["new_filename"]
         )
         action = write_non_destructive(output_path, candidate.payload)
@@ -178,12 +243,16 @@ def main() -> int:
         record["write_action"] = action
         results.append(record)
 
-    args.output_root.mkdir(parents=True, exist_ok=True)
-    manifest = args.output_root / "remediation-manifest-v1.json"
+    output_root.mkdir(parents=True, exist_ok=True)
+    manifest = output_root / "remediation-manifest-v1.json"
     manifest.write_text(
         json.dumps(
             {
-                "checkpoint": "CHK-CATGOV-04E",
+                "checkpoint": (
+                    "CHK-CATGOV-04E"
+                    if args.scope == "pilot"
+                    else "CHK-CATGOV-04F"
+                ),
                 "canvas": "1600x1600",
                 "policy": "proportional contain; no upscale; white padding",
                 "products": results,

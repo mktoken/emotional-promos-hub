@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import UpdatePassword from "./pages/UpdatePassword";
 import Crm from "./pages/Crm";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import PrivacyNotice from "./pages/PrivacyNotice";
 import { pilotEnabled } from "./features/agent/lib/agent-pilot";
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/auth/update-password" element={<UpdatePassword />} />
           <Route path="/crm/*" element={<Crm />} />
+          <Route path="/admin/*" element={<Admin />} />
           <Route path="/aviso-de-privacidad" element={<PrivacyNotice />} />
           {pilotEnabled(window.location.hostname) && <Route path="/agente-piloto" element={<Suspense fallback={<p className="p-6">Cargando asistente…</p>}><AgentPilotPage /></Suspense>} />}
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

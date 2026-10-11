@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, Megaphone, FileText, FileCheck2, UserCog, Settings, Bot } from "lucide-react";
+import { LayoutDashboard, Users, Megaphone, FileText, FileCheck2, UserCog, Settings, Bot, ShieldCheck } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -38,6 +38,7 @@ export function CrmSidebar() {
     exact ? pathname === url : pathname === url || pathname.startsWith(url + "/");
 
   const accountItems = [
+    ...(isStaff ? [{ title: "Catalog Governance", url: "/admin/catalog-governance", icon: ShieldCheck, exact: false }] : []),
     ...(isStaff ? [{ title: "Mi perfil", url: "/crm/mi-perfil", icon: UserCog, exact: false }] : []),
     ...(isAdmin ? [{ title: "Configuración", url: "/crm/configuracion", icon: Settings, exact: false }] : []),
   ];

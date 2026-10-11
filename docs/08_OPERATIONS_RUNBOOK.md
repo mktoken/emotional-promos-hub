@@ -251,3 +251,29 @@ D1 (cuenta non-staff), D2 (QA con datos reales) y D4 (censo DB-side completo)
 permanecen diferidos al piloto G4. D3 se mantiene como prueba alternativa sin
 fingerprint directo de `productos_publicos`. G4 Phase 3B continúa
 `RECONCILIATION_REQUIRED / INCONCLUSIVE`.
+
+## Certificación runtime cross-surface de Catalog Governance
+
+Cuando Work no tenga acceso directo al Supabase interno, una certificación
+runtime puede aceptar evidencia explícita de la superficie interna autorizada
+de Lovable. La procedencia debe registrarse siempre y no debe presentarse como
+si Work hubiera ejecutado las pruebas.
+
+Para Catalog Governance:
+
+- Work verifica Git, SQL versionado, lineage, diffs y arquitectura estática.
+- Lovable aporta la evidencia live de aplicación de migraciones, HTTP de RPC,
+  D4, staff/anon, estado vacío y mutaciones runtime.
+- `ALTERNATE_PROOF_ACCEPTED` puede cerrar zero-write cuando el alcance SQL no
+  contiene DML de datos y el reporte live confirma cero mutaciones y cero
+  provider calls; no se inventan fingerprints faltantes.
+- 0004 se conserva como repository-prepared; 0005 se identifica como vehículo
+  runtime byte-identical; 0006 se registra como fix quirúrgico aplicado una vez.
+- No se exige repetir una prueba runtime únicamente porque Work no tenga esa
+  superficie, si el checkpoint autorizado identifica fuente, resultado y no
+  existe contradicción.
+
+La console permanece staff-only/read-only. No publica, no escribe catálogo y no
+se convierte en autoridad de stock, pricing, mappings, categorías o visibilidad.
+El siguiente paso autorizado es `G4 PILOT RUNTIME SNAPSHOT — READ-ONLY`; no
+iniciar Build 3.

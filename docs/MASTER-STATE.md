@@ -1747,3 +1747,50 @@ CDO/StockSur y el runtime productivo permanecen sin cambios; no hubo backfill,
 provider calls, fixtures ni writes durante la certificación.
 
 **NEXT:** `CHK-CATGOV-02 — GOVERNANCE CONSOLE DESIGN / READ-ONLY`.
+
+## CHK-CATGOV-02A — BUILD 2 CERTIFICATION / CROSS-SURFACE EVIDENCE (2026-10-11)
+
+**Status:** CLOSED / PASS.
+
+El cierre acepta dos procedencias separadas y no las presenta como una sola
+ejecución: la evidencia Git, de migraciones y de arquitectura fue reproducida
+por Work; la evidencia de aplicación runtime, RPC, conteos, autorización y
+mutaciones fue producida por la superficie interna de Lovable durante
+`CHK-CATGOV-02H`.
+
+### Estado canónico y lineage
+
+- Baseline final de repositorio: `f632d10aed8e0db10eaaebc52ac65212fa8b08bc`.
+- `CHK-CATGOV-02 — GOVERNANCE CONSOLE DESIGN`: CLOSED / PASS.
+- `CHK-CATGOV-02A — BUILD 2 CERTIFICATION`: CLOSED / PASS.
+- `BUILD 2 — CATALOG GOVERNANCE CONSOLE`: CLOSED / PASS.
+- Build 2 original: `cc8d786`, `0350eae`, `b6f8d01e7a919601fe62b35cc26ed6a73aa627be`.
+- Remediación de contratos: `768517fe6221c99660b4c2c350823b09007c4a49`.
+- Type fix de Governance: `749e0c9b4bae650253dba3ee412c296d64f00b64`, integrado en `be91dcabb553cdd590cd38181f62119370d454f3`.
+- `0004`: `REPOSITORY-PREPARED / VERSIONED / NOT APPLIED TO RUNTIME`.
+- `0005`: vehículo de despliegue runtime, byte-identical a 0004, `APPLIED ONCE` según evidencia Lovable.
+- `0006`: migración correctiva quirúrgica, `APPLIED ONCE` según evidencia Lovable; corrige `q.id` por `q.membership_id` en `memberships_bounded`.
+- El contenido histórico 0001–0004 permanece sin cambios.
+
+### Capacidades certificadas
+
+- Console staff-only y read-only con tres RPC privadas.
+- Paginación, búsqueda, filtros, ordenamiento y D4 calculados server-side.
+- Provider SKU resuelto mediante el mapping canónico offer/raw.
+- Detail bounded y envelope completo.
+- Separación Governance status / Public eligibility / Publication status.
+- Cero escrituras de datos runtime y cero llamadas a providers.
+- D4 runtime: `1815 / 1815 / 0`, con fuente `LIVE_RUNTIME_EVIDENCE_FROM_LOVABLE`.
+- Governance vacío: `catalog_governance_state = 0`; los productos permanecen `NOT_REVIEWED`.
+
+### Diferimientos explícitos
+
+- Cuenta real non-staff: `PASS_BY_POLICY / LIVE_ACCOUNT_TEST_DEFERRED`.
+- memberships/assets/evidence con datos no vacíos: `STRUCTURAL_PASS / EMPTY_STATE_LIVE_PASS / NONEMPTY_DATA_QA_DEFERRED_TO_G4_PILOT`.
+- Zero-write: `ALTERNATE_PROOF_ACCEPTED`; no se inventan fingerprints BEFORE/AFTER.
+- G4 Phase 3B: `RECONCILIATION_REQUIRED / INCONCLUSIVE`.
+
+G4, ForPromotional y CDO/StockSur permanecen sin cambios. La publicación de
+Governance sigue bloqueada hasta su gate específico.
+
+**NEXT:** `G4 PILOT RUNTIME SNAPSHOT — READ-ONLY`. **DO NOT START BUILD 3.**

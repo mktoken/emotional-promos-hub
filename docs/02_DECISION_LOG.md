@@ -42,6 +42,8 @@ Cuando una decisión sea superada, se conserva el registro y se añade una nueva
 | D-029 | 2026-10-10 | Mantener la integración de publicación bloqueada hasta que el piloto Governance pase | La readiness inicial será shadow/computed y no modificará visibilidad real | `docs/11_CATALOG_GOVERNANCE_AND_PRODUCT_EXPERIENCE_DIRECTIVE.md` | VIGENTE |
 | D-030 | 2026-10-10 | Registrar G4 Phase 3B como `RECONCILIATION_REQUIRED` mientras no exista evidencia verificable actual | El baseline confirma Phase 3A, pero no demuestra publicación de masters productivos de Phase 3B | `docs/11_CATALOG_GOVERNANCE_AND_PRODUCT_EXPERIENCE_DIRECTIVE.md`, `docs/MASTER-STATE.md` | VIGENTE |
 
+| D-031 | 2026-10-11 | Aceptar certificación cross-surface de runtime para Catalog Governance cuando Work no tenga acceso directo al Supabase interno | La evidencia Git/SQL/arquitectura se verifica en Work y la evidencia live de migraciones, RPC, D4, auth y zero-write proviene del checkpoint autorizado de Lovable; la procedencia queda separada y no se inventan pruebas duplicadas | `CHK-CATGOV-02H`, `docs/10_QA_EVIDENCE.md`, `docs/MASTER-STATE.md` | VIGENTE para CHK-CATGOV-02A |
+
 ## Decisiones que no deben inferirse
 
 - La presencia de una RPC, pantalla, Edge Function o botón no demuestra por sí sola que el comportamiento completo esté validado.

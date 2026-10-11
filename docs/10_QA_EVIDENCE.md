@@ -1953,3 +1953,48 @@ La unicidad completa DB-side queda diferida al piloto G4: validar
 
 No se modificaron productos, imágenes, estados, mappings, stock, Pricing V2,
 categorías, collections, vista pública ni objetos de storage.
+
+## CHK-CATGOV-02A — FINAL CERTIFICATION / EVIDENCE PROVENANCE (2026-10-11)
+
+### WORK-VERIFIED EVIDENCE
+
+- Git final alineado en `f632d10aed8e0db10eaaebc52ac65212fa8b08bc`.
+- 0004 permanece versionada y preparada en repositorio; no se describe como
+  aplicada al runtime.
+- 0005 es el vehículo runtime y su SQL es byte-identical a 0004.
+- 0006 es una corrección separada y acotada de `q.id` a `q.membership_id` en
+  `memberships_bounded`.
+- 0001–0004 históricos permanecen sin cambios.
+- La implementación mantiene RPC privadas, `SECURITY DEFINER`, `search_path`
+  seguro, límites server-side, separación de estados y ausencia de DML de
+  datos en el código versionado.
+
+### LOVABLE LIVE RUNTIME EVIDENCE
+
+Fuente autorizada: `CHK-CATGOV-02H — DETAIL RPC SURGICAL FIX — PASS`.
+Work no reprodujo estas pruebas; acepta el reporte por su procedencia,
+consistencia con el código/migraciones y ausencia de evidencia contradictoria.
+
+- 0006: `APPLIED ONCE`.
+- Detail RPC: `PASS`, HTTP 200, sin `42703`.
+- Detail envelope: `PASS`, 16 keys.
+- Detail boundedness y `collection_meta`: `PASS`.
+- memberships, sources y models: `PASS` en estado vacío.
+- offers: `PASS`, caso de 18 registros y caso vacío.
+- Sensitive-data protection: `PASS`.
+- Queue regression: `PASS`.
+- D4: `PASS`; `readiness_row_count = 1815`, `distinct_product_count = 1815`,
+  `duplicate_product_count = 0`.
+- Governance vacío: `PASS`; `catalog_governance_state = 0 rows`.
+- Staff: `PASS live`; anon: `DENIED live`.
+- Non-staff: `PASS_BY_POLICY / LIVE_ACCOUNT_TEST_DEFERRED`.
+- Runtime data mutations: `0`; provider calls: `0`; frontend changes: `0`.
+- G4, ForPromotional y CDO/StockSur: `UNTOUCHED`.
+
+### Decisión de evidencia
+
+`CHK-CATGOV-02A` queda `CLOSED / PASS`. El resultado de zero-write es
+`ALTERNATE_PROOF_ACCEPTED`, sustentado por alcance de migraciones, ausencia de
+DML, reporte QA de Lovable y cero llamadas a providers. La validación de
+Governance con memberships/assets/evidence no vacíos queda diferida al piloto
+G4 y no es un defecto del estado vacío certificado.

@@ -5645,6 +5645,32 @@ export type Database = {
       can_access_deal: { Args: { _deal_id: string }; Returns: boolean }
       can_access_lead: { Args: { _lead_id: string }; Returns: boolean }
       can_manage_formal_quote: { Args: { _quote_id: string }; Returns: boolean }
+      catalog_governance_admin_dashboard_v1: { Args: never; Returns: Json }
+      catalog_governance_admin_detail_v1: {
+        Args: { p_producto_b2b_id: string }
+        Returns: Json
+      }
+      catalog_governance_admin_queue_v1: {
+        Args: {
+          p_asset_role?: string
+          p_governance_status?: string
+          p_issue_code?: string
+          p_limit?: number
+          p_offset?: number
+          p_pricing_status?: string
+          p_provider?: string
+          p_provider_sku?: string
+          p_readiness?: string
+          p_rights_status?: string
+          p_search?: string
+          p_sort?: string
+          p_sort_dir?: string
+          p_source_type?: string
+          p_stock_eligibility?: boolean
+          p_visual_status?: string
+        }
+        Returns: Json
+      }
       catalog_governance_readiness_v1: {
         Args: { p_producto_b2b_id?: string }
         Returns: {

@@ -1,0 +1,4408 @@
+{
+  "sku_like_codes_total": 977,
+  "images_without_sku_token": 40,
+  "codes_in_multiple_archives": [
+    {
+      "sku": "T521",
+      "image_occurrences": 188,
+      "archive_count": 7,
+      "archives": {
+        "GG1.zip": 11,
+        "GG2.zip": 19,
+        "T21.zip": 7,
+        "T22.zip": 48,
+        "tt5.zip": 29,
+        "ttt1.zip": 6,
+        "ttt2.zip": 68
+      },
+      "unique_image_hashes": 182
+    },
+    {
+      "sku": "T720",
+      "image_occurrences": 365,
+      "archive_count": 6,
+      "archives": {
+        "GG1.zip": 4,
+        "GG2.zip": 4,
+        "T21.zip": 12,
+        "T25.zip": 20,
+        "ttt2.zip": 116,
+        "tttt1.zip": 209
+      },
+      "unique_image_hashes": 365
+    },
+    {
+      "sku": "T538",
+      "image_occurrences": 145,
+      "archive_count": 5,
+      "archives": {
+        "GG1.zip": 5,
+        "GG2.zip": 17,
+        "T21.zip": 6,
+        "ttt1.zip": 31,
+        "ttt2.zip": 86
+      },
+      "unique_image_hashes": 131
+    },
+    {
+      "sku": "T540",
+      "image_occurrences": 82,
+      "archive_count": 5,
+      "archives": {
+        "GG1.zip": 3,
+        "GG2.zip": 4,
+        "T21.zip": 6,
+        "tt5.zip": 20,
+        "ttt1.zip": 49
+      },
+      "unique_image_hashes": 82
+    },
+    {
+      "sku": "T539",
+      "image_occurrences": 78,
+      "archive_count": 5,
+      "archives": {
+        "GG1.zip": 6,
+        "GG2.zip": 3,
+        "T21.zip": 1,
+        "T22.zip": 48,
+        "tt5.zip": 20
+      },
+      "unique_image_hashes": 77
+    },
+    {
+      "sku": "T542",
+      "image_occurrences": 64,
+      "archive_count": 5,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 4,
+        "T21.zip": 4,
+        "ttt1.zip": 12,
+        "ttt2.zip": 43
+      },
+      "unique_image_hashes": 56
+    },
+    {
+      "sku": "T520",
+      "image_occurrences": 56,
+      "archive_count": 5,
+      "archives": {
+        "GG1.zip": 8,
+        "GG2.zip": 2,
+        "T21.zip": 4,
+        "tt5.zip": 29,
+        "ttt1.zip": 13
+      },
+      "unique_image_hashes": 56
+    },
+    {
+      "sku": "T541",
+      "image_occurrences": 55,
+      "archive_count": 5,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 7,
+        "T21.zip": 6,
+        "ttt1.zip": 18,
+        "ttt2.zip": 23
+      },
+      "unique_image_hashes": 55
+    },
+    {
+      "sku": "T719",
+      "image_occurrences": 229,
+      "archive_count": 4,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 7,
+        "T21.zip": 12,
+        "tttt1.zip": 209
+      },
+      "unique_image_hashes": 229
+    },
+    {
+      "sku": "T680",
+      "image_occurrences": 163,
+      "archive_count": 4,
+      "archives": {
+        "GG1.zip": 6,
+        "GG2.zip": 4,
+        "T25.zip": 37,
+        "ttt2.zip": 116
+      },
+      "unique_image_hashes": 163
+    },
+    {
+      "sku": "U324",
+      "image_occurrences": 96,
+      "archive_count": 4,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 3,
+        "U-20261009T225750Z-1-001(1).zip": 46,
+        "U-20261009T225750Z-1-001(2).zip": 46
+      },
+      "unique_image_hashes": 50
+    },
+    {
+      "sku": "U301",
+      "image_occurrences": 82,
+      "archive_count": 4,
+      "archives": {
+        "GG1.zip": 2,
+        "GG2.zip": 2,
+        "U-20261009T225750Z-1-001(1).zip": 39,
+        "U-20261009T225750Z-1-001(2).zip": 39
+      },
+      "unique_image_hashes": 43
+    },
+    {
+      "sku": "U322",
+      "image_occurrences": 78,
+      "archive_count": 4,
+      "archives": {
+        "GG1.zip": 2,
+        "GG2.zip": 2,
+        "U-20261009T225750Z-1-001(1).zip": 37,
+        "U-20261009T225750Z-1-001(2).zip": 37
+      },
+      "unique_image_hashes": 41
+    },
+    {
+      "sku": "K101",
+      "image_occurrences": 74,
+      "archive_count": 4,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 1,
+        "K1.zip": 37,
+        "K2.zip": 35
+      },
+      "unique_image_hashes": 39
+    },
+    {
+      "sku": "U320",
+      "image_occurrences": 56,
+      "archive_count": 4,
+      "archives": {
+        "GG1.zip": 2,
+        "GG2.zip": 4,
+        "U-20261009T225750Z-1-001(1).zip": 25,
+        "U-20261009T225750Z-1-001(2).zip": 25
+      },
+      "unique_image_hashes": 31
+    },
+    {
+      "sku": "U326",
+      "image_occurrences": 56,
+      "archive_count": 4,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 1,
+        "U-20261009T225750Z-1-001(1).zip": 27,
+        "U-20261009T225750Z-1-001(2).zip": 27
+      },
+      "unique_image_hashes": 29
+    },
+    {
+      "sku": "T598",
+      "image_occurrences": 43,
+      "archive_count": 4,
+      "archives": {
+        "GG1.zip": 3,
+        "GG2.zip": 4,
+        "T24.zip": 35,
+        "ttt1.zip": 1
+      },
+      "unique_image_hashes": 42
+    },
+    {
+      "sku": "T688",
+      "image_occurrences": 39,
+      "archive_count": 4,
+      "archives": {
+        "GG1.zip": 3,
+        "GG2.zip": 1,
+        "T24.zip": 34,
+        "T25.zip": 1
+      },
+      "unique_image_hashes": 38
+    },
+    {
+      "sku": "C540",
+      "image_occurrences": 33,
+      "archive_count": 4,
+      "archives": {
+        "EC2.zip": 2,
+        "GG1.zip": 1,
+        "GG2.zip": 5,
+        "cc1.zip": 25
+      },
+      "unique_image_hashes": 33
+    },
+    {
+      "sku": "T575",
+      "image_occurrences": 33,
+      "archive_count": 4,
+      "archives": {
+        "GG1.zip": 8,
+        "GG2.zip": 4,
+        "T21.zip": 2,
+        "ttt2.zip": 19
+      },
+      "unique_image_hashes": 33
+    },
+    {
+      "sku": "T566",
+      "image_occurrences": 29,
+      "archive_count": 4,
+      "archives": {
+        "EC2.zip": 2,
+        "GG1.zip": 4,
+        "GG2.zip": 3,
+        "ttt2.zip": 20
+      },
+      "unique_image_hashes": 29
+    },
+    {
+      "sku": "U311",
+      "image_occurrences": 28,
+      "archive_count": 4,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 3,
+        "U-20261009T225750Z-1-001(1).zip": 12,
+        "U-20261009T225750Z-1-001(2).zip": 12
+      },
+      "unique_image_hashes": 16
+    },
+    {
+      "sku": "T486",
+      "image_occurrences": 24,
+      "archive_count": 4,
+      "archives": {
+        "GG1.zip": 2,
+        "GG2.zip": 1,
+        "T21.zip": 1,
+        "tt5.zip": 20
+      },
+      "unique_image_hashes": 24
+    },
+    {
+      "sku": "T278",
+      "image_occurrences": 23,
+      "archive_count": 4,
+      "archives": {
+        "GG1.zip": 3,
+        "GG2.zip": 2,
+        "ttt2.zip": 17,
+        "tttt1.zip": 1
+      },
+      "unique_image_hashes": 23
+    },
+    {
+      "sku": "U317",
+      "image_occurrences": 22,
+      "archive_count": 4,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 3,
+        "U-20261009T225750Z-1-001(1).zip": 9,
+        "U-20261009T225750Z-1-001(2).zip": 9
+      },
+      "unique_image_hashes": 13
+    },
+    {
+      "sku": "T563",
+      "image_occurrences": 21,
+      "archive_count": 4,
+      "archives": {
+        "GG1.zip": 2,
+        "GG2.zip": 1,
+        "T21.zip": 2,
+        "ttt1.zip": 16
+      },
+      "unique_image_hashes": 21
+    },
+    {
+      "sku": "BP285",
+      "image_occurrences": 19,
+      "archive_count": 4,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 14,
+        "EC2.zip": 2,
+        "GG1.zip": 1,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 19
+    },
+    {
+      "sku": "T461",
+      "image_occurrences": 19,
+      "archive_count": 4,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 2,
+        "T21.zip": 1,
+        "ttt2.zip": 15
+      },
+      "unique_image_hashes": 19
+    },
+    {
+      "sku": "T432",
+      "image_occurrences": 15,
+      "archive_count": 4,
+      "archives": {
+        "GG1.zip": 4,
+        "GG2.zip": 2,
+        "T21.zip": 2,
+        "ttt1.zip": 7
+      },
+      "unique_image_hashes": 15
+    },
+    {
+      "sku": "T422",
+      "image_occurrences": 14,
+      "archive_count": 4,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 1,
+        "T21.zip": 2,
+        "ttt1.zip": 10
+      },
+      "unique_image_hashes": 14
+    },
+    {
+      "sku": "U325",
+      "image_occurrences": 144,
+      "archive_count": 3,
+      "archives": {
+        "GG2.zip": 4,
+        "U-20261009T225750Z-1-001(1).zip": 70,
+        "U-20261009T225750Z-1-001(2).zip": 70
+      },
+      "unique_image_hashes": 74
+    },
+    {
+      "sku": "K103",
+      "image_occurrences": 132,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 2,
+        "GG2.zip": 17,
+        "K2.zip": 113
+      },
+      "unique_image_hashes": 105
+    },
+    {
+      "sku": "U314",
+      "image_occurrences": 106,
+      "archive_count": 3,
+      "archives": {
+        "GG2.zip": 2,
+        "U-20261009T225750Z-1-001(1).zip": 52,
+        "U-20261009T225750Z-1-001(2).zip": 52
+      },
+      "unique_image_hashes": 54
+    },
+    {
+      "sku": "G21",
+      "image_occurrences": 97,
+      "archive_count": 3,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 95,
+        "GG1.zip": 1,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 97
+    },
+    {
+      "sku": "G102",
+      "image_occurrences": 94,
+      "archive_count": 3,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 90,
+        "GG1.zip": 1,
+        "GG2.zip": 3
+      },
+      "unique_image_hashes": 82
+    },
+    {
+      "sku": "U327",
+      "image_occurrences": 90,
+      "archive_count": 3,
+      "archives": {
+        "GG2.zip": 2,
+        "U-20261009T225750Z-1-001(1).zip": 44,
+        "U-20261009T225750Z-1-001(2).zip": 44
+      },
+      "unique_image_hashes": 46
+    },
+    {
+      "sku": "T632",
+      "image_occurrences": 85,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 2,
+        "GG2.zip": 2,
+        "T22.zip": 81
+      },
+      "unique_image_hashes": 85
+    },
+    {
+      "sku": "G211",
+      "image_occurrences": 81,
+      "archive_count": 3,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 78,
+        "GG1.zip": 2,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 81
+    },
+    {
+      "sku": "U328",
+      "image_occurrences": 78,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 2,
+        "U-20261009T225750Z-1-001(1).zip": 38,
+        "U-20261009T225750Z-1-001(2).zip": 38
+      },
+      "unique_image_hashes": 40
+    },
+    {
+      "sku": "U323",
+      "image_occurrences": 74,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 4,
+        "U-20261009T225750Z-1-001(1).zip": 35,
+        "U-20261009T225750Z-1-001(2).zip": 35
+      },
+      "unique_image_hashes": 39
+    },
+    {
+      "sku": "U319",
+      "image_occurrences": 72,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 2,
+        "U-20261009T225750Z-1-001(1).zip": 35,
+        "U-20261009T225750Z-1-001(2).zip": 35
+      },
+      "unique_image_hashes": 37
+    },
+    {
+      "sku": "T750",
+      "image_occurrences": 71,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 6,
+        "GG2.zip": 2,
+        "T23.zip": 63
+      },
+      "unique_image_hashes": 71
+    },
+    {
+      "sku": "G254",
+      "image_occurrences": 69,
+      "archive_count": 3,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 66,
+        "GG1.zip": 1,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 59
+    },
+    {
+      "sku": "T295",
+      "image_occurrences": 69,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 3,
+        "GG2.zip": 7,
+        "tttt1.zip": 59
+      },
+      "unique_image_hashes": 69
+    },
+    {
+      "sku": "U315",
+      "image_occurrences": 69,
+      "archive_count": 3,
+      "archives": {
+        "GG2.zip": 5,
+        "U-20261009T225750Z-1-001(1).zip": 32,
+        "U-20261009T225750Z-1-001(2).zip": 32
+      },
+      "unique_image_hashes": 37
+    },
+    {
+      "sku": "C500",
+      "image_occurrences": 65,
+      "archive_count": 3,
+      "archives": {
+        "Archivo(1).zip": 59,
+        "GG1.zip": 4,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 65
+    },
+    {
+      "sku": "T676",
+      "image_occurrences": 63,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 5,
+        "T22.zip": 57
+      },
+      "unique_image_hashes": 63
+    },
+    {
+      "sku": "G230",
+      "image_occurrences": 61,
+      "archive_count": 3,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 58,
+        "GG1.zip": 2,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 46
+    },
+    {
+      "sku": "G225",
+      "image_occurrences": 55,
+      "archive_count": 3,
+      "archives": {
+        "G-20261009T225541Z-1-001(1).zip": 32,
+        "GATO-20261009T225629Z-1-001(1).zip": 22,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 53
+    },
+    {
+      "sku": "T723",
+      "image_occurrences": 55,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 1,
+        "T22.zip": 53
+      },
+      "unique_image_hashes": 55
+    },
+    {
+      "sku": "C554",
+      "image_occurrences": 53,
+      "archive_count": 3,
+      "archives": {
+        "Archivo(1).zip": 35,
+        "GG2.zip": 12,
+        "cc2.zip": 6
+      },
+      "unique_image_hashes": 53
+    },
+    {
+      "sku": "T550",
+      "image_occurrences": 52,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 8,
+        "tttt1.zip": 43
+      },
+      "unique_image_hashes": 52
+    },
+    {
+      "sku": "T650",
+      "image_occurrences": 50,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 5,
+        "GG2.zip": 1,
+        "T21.zip": 44
+      },
+      "unique_image_hashes": 50
+    },
+    {
+      "sku": "G198",
+      "image_occurrences": 49,
+      "archive_count": 3,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 47,
+        "GG1.zip": 1,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 42
+    },
+    {
+      "sku": "T606",
+      "image_occurrences": 49,
+      "archive_count": 3,
+      "archives": {
+        "GG2.zip": 6,
+        "T23.zip": 39,
+        "ttt1.zip": 4
+      },
+      "unique_image_hashes": 48
+    },
+    {
+      "sku": "BP298",
+      "image_occurrences": 48,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 35,
+        "GG1.zip": 2,
+        "GG2.zip": 11
+      },
+      "unique_image_hashes": 48
+    },
+    {
+      "sku": "G141",
+      "image_occurrences": 48,
+      "archive_count": 3,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 45,
+        "GG1.zip": 1,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 33
+    },
+    {
+      "sku": "G219",
+      "image_occurrences": 47,
+      "archive_count": 3,
+      "archives": {
+        "G-20261009T225541Z-1-001(1).zip": 40,
+        "GG1.zip": 2,
+        "GG2.zip": 5
+      },
+      "unique_image_hashes": 47
+    },
+    {
+      "sku": "U316",
+      "image_occurrences": 47,
+      "archive_count": 3,
+      "archives": {
+        "GG2.zip": 1,
+        "U-20261009T225750Z-1-001(1).zip": 23,
+        "U-20261009T225750Z-1-001(2).zip": 23
+      },
+      "unique_image_hashes": 24
+    },
+    {
+      "sku": "G111",
+      "image_occurrences": 45,
+      "archive_count": 3,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 43,
+        "GG1.zip": 1,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 39
+    },
+    {
+      "sku": "G139",
+      "image_occurrences": 45,
+      "archive_count": 3,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 40,
+        "GG1.zip": 1,
+        "GG2.zip": 4
+      },
+      "unique_image_hashes": 45
+    },
+    {
+      "sku": "BP311",
+      "image_occurrences": 44,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 37,
+        "GG1.zip": 1,
+        "GG2.zip": 6
+      },
+      "unique_image_hashes": 43
+    },
+    {
+      "sku": "C564",
+      "image_occurrences": 42,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 1,
+        "cc2.zip": 40
+      },
+      "unique_image_hashes": 22
+    },
+    {
+      "sku": "C565",
+      "image_occurrences": 42,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 1,
+        "cc2.zip": 40
+      },
+      "unique_image_hashes": 22
+    },
+    {
+      "sku": "BP325",
+      "image_occurrences": 41,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 30,
+        "GG1.zip": 6,
+        "GG2.zip": 5
+      },
+      "unique_image_hashes": 41
+    },
+    {
+      "sku": "G267",
+      "image_occurrences": 41,
+      "archive_count": 3,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 38,
+        "GG1.zip": 1,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 31
+    },
+    {
+      "sku": "T584",
+      "image_occurrences": 41,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 2,
+        "GG2.zip": 5,
+        "T21.zip": 34
+      },
+      "unique_image_hashes": 28
+    },
+    {
+      "sku": "K6",
+      "image_occurrences": 40,
+      "archive_count": 3,
+      "archives": {
+        "GG2.zip": 8,
+        "K1.zip": 20,
+        "K2.zip": 12
+      },
+      "unique_image_hashes": 28
+    },
+    {
+      "sku": "T608",
+      "image_occurrences": 40,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 4,
+        "T23.zip": 35
+      },
+      "unique_image_hashes": 40
+    },
+    {
+      "sku": "T592",
+      "image_occurrences": 39,
+      "archive_count": 3,
+      "archives": {
+        "GG2.zip": 4,
+        "T23.zip": 25,
+        "ttt2.zip": 10
+      },
+      "unique_image_hashes": 38
+    },
+    {
+      "sku": "G261",
+      "image_occurrences": 38,
+      "archive_count": 3,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 34,
+        "GG1.zip": 2,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 38
+    },
+    {
+      "sku": "BP328",
+      "image_occurrences": 37,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 32,
+        "GG1.zip": 2,
+        "GG2.zip": 3
+      },
+      "unique_image_hashes": 37
+    },
+    {
+      "sku": "T662",
+      "image_occurrences": 36,
+      "archive_count": 3,
+      "archives": {
+        "EC2.zip": 2,
+        "GG2.zip": 4,
+        "T24.zip": 30
+      },
+      "unique_image_hashes": 35
+    },
+    {
+      "sku": "T469",
+      "image_occurrences": 35,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 4,
+        "GG2.zip": 3,
+        "tttt1.zip": 28
+      },
+      "unique_image_hashes": 35
+    },
+    {
+      "sku": "T482",
+      "image_occurrences": 35,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 2,
+        "GG2.zip": 7,
+        "tttt1.zip": 26
+      },
+      "unique_image_hashes": 34
+    },
+    {
+      "sku": "T615",
+      "image_occurrences": 35,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 3,
+        "T21.zip": 31
+      },
+      "unique_image_hashes": 35
+    },
+    {
+      "sku": "T72",
+      "image_occurrences": 33,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 11,
+        "GG2.zip": 2,
+        "ttt1.zip": 20
+      },
+      "unique_image_hashes": 27
+    },
+    {
+      "sku": "BP228",
+      "image_occurrences": 32,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 21,
+        "GG1.zip": 9,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 32
+    },
+    {
+      "sku": "G275",
+      "image_occurrences": 32,
+      "archive_count": 3,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 30,
+        "GG1.zip": 1,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 31
+    },
+    {
+      "sku": "T576",
+      "image_occurrences": 32,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 3,
+        "GG2.zip": 4,
+        "ttt1.zip": 25
+      },
+      "unique_image_hashes": 32
+    },
+    {
+      "sku": "BP309",
+      "image_occurrences": 31,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 24,
+        "GG1.zip": 3,
+        "GG2.zip": 4
+      },
+      "unique_image_hashes": 31
+    },
+    {
+      "sku": "C478",
+      "image_occurrences": 31,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 5,
+        "cc2.zip": 25
+      },
+      "unique_image_hashes": 31
+    },
+    {
+      "sku": "EC729",
+      "image_occurrences": 31,
+      "archive_count": 3,
+      "archives": {
+        "EC2.zip": 24,
+        "GG1.zip": 5,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 30
+    },
+    {
+      "sku": "T525",
+      "image_occurrences": 31,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 6,
+        "T21.zip": 1,
+        "ttt1.zip": 24
+      },
+      "unique_image_hashes": 31
+    },
+    {
+      "sku": "T602",
+      "image_occurrences": 30,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 5,
+        "GG2.zip": 3,
+        "T24.zip": 22
+      },
+      "unique_image_hashes": 20
+    },
+    {
+      "sku": "T654",
+      "image_occurrences": 30,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 3,
+        "T24.zip": 26
+      },
+      "unique_image_hashes": 30
+    },
+    {
+      "sku": "T659",
+      "image_occurrences": 30,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 1,
+        "T23.zip": 28
+      },
+      "unique_image_hashes": 30
+    },
+    {
+      "sku": "T794",
+      "image_occurrences": 30,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 1,
+        "T24.zip": 28
+      },
+      "unique_image_hashes": 30
+    },
+    {
+      "sku": "BP268",
+      "image_occurrences": 29,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 23,
+        "GG1.zip": 4,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 29
+    },
+    {
+      "sku": "G196",
+      "image_occurrences": 29,
+      "archive_count": 3,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 27,
+        "GG1.zip": 1,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 29
+    },
+    {
+      "sku": "BP241",
+      "image_occurrences": 28,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 21,
+        "GG1.zip": 5,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 28
+    },
+    {
+      "sku": "G144",
+      "image_occurrences": 27,
+      "archive_count": 3,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 25,
+        "GG1.zip": 1,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 27
+    },
+    {
+      "sku": "K112",
+      "image_occurrences": 26,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 1,
+        "K1.zip": 24
+      },
+      "unique_image_hashes": 26
+    },
+    {
+      "sku": "T653",
+      "image_occurrences": 26,
+      "archive_count": 3,
+      "archives": {
+        "GG2.zip": 4,
+        "T21.zip": 1,
+        "T22.zip": 21
+      },
+      "unique_image_hashes": 26
+    },
+    {
+      "sku": "C491",
+      "image_occurrences": 25,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 2,
+        "cc3.zip": 22
+      },
+      "unique_image_hashes": 25
+    },
+    {
+      "sku": "C549",
+      "image_occurrences": 25,
+      "archive_count": 3,
+      "archives": {
+        "Archivo(1).zip": 20,
+        "GG1.zip": 3,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 24
+    },
+    {
+      "sku": "G264",
+      "image_occurrences": 25,
+      "archive_count": 3,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 22,
+        "GG1.zip": 1,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 25
+    },
+    {
+      "sku": "G321",
+      "image_occurrences": 25,
+      "archive_count": 3,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 22,
+        "GG1.zip": 1,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 25
+    },
+    {
+      "sku": "BP314",
+      "image_occurrences": 24,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 18,
+        "GG1.zip": 1,
+        "GG2.zip": 5
+      },
+      "unique_image_hashes": 24
+    },
+    {
+      "sku": "C506",
+      "image_occurrences": 24,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 2,
+        "GG2.zip": 2,
+        "cc3.zip": 20
+      },
+      "unique_image_hashes": 24
+    },
+    {
+      "sku": "C511",
+      "image_occurrences": 24,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 5,
+        "cc1.zip": 18
+      },
+      "unique_image_hashes": 24
+    },
+    {
+      "sku": "T526",
+      "image_occurrences": 24,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 4,
+        "ttt2.zip": 19
+      },
+      "unique_image_hashes": 24
+    },
+    {
+      "sku": "T564",
+      "image_occurrences": 24,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 2,
+        "GG2.zip": 6,
+        "ttt2.zip": 16
+      },
+      "unique_image_hashes": 24
+    },
+    {
+      "sku": "T591",
+      "image_occurrences": 24,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 2,
+        "GG2.zip": 1,
+        "T23.zip": 21
+      },
+      "unique_image_hashes": 20
+    },
+    {
+      "sku": "T524",
+      "image_occurrences": 23,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 3,
+        "T21.zip": 2,
+        "ttt1.zip": 18
+      },
+      "unique_image_hashes": 23
+    },
+    {
+      "sku": "T766",
+      "image_occurrences": 23,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 2,
+        "T25.zip": 20
+      },
+      "unique_image_hashes": 23
+    },
+    {
+      "sku": "T795",
+      "image_occurrences": 23,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 4,
+        "GG2.zip": 1,
+        "T21.zip": 18
+      },
+      "unique_image_hashes": 23
+    },
+    {
+      "sku": "T809",
+      "image_occurrences": 23,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 1,
+        "T24.zip": 21
+      },
+      "unique_image_hashes": 23
+    },
+    {
+      "sku": "BP193",
+      "image_occurrences": 22,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 18,
+        "GG1.zip": 2,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 22
+    },
+    {
+      "sku": "BP318",
+      "image_occurrences": 22,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 16,
+        "GG1.zip": 1,
+        "GG2.zip": 5
+      },
+      "unique_image_hashes": 22
+    },
+    {
+      "sku": "C507",
+      "image_occurrences": 22,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 3,
+        "cc1.zip": 18
+      },
+      "unique_image_hashes": 22
+    },
+    {
+      "sku": "T543",
+      "image_occurrences": 22,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 2,
+        "T21.zip": 1,
+        "ttt2.zip": 19
+      },
+      "unique_image_hashes": 22
+    },
+    {
+      "sku": "BP327",
+      "image_occurrences": 21,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 16,
+        "GG1.zip": 4,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 21
+    },
+    {
+      "sku": "G44",
+      "image_occurrences": 21,
+      "archive_count": 3,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 19,
+        "GG1.zip": 1,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 21
+    },
+    {
+      "sku": "T747",
+      "image_occurrences": 21,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 2,
+        "T25.zip": 18
+      },
+      "unique_image_hashes": 21
+    },
+    {
+      "sku": "BP248",
+      "image_occurrences": 20,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 15,
+        "GG1.zip": 3,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 20
+    },
+    {
+      "sku": "BP257",
+      "image_occurrences": 20,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 16,
+        "GG1.zip": 2,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 20
+    },
+    {
+      "sku": "BP304",
+      "image_occurrences": 20,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 15,
+        "GG1.zip": 1,
+        "GG2.zip": 4
+      },
+      "unique_image_hashes": 20
+    },
+    {
+      "sku": "C505",
+      "image_occurrences": 20,
+      "archive_count": 3,
+      "archives": {
+        "Archivo(1).zip": 16,
+        "GG1.zip": 1,
+        "GG2.zip": 3
+      },
+      "unique_image_hashes": 20
+    },
+    {
+      "sku": "T534",
+      "image_occurrences": 20,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 3,
+        "T21.zip": 2,
+        "ttt1.zip": 15
+      },
+      "unique_image_hashes": 20
+    },
+    {
+      "sku": "T699",
+      "image_occurrences": 20,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 1,
+        "T24.zip": 18
+      },
+      "unique_image_hashes": 20
+    },
+    {
+      "sku": "U321",
+      "image_occurrences": 20,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 2,
+        "U-20261009T225750Z-1-001(1).zip": 9,
+        "U-20261009T225750Z-1-001(2).zip": 9
+      },
+      "unique_image_hashes": 11
+    },
+    {
+      "sku": "BP343",
+      "image_occurrences": 19,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 16,
+        "GG1.zip": 2,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 19
+    },
+    {
+      "sku": "T327",
+      "image_occurrences": 19,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 3,
+        "ttt2.zip": 15
+      },
+      "unique_image_hashes": 19
+    },
+    {
+      "sku": "T362",
+      "image_occurrences": 19,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 2,
+        "tttt1.zip": 16
+      },
+      "unique_image_hashes": 19
+    },
+    {
+      "sku": "T402",
+      "image_occurrences": 19,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 3,
+        "ttt1.zip": 15
+      },
+      "unique_image_hashes": 19
+    },
+    {
+      "sku": "T428",
+      "image_occurrences": 19,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 3,
+        "GG2.zip": 1,
+        "tt5.zip": 15
+      },
+      "unique_image_hashes": 19
+    },
+    {
+      "sku": "T164",
+      "image_occurrences": 18,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 2,
+        "GG2.zip": 3,
+        "ttt1.zip": 13
+      },
+      "unique_image_hashes": 18
+    },
+    {
+      "sku": "T752",
+      "image_occurrences": 18,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 1,
+        "T25.zip": 16
+      },
+      "unique_image_hashes": 18
+    },
+    {
+      "sku": "BP190",
+      "image_occurrences": 17,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 12,
+        "GG1.zip": 2,
+        "GG2.zip": 3
+      },
+      "unique_image_hashes": 17
+    },
+    {
+      "sku": "BP250",
+      "image_occurrences": 17,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 14,
+        "GG1.zip": 1,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 17
+    },
+    {
+      "sku": "EC787",
+      "image_occurrences": 17,
+      "archive_count": 3,
+      "archives": {
+        "EC1.zip": 15,
+        "GG1.zip": 1,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 17
+    },
+    {
+      "sku": "T593",
+      "image_occurrences": 17,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 3,
+        "T21.zip": 13
+      },
+      "unique_image_hashes": 16
+    },
+    {
+      "sku": "C510",
+      "image_occurrences": 16,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 3,
+        "cc3.zip": 12
+      },
+      "unique_image_hashes": 16
+    },
+    {
+      "sku": "C541",
+      "image_occurrences": 16,
+      "archive_count": 3,
+      "archives": {
+        "Archivo(1).zip": 12,
+        "GG1.zip": 2,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 16
+    },
+    {
+      "sku": "G45",
+      "image_occurrences": 16,
+      "archive_count": 3,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 14,
+        "GG1.zip": 1,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 16
+    },
+    {
+      "sku": "T692",
+      "image_occurrences": 16,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 3,
+        "T25.zip": 12
+      },
+      "unique_image_hashes": 16
+    },
+    {
+      "sku": "T804",
+      "image_occurrences": 16,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 3,
+        "GG2.zip": 1,
+        "T25.zip": 12
+      },
+      "unique_image_hashes": 16
+    },
+    {
+      "sku": "T408",
+      "image_occurrences": 15,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 2,
+        "tt5.zip": 12
+      },
+      "unique_image_hashes": 15
+    },
+    {
+      "sku": "T456",
+      "image_occurrences": 15,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 2,
+        "GG2.zip": 1,
+        "ttt2.zip": 12
+      },
+      "unique_image_hashes": 15
+    },
+    {
+      "sku": "T610",
+      "image_occurrences": 15,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 2,
+        "GG2.zip": 1,
+        "T25.zip": 12
+      },
+      "unique_image_hashes": 14
+    },
+    {
+      "sku": "T813",
+      "image_occurrences": 15,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 2,
+        "T25.zip": 12
+      },
+      "unique_image_hashes": 15
+    },
+    {
+      "sku": "T92",
+      "image_occurrences": 14,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 5,
+        "GG2.zip": 1,
+        "ttt1.zip": 8
+      },
+      "unique_image_hashes": 14
+    },
+    {
+      "sku": "BP272",
+      "image_occurrences": 13,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 11,
+        "GG1.zip": 1,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 13
+    },
+    {
+      "sku": "BP316",
+      "image_occurrences": 13,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 9,
+        "GG1.zip": 2,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 13
+    },
+    {
+      "sku": "T226",
+      "image_occurrences": 12,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 2,
+        "GG2.zip": 4,
+        "ttt1.zip": 6
+      },
+      "unique_image_hashes": 11
+    },
+    {
+      "sku": "G47",
+      "image_occurrences": 10,
+      "archive_count": 3,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 8,
+        "GG1.zip": 1,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 9
+    },
+    {
+      "sku": "BP345",
+      "image_occurrences": 9,
+      "archive_count": 3,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 6,
+        "GG1.zip": 1,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 9
+    },
+    {
+      "sku": "T424",
+      "image_occurrences": 9,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 2,
+        "ttt1.zip": 6
+      },
+      "unique_image_hashes": 9
+    },
+    {
+      "sku": "T386",
+      "image_occurrences": 8,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 1,
+        "ttt1.zip": 6
+      },
+      "unique_image_hashes": 8
+    },
+    {
+      "sku": "T492",
+      "image_occurrences": 7,
+      "archive_count": 3,
+      "archives": {
+        "GG1.zip": 1,
+        "T21.zip": 1,
+        "ttt1.zip": 5
+      },
+      "unique_image_hashes": 7
+    },
+    {
+      "sku": "K1",
+      "image_occurrences": 498,
+      "archive_count": 2,
+      "archives": {
+        "K1.zip": 492,
+        "K2.zip": 6
+      },
+      "unique_image_hashes": 490
+    },
+    {
+      "sku": "T7",
+      "image_occurrences": 374,
+      "archive_count": 2,
+      "archives": {
+        "T21.zip": 2,
+        "ttt1.zip": 372
+      },
+      "unique_image_hashes": 372
+    },
+    {
+      "sku": "T618",
+      "image_occurrences": 93,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 3,
+        "T22.zip": 90
+      },
+      "unique_image_hashes": 93
+    },
+    {
+      "sku": "G212",
+      "image_occurrences": 86,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 83,
+        "GG2.zip": 3
+      },
+      "unique_image_hashes": 86
+    },
+    {
+      "sku": "G87",
+      "image_occurrences": 86,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 84,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 60
+    },
+    {
+      "sku": "K5",
+      "image_occurrences": 82,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 6,
+        "K2.zip": 76
+      },
+      "unique_image_hashes": 57
+    },
+    {
+      "sku": "K109",
+      "image_occurrences": 78,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 10,
+        "K2.zip": 68
+      },
+      "unique_image_hashes": 78
+    },
+    {
+      "sku": "C587",
+      "image_occurrences": 77,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "cc1.zip": 73
+      },
+      "unique_image_hashes": 77
+    },
+    {
+      "sku": "G206",
+      "image_occurrences": 71,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 70,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 51
+    },
+    {
+      "sku": "G207",
+      "image_occurrences": 71,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 70,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 51
+    },
+    {
+      "sku": "G209",
+      "image_occurrences": 71,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 70,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 51
+    },
+    {
+      "sku": "G210",
+      "image_occurrences": 71,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 70,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 51
+    },
+    {
+      "sku": "K110",
+      "image_occurrences": 68,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 8,
+        "K2.zip": 60
+      },
+      "unique_image_hashes": 68
+    },
+    {
+      "sku": "T793",
+      "image_occurrences": 68,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 8,
+        "T24.zip": 60
+      },
+      "unique_image_hashes": 57
+    },
+    {
+      "sku": "T622",
+      "image_occurrences": 66,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "T21.zip": 62
+      },
+      "unique_image_hashes": 66
+    },
+    {
+      "sku": "T784",
+      "image_occurrences": 66,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 6,
+        "T24.zip": 60
+      },
+      "unique_image_hashes": 55
+    },
+    {
+      "sku": "G255",
+      "image_occurrences": 64,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 62,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 55
+    },
+    {
+      "sku": "T788",
+      "image_occurrences": 61,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "T21.zip": 57
+      },
+      "unique_image_hashes": 61
+    },
+    {
+      "sku": "C571",
+      "image_occurrences": 58,
+      "archive_count": 2,
+      "archives": {
+        "Archivo(1).zip": 56,
+        "GG1.zip": 2
+      },
+      "unique_image_hashes": 58
+    },
+    {
+      "sku": "T616",
+      "image_occurrences": 57,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 5,
+        "T21.zip": 52
+      },
+      "unique_image_hashes": 45
+    },
+    {
+      "sku": "T785",
+      "image_occurrences": 56,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 6,
+        "T24.zip": 50
+      },
+      "unique_image_hashes": 43
+    },
+    {
+      "sku": "T797",
+      "image_occurrences": 56,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 6,
+        "T24.zip": 50
+      },
+      "unique_image_hashes": 43
+    },
+    {
+      "sku": "BP300",
+      "image_occurrences": 55,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 51,
+        "GG2.zip": 4
+      },
+      "unique_image_hashes": 54
+    },
+    {
+      "sku": "T704",
+      "image_occurrences": 54,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 6,
+        "T23.zip": 48
+      },
+      "unique_image_hashes": 54
+    },
+    {
+      "sku": "C570",
+      "image_occurrences": 53,
+      "archive_count": 2,
+      "archives": {
+        "Archivo(1).zip": 49,
+        "GG1.zip": 4
+      },
+      "unique_image_hashes": 53
+    },
+    {
+      "sku": "G229",
+      "image_occurrences": 53,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 52,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 42
+    },
+    {
+      "sku": "K106",
+      "image_occurrences": 53,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 5,
+        "K1.zip": 48
+      },
+      "unique_image_hashes": 53
+    },
+    {
+      "sku": "T645",
+      "image_occurrences": 53,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 11,
+        "T22.zip": 42
+      },
+      "unique_image_hashes": 53
+    },
+    {
+      "sku": "G268",
+      "image_occurrences": 52,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 45,
+        "GG2.zip": 7
+      },
+      "unique_image_hashes": 47
+    },
+    {
+      "sku": "G140",
+      "image_occurrences": 51,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 47,
+        "GG2.zip": 4
+      },
+      "unique_image_hashes": 51
+    },
+    {
+      "sku": "G322",
+      "image_occurrences": 51,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 50,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 51
+    },
+    {
+      "sku": "T614",
+      "image_occurrences": 51,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T23.zip": 49
+      },
+      "unique_image_hashes": 51
+    },
+    {
+      "sku": "T756",
+      "image_occurrences": 50,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 6,
+        "T21.zip": 44
+      },
+      "unique_image_hashes": 50
+    },
+    {
+      "sku": "T798",
+      "image_occurrences": 49,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T22.zip": 47
+      },
+      "unique_image_hashes": 49
+    },
+    {
+      "sku": "BP319",
+      "image_occurrences": 47,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 40,
+        "GG2.zip": 7
+      },
+      "unique_image_hashes": 47
+    },
+    {
+      "sku": "C485",
+      "image_occurrences": 47,
+      "archive_count": 2,
+      "archives": {
+        "Archivo(1).zip": 41,
+        "GG2.zip": 6
+      },
+      "unique_image_hashes": 47
+    },
+    {
+      "sku": "T779",
+      "image_occurrences": 46,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T24.zip": 44
+      },
+      "unique_image_hashes": 46
+    },
+    {
+      "sku": "C576",
+      "image_occurrences": 45,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "cc1.zip": 41
+      },
+      "unique_image_hashes": 43
+    },
+    {
+      "sku": "BP307",
+      "image_occurrences": 44,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 40,
+        "GG2.zip": 4
+      },
+      "unique_image_hashes": 44
+    },
+    {
+      "sku": "T658",
+      "image_occurrences": 44,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T23.zip": 42
+      },
+      "unique_image_hashes": 44
+    },
+    {
+      "sku": "T687",
+      "image_occurrences": 44,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "T23.zip": 40
+      },
+      "unique_image_hashes": 44
+    },
+    {
+      "sku": "BP330",
+      "image_occurrences": 43,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 40,
+        "GG2.zip": 3
+      },
+      "unique_image_hashes": 43
+    },
+    {
+      "sku": "G117",
+      "image_occurrences": 43,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 40,
+        "GG1.zip": 3
+      },
+      "unique_image_hashes": 36
+    },
+    {
+      "sku": "T627",
+      "image_occurrences": 43,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 10,
+        "T24.zip": 33
+      },
+      "unique_image_hashes": 43
+    },
+    {
+      "sku": "T701",
+      "image_occurrences": 43,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T23.zip": 41
+      },
+      "unique_image_hashes": 43
+    },
+    {
+      "sku": "T702",
+      "image_occurrences": 43,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T22.zip": 41
+      },
+      "unique_image_hashes": 43
+    },
+    {
+      "sku": "G232",
+      "image_occurrences": 42,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 39,
+        "GG2.zip": 3
+      },
+      "unique_image_hashes": 42
+    },
+    {
+      "sku": "G84",
+      "image_occurrences": 41,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 40,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 34
+    },
+    {
+      "sku": "C597",
+      "image_occurrences": 40,
+      "archive_count": 2,
+      "archives": {
+        "Archivo(1).zip": 38,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 40
+    },
+    {
+      "sku": "EC748",
+      "image_occurrences": 39,
+      "archive_count": 2,
+      "archives": {
+        "EC2.zip": 36,
+        "GG1.zip": 3
+      },
+      "unique_image_hashes": 31
+    },
+    {
+      "sku": "G167",
+      "image_occurrences": 39,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 38,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 28
+    },
+    {
+      "sku": "T789",
+      "image_occurrences": 39,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 6,
+        "T21.zip": 33
+      },
+      "unique_image_hashes": 39
+    },
+    {
+      "sku": "C574",
+      "image_occurrences": 38,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 2,
+        "cc1.zip": 36
+      },
+      "unique_image_hashes": 38
+    },
+    {
+      "sku": "K10",
+      "image_occurrences": 38,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "K1.zip": 34
+      },
+      "unique_image_hashes": 38
+    },
+    {
+      "sku": "T807",
+      "image_occurrences": 38,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "T23.zip": 34
+      },
+      "unique_image_hashes": 38
+    },
+    {
+      "sku": "BP244",
+      "image_occurrences": 37,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 32,
+        "GG1.zip": 5
+      },
+      "unique_image_hashes": 37
+    },
+    {
+      "sku": "T718",
+      "image_occurrences": 37,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 3,
+        "T22.zip": 34
+      },
+      "unique_image_hashes": 37
+    },
+    {
+      "sku": "G292",
+      "image_occurrences": 36,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 34,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 36
+    },
+    {
+      "sku": "T625",
+      "image_occurrences": 36,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 5,
+        "T22.zip": 31
+      },
+      "unique_image_hashes": 36
+    },
+    {
+      "sku": "T646",
+      "image_occurrences": 36,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 8,
+        "T21.zip": 28
+      },
+      "unique_image_hashes": 36
+    },
+    {
+      "sku": "T679",
+      "image_occurrences": 36,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 5,
+        "T23.zip": 31
+      },
+      "unique_image_hashes": 36
+    },
+    {
+      "sku": "T726",
+      "image_occurrences": 36,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "T23.zip": 32
+      },
+      "unique_image_hashes": 36
+    },
+    {
+      "sku": "T731",
+      "image_occurrences": 36,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 6,
+        "T23.zip": 30
+      },
+      "unique_image_hashes": 36
+    },
+    {
+      "sku": "T743",
+      "image_occurrences": 36,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "T23.zip": 32
+      },
+      "unique_image_hashes": 36
+    },
+    {
+      "sku": "T764",
+      "image_occurrences": 36,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 4,
+        "T25.zip": 32
+      },
+      "unique_image_hashes": 36
+    },
+    {
+      "sku": "BP323",
+      "image_occurrences": 35,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 32,
+        "GG2.zip": 3
+      },
+      "unique_image_hashes": 35
+    },
+    {
+      "sku": "BP333",
+      "image_occurrences": 35,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 33,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 35
+    },
+    {
+      "sku": "T810",
+      "image_occurrences": 35,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 2,
+        "T24.zip": 33
+      },
+      "unique_image_hashes": 35
+    },
+    {
+      "sku": "BP338",
+      "image_occurrences": 34,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 32,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 34
+    },
+    {
+      "sku": "C582",
+      "image_occurrences": 34,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "cc1.zip": 32
+      },
+      "unique_image_hashes": 34
+    },
+    {
+      "sku": "C583",
+      "image_occurrences": 34,
+      "archive_count": 2,
+      "archives": {
+        "Archivo(1).zip": 28,
+        "GG2.zip": 6
+      },
+      "unique_image_hashes": 34
+    },
+    {
+      "sku": "T657",
+      "image_occurrences": 34,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 3,
+        "T23.zip": 31
+      },
+      "unique_image_hashes": 34
+    },
+    {
+      "sku": "BP312",
+      "image_occurrences": 33,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 28,
+        "GG2.zip": 5
+      },
+      "unique_image_hashes": 33
+    },
+    {
+      "sku": "T730",
+      "image_occurrences": 33,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 3,
+        "T23.zip": 30
+      },
+      "unique_image_hashes": 33
+    },
+    {
+      "sku": "EC765",
+      "image_occurrences": 32,
+      "archive_count": 2,
+      "archives": {
+        "EC2.zip": 27,
+        "GG2.zip": 5
+      },
+      "unique_image_hashes": 32
+    },
+    {
+      "sku": "G263",
+      "image_occurrences": 32,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 26,
+        "GG2.zip": 6
+      },
+      "unique_image_hashes": 32
+    },
+    {
+      "sku": "G276",
+      "image_occurrences": 32,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 31,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 31
+    },
+    {
+      "sku": "K20",
+      "image_occurrences": 32,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "K2.zip": 30
+      },
+      "unique_image_hashes": 32
+    },
+    {
+      "sku": "T690",
+      "image_occurrences": 32,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T21.zip": 30
+      },
+      "unique_image_hashes": 32
+    },
+    {
+      "sku": "BP329",
+      "image_occurrences": 31,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 27,
+        "GG2.zip": 4
+      },
+      "unique_image_hashes": 31
+    },
+    {
+      "sku": "C568",
+      "image_occurrences": 31,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "cc2.zip": 27
+      },
+      "unique_image_hashes": 31
+    },
+    {
+      "sku": "K15",
+      "image_occurrences": 31,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "K2.zip": 29
+      },
+      "unique_image_hashes": 30
+    },
+    {
+      "sku": "T812",
+      "image_occurrences": 31,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 3,
+        "T24.zip": 28
+      },
+      "unique_image_hashes": 31
+    },
+    {
+      "sku": "BP264",
+      "image_occurrences": 30,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 26,
+        "GG1.zip": 4
+      },
+      "unique_image_hashes": 30
+    },
+    {
+      "sku": "EC742",
+      "image_occurrences": 30,
+      "archive_count": 2,
+      "archives": {
+        "EC2.zip": 24,
+        "GG2.zip": 6
+      },
+      "unique_image_hashes": 30
+    },
+    {
+      "sku": "G155",
+      "image_occurrences": 30,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 29,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 24
+    },
+    {
+      "sku": "T671",
+      "image_occurrences": 30,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T23.zip": 28
+      },
+      "unique_image_hashes": 30
+    },
+    {
+      "sku": "T693",
+      "image_occurrences": 30,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 3,
+        "T23.zip": 27
+      },
+      "unique_image_hashes": 30
+    },
+    {
+      "sku": "BP240",
+      "image_occurrences": 29,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 19,
+        "GG1.zip": 10
+      },
+      "unique_image_hashes": 29
+    },
+    {
+      "sku": "EC781",
+      "image_occurrences": 29,
+      "archive_count": 2,
+      "archives": {
+        "EC2.zip": 27,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 29
+    },
+    {
+      "sku": "EC786",
+      "image_occurrences": 29,
+      "archive_count": 2,
+      "archives": {
+        "EC2.zip": 27,
+        "GG1.zip": 2
+      },
+      "unique_image_hashes": 19
+    },
+    {
+      "sku": "K21",
+      "image_occurrences": 29,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "K2.zip": 27
+      },
+      "unique_image_hashes": 29
+    },
+    {
+      "sku": "T703",
+      "image_occurrences": 29,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T24.zip": 27
+      },
+      "unique_image_hashes": 29
+    },
+    {
+      "sku": "T729",
+      "image_occurrences": 29,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T23.zip": 27
+      },
+      "unique_image_hashes": 29
+    },
+    {
+      "sku": "T778",
+      "image_occurrences": 29,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T24.zip": 27
+      },
+      "unique_image_hashes": 29
+    },
+    {
+      "sku": "BP295",
+      "image_occurrences": 28,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 26,
+        "GG1.zip": 2
+      },
+      "unique_image_hashes": 28
+    },
+    {
+      "sku": "C579",
+      "image_occurrences": 28,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "cc1.zip": 24
+      },
+      "unique_image_hashes": 28
+    },
+    {
+      "sku": "EC782",
+      "image_occurrences": 28,
+      "archive_count": 2,
+      "archives": {
+        "EC2.zip": 26,
+        "GG1.zip": 2
+      },
+      "unique_image_hashes": 28
+    },
+    {
+      "sku": "G271",
+      "image_occurrences": 28,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 27,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 28
+    },
+    {
+      "sku": "K13",
+      "image_occurrences": 28,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "K1.zip": 24
+      },
+      "unique_image_hashes": 28
+    },
+    {
+      "sku": "T641",
+      "image_occurrences": 28,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "T21.zip": 24
+      },
+      "unique_image_hashes": 28
+    },
+    {
+      "sku": "T727",
+      "image_occurrences": 28,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "T23.zip": 24
+      },
+      "unique_image_hashes": 28
+    },
+    {
+      "sku": "T765",
+      "image_occurrences": 28,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 4,
+        "T25.zip": 24
+      },
+      "unique_image_hashes": 28
+    },
+    {
+      "sku": "C558",
+      "image_occurrences": 27,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 5,
+        "cc1.zip": 22
+      },
+      "unique_image_hashes": 27
+    },
+    {
+      "sku": "C562",
+      "image_occurrences": 27,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "cc2.zip": 25
+      },
+      "unique_image_hashes": 27
+    },
+    {
+      "sku": "C591",
+      "image_occurrences": 27,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "cc2.zip": 25
+      },
+      "unique_image_hashes": 27
+    },
+    {
+      "sku": "T529",
+      "image_occurrences": 27,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 2,
+        "ttt1.zip": 25
+      },
+      "unique_image_hashes": 27
+    },
+    {
+      "sku": "T643",
+      "image_occurrences": 27,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "tttt1.zip": 23
+      },
+      "unique_image_hashes": 27
+    },
+    {
+      "sku": "T686",
+      "image_occurrences": 27,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T23.zip": 25
+      },
+      "unique_image_hashes": 27
+    },
+    {
+      "sku": "T733",
+      "image_occurrences": 27,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 3,
+        "T23.zip": 24
+      },
+      "unique_image_hashes": 27
+    },
+    {
+      "sku": "BP269",
+      "image_occurrences": 26,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 21,
+        "GG1.zip": 5
+      },
+      "unique_image_hashes": 26
+    },
+    {
+      "sku": "C563",
+      "image_occurrences": 26,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "cc2.zip": 24
+      },
+      "unique_image_hashes": 26
+    },
+    {
+      "sku": "EC709",
+      "image_occurrences": 26,
+      "archive_count": 2,
+      "archives": {
+        "EC2.zip": 22,
+        "GG1.zip": 4
+      },
+      "unique_image_hashes": 26
+    },
+    {
+      "sku": "K102",
+      "image_occurrences": 26,
+      "archive_count": 2,
+      "archives": {
+        "K1.zip": 15,
+        "K2.zip": 11
+      },
+      "unique_image_hashes": 16
+    },
+    {
+      "sku": "T649",
+      "image_occurrences": 26,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T22.zip": 24
+      },
+      "unique_image_hashes": 26
+    },
+    {
+      "sku": "T694",
+      "image_occurrences": 26,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T23.zip": 24
+      },
+      "unique_image_hashes": 26
+    },
+    {
+      "sku": "T758",
+      "image_occurrences": 26,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 2,
+        "T24.zip": 24
+      },
+      "unique_image_hashes": 25
+    },
+    {
+      "sku": "G260",
+      "image_occurrences": 25,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 22,
+        "GG2.zip": 3
+      },
+      "unique_image_hashes": 23
+    },
+    {
+      "sku": "T751",
+      "image_occurrences": 25,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "T22.zip": 21
+      },
+      "unique_image_hashes": 25
+    },
+    {
+      "sku": "C543",
+      "image_occurrences": 24,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 1,
+        "cc3.zip": 23
+      },
+      "unique_image_hashes": 23
+    },
+    {
+      "sku": "C556",
+      "image_occurrences": 24,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "cc3.zip": 20
+      },
+      "unique_image_hashes": 24
+    },
+    {
+      "sku": "C596",
+      "image_occurrences": 24,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "cc2.zip": 22
+      },
+      "unique_image_hashes": 24
+    },
+    {
+      "sku": "K104",
+      "image_occurrences": 24,
+      "archive_count": 2,
+      "archives": {
+        "K1.zip": 17,
+        "K2.zip": 7
+      },
+      "unique_image_hashes": 16
+    },
+    {
+      "sku": "K105",
+      "image_occurrences": 24,
+      "archive_count": 2,
+      "archives": {
+        "K1.zip": 17,
+        "K2.zip": 7
+      },
+      "unique_image_hashes": 16
+    },
+    {
+      "sku": "K8",
+      "image_occurrences": 24,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "K1.zip": 22
+      },
+      "unique_image_hashes": 24
+    },
+    {
+      "sku": "T710",
+      "image_occurrences": 24,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T23.zip": 22
+      },
+      "unique_image_hashes": 24
+    },
+    {
+      "sku": "T762",
+      "image_occurrences": 24,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 2,
+        "T24.zip": 22
+      },
+      "unique_image_hashes": 24
+    },
+    {
+      "sku": "C553",
+      "image_occurrences": 23,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 3,
+        "cc1.zip": 20
+      },
+      "unique_image_hashes": 23
+    },
+    {
+      "sku": "G270",
+      "image_occurrences": 23,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 21,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 20
+    },
+    {
+      "sku": "G301",
+      "image_occurrences": 23,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 22,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 23
+    },
+    {
+      "sku": "T277",
+      "image_occurrences": 23,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "tttt1.zip": 21
+      },
+      "unique_image_hashes": 23
+    },
+    {
+      "sku": "C599",
+      "image_occurrences": 22,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "cc2.zip": 20
+      },
+      "unique_image_hashes": 22
+    },
+    {
+      "sku": "EC774",
+      "image_occurrences": 22,
+      "archive_count": 2,
+      "archives": {
+        "EC1.zip": 20,
+        "GG1.zip": 2
+      },
+      "unique_image_hashes": 22
+    },
+    {
+      "sku": "G325",
+      "image_occurrences": 22,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 20,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 22
+    },
+    {
+      "sku": "G326",
+      "image_occurrences": 22,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 20,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 22
+    },
+    {
+      "sku": "T698",
+      "image_occurrences": 22,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T24.zip": 20
+      },
+      "unique_image_hashes": 22
+    },
+    {
+      "sku": "T760",
+      "image_occurrences": 22,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "T22.zip": 18
+      },
+      "unique_image_hashes": 22
+    },
+    {
+      "sku": "BP253",
+      "image_occurrences": 21,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 17,
+        "GG1.zip": 4
+      },
+      "unique_image_hashes": 21
+    },
+    {
+      "sku": "EC755",
+      "image_occurrences": 21,
+      "archive_count": 2,
+      "archives": {
+        "EC2.zip": 19,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 20
+    },
+    {
+      "sku": "EC764",
+      "image_occurrences": 21,
+      "archive_count": 2,
+      "archives": {
+        "EC2.zip": 18,
+        "GG2.zip": 3
+      },
+      "unique_image_hashes": 21
+    },
+    {
+      "sku": "G236",
+      "image_occurrences": 21,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 20,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 18
+    },
+    {
+      "sku": "G35",
+      "image_occurrences": 21,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 20,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 14
+    },
+    {
+      "sku": "K7",
+      "image_occurrences": 21,
+      "archive_count": 2,
+      "archives": {
+        "K1.zip": 11,
+        "K2.zip": 10
+      },
+      "unique_image_hashes": 11
+    },
+    {
+      "sku": "T664",
+      "image_occurrences": 21,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T24.zip": 19
+      },
+      "unique_image_hashes": 21
+    },
+    {
+      "sku": "T669",
+      "image_occurrences": 21,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 5,
+        "T24.zip": 16
+      },
+      "unique_image_hashes": 21
+    },
+    {
+      "sku": "T776",
+      "image_occurrences": 21,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T24.zip": 19
+      },
+      "unique_image_hashes": 21
+    },
+    {
+      "sku": "T777",
+      "image_occurrences": 21,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T25.zip": 19
+      },
+      "unique_image_hashes": 21
+    },
+    {
+      "sku": "BP337",
+      "image_occurrences": 20,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 16,
+        "GG2.zip": 4
+      },
+      "unique_image_hashes": 20
+    },
+    {
+      "sku": "C516",
+      "image_occurrences": 20,
+      "archive_count": 2,
+      "archives": {
+        "Archivo(1).zip": 16,
+        "GG2.zip": 4
+      },
+      "unique_image_hashes": 20
+    },
+    {
+      "sku": "C602",
+      "image_occurrences": 20,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "cc2.zip": 18
+      },
+      "unique_image_hashes": 20
+    },
+    {
+      "sku": "EC788",
+      "image_occurrences": 20,
+      "archive_count": 2,
+      "archives": {
+        "EC2.zip": 18,
+        "GG1.zip": 2
+      },
+      "unique_image_hashes": 20
+    },
+    {
+      "sku": "G290",
+      "image_occurrences": 20,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 18,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 20
+    },
+    {
+      "sku": "T350",
+      "image_occurrences": 20,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 2,
+        "tt5.zip": 18
+      },
+      "unique_image_hashes": 17
+    },
+    {
+      "sku": "U305",
+      "image_occurrences": 20,
+      "archive_count": 2,
+      "archives": {
+        "U-20261009T225750Z-1-001(1).zip": 10,
+        "U-20261009T225750Z-1-001(2).zip": 10
+      },
+      "unique_image_hashes": 10
+    },
+    {
+      "sku": "BP254",
+      "image_occurrences": 19,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 17,
+        "GG1.zip": 2
+      },
+      "unique_image_hashes": 19
+    },
+    {
+      "sku": "EC731",
+      "image_occurrences": 19,
+      "archive_count": 2,
+      "archives": {
+        "EC1.zip": 15,
+        "GG1.zip": 4
+      },
+      "unique_image_hashes": 18
+    },
+    {
+      "sku": "S03",
+      "image_occurrences": 19,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "S-20261009T225721Z-1-001(1).zip": 17
+      },
+      "unique_image_hashes": 19
+    },
+    {
+      "sku": "T607",
+      "image_occurrences": 19,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 5,
+        "T24.zip": 14
+      },
+      "unique_image_hashes": 18
+    },
+    {
+      "sku": "T677",
+      "image_occurrences": 19,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "T24.zip": 15
+      },
+      "unique_image_hashes": 19
+    },
+    {
+      "sku": "T716",
+      "image_occurrences": 19,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 6,
+        "T25.zip": 13
+      },
+      "unique_image_hashes": 19
+    },
+    {
+      "sku": "BP161",
+      "image_occurrences": 18,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 15,
+        "GG1.zip": 3
+      },
+      "unique_image_hashes": 18
+    },
+    {
+      "sku": "C577",
+      "image_occurrences": 18,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "cc2.zip": 16
+      },
+      "unique_image_hashes": 18
+    },
+    {
+      "sku": "EC736",
+      "image_occurrences": 18,
+      "archive_count": 2,
+      "archives": {
+        "EC2.zip": 16,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 17
+    },
+    {
+      "sku": "EC754",
+      "image_occurrences": 18,
+      "archive_count": 2,
+      "archives": {
+        "EC2.zip": 17,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 17
+    },
+    {
+      "sku": "K4",
+      "image_occurrences": 18,
+      "archive_count": 2,
+      "archives": {
+        "K1.zip": 10,
+        "K2.zip": 8
+      },
+      "unique_image_hashes": 10
+    },
+    {
+      "sku": "T483",
+      "image_occurrences": 18,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 3,
+        "ttt2.zip": 15
+      },
+      "unique_image_hashes": 18
+    },
+    {
+      "sku": "T737",
+      "image_occurrences": 18,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 2,
+        "T25.zip": 16
+      },
+      "unique_image_hashes": 18
+    },
+    {
+      "sku": "G149",
+      "image_occurrences": 17,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 16,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 12
+    },
+    {
+      "sku": "G218",
+      "image_occurrences": 17,
+      "archive_count": 2,
+      "archives": {
+        "G-20261009T225541Z-1-001(1).zip": 16,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 17
+    },
+    {
+      "sku": "T642",
+      "image_occurrences": 17,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T23.zip": 15
+      },
+      "unique_image_hashes": 17
+    },
+    {
+      "sku": "T682",
+      "image_occurrences": 17,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T24.zip": 15
+      },
+      "unique_image_hashes": 17
+    },
+    {
+      "sku": "T709",
+      "image_occurrences": 17,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 3,
+        "T24.zip": 14
+      },
+      "unique_image_hashes": 17
+    },
+    {
+      "sku": "T763",
+      "image_occurrences": 17,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 2,
+        "T25.zip": 15
+      },
+      "unique_image_hashes": 17
+    },
+    {
+      "sku": "T771",
+      "image_occurrences": 17,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 3,
+        "T24.zip": 14
+      },
+      "unique_image_hashes": 17
+    },
+    {
+      "sku": "BP299",
+      "image_occurrences": 16,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 12,
+        "GG2.zip": 4
+      },
+      "unique_image_hashes": 16
+    },
+    {
+      "sku": "C567",
+      "image_occurrences": 16,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "cc2.zip": 14
+      },
+      "unique_image_hashes": 16
+    },
+    {
+      "sku": "C572",
+      "image_occurrences": 16,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 2,
+        "cc2.zip": 14
+      },
+      "unique_image_hashes": 16
+    },
+    {
+      "sku": "EC778",
+      "image_occurrences": 16,
+      "archive_count": 2,
+      "archives": {
+        "EC2.zip": 14,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 16
+    },
+    {
+      "sku": "T232",
+      "image_occurrences": 16,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "ttt2.zip": 12
+      },
+      "unique_image_hashes": 16
+    },
+    {
+      "sku": "T427",
+      "image_occurrences": 16,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "ttt1.zip": 14
+      },
+      "unique_image_hashes": 16
+    },
+    {
+      "sku": "T445",
+      "image_occurrences": 16,
+      "archive_count": 2,
+      "archives": {
+        "T21.zip": 1,
+        "ttt2.zip": 15
+      },
+      "unique_image_hashes": 15
+    },
+    {
+      "sku": "T555",
+      "image_occurrences": 16,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 1,
+        "ttt2.zip": 15
+      },
+      "unique_image_hashes": 16
+    },
+    {
+      "sku": "T651",
+      "image_occurrences": 16,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T22.zip": 14
+      },
+      "unique_image_hashes": 16
+    },
+    {
+      "sku": "T744",
+      "image_occurrences": 16,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T24.zip": 14
+      },
+      "unique_image_hashes": 16
+    },
+    {
+      "sku": "U306",
+      "image_occurrences": 16,
+      "archive_count": 2,
+      "archives": {
+        "U-20261009T225750Z-1-001(1).zip": 8,
+        "U-20261009T225750Z-1-001(2).zip": 8
+      },
+      "unique_image_hashes": 8
+    },
+    {
+      "sku": "U308",
+      "image_occurrences": 16,
+      "archive_count": 2,
+      "archives": {
+        "U-20261009T225750Z-1-001(1).zip": 8,
+        "U-20261009T225750Z-1-001(2).zip": 8
+      },
+      "unique_image_hashes": 8
+    },
+    {
+      "sku": "BP336",
+      "image_occurrences": 15,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 14,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 15
+    },
+    {
+      "sku": "C477",
+      "image_occurrences": 15,
+      "archive_count": 2,
+      "archives": {
+        "Archivo(1).zip": 14,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 15
+    },
+    {
+      "sku": "EC679",
+      "image_occurrences": 15,
+      "archive_count": 2,
+      "archives": {
+        "EC2.zip": 14,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 15
+    },
+    {
+      "sku": "G200",
+      "image_occurrences": 15,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 14,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 15
+    },
+    {
+      "sku": "T410",
+      "image_occurrences": 15,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 3,
+        "tt5.zip": 12
+      },
+      "unique_image_hashes": 15
+    },
+    {
+      "sku": "T454",
+      "image_occurrences": 15,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "tttt1.zip": 11
+      },
+      "unique_image_hashes": 15
+    },
+    {
+      "sku": "BP324",
+      "image_occurrences": 14,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 12,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 14
+    },
+    {
+      "sku": "C526",
+      "image_occurrences": 14,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 2,
+        "cc1.zip": 12
+      },
+      "unique_image_hashes": 14
+    },
+    {
+      "sku": "T494",
+      "image_occurrences": 14,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 1,
+        "ttt2.zip": 13
+      },
+      "unique_image_hashes": 14
+    },
+    {
+      "sku": "T586",
+      "image_occurrences": 14,
+      "archive_count": 2,
+      "archives": {
+        "T21.zip": 4,
+        "T24.zip": 10
+      },
+      "unique_image_hashes": 14
+    },
+    {
+      "sku": "T590",
+      "image_occurrences": 14,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 2,
+        "T24.zip": 12
+      },
+      "unique_image_hashes": 14
+    },
+    {
+      "sku": "BP322",
+      "image_occurrences": 13,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 11,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 13
+    },
+    {
+      "sku": "C509",
+      "image_occurrences": 13,
+      "archive_count": 2,
+      "archives": {
+        "Archivo(1).zip": 12,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 13
+    },
+    {
+      "sku": "C515",
+      "image_occurrences": 13,
+      "archive_count": 2,
+      "archives": {
+        "Archivo(1).zip": 9,
+        "GG2.zip": 4
+      },
+      "unique_image_hashes": 13
+    },
+    {
+      "sku": "EC686",
+      "image_occurrences": 13,
+      "archive_count": 2,
+      "archives": {
+        "EC2.zip": 12,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 13
+    },
+    {
+      "sku": "G277",
+      "image_occurrences": 13,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 12,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 13
+    },
+    {
+      "sku": "T569",
+      "image_occurrences": 13,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "ttt1.zip": 9
+      },
+      "unique_image_hashes": 13
+    },
+    {
+      "sku": "BP217",
+      "image_occurrences": 12,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 9,
+        "GG1.zip": 3
+      },
+      "unique_image_hashes": 12
+    },
+    {
+      "sku": "BP247",
+      "image_occurrences": 12,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 11,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 12
+    },
+    {
+      "sku": "BP344",
+      "image_occurrences": 12,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 10,
+        "R-20261009T225719Z-1-001(1).zip": 2
+      },
+      "unique_image_hashes": 12
+    },
+    {
+      "sku": "EC732",
+      "image_occurrences": 12,
+      "archive_count": 2,
+      "archives": {
+        "EC2.zip": 10,
+        "GG1.zip": 2
+      },
+      "unique_image_hashes": 12
+    },
+    {
+      "sku": "T290",
+      "image_occurrences": 12,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 4,
+        "tt5.zip": 8
+      },
+      "unique_image_hashes": 12
+    },
+    {
+      "sku": "T340",
+      "image_occurrences": 12,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "tttt1.zip": 10
+      },
+      "unique_image_hashes": 12
+    },
+    {
+      "sku": "T345",
+      "image_occurrences": 12,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 2,
+        "tt5.zip": 10
+      },
+      "unique_image_hashes": 12
+    },
+    {
+      "sku": "T472",
+      "image_occurrences": 12,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 3,
+        "ttt2.zip": 9
+      },
+      "unique_image_hashes": 12
+    },
+    {
+      "sku": "T571",
+      "image_occurrences": 12,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 1,
+        "ttt2.zip": 11
+      },
+      "unique_image_hashes": 11
+    },
+    {
+      "sku": "T732",
+      "image_occurrences": 12,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T24.zip": 10
+      },
+      "unique_image_hashes": 12
+    },
+    {
+      "sku": "U310",
+      "image_occurrences": 12,
+      "archive_count": 2,
+      "archives": {
+        "U-20261009T225750Z-1-001(1).zip": 6,
+        "U-20261009T225750Z-1-001(2).zip": 6
+      },
+      "unique_image_hashes": 6
+    },
+    {
+      "sku": "EC728",
+      "image_occurrences": 11,
+      "archive_count": 2,
+      "archives": {
+        "EC2.zip": 10,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 11
+    },
+    {
+      "sku": "T333",
+      "image_occurrences": 11,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 2,
+        "T21.zip": 9
+      },
+      "unique_image_hashes": 11
+    },
+    {
+      "sku": "T371",
+      "image_occurrences": 11,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 2,
+        "ttt1.zip": 9
+      },
+      "unique_image_hashes": 11
+    },
+    {
+      "sku": "T414",
+      "image_occurrences": 11,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 1,
+        "ttt1.zip": 10
+      },
+      "unique_image_hashes": 11
+    },
+    {
+      "sku": "T474",
+      "image_occurrences": 11,
+      "archive_count": 2,
+      "archives": {
+        "T22.zip": 6,
+        "ttt2.zip": 5
+      },
+      "unique_image_hashes": 8
+    },
+    {
+      "sku": "T545",
+      "image_occurrences": 11,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 1,
+        "tt5.zip": 10
+      },
+      "unique_image_hashes": 11
+    },
+    {
+      "sku": "T561",
+      "image_occurrences": 11,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 1,
+        "ttt1.zip": 10
+      },
+      "unique_image_hashes": 11
+    },
+    {
+      "sku": "T578",
+      "image_occurrences": 11,
+      "archive_count": 2,
+      "archives": {
+        "T21.zip": 1,
+        "ttt1.zip": 10
+      },
+      "unique_image_hashes": 11
+    },
+    {
+      "sku": "T805",
+      "image_occurrences": 11,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "T25.zip": 9
+      },
+      "unique_image_hashes": 11
+    },
+    {
+      "sku": "BP239",
+      "image_occurrences": 10,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 8,
+        "GG1.zip": 2
+      },
+      "unique_image_hashes": 10
+    },
+    {
+      "sku": "BP266",
+      "image_occurrences": 10,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 8,
+        "GG1.zip": 2
+      },
+      "unique_image_hashes": 10
+    },
+    {
+      "sku": "C535",
+      "image_occurrences": 10,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 1,
+        "cc3.zip": 9
+      },
+      "unique_image_hashes": 10
+    },
+    {
+      "sku": "T389",
+      "image_occurrences": 10,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 1,
+        "ttt1.zip": 9
+      },
+      "unique_image_hashes": 10
+    },
+    {
+      "sku": "T439",
+      "image_occurrences": 10,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 2,
+        "tt5.zip": 8
+      },
+      "unique_image_hashes": 10
+    },
+    {
+      "sku": "BP216",
+      "image_occurrences": 9,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 8,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 9
+    },
+    {
+      "sku": "EC713",
+      "image_occurrences": 9,
+      "archive_count": 2,
+      "archives": {
+        "EC2.zip": 6,
+        "GG1.zip": 3
+      },
+      "unique_image_hashes": 8
+    },
+    {
+      "sku": "G262",
+      "image_occurrences": 9,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 8,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 9
+    },
+    {
+      "sku": "T405",
+      "image_occurrences": 9,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 2,
+        "ttt1.zip": 7
+      },
+      "unique_image_hashes": 9
+    },
+    {
+      "sku": "T473",
+      "image_occurrences": 9,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 1,
+        "tt5.zip": 8
+      },
+      "unique_image_hashes": 9
+    },
+    {
+      "sku": "EC692",
+      "image_occurrences": 8,
+      "archive_count": 2,
+      "archives": {
+        "EC2.zip": 7,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 8
+    },
+    {
+      "sku": "T443",
+      "image_occurrences": 8,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 2,
+        "ttt1.zip": 6
+      },
+      "unique_image_hashes": 8
+    },
+    {
+      "sku": "T455",
+      "image_occurrences": 8,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 1,
+        "tt5.zip": 7
+      },
+      "unique_image_hashes": 8
+    },
+    {
+      "sku": "T518",
+      "image_occurrences": 8,
+      "archive_count": 2,
+      "archives": {
+        "tt5.zip": 6,
+        "ttt1.zip": 2
+      },
+      "unique_image_hashes": 6
+    },
+    {
+      "sku": "T548",
+      "image_occurrences": 8,
+      "archive_count": 2,
+      "archives": {
+        "T21.zip": 1,
+        "ttt1.zip": 7
+      },
+      "unique_image_hashes": 8
+    },
+    {
+      "sku": "U312",
+      "image_occurrences": 8,
+      "archive_count": 2,
+      "archives": {
+        "U-20261009T225750Z-1-001(1).zip": 4,
+        "U-20261009T225750Z-1-001(2).zip": 4
+      },
+      "unique_image_hashes": 4
+    },
+    {
+      "sku": "G306",
+      "image_occurrences": 7,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 6,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 7
+    },
+    {
+      "sku": "G307",
+      "image_occurrences": 7,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 6,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 7
+    },
+    {
+      "sku": "T307",
+      "image_occurrences": 7,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 1,
+        "ttt1.zip": 6
+      },
+      "unique_image_hashes": 7
+    },
+    {
+      "sku": "T433",
+      "image_occurrences": 7,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 1,
+        "ttt1.zip": 6
+      },
+      "unique_image_hashes": 7
+    },
+    {
+      "sku": "T567",
+      "image_occurrences": 7,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 1,
+        "ttt1.zip": 6
+      },
+      "unique_image_hashes": 7
+    },
+    {
+      "sku": "T596",
+      "image_occurrences": 7,
+      "archive_count": 2,
+      "archives": {
+        "GG2.zip": 1,
+        "T25.zip": 6
+      },
+      "unique_image_hashes": 4
+    },
+    {
+      "sku": "T88",
+      "image_occurrences": 7,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 1,
+        "ttt1.zip": 6
+      },
+      "unique_image_hashes": 7
+    },
+    {
+      "sku": "T506",
+      "image_occurrences": 6,
+      "archive_count": 2,
+      "archives": {
+        "T21.zip": 1,
+        "ttt1.zip": 5
+      },
+      "unique_image_hashes": 6
+    },
+    {
+      "sku": "T554",
+      "image_occurrences": 6,
+      "archive_count": 2,
+      "archives": {
+        "T21.zip": 1,
+        "tt5.zip": 5
+      },
+      "unique_image_hashes": 6
+    },
+    {
+      "sku": "U318",
+      "image_occurrences": 6,
+      "archive_count": 2,
+      "archives": {
+        "U-20261009T225750Z-1-001(1).zip": 3,
+        "U-20261009T225750Z-1-001(2).zip": 3
+      },
+      "unique_image_hashes": 3
+    },
+    {
+      "sku": "BP165",
+      "image_occurrences": 5,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 4,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 5
+    },
+    {
+      "sku": "BP277",
+      "image_occurrences": 5,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 4,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 5
+    },
+    {
+      "sku": "C499",
+      "image_occurrences": 5,
+      "archive_count": 2,
+      "archives": {
+        "Archivo(1).zip": 4,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 5
+    },
+    {
+      "sku": "C513",
+      "image_occurrences": 5,
+      "archive_count": 2,
+      "archives": {
+        "Archivo(1).zip": 4,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 5
+    },
+    {
+      "sku": "T411",
+      "image_occurrences": 5,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 1,
+        "ttt1.zip": 4
+      },
+      "unique_image_hashes": 5
+    },
+    {
+      "sku": "T429",
+      "image_occurrences": 5,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 1,
+        "ttt1.zip": 4
+      },
+      "unique_image_hashes": 5
+    },
+    {
+      "sku": "T488",
+      "image_occurrences": 5,
+      "archive_count": 2,
+      "archives": {
+        "T21.zip": 1,
+        "ttt1.zip": 4
+      },
+      "unique_image_hashes": 5
+    },
+    {
+      "sku": "T493",
+      "image_occurrences": 5,
+      "archive_count": 2,
+      "archives": {
+        "T21.zip": 1,
+        "ttt1.zip": 4
+      },
+      "unique_image_hashes": 4
+    },
+    {
+      "sku": "T556",
+      "image_occurrences": 5,
+      "archive_count": 2,
+      "archives": {
+        "T21.zip": 2,
+        "ttt1.zip": 3
+      },
+      "unique_image_hashes": 5
+    },
+    {
+      "sku": "T558",
+      "image_occurrences": 5,
+      "archive_count": 2,
+      "archives": {
+        "T21.zip": 1,
+        "ttt1.zip": 4
+      },
+      "unique_image_hashes": 5
+    },
+    {
+      "sku": "T601",
+      "image_occurrences": 5,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 1,
+        "T24.zip": 4
+      },
+      "unique_image_hashes": 5
+    },
+    {
+      "sku": "G291",
+      "image_occurrences": 4,
+      "archive_count": 2,
+      "archives": {
+        "GATO-20261009T225629Z-1-001(1).zip": 2,
+        "GG2.zip": 2
+      },
+      "unique_image_hashes": 4
+    },
+    {
+      "sku": "T519",
+      "image_occurrences": 3,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 1,
+        "ttt1.zip": 2
+      },
+      "unique_image_hashes": 3
+    },
+    {
+      "sku": "T531",
+      "image_occurrences": 3,
+      "archive_count": 2,
+      "archives": {
+        "T21.zip": 1,
+        "ttt1.zip": 2
+      },
+      "unique_image_hashes": 3
+    },
+    {
+      "sku": "T532",
+      "image_occurrences": 3,
+      "archive_count": 2,
+      "archives": {
+        "T21.zip": 1,
+        "ttt1.zip": 2
+      },
+      "unique_image_hashes": 3
+    },
+    {
+      "sku": "T552",
+      "image_occurrences": 3,
+      "archive_count": 2,
+      "archives": {
+        "T21.zip": 1,
+        "ttt1.zip": 2
+      },
+      "unique_image_hashes": 3
+    },
+    {
+      "sku": "BP175",
+      "image_occurrences": 2,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 1,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 2
+    },
+    {
+      "sku": "BP195",
+      "image_occurrences": 2,
+      "archive_count": 2,
+      "archives": {
+        "BP-20261009T225340Z-1-001.zip": 1,
+        "GG1.zip": 1
+      },
+      "unique_image_hashes": 2
+    },
+    {
+      "sku": "T398",
+      "image_occurrences": 2,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 1,
+        "T21.zip": 1
+      },
+      "unique_image_hashes": 2
+    },
+    {
+      "sku": "T476",
+      "image_occurrences": 2,
+      "archive_count": 2,
+      "archives": {
+        "T21.zip": 1,
+        "ttt1.zip": 1
+      },
+      "unique_image_hashes": 2
+    },
+    {
+      "sku": "T612",
+      "image_occurrences": 2,
+      "archive_count": 2,
+      "archives": {
+        "GG1.zip": 1,
+        "GG2.zip": 1
+      },
+      "unique_image_hashes": 2
+    }
+  ]
+}

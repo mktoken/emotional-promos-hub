@@ -1,0 +1,968 @@
+base_model_candidate,variant_count,color_variant_count,non_color_variant_count,asset_count,multi_sku_asset_count,confidence,recommended_public_card_count,status,review_reason
+G21,16,16,0,97,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T618,14,14,0,93,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G102,13,13,0,82,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G87,13,13,0,60,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP300,12,12,0,54,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G212,11,11,0,86,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U301,11,11,0,43,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP311,10,10,0,43,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C478,10,10,0,31,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G198,10,10,0,42,2,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G211,10,10,0,81,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G254,10,10,0,59,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T550,10,10,0,52,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP240,9,9,0,29,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP307,9,9,0,44,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP329,9,9,0,31,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G143,9,9,0,74,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G255,9,9,0,55,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G322,9,9,0,51,21,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T598,9,9,0,42,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T704,9,9,0,54,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP257,8,8,0,20,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP323,8,8,0,35,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP330,8,8,0,43,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP335,8,8,0,37,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP338,8,8,0,34,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C491,8,8,0,25,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C500,8,8,0,65,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C587,8,8,0,77,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G10,8,8,0,33,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G115,8,8,0,17,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G144,8,8,0,27,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G196,8,8,0,29,1,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G219,8,8,0,47,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G230,8,8,0,46,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T278,8,8,0,23,1,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T593,8,8,0,16,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U314,8,8,0,54,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U325,8,8,0,74,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP228,7,7,0,32,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP241,7,7,0,28,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP250,7,7,0,17,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP285,7,7,0,19,2,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP312,7,7,0,33,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP319,7,7,0,47,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP328,7,7,0,37,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C485,7,7,0,47,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C507,7,7,0,22,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C554,7,7,0,53,6,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C570,7,7,0,53,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C571,7,7,0,58,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C574,7,7,0,38,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G111,7,7,0,39,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G141,7,7,0,33,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G229,7,7,0,42,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G269,7,7,0,77,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G84,7,7,0,34,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T295,7,7,0,69,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T455,7,7,0,8,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T469,7,7,0,35,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T486,7,7,0,24,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T616,7,7,0,45,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T676,7,7,0,63,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T723,7,7,0,55,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U315,7,7,0,37,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP190,6,6,0,17,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP268,6,6,0,29,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP314,6,6,0,24,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP325,6,6,0,41,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C505,6,6,0,20,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C506,6,6,0,24,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C540,6,6,0,33,2,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC754,6,6,0,17,1,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC784,6,6,0,17,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G117,6,6,0,36,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G221,6,6,0,43,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G223,6,6,0,43,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G225,6,6,0,53,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G270,6,6,0,20,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G44,6,6,0,21,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G45,6,6,0,16,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T482,6,6,0,34,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T529,6,6,0,27,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T579,6,6,0,15,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T584,6,6,0,28,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T606,6,6,0,48,4,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T645,6,6,0,53,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T650,6,6,0,50,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T658,6,6,0,44,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T731,6,6,0,36,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T750,6,6,0,71,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U305,6,6,0,10,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U320,6,6,0,31,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U323,6,6,0,39,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U324,6,6,0,50,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP161,5,5,0,18,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP193,5,5,0,22,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP238,5,5,0,11,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP248,5,5,0,20,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP251,5,5,0,10,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP295,5,5,0,28,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP298,5,5,0,48,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP333,5,5,0,35,7,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP334,5,5,0,12,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP337,5,5,0,20,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C499,5,5,0,5,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C516,5,5,0,20,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C549,5,5,0,24,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC679,5,5,0,15,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G139,5,5,0,45,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G155,5,5,0,24,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G165,5,5,0,16,9,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G218,5,5,0,17,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G268,5,5,0,47,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G35,5,5,0,14,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G81,5,5,0,20,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T327,5,5,0,19,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T402,5,5,0,19,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T454,5,5,0,15,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T483,5,5,0,18,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T525,5,5,0,31,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T545,5,5,0,11,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T547,5,5,0,17,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T576,5,5,0,32,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T622,5,5,0,66,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T632,5,5,0,85,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T654,5,5,0,30,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T662,5,5,0,35,2,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T687,5,5,0,44,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T72,5,5,0,27,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T751,5,5,0,25,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T783,5,5,0,28,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U316,5,5,0,24,2,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U327,5,5,0,46,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U328,5,5,0,40,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP217,4,4,0,12,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP233,4,4,0,8,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP239,4,4,0,10,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP244,4,4,0,37,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP247,4,4,0,12,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP249,4,4,0,8,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP264,4,4,0,30,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP266,4,4,0,10,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP269,4,4,0,26,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP272,4,4,0,13,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP276,4,4,0,13,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP309,4,4,0,31,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP318,4,4,0,22,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP327,4,4,0,21,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP343,4,4,0,19,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C477,4,4,0,15,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C515,4,4,0,13,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C526,4,4,0,14,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C541,4,4,0,16,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C578,4,4,0,37,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC729,4,4,0,30,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC742,4,4,0,30,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G110,4,4,0,8,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G140,4,4,0,51,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G149,4,4,0,12,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G158,4,4,0,17,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G191,4,4,0,13,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G197,4,4,0,52,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G232,4,4,0,42,23,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G264,4,4,0,25,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G271,4,4,0,28,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T164,4,4,0,18,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T277,4,4,0,23,1,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T339,4,4,0,9,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T362,4,4,0,19,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T427,4,4,0,16,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T456,4,4,0,15,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T461,4,4,0,19,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T473,4,4,0,9,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T543,4,4,0,22,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T564,4,4,0,24,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T566,4,4,0,29,2,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T575,4,4,0,33,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T586,4,4,0,14,10,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T602,4,4,0,20,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T608,4,4,0,40,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T614,4,4,0,51,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T615,4,4,0,35,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T627,4,4,0,43,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T637,4,4,0,30,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T641,4,4,0,28,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T646,4,4,0,36,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T649,4,4,0,26,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T653,4,4,0,26,1,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T659,4,4,0,30,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T671,4,4,0,30,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T679,4,4,0,36,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T686,4,4,0,27,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T701,4,4,0,43,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T702,4,4,0,43,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T726,4,4,0,36,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T743,4,4,0,36,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T764,4,4,0,36,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T765,4,4,0,28,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T788,4,4,0,61,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T789,4,4,0,39,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T794,4,4,0,30,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T804,4,4,0,16,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T807,4,4,0,38,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T809,4,4,0,23,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T810,4,4,0,35,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U306,4,4,0,8,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U311,4,4,0,16,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U322,4,4,0,41,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U326,4,4,0,29,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP216,3,3,0,9,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP229,3,3,0,9,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP253,3,3,0,21,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP254,3,3,0,19,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP299,3,3,0,16,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP304,3,3,0,20,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP316,3,3,0,13,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP322,3,3,0,13,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP324,3,3,0,14,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP344,3,3,0,12,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C509,3,3,0,13,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C510,3,3,0,16,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C511,3,3,0,24,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C543,3,3,0,23,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C553,3,3,0,23,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C556,3,3,0,24,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C562,3,3,0,27,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C568,3,3,0,31,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C576,3,3,0,43,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C579,3,3,0,28,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C582,3,3,0,34,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C584,3,3,0,19,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C591,3,3,0,27,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C596,3,3,0,24,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC686,3,3,0,13,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC692,3,3,0,8,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC709,3,3,0,26,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC731,3,3,0,18,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G166,3,3,0,10,5,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G167,3,3,0,28,14,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G200,3,3,0,15,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G215,3,3,0,9,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G217,3,3,0,9,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G236,3,3,0,18,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G260,3,3,0,23,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G261,3,3,0,38,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G262,3,3,0,9,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G263,3,3,0,32,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G267,3,3,0,31,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G276,3,3,0,31,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G277,3,3,0,13,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G292,3,3,0,36,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G306,3,3,0,7,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G307,3,3,0,7,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G308,3,3,0,6,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G323,3,3,0,31,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G90,3,3,0,14,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T232,3,3,0,16,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T290,3,3,0,12,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T350,3,3,0,17,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T371,3,3,0,11,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T389,3,3,0,10,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T408,3,3,0,15,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T410,3,3,0,15,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T424,3,3,0,9,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T428,3,3,0,19,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T472,3,3,0,12,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T494,3,3,0,14,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T526,3,3,0,24,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T555,3,3,0,16,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T559,3,3,0,18,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T567,3,3,0,7,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T569,3,3,0,13,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T581,3,3,0,3,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T588,3,3,0,7,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T607,3,3,0,18,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T643,3,3,0,27,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T657,3,3,0,34,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T669,3,3,0,21,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T682,3,3,0,17,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T690,3,3,0,32,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T693,3,3,0,30,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T694,3,3,0,26,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T699,3,3,0,20,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T716,3,3,0,19,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T719,3,3,0,229,221,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T729,3,3,0,29,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T730,3,3,0,33,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T733,3,3,0,27,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T747,3,3,0,21,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T756,3,3,0,50,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T758,3,3,0,25,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T762,3,3,0,24,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T763,3,3,0,17,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T776,3,3,0,21,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T777,3,3,0,21,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T778,3,3,0,29,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T779,3,3,0,46,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T795,3,3,0,23,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T798,3,3,0,49,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T805,3,3,0,11,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U310,3,3,0,6,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U317,3,3,0,13,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U319,3,3,0,37,2,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U321,3,3,0,11,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP165,2,2,0,5,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP273,2,2,0,3,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP277,2,2,0,5,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP282,2,2,0,7,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP336,2,2,0,15,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C431,2,2,0,9,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C481,2,2,0,4,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C535,2,2,0,10,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C539,2,2,0,8,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C558,2,2,0,27,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C563,2,2,0,26,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C567,2,2,0,16,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C572,2,2,0,16,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C577,2,2,0,18,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C583,2,2,0,34,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C597,2,2,0,40,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C599,2,2,0,22,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+C602,2,2,0,20,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC698,2,2,0,4,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC699,2,2,0,4,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC710,2,2,0,7,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC713,2,2,0,8,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC728,2,2,0,11,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC732,2,2,0,12,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC736,2,2,0,17,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC748,2,2,0,31,8,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC755,2,2,0,20,1,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC764,2,2,0,21,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC765,2,2,0,32,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC774,2,2,0,22,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC781,2,2,0,29,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC782,2,2,0,28,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC786,2,2,0,19,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC787,2,2,0,17,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+EC788,2,2,0,20,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G220,2,2,0,16,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G222,2,2,0,13,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G224,2,2,0,18,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G275,2,2,0,31,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G325,2,2,0,22,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+G47,2,2,0,9,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+S03,2,2,0,19,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T172,2,2,0,7,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T333,2,2,0,11,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T340,2,2,0,12,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T345,2,2,0,12,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T405,2,2,0,9,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T432,2,2,0,15,7,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T433,2,2,0,7,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T437,2,2,0,4,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T439,2,2,0,10,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T443,2,2,0,8,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T460,2,2,0,4,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T524,2,2,0,23,18,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T534,2,2,0,20,15,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T561,2,2,0,11,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T563,2,2,0,21,1,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T570,2,2,0,11,0,MEDIUM,NOT_ESTIMATED,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T591,2,2,0,20,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T592,2,2,0,38,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T610,2,2,0,14,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T625,2,2,0,36,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T664,2,2,0,21,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T677,2,2,0,19,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T688,2,2,0,38,1,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T692,2,2,0,16,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T698,2,2,0,22,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T703,2,2,0,29,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T705,2,2,0,12,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T709,2,2,0,17,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T710,2,2,0,24,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T718,2,2,0,37,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T732,2,2,0,12,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T737,2,2,0,18,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T744,2,2,0,16,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T766,2,2,0,23,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T771,2,2,0,17,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T775,2,2,0,21,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T837,2,2,0,16,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+T88,2,2,0,7,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U308,2,2,0,8,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+U312,2,2,0,4,0,HIGH,1,BASE_MODEL_CANDIDATE_REVIEW_REQUIRED,Repeated color evidence supports a base-model candidate; substantive variant dimensions and public eligibility remain unverified.
+BP134,1,1,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP149,1,1,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP167,1,1,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP175,1,1,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP176,1,1,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP185,1,1,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP187,1,1,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP189,1,1,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP195,1,1,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP200,1,1,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP222,1,1,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP226,1,1,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP231,1,1,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP236,1,1,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP255,1,1,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP260,1,1,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP262,1,1,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP263,1,1,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP265,1,1,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP267,1,1,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP279,1,1,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP280,1,1,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP281,1,1,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP283,1,1,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP284,1,1,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP286,1,1,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP287,1,1,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP288,1,1,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP289,1,1,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP290,1,1,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP292,1,1,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP293,1,1,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C412,1,1,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C474,1,1,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C488,1,1,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C492,1,1,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C494,1,1,0,7,2,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+C495,1,1,0,8,2,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+C502,1,1,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C513,1,1,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C517,1,1,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C521,1,1,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C522,1,1,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C528,1,1,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C557,1,1,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C560,1,1,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC667,1,1,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC697,1,1,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC720,1,1,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC778,1,1,0,16,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EN24,1,1,0,11,2,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+G290,1,1,0,20,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G301,1,1,0,23,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G326,1,1,0,22,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K5,1,1,0,57,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T253,1,1,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T260,1,1,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T324,1,1,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T398,1,1,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T422,1,1,0,14,10,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T485,1,1,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T488,1,1,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T489,1,1,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T492,1,1,0,7,5,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T497,1,1,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T499,1,1,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T501,1,1,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T533,1,1,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T546,1,1,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T549,1,1,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T601,1,1,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T603,1,1,0,14,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T642,1,1,0,17,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T651,1,1,0,16,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T667,1,1,0,17,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T673,1,1,0,14,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T680,1,1,0,163,144,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T708,1,1,0,15,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T727,1,1,0,28,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T736,1,1,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T752,1,1,0,18,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T760,1,1,0,22,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T799,1,1,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T800,1,1,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP169,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP181,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP192,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP218,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP225,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP232,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP235,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP242,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP252,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP258,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP261,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP270,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP271,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP275,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP294,0,0,0,11,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP296,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP297,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP301,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP302,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP303,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP305,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP306,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP308,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP310,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP313,0,0,0,14,7,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+BP315,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP317,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP320,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP321,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP326,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP331,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP332,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP339,0,0,0,7,1,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+BP340,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP341,0,0,0,6,1,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+BP342,0,0,0,13,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+BP345,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C400,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C482,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C501,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C508,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C514,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C518,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C520,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C523,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C524,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C531,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C533,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C534,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C536,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C538,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C542,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C544,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C545,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C547,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C550,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C551,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C559,0,0,0,11,1,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+C561,0,0,0,10,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C564,0,0,0,22,42,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+C565,0,0,0,22,42,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+C566,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C569,0,0,0,7,1,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+C573,0,0,0,8,7,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+C575,0,0,0,11,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C580,0,0,0,6,6,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+C581,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C585,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C586,0,0,0,7,7,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+C588,0,0,0,13,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C589,0,0,0,13,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C590,0,0,0,11,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C592,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C593,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C594,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C595,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C600,0,0,0,13,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+C601,0,0,0,13,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC660,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC661,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC669,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC671,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC673,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC677,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC678,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC681,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC683,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC691,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC693,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC696,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC700,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC702,0,0,0,11,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC703,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC705,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC706,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC708,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC712,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC714,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC716,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC717,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC719,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC722,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC723,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC724,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC725,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC726,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC727,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC730,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC734,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC737,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC738,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC739,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC740,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC741,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC743,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC744,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC745,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC746,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC747,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC749,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC750,0,0,0,14,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC752,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC756,0,0,0,10,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC757,0,0,0,18,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC758,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC759,0,0,0,12,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC760,0,0,0,12,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC761,0,0,0,11,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC762,0,0,0,10,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC763,0,0,0,11,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC766,0,0,0,12,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC767,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC768,0,0,0,12,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC769,0,0,0,10,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC770,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC771,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC772,0,0,0,12,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC773,0,0,0,11,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC775,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC776,0,0,0,11,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC777,0,0,0,18,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC779,0,0,0,13,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC780,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC783,0,0,0,14,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC785,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC789,0,0,0,10,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC790,0,0,0,16,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC791,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC792,0,0,0,12,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC793,0,0,0,12,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC794,0,0,0,13,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EC795,0,0,0,10,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EN1,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EN13,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EN15,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EN17,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EN18,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EN19,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EN20,0,0,0,18,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EN21,0,0,0,12,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EN22,0,0,0,10,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EN23,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+EN25,0,0,0,10,2,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+EN7,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G103,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G118,0,0,0,74,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G122,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G204,0,0,0,10,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G205,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G206,0,0,0,51,70,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+G207,0,0,0,51,70,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+G209,0,0,0,51,70,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+G210,0,0,0,51,70,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+G231,0,0,0,23,23,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+G239,0,0,0,11,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G240,0,0,0,13,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G241,0,0,0,14,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G256,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G257,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G259,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G265,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G266,0,0,0,15,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G278,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G279,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G280,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G282,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G284,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G286,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G287,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G288,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G291,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G294,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G296,0,0,0,13,1,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+G303,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G305,0,0,0,17,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G310,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G311,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G312,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G313,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G314,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G315,0,0,0,11,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G321,0,0,0,25,22,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+G618,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G7,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G70,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+G91,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K1,0,0,0,10,1,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+K10,0,0,0,38,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K101,0,0,0,39,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K102,0,0,0,16,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K103,0,0,0,105,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K104,0,0,0,16,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K105,0,0,0,16,1,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+K106,0,0,0,53,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K107,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K108,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K109,0,0,0,78,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K11,0,0,0,18,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K110,0,0,0,68,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K111,0,0,0,13,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K112,0,0,0,26,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K113,0,0,0,59,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K12,0,0,0,12,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K13,0,0,0,28,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K14,0,0,0,10,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K15,0,0,0,30,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K16,0,0,0,14,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K17,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K18,0,0,0,14,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K19,0,0,0,16,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K2,0,0,0,17,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K20,0,0,0,32,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K21,0,0,0,29,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K22,0,0,0,15,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K23,0,0,0,16,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K24,0,0,0,19,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K25,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K26,0,0,0,12,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K3,0,0,0,16,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K4,0,0,0,10,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K6,0,0,0,28,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K7,0,0,0,11,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K8,0,0,0,24,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+K9,0,0,0,13,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+R103,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+R105,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+R71,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+R89,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+S01,0,0,0,15,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+S02,0,0,0,15,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T123,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T130,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T163,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T169,0,0,0,3,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T175,0,0,0,3,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T176,0,0,0,2,2,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T183,0,0,0,3,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T187,0,0,0,4,4,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T189,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T213,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T215,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T226,0,0,0,11,6,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T227,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T238,0,0,0,2,2,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T241,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T246,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T247,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T279,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T282,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T289,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T291,0,0,0,6,6,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T292,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T303,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T307,0,0,0,7,6,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T312,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T319,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T321,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T325,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T326,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T328,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T348,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T351,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T353,0,0,0,4,4,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T357,0,0,0,5,5,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T361,0,0,0,5,5,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T364,0,0,0,2,2,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T370,0,0,0,3,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T380,0,0,0,3,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T384,0,0,0,8,8,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T385,0,0,0,3,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T386,0,0,0,8,6,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T393,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T397,0,0,0,3,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T40,0,0,0,2,2,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T404,0,0,0,3,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T406,0,0,0,3,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T407,0,0,0,6,6,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T4088,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T409,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T411,0,0,0,5,4,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T412,0,0,0,3,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T414,0,0,0,11,10,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T415,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T416,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T419,0,0,0,3,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T420,0,0,0,2,2,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T423,0,0,0,3,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T429,0,0,0,5,4,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T436,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T438,0,0,0,4,4,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T445,0,0,0,15,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T446,0,0,0,2,2,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T451,0,0,0,3,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T452,0,0,0,3,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T453,0,0,0,2,2,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T458,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T459,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T462,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T463,0,0,0,3,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T464,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T465,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T466,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T468,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T470,0,0,0,2,2,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T471,0,0,0,3,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T474,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T476,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T478,0,0,0,2,2,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T48,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T481,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T487,0,0,0,3,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T490,0,0,0,4,4,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T491,0,0,0,3,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T493,0,0,0,4,4,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T496,0,0,0,2,2,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T502,0,0,0,2,2,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T503,0,0,0,6,6,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T504,0,0,0,3,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T505,0,0,0,4,4,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T506,0,0,0,6,5,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T508,0,0,0,6,6,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T510,0,0,0,6,6,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T511,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T512,0,0,0,5,5,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T513,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T514,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T516,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T517,0,0,0,5,2,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T518,0,0,0,6,2,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T519,0,0,0,3,2,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T520,0,0,0,56,56,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T521,0,0,0,182,182,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T523,0,0,0,4,4,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T527,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T528,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T531,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T532,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T535,0,0,0,7,7,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T536,0,0,0,6,6,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T537,0,0,0,4,4,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T538,0,0,0,131,139,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T539,0,0,0,77,73,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T540,0,0,0,82,82,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T541,0,0,0,55,53,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T542,0,0,0,56,64,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T548,0,0,0,8,7,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T551,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T552,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T553,0,0,0,4,4,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T554,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T556,0,0,0,5,3,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T557,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T558,0,0,0,5,4,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T560,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T562,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T565,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T568,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T57,0,0,0,5,5,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T571,0,0,0,11,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T572,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T574,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T578,0,0,0,11,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T589,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T590,0,0,0,14,10,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T594,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T595,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T596,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T597,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T599,0,0,0,9,6,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T6,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T604,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T605,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T609,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T611,0,0,0,1,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T612,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T613,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T620,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T621,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T623,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T628,0,0,0,14,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T629,0,0,0,15,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T630,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T631,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T633,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T634,0,0,0,12,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T635,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T636,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T638,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T647,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T648,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T652,0,0,0,10,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T655,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T656,0,0,0,13,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T660,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T661,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T663,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T666,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T668,0,0,0,16,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T670,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T672,0,0,0,12,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T674,0,0,0,15,15,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T675,0,0,0,15,15,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T681,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T683,0,0,0,12,12,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T684,0,0,0,17,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T685,0,0,0,11,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T689,0,0,0,15,1,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T691,0,0,0,13,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T695,0,0,0,10,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T696,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T697,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T7,0,0,0,372,372,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T706,0,0,0,11,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T707,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T711,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T712,0,0,0,10,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T713,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T714,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T715,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T717,0,0,0,10,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T720,0,0,0,365,365,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T721,0,0,0,14,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T722,0,0,0,15,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T724,0,0,0,13,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T725,0,0,0,13,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T728,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T734,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T735,0,0,0,10,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T738,0,0,0,12,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T739,0,0,0,10,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T74,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T742,0,0,0,11,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T745,0,0,0,11,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T746,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T748,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T749,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T753,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T754,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T755,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T757,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T759,0,0,0,15,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T761,0,0,0,11,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T767,0,0,0,14,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T768,0,0,0,13,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T769,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T770,0,0,0,11,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T772,0,0,0,12,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T780,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T781,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T784,0,0,0,55,66,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T785,0,0,0,43,56,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T786,0,0,0,7,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T787,0,0,0,14,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T791,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T792,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T793,0,0,0,57,66,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T796,0,0,0,12,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T797,0,0,0,43,56,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T801,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T802,0,0,0,6,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T803,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T806,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T808,0,0,0,13,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T811,0,0,0,8,2,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T812,0,0,0,31,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T813,0,0,0,15,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T814,0,0,0,9,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T815,0,0,0,12,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T817,0,0,0,12,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T820,0,0,0,5,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T821,0,0,0,4,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T822,0,0,0,8,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T87,0,0,0,2,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.
+T883,0,0,0,12,12,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+T92,0,0,0,14,8,LOW,NOT_ESTIMATED,AMBIGUOUS_CODE_REVIEW_REQUIRED,Single-color/incomplete evidence plus shared multi-SKU assets prevents a standalone identity conclusion.
+U318,0,0,0,3,0,LOW,NOT_ESTIMATED,REVIEW_REQUIRED,No sufficient evidence to distinguish standalone product from model candidate or substantive variant family.

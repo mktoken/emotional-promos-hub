@@ -1,0 +1,968 @@
+provider_sku,base_model_candidate,candidate_name_from_path,variant_type_candidate,detected_variant_values,detected_variant_count,color_evidence_counts,model_variant_status,confidence,source_instances,unique_assets,archives_count,archives
+G21,G21,MY CUP,COLOR,amarillo | aqua | azul | cyan | fucsia | gris | lila | marino | morado | naranja | negro | rojo | rosa | royal | turquesa | verde,16,amarillo:3; aqua:3; azul:9; cyan:3; fucsia:3; gris:6; lila:3; marino:3; morado:3; naranja:3; negro:3; rojo:3; rosa:3; royal:3; turquesa:3; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,97,97,3,GATO-20261009T225629Z-1-001(1).zip | GG1.zip | GG2.zip
+T618,T618,,COLOR,amarillo | azul | blanco | cyan | humo | marino | morado | naranja | negro | rojo | rosa | royal | transparente | verde,14,amarillo:7; azul:14; blanco:7; cyan:7; humo:6; marino:7; morado:7; naranja:7; negro:12; rojo:7; rosa:14; royal:7; transparente:87; verde:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,93,93,2,GG2.zip | T22.zip
+G102,G102,Flight Folder,COLOR,amarillo | aqua | azul | cyan | fucsia | gris | lila | marino | negro | rojo | rosa | royal | turquesa,13,amarillo:6; aqua:7; azul:11; cyan:7; fucsia:7; gris:6; lila:7; marino:5; negro:6; rojo:7; rosa:6; royal:6; turquesa:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,94,82,3,GATO-20261009T225629Z-1-001(1).zip | GG1.zip | GG2.zip
+G87,G87,Card Folder,COLOR,amarillo | aqua | azul | fucsia | gris | lila | marino | naranja | negro | rojo | rosa | royal | turquesa,13,amarillo:6; aqua:6; azul:12; fucsia:6; gris:6; lila:6; marino:6; naranja:6; negro:6; rojo:6; rosa:6; royal:6; turquesa:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,86,60,2,GATO-20261009T225629Z-1-001(1).zip | GG2.zip
+BP300,BP300,,COLOR,amarillo | azul | blanco | cyan | fucsia | marino | morado | naranja | negro | rojo | royal | verde,12,amarillo:4; azul:3; blanco:4; cyan:4; fucsia:4; marino:1; morado:4; naranja:4; negro:4; rojo:4; royal:4; verde:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,55,54,2,BP-20261009T225340Z-1-001.zip | GG2.zip
+G212,G212,Botella o 500ml,COLOR,amarillo | aqua | azul | fucsia | gris | lila | morado | negro | rojo | rosa | turquesa,11,amarillo:6; aqua:7; azul:8; fucsia:7; gris:14; lila:1; morado:6; negro:8; rojo:7; rosa:6; turquesa:9,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,86,86,2,GATO-20261009T225629Z-1-001(1).zip | GG2.zip
+U301,U301,,COLOR,amarillo | azul | blanco | cyan | gris | marino | naranja | negro | rojo | royal | verde,11,amarillo:6; azul:8; blanco:6; cyan:8; gris:6; marino:8; naranja:6; negro:8; rojo:6; royal:8; verde:16,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,43,43,3,GG1.zip | GG2.zip | U-20261009T225750Z-1-001(1).zip
+BP311,BP311,,COLOR,amarillo | azul | blanco | marino | naranja | negro | rojo | rosa | royal | verde,10,amarillo:4; azul:4; blanco:4; marino:4; naranja:4; negro:4; rojo:4; rosa:4; royal:3; verde:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,44,43,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+C478,C478,,COLOR,azul | blanco | cyan | marino | morado | naranja | negro | rojo | royal | verde,10,azul:5; blanco:3; cyan:2; marino:2; morado:2; naranja:3; negro:3; rojo:3; royal:1; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,31,31,3,GG1.zip | GG2.zip | cc2.zip
+G198,G198,Cool,COLOR,amarillo | aqua | azul | cyan | gris | lila | naranja | rojo | rosa | verde,10,amarillo:10; aqua:16; azul:5; cyan:11; gris:6; lila:6; naranja:10; rojo:10; rosa:6; verde:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,49,42,3,GATO-20261009T225629Z-1-001(1).zip | GG1.zip | GG2.zip
+G211,G211,Botella O 350ml,COLOR,amarillo | aqua | azul | fucsia | gris | lila | morado | rojo | rosa | turquesa,10,amarillo:7; aqua:7; azul:7; fucsia:8; gris:14; lila:1; morado:6; rojo:8; rosa:8; turquesa:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,81,81,3,GATO-20261009T225629Z-1-001(1).zip | GG1.zip | GG2.zip
+G254,G254,CANELE,COLOR,amarillo | aqua | azul | cyan | gris | morado | negro | rojo | rosa | turquesa,10,amarillo:7; aqua:6; azul:7; cyan:7; gris:6; morado:6; negro:6; rojo:6; rosa:6; turquesa:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,69,59,3,GATO-20261009T225629Z-1-001(1).zip | GG1.zip | GG2.zip
+T550,T550,,COLOR,amarillo | azul | cyan | fucsia | morado | naranja | negro | rojo | rosa | verde,10,amarillo:5; azul:5; cyan:5; fucsia:1; morado:2; naranja:5; negro:7; rojo:5; rosa:4; verde:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,52,52,3,GG1.zip | GG2.zip | tttt1.zip
+BP240,BP240,,COLOR,amarillo | azul | blanco | morado | naranja | negro | rojo | rosa | verde,9,amarillo:2; azul:2; blanco:2; morado:2; naranja:2; negro:2; rojo:2; rosa:2; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,29,29,2,BP-20261009T225340Z-1-001.zip | GG1.zip
+BP307,BP307,,COLOR,amarillo | azul | fucsia | morado | naranja | negro | rojo | royal | verde,9,amarillo:4; azul:4; fucsia:4; morado:4; naranja:4; negro:4; rojo:4; royal:4; verde:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,44,44,2,BP-20261009T225340Z-1-001.zip | GG2.zip
+BP329,BP329,,COLOR,blanco | cyan | fucsia | morado | naranja | negro | rojo | royal | verde,9,blanco:3; cyan:3; fucsia:3; morado:3; naranja:3; negro:3; rojo:3; royal:3; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,31,31,2,BP-20261009T225340Z-1-001.zip | GG2.zip
+G143,G143,Pouch,COLOR,amarillo | aqua | azul | fucsia | negro | rojo | rosa | royal | turquesa,9,amarillo:10; aqua:21; azul:11; fucsia:11; negro:11; rojo:11; rosa:11; royal:6; turquesa:10,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,74,74,1,GATO-20261009T225629Z-1-001(1).zip
+G255,G255,CANELE+ XL,COLOR,amarillo | aqua | azul | cyan | gris | morado | rojo | rosa | turquesa,9,amarillo:6; aqua:6; azul:6; cyan:6; gris:13; morado:6; rojo:6; rosa:6; turquesa:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,64,55,2,GATO-20261009T225629Z-1-001(1).zip | GG2.zip
+G322,G322,My Cup To Go,COLOR,aqua | azul | cyan | marino | morado | naranja | rojo | turquesa | verde,9,aqua:1; azul:1; cyan:1; marino:1; morado:1; naranja:1; rojo:1; turquesa:1; verde:1,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,51,51,2,GATO-20261009T225629Z-1-001(1).zip | GG1.zip
+T598,T598,,COLOR,amarillo | azul | blanco | naranja | negro | plata | rojo | rosa | verde,9,amarillo:4; azul:4; blanco:4; naranja:4; negro:4; plata:4; rojo:4; rosa:4; verde:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,43,42,4,GG1.zip | GG2.zip | T24.zip | ttt1.zip
+T704,T704,,COLOR,azul | blanco | fucsia | naranja | negro | plata | rojo | rosa | verde,9,azul:6; blanco:6; fucsia:5; naranja:6; negro:6; plata:6; rojo:6; rosa:1; verde:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,54,54,2,GG2.zip | T23.zip
+BP257,BP257,,COLOR,amarillo | azul | morado | naranja | negro | rojo | rosa | verde,8,amarillo:2; azul:2; morado:2; naranja:2; negro:2; rojo:2; rosa:2; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,20,20,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+BP323,BP323,,COLOR,amarillo | blanco | marino | naranja | negro | rojo | royal | verde,8,amarillo:4; blanco:4; marino:4; naranja:4; negro:4; rojo:4; royal:4; verde:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,35,35,2,BP-20261009T225340Z-1-001.zip | GG2.zip
+BP330,BP330,,COLOR,amarillo | blanco | cyan | naranja | negro | rojo | royal | verde,8,amarillo:5; blanco:5; cyan:5; naranja:5; negro:5; rojo:5; royal:5; verde:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,43,43,2,BP-20261009T225340Z-1-001.zip | GG2.zip
+BP335,BP335,,COLOR,amarillo | azul | blanco | cyan | naranja | negro | rojo | verde,8,amarillo:4; azul:4; blanco:4; cyan:4; naranja:4; negro:4; rojo:4; verde:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,37,37,1,BP-20261009T225340Z-1-001.zip
+BP338,BP338,,COLOR,amarillo | azul | blanco | cyan | naranja | negro | rojo | verde,8,amarillo:4; azul:4; blanco:4; cyan:4; naranja:4; negro:4; rojo:4; verde:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,34,34,2,BP-20261009T225340Z-1-001.zip | GG2.zip
+C491,C491,,COLOR,amarillo | azul | marino | naranja | negro | rojo | royal | verde,8,amarillo:3; azul:4; marino:2; naranja:3; negro:3; rojo:3; royal:3; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,25,25,3,GG1.zip | GG2.zip | cc3.zip
+C500,C500,,COLOR,azul | blanco | negro | plata | rojo | rosa | turquesa | verde,8,azul:8; blanco:8; negro:8; plata:7; rojo:8; rosa:6; turquesa:8; verde:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,65,65,3,Archivo(1).zip | GG1.zip | GG2.zip
+C587,C587,,COLOR,amarillo | azul | naranja | negro | rojo | rosa | royal | verde,8,amarillo:8; azul:8; naranja:8; negro:8; rojo:8; rosa:8; royal:8; verde:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,77,77,2,GG2.zip | cc1.zip
+G10,G10,Day2Day,COLOR,amarillo | aqua | azul | fucsia | negro | rojo | rosa | turquesa,8,amarillo:5; aqua:5; azul:5; fucsia:5; negro:5; rojo:5; rosa:5; turquesa:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,40,33,1,GATO-20261009T225629Z-1-001(1).zip
+G115,G115,Fong,COLOR,amarillo | aqua | azul | morado | naranja | rojo | rosa | verde,8,amarillo:3; aqua:3; azul:3; morado:3; naranja:3; rojo:3; rosa:3; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,24,17,1,GATO-20261009T225629Z-1-001(1).zip
+G144,G144,Stripebook,COLOR,amarillo | aqua | azul | fucsia | negro | rojo | rosa | turquesa,8,amarillo:3; aqua:3; azul:3; fucsia:3; negro:3; rojo:3; rosa:3; turquesa:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,27,27,3,GATO-20261009T225629Z-1-001(1).zip | GG1.zip | GG2.zip
+G196,G196,Smile,COLOR,amarillo | azul | cyan | fucsia | morado | naranja | rojo | turquesa,8,amarillo:3; azul:3; cyan:3; fucsia:3; morado:3; naranja:3; rojo:3; turquesa:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,29,29,3,GATO-20261009T225629Z-1-001(1).zip | GG1.zip | GG2.zip
+G219,G219,,COLOR,amarillo | azul | marino | naranja | negro | rojo | royal | verde,8,amarillo:5; azul:4; marino:5; naranja:5; negro:10; rojo:5; royal:5; verde:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,47,47,3,G-20261009T225541Z-1-001(1).zip | GG1.zip | GG2.zip
+G230,G230,Clutch,COLOR,aqua | azul | fucsia | gris | naranja | negro | rosa | turquesa,8,aqua:16; azul:16; fucsia:8; gris:24; naranja:8; negro:16; rosa:16; turquesa:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,61,46,3,GATO-20261009T225629Z-1-001(1).zip | GG1.zip | GG2.zip
+T278,T278,,COLOR,azul | naranja | negro | plata | rojo | rosa | turquesa | verde,8,azul:1; naranja:1; negro:1; plata:4; rojo:4; rosa:4; turquesa:1; verde:1,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,23,23,4,GG1.zip | GG2.zip | ttt2.zip | tttt1.zip
+T593,T593,,COLOR,amarillo | azul | humo | morado | naranja | rojo | rosa | verde,8,amarillo:1; azul:2; humo:2; morado:2; naranja:1; rojo:2; rosa:1; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,17,16,3,GG1.zip | GG2.zip | T21.zip
+U314,U314,,COLOR,azul | blanco | marino | naranja | negro | rojo | royal | verde,8,azul:26; blanco:16; marino:6; naranja:16; negro:16; rojo:6; royal:6; verde:12,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,54,54,2,GG2.zip | U-20261009T225750Z-1-001(1).zip
+U325,U325,,COLOR,aqua | azul | blanco | cyan | marino | negro | rojo | royal,8,aqua:16; azul:4; blanco:20; cyan:16; marino:16; negro:20; rojo:20; royal:20,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,74,74,2,GG2.zip | U-20261009T225750Z-1-001(1).zip
+BP228,BP228,,COLOR,azul | blanco | cyan | naranja | negro | rojo | verde,7,azul:3; blanco:3; cyan:3; naranja:3; negro:3; rojo:3; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,32,32,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+BP241,BP241,,COLOR,amarillo | azul | blanco | morado | naranja | rojo | verde,7,amarillo:3; azul:3; blanco:3; morado:3; naranja:3; rojo:3; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,28,28,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+BP250,BP250,,COLOR,amarillo | azul | blanco | morado | naranja | rojo | verde,7,amarillo:2; azul:2; blanco:2; morado:2; naranja:2; rojo:2; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,17,17,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+BP285,BP285,,COLOR,amarillo | azul | blanco | naranja | negro | rojo | verde,7,amarillo:2; azul:2; blanco:2; naranja:2; negro:2; rojo:2; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,19,19,4,BP-20261009T225340Z-1-001.zip | EC2.zip | GG1.zip | GG2.zip
+BP312,BP312,,COLOR,amarillo | blanco | marino | naranja | negro | rojo | royal,7,amarillo:4; blanco:4; marino:4; naranja:4; negro:4; rojo:4; royal:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,33,33,2,BP-20261009T225340Z-1-001.zip | GG2.zip
+BP319,BP319,,COLOR,amarillo | azul | blanco | naranja | negro | rojo | verde,7,amarillo:5; azul:5; blanco:5; naranja:5; negro:5; rojo:5; verde:10,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,47,47,2,BP-20261009T225340Z-1-001.zip | GG2.zip
+BP328,BP328,,COLOR,amarillo | blanco | marino | naranja | negro | rojo | royal,7,amarillo:4; blanco:4; marino:4; naranja:4; negro:4; rojo:4; royal:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,37,37,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+C485,C485,,COLOR,amarillo | azul | naranja | negro | rojo | royal | verde,7,amarillo:5; azul:13; naranja:5; negro:9; rojo:8; royal:5; verde:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,47,47,2,Archivo(1).zip | GG2.zip
+C507,C507,,COLOR,amarillo | azul | beige | blanco | cyan | rojo | verde,7,amarillo:3; azul:2; beige:3; blanco:2; cyan:2; rojo:2; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,22,22,3,GG1.zip | GG2.zip | cc1.zip
+C554,C554,,COLOR,azul | cyan | marino | naranja | negro | rojo | rosa,7,azul:12; cyan:5; marino:5; naranja:5; negro:5; rojo:5; rosa:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,53,53,3,Archivo(1).zip | GG2.zip | cc2.zip
+C570,C570,,COLOR,amarillo | gris | marino | naranja | rojo | royal | verde,7,amarillo:7; gris:7; marino:7; naranja:7; rojo:7; royal:7; verde:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,53,53,2,Archivo(1).zip | GG1.zip
+C571,C571,,COLOR,amarillo | gris | marino | naranja | rojo | royal | verde,7,amarillo:8; gris:8; marino:8; naranja:8; rojo:8; royal:8; verde:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,58,58,2,Archivo(1).zip | GG1.zip
+C574,C574,,COLOR,amarillo | marino | naranja | negro | rojo | royal | verde,7,amarillo:5; marino:5; naranja:5; negro:5; rojo:5; royal:5; verde:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,38,38,2,GG1.zip | cc1.zip
+G111,G111,Canar,COLOR,amarillo | blanco | cyan | fucsia | naranja | rosa | verde,7,amarillo:6; blanco:6; cyan:6; fucsia:6; naranja:6; rosa:6; verde:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,45,39,3,GATO-20261009T225629Z-1-001(1).zip | GG1.zip | GG2.zip
+G141,G141,Big Pencil,COLOR,amarillo | azul | blanco | fucsia | negro | rojo | turquesa,7,amarillo:8; azul:8; blanco:4; fucsia:7; negro:8; rojo:1; turquesa:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,48,33,3,GATO-20261009T225629Z-1-001(1).zip | GG1.zip | GG2.zip
+G229,G229,Envelope,COLOR,amarillo | azul | gris | negro | rojo | rosa | turquesa,7,amarillo:7; azul:7; gris:7; negro:7; rojo:7; rosa:7; turquesa:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,53,42,2,GATO-20261009T225629Z-1-001(1).zip | GG1.zip
+G269,G269,STEEL-CHILE-2022,COLOR,azul | cyan | gris | negro | rojo | royal | turquesa,7,azul:14; cyan:3; gris:24; negro:6; rojo:9; royal:5; turquesa:10,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,79,77,1,GATO-20261009T225629Z-1-001(1).zip
+G84,G84,Buo Bluetooth,COLOR,aqua | blanco | cyan | fucsia | naranja | negro | oro,7,aqua:20; blanco:5; cyan:10; fucsia:5; naranja:10; negro:10; oro:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,41,34,2,GATO-20261009T225629Z-1-001(1).zip | GG1.zip
+T295,T295,,COLOR,azul | cyan | morado | naranja | negro | rojo | verde,7,azul:6; cyan:6; morado:6; naranja:8; negro:6; rojo:6; verde:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,69,69,3,GG1.zip | GG2.zip | tttt1.zip
+T455,T455,,COLOR,azul | blanco | naranja | negro | plata | rojo | verde,7,azul:1; blanco:1; naranja:1; negro:1; plata:1; rojo:1; verde:1,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,8,8,2,GG2.zip | tt5.zip
+T469,T469,,COLOR,amarillo | azul | gris | negro | rojo | royal | verde,7,amarillo:4; azul:2; gris:4; negro:4; rojo:4; royal:2; verde:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,35,35,3,GG1.zip | GG2.zip | tttt1.zip
+T486,T486,,COLOR,azul | blanco | gris | negro | plata | rojo | verde,7,azul:3; blanco:3; gris:1; negro:3; plata:2; rojo:3; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,24,24,4,GG1.zip | GG2.zip | T21.zip | tt5.zip
+T616,T616,,COLOR,azul | blanco | naranja | negro | rojo | rosa | verde,7,azul:4; blanco:7; naranja:8; negro:8; rojo:8; rosa:8; verde:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,57,45,2,GG2.zip | T21.zip
+T676,T676,,COLOR,azul | beige | blanco | negro | rojo | rosa | verde,7,azul:8; beige:8; blanco:8; negro:8; rojo:8; rosa:8; verde:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,63,63,3,GG1.zip | GG2.zip | T22.zip
+T723,T723,,COLOR,amarillo | aqua | marino | naranja | negro | plata | rojo,7,amarillo:7; aqua:7; marino:7; naranja:7; negro:7; plata:7; rojo:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,55,55,3,GG1.zip | GG2.zip | T22.zip
+U315,U315,,COLOR,azul | morado | negro | rojo | rosa | royal | verde,7,azul:4; morado:4; negro:4; rojo:12; rosa:4; royal:4; verde:12,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,37,37,2,GG2.zip | U-20261009T225750Z-1-001(1).zip
+BP190,BP190,,COLOR,azul | naranja | negro | rojo | rosa | verde,6,azul:2; naranja:6; negro:2; rojo:2; rosa:2; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,17,17,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+BP268,BP268,,COLOR,amarillo | azul | naranja | negro | rojo | verde,6,amarillo:4; azul:4; naranja:4; negro:4; rojo:4; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,29,29,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+BP314,BP314,,COLOR,azul | blanco | naranja | negro | rojo | verde,6,azul:3; blanco:3; naranja:3; negro:5; rojo:3; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,24,24,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+BP325,BP325,,COLOR,marino | negro | plata | rojo | royal | verde,6,marino:5; negro:5; plata:5; rojo:5; royal:5; verde:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,41,41,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+C505,C505,,COLOR,azul | blanco | negro | rojo | royal | verde,6,azul:3; blanco:3; negro:3; rojo:5; royal:3; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,20,20,3,Archivo(1).zip | GG1.zip | GG2.zip
+C506,C506,,COLOR,blanco | naranja | negro | rojo | royal | verde,6,blanco:4; naranja:4; negro:4; rojo:2; royal:2; verde:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,24,24,3,GG1.zip | GG2.zip | cc3.zip
+C540,C540,,COLOR,marino | naranja | negro | rojo | royal | verde,6,marino:4; naranja:4; negro:4; rojo:4; royal:4; verde:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,33,33,4,EC2.zip | GG1.zip | GG2.zip | cc1.zip
+EC754,EC754,,COLOR,amarillo | azul | cyan | rojo | turquesa | verde,6,amarillo:1; azul:1; cyan:1; rojo:1; turquesa:2; verde:1,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,18,17,2,EC2.zip | GG2.zip
+EC784,EC784,,COLOR,amarillo | azul | cyan | morado | rojo | verde,6,amarillo:1; azul:1; cyan:1; morado:3; rojo:1; verde:1,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,17,17,1,EC2.zip
+G117,G117,Lumi,COLOR,amarillo | aqua | azul | cyan | rosa | verde,6,amarillo:10; aqua:10; azul:2; cyan:8; rosa:10; verde:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,43,36,2,GATO-20261009T225629Z-1-001(1).zip | GG1.zip
+G221,G221,,COLOR,blanco | marino | negro | rojo | rosa | royal,6,blanco:7; marino:7; negro:7; rojo:7; rosa:7; royal:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,43,43,1,G-20261009T225541Z-1-001(1).zip
+G223,G223,,COLOR,beige | blanco | marino | negro | rojo | rosa,6,beige:7; blanco:7; marino:7; negro:7; rojo:7; rosa:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,43,43,1,G-20261009T225541Z-1-001(1).zip
+G225,G225,Dino,COLOR,blanco | cyan | marino | negro | rojo | rosa,6,blanco:14; cyan:7; marino:7; negro:7; rojo:7; rosa:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,55,53,3,G-20261009T225541Z-1-001(1).zip | GATO-20261009T225629Z-1-001(1).zip | GG1.zip
+G270,G270,Dora 2,COLOR,aqua | azul | cyan | gris | rosa | verde,6,aqua:4; azul:5; cyan:4; gris:5; rosa:5; verde:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,23,20,2,GATO-20261009T225629Z-1-001(1).zip | GG2.zip
+G44,G44,Lock Timer,COLOR,amarillo | aqua | azul | blanco | fucsia | turquesa,6,amarillo:3; aqua:3; azul:3; blanco:3; fucsia:3; turquesa:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,21,21,3,GATO-20261009T225629Z-1-001(1).zip | GG1.zip | GG2.zip
+G45,G45,Retro Phone 70,COLOR,cyan | naranja | negro | rojo | rosa | verde,6,cyan:2; naranja:2; negro:2; rojo:2; rosa:2; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,16,16,3,GATO-20261009T225629Z-1-001(1).zip | GG1.zip | GG2.zip
+T482,T482,,COLOR,amarillo | azul | naranja | negro | rojo | verde,6,amarillo:5; azul:5; naranja:3; negro:5; rojo:5; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,35,34,3,GG1.zip | GG2.zip | tttt1.zip
+T529,T529,,COLOR,amarillo | azul | blanco | naranja | rojo | verde,6,amarillo:5; azul:4; blanco:4; naranja:4; rojo:4; verde:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,27,27,2,GG1.zip | ttt1.zip
+T579,T579,,COLOR,azul | gris | negro | plata | rojo | verde,6,azul:3; gris:1; negro:3; plata:2; rojo:3; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,15,15,1,T24.zip
+T584,T584,,COLOR,azul | naranja | negro | plata | rojo | verde,6,azul:7; naranja:3; negro:7; plata:3; rojo:7; verde:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,41,28,3,GG1.zip | GG2.zip | T21.zip
+T606,T606,,COLOR,azul | blanco | gris | negro | plata | rojo,6,azul:8; blanco:7; gris:4; negro:8; plata:4; rojo:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,49,48,3,GG2.zip | T23.zip | ttt1.zip
+T645,T645,,COLOR,blanco | marino | negro | rojo | royal | verde,6,blanco:7; marino:7; negro:7; rojo:7; royal:7; verde:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,53,53,2,GG2.zip | T22.zip
+T650,T650,,COLOR,azul | blanco | cyan | marino | negro | rosa,6,azul:9; blanco:8; cyan:8; marino:8; negro:9; rosa:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,50,50,3,GG1.zip | GG2.zip | T21.zip
+T658,T658,,COLOR,azul | humo | naranja | rojo | transparente | verde,6,azul:7; humo:7; naranja:7; rojo:7; transparente:7; verde:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,44,44,2,GG2.zip | T23.zip
+T731,T731,,COLOR,blanco | fucsia | marino | negro | rojo | royal,6,blanco:5; fucsia:5; marino:5; negro:5; rojo:5; royal:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,36,36,2,GG2.zip | T23.zip
+T750,T750,,COLOR,blanco | naranja | negro | rojo | rosa | royal,6,blanco:9; naranja:11; negro:10; rojo:11; rosa:11; royal:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,71,71,3,GG1.zip | GG2.zip | T23.zip
+U305,U305,,COLOR,azul | blanco | cyan | naranja | rojo | verde,6,azul:4; blanco:2; cyan:2; naranja:2; rojo:4; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,10,10,1,U-20261009T225750Z-1-001(1).zip
+U320,U320,,COLOR,azul | blanco | marino | negro | rojo | royal,6,azul:8; blanco:10; marino:10; negro:10; rojo:10; royal:10,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,31,31,3,GG1.zip | GG2.zip | U-20261009T225750Z-1-001(1).zip
+U323,U323,,COLOR,azul | blanco | marino | negro | rojo | royal,6,azul:8; blanco:20; marino:16; negro:18; rojo:18; royal:14,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,39,39,2,GG1.zip | U-20261009T225750Z-1-001(1).zip
+U324,U324,,COLOR,azul | blanco | marino | negro | rojo | royal,6,azul:38; blanco:18; marino:18; negro:18; rojo:18; royal:20,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,50,50,3,GG1.zip | GG2.zip | U-20261009T225750Z-1-001(1).zip
+BP161,BP161,,COLOR,azul | naranja | negro | rojo | verde,5,azul:3; naranja:3; negro:3; rojo:3; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,18,18,2,BP-20261009T225340Z-1-001.zip | GG1.zip
+BP193,BP193,,COLOR,azul | blanco | negro | plata | rojo,5,azul:6; blanco:3; negro:6; plata:3; rojo:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,22,22,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+BP238,BP238,,COLOR,amarillo | naranja | negro | rojo | verde,5,amarillo:2; naranja:2; negro:2; rojo:2; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,11,11,1,BP-20261009T225340Z-1-001.zip
+BP248,BP248,,COLOR,azul | naranja | negro | rojo | verde,5,azul:3; naranja:3; negro:3; rojo:3; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,20,20,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+BP251,BP251,,COLOR,amarillo | azul | blanco | naranja | rojo,5,amarillo:2; azul:2; blanco:2; naranja:2; rojo:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,10,10,1,BP-20261009T225340Z-1-001.zip
+BP295,BP295,,COLOR,azul | blanco | gris | negro | rojo,5,azul:5; blanco:5; gris:5; negro:5; rojo:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,28,28,2,BP-20261009T225340Z-1-001.zip | GG1.zip
+BP298,BP298,,COLOR,azul | blanco | negro | rojo | verde,5,azul:7; blanco:9; negro:8; rojo:3; verde:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,48,48,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+BP333,BP333,,COLOR,azul | blanco | negro | rojo | verde,5,azul:5; blanco:5; negro:5; rojo:5; verde:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,35,35,2,BP-20261009T225340Z-1-001.zip | GG2.zip
+BP334,BP334,,COLOR,azul | blanco | gris | negro | rojo,5,azul:2; blanco:2; gris:2; negro:2; rojo:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,12,12,1,BP-20261009T225340Z-1-001.zip
+BP337,BP337,,COLOR,blanco | marino | negro | rojo | royal,5,blanco:3; marino:3; negro:3; rojo:3; royal:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,20,20,2,BP-20261009T225340Z-1-001.zip | GG2.zip
+C499,C499,,COLOR,azul | beige | negro | rojo | royal,5,azul:1; beige:1; negro:1; rojo:1; royal:1,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,5,5,2,Archivo(1).zip | GG1.zip
+C516,C516,,COLOR,amarillo | azul | gris | naranja | negro,5,amarillo:3; azul:5; gris:3; naranja:3; negro:1,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,20,20,2,Archivo(1).zip | GG2.zip
+C549,C549,,COLOR,azul | marino | negro | rojo | royal,5,azul:2; marino:5; negro:5; rojo:5; royal:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,25,24,3,Archivo(1).zip | GG1.zip | GG2.zip
+EC679,EC679,,COLOR,azul | naranja | negro | rojo | verde,5,azul:3; naranja:2; negro:3; rojo:3; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,15,15,2,EC2.zip | GG1.zip
+G139,G139,Urban 2,COLOR,amarillo | azul | gris | negro | rojo,5,amarillo:5; azul:11; gris:31; negro:5; rojo:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,45,45,3,GATO-20261009T225629Z-1-001(1).zip | GG1.zip | GG2.zip
+G155,G155,Capitan,COLOR,amarillo | aqua | blanco | rosa | verde,5,amarillo:7; aqua:6; blanco:7; rosa:8; verde:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,30,24,2,GATO-20261009T225629Z-1-001(1).zip | GG1.zip
+G165,G165,Letters 34,COLOR,amarillo | blanco | fucsia | negro | verde,5,amarillo:3; blanco:3; fucsia:3; negro:3; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,24,16,1,GATO-20261009T225629Z-1-001(1).zip
+G218,G218,,COLOR,amarillo | blanco | naranja | rojo | verde,5,amarillo:3; blanco:3; naranja:4; rojo:3; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,17,17,2,G-20261009T225541Z-1-001(1).zip | GG1.zip
+G268,G268,Urban Notes,COLOR,azul | gris | negro | rojo | turquesa,5,azul:9; gris:24; negro:14; rojo:9; turquesa:9,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,52,47,2,GATO-20261009T225629Z-1-001(1).zip | GG2.zip
+G35,G35,Master File,COLOR,azul | blanco | negro | plata | rojo,5,azul:4; blanco:4; negro:4; plata:4; rojo:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,21,14,2,GATO-20261009T225629Z-1-001(1).zip | GG1.zip
+G81,G81,Roboclock,COLOR,azul | blanco | fucsia | negro | rojo,5,azul:3; blanco:3; fucsia:3; negro:3; rojo:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,20,20,1,GATO-20261009T225629Z-1-001(1).zip
+T327,T327,,COLOR,azul | naranja | negro | rojo | verde,5,azul:3; naranja:3; negro:3; rojo:3; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,19,19,3,GG1.zip | GG2.zip | ttt2.zip
+T402,T402,,COLOR,azul | naranja | negro | rojo | verde,5,azul:3; naranja:3; negro:3; rojo:3; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,19,19,3,GG1.zip | GG2.zip | ttt1.zip
+T454,T454,,COLOR,azul | blanco | cyan | rojo | verde,5,azul:2; blanco:3; cyan:1; rojo:3; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,15,15,2,GG2.zip | tttt1.zip
+T483,T483,,COLOR,blanco | negro | rojo | rosa | royal,5,blanco:3; negro:3; rojo:3; rosa:3; royal:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,18,18,2,GG1.zip | ttt2.zip
+T525,T525,,COLOR,azul | naranja | negro | rojo | verde,5,azul:5; naranja:5; negro:5; rojo:5; verde:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,31,31,3,GG1.zip | T21.zip | ttt1.zip
+T545,T545,,COLOR,azul | negro | plata | rojo | verde,5,azul:2; negro:2; plata:2; rojo:2; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,11,11,2,GG1.zip | tt5.zip
+T547,T547,,COLOR,azul | naranja | negro | rojo | verde,5,azul:3; naranja:3; negro:3; rojo:5; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,17,17,1,ttt1.zip
+T576,T576,,COLOR,azul | blanco | negro | plata | rojo,5,azul:2; blanco:7; negro:7; plata:7; rojo:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,32,32,3,GG1.zip | GG2.zip | ttt1.zip
+T622,T622,,COLOR,azul | negro | plata | rojo | verde,5,azul:14; negro:15; plata:9; rojo:9; verde:13,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,66,66,2,GG2.zip | T21.zip
+T632,T632,,COLOR,aqua | azul | blanco | cyan | lila,5,aqua:11; azul:11; blanco:14; cyan:11; lila:11,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,85,85,3,GG1.zip | GG2.zip | T22.zip
+T654,T654,,COLOR,azul | blanco | cyan | gris | verde,5,azul:5; blanco:5; cyan:5; gris:5; verde:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,30,30,3,GG1.zip | GG2.zip | T24.zip
+T662,T662,,COLOR,azul | humo | rojo | transparente | verde,5,azul:6; humo:6; rojo:6; transparente:6; verde:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,36,35,3,EC2.zip | GG2.zip | T24.zip
+T687,T687,,COLOR,azul | negro | rojo | royal | verde,5,azul:8; negro:8; rojo:8; royal:8; verde:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,44,44,2,GG2.zip | T23.zip
+T72,T72,,COLOR,azul | negro | plata | rojo | verde,5,azul:4; negro:4; plata:4; rojo:4; verde:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,33,27,3,GG1.zip | GG2.zip | ttt1.zip
+T751,T751,,COLOR,azul | blanco | gris | negro | plata,5,azul:5; blanco:5; gris:2; negro:5; plata:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,25,25,2,GG2.zip | T22.zip
+T783,T783,,COLOR,azul | negro | plata | rojo | verde,5,azul:4; negro:4; plata:6; rojo:4; verde:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,28,28,1,T24.zip
+U316,U316,,COLOR,azul | marino | negro | rojo | verde,5,azul:10; marino:10; negro:10; rojo:6; verde:10,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,24,24,2,GG2.zip | U-20261009T225750Z-1-001(1).zip
+U327,U327,,COLOR,blanco | marino | negro | rojo | royal,5,blanco:16; marino:16; negro:16; rojo:18; royal:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,46,46,2,GG2.zip | U-20261009T225750Z-1-001(1).zip
+U328,U328,,COLOR,blanco | marino | negro | rojo | royal,5,blanco:14; marino:14; negro:14; rojo:18; royal:16,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,40,40,2,GG1.zip | U-20261009T225750Z-1-001(1).zip
+BP217,BP217,,COLOR,azul | blanco | negro | rojo,4,azul:2; blanco:3; negro:2; rojo:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,12,12,2,BP-20261009T225340Z-1-001.zip | GG1.zip
+BP233,BP233,,COLOR,morado | negro | rojo | verde,4,morado:2; negro:2; rojo:2; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,8,8,1,BP-20261009T225340Z-1-001.zip
+BP239,BP239,,COLOR,blanco | cyan | rosa | verde,4,blanco:1; cyan:2; rosa:3; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,10,10,2,BP-20261009T225340Z-1-001.zip | GG1.zip
+BP244,BP244,,COLOR,azul | negro | rojo | verde,4,azul:8; negro:8; rojo:8; verde:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,37,37,2,BP-20261009T225340Z-1-001.zip | GG1.zip
+BP247,BP247,,COLOR,azul | negro | rojo | verde,4,azul:2; negro:2; rojo:5; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,12,12,2,BP-20261009T225340Z-1-001.zip | GG1.zip
+BP249,BP249,,COLOR,amarillo | naranja | rosa | verde,4,amarillo:2; naranja:2; rosa:2; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,8,8,1,BP-20261009T225340Z-1-001.zip
+BP264,BP264,,COLOR,azul | negro | plata | rojo,4,azul:5; negro:7; plata:6; rojo:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,30,30,2,BP-20261009T225340Z-1-001.zip | GG1.zip
+BP266,BP266,,COLOR,azul | blanco | negro | rojo,4,azul:2; blanco:2; negro:2; rojo:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,10,10,2,BP-20261009T225340Z-1-001.zip | GG1.zip
+BP269,BP269,,COLOR,azul | negro | rojo | verde,4,azul:6; negro:6; rojo:6; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,26,26,2,BP-20261009T225340Z-1-001.zip | GG1.zip
+BP272,BP272,,COLOR,azul | negro | rojo | verde,4,azul:2; negro:2; rojo:5; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,13,13,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+BP276,BP276,,COLOR,azul | blanco | gris | rojo,4,azul:2; blanco:4; gris:3; rojo:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,13,13,1,BP-20261009T225340Z-1-001.zip
+BP309,BP309,,COLOR,azul | blanco | gris | negro,4,azul:6; blanco:6; gris:6; negro:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,31,31,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+BP318,BP318,,COLOR,azul | blanco | negro | rojo,4,azul:4; blanco:4; negro:4; rojo:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,22,22,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+BP327,BP327,,COLOR,azul | blanco | negro | rosa,4,azul:4; blanco:4; negro:4; rosa:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,21,21,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+BP343,BP343,,COLOR,azul | gris | plata | rojo,4,azul:4; gris:4; plata:4; rojo:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,19,19,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+C477,C477,,COLOR,azul | gris | rojo | verde,4,azul:4; gris:4; rojo:4; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,15,15,2,Archivo(1).zip | GG2.zip
+C515,C515,,COLOR,amarillo | naranja | negro | rosa,4,amarillo:2; naranja:1; negro:2; rosa:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,13,13,2,Archivo(1).zip | GG2.zip
+C526,C526,,COLOR,azul | blanco | negro | rojo,4,azul:3; blanco:3; negro:3; rojo:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,14,14,2,GG1.zip | cc1.zip
+C541,C541,,COLOR,negro | rojo | royal | verde,4,negro:3; rojo:3; royal:3; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,16,16,3,Archivo(1).zip | GG1.zip | GG2.zip
+C578,C578,,COLOR,azul | cyan | negro | rojo,4,azul:9; cyan:9; negro:9; rojo:9,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,37,37,1,cc3.zip
+EC729,EC729,,COLOR,azul | negro | plata | rojo,4,azul:5; negro:5; plata:5; rojo:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,31,30,3,EC2.zip | GG1.zip | GG2.zip
+EC742,EC742,,COLOR,azul | cyan | gris | rosa,4,azul:4; cyan:3; gris:6; rosa:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,30,30,2,EC2.zip | GG2.zip
+G110,G110,Mushroom,COLOR,amarillo | naranja | rojo | verde,4,amarillo:3; naranja:3; rojo:3; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,14,8,1,GATO-20261009T225629Z-1-001(1).zip
+G140,G140,Urban 1,COLOR,azul | gris | negro | rojo,4,azul:15; gris:31; negro:5; rojo:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,51,51,2,GATO-20261009T225629Z-1-001(1).zip | GG2.zip
+G149,G149,Canar Led String,COLOR,blanco | cyan | morado | rosa,4,blanco:3; cyan:3; morado:3; rosa:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,17,12,2,GATO-20261009T225629Z-1-001(1).zip | GG1.zip
+G158,G158,Balloon Techo M,COLOR,azul | fucsia | naranja | rojo,4,azul:5; fucsia:5; naranja:5; rojo:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,20,17,1,GATO-20261009T225629Z-1-001(1).zip
+G191,G191,Central,COLOR,aqua | gris | negro | rojo,4,aqua:4; gris:4; negro:4; rojo:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,16,13,1,GATO-20261009T225629Z-1-001(1).zip
+G197,G197,Llaveros ALFABETO,COLOR,blanco | oro | plata | rosa,4,blanco:5; oro:45; plata:4; rosa:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,52,52,1,GATO-20261009T225629Z-1-001(1).zip
+G232,G232,Urban 15,COLOR,azul | gris | negro | rojo,4,azul:3; gris:10; negro:3; rojo:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,42,42,2,GATO-20261009T225629Z-1-001(1).zip | GG2.zip
+G264,G264,Urban 5,COLOR,azul | gris | negro | rojo,4,azul:4; gris:12; negro:9; rojo:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,25,25,3,GATO-20261009T225629Z-1-001(1).zip | GG1.zip | GG2.zip
+G271,G271,Power Slim,COLOR,aqua | blanco | negro | rosa,4,aqua:8; blanco:5; negro:5; rosa:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,28,28,2,GATO-20261009T225629Z-1-001(1).zip | GG2.zip
+T164,T164,,COLOR,azul | negro | rojo | verde,4,azul:3; negro:3; rojo:4; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,18,18,3,GG1.zip | GG2.zip | ttt1.zip
+T277,T277,,COLOR,azul | negro | plata | rojo,4,azul:4; negro:5; plata:5; rojo:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,23,23,2,GG2.zip | tttt1.zip
+T339,T339,,COLOR,cyan | rojo | turquesa | verde,4,cyan:1; rojo:3; turquesa:2; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,9,9,1,tttt1.zip
+T362,T362,,COLOR,azul | blanco | naranja | rojo,4,azul:4; blanco:4; naranja:4; rojo:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,19,19,3,GG1.zip | GG2.zip | tttt1.zip
+T427,T427,,COLOR,azul | blanco | rojo | verde,4,azul:2; blanco:4; rojo:4; verde:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,16,16,2,GG2.zip | ttt1.zip
+T456,T456,,COLOR,azul | gris | rojo | verde,4,azul:3; gris:3; rojo:3; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,15,15,3,GG1.zip | GG2.zip | ttt2.zip
+T461,T461,,COLOR,azul | blanco | negro | rojo,4,azul:6; blanco:3; negro:3; rojo:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,19,19,4,GG1.zip | GG2.zip | T21.zip | ttt2.zip
+T473,T473,,COLOR,azul | gris | rojo | verde,4,azul:2; gris:2; rojo:2; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,9,9,2,GG1.zip | tt5.zip
+T543,T543,,COLOR,azul | blanco | negro | rojo,4,azul:5; blanco:5; negro:5; rojo:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,22,22,3,GG1.zip | T21.zip | ttt2.zip
+T564,T564,,COLOR,azul | blanco | negro | royal,4,azul:1; blanco:5; negro:4; royal:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,24,24,3,GG1.zip | GG2.zip | ttt2.zip
+T566,T566,,COLOR,azul | negro | rojo | verde,4,azul:5; negro:5; rojo:5; verde:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,29,29,4,EC2.zip | GG1.zip | GG2.zip | ttt2.zip
+T575,T575,,COLOR,azul | blanco | negro | rojo,4,azul:4; blanco:4; negro:2; rojo:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,33,33,4,GG1.zip | GG2.zip | T21.zip | ttt2.zip
+T586,T586,,COLOR,azul | negro | rojo | verde,4,azul:1; negro:1; rojo:1; verde:1,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,14,14,2,T21.zip | T24.zip
+T602,T602,,COLOR,azul | blanco | negro | rojo,4,azul:5; blanco:6; negro:5; rojo:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,30,20,3,GG1.zip | GG2.zip | T24.zip
+T608,T608,,COLOR,azul | negro | plata | rojo,4,azul:7; negro:7; plata:6; rojo:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,40,40,3,GG1.zip | GG2.zip | T23.zip
+T614,T614,,COLOR,azul | blanco | negro | rojo,4,azul:11; blanco:12; negro:11; rojo:11,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,51,51,2,GG2.zip | T23.zip
+T615,T615,,COLOR,azul | blanco | negro | verde,4,azul:7; blanco:7; negro:7; verde:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,35,35,3,GG1.zip | GG2.zip | T21.zip
+T627,T627,,COLOR,azul | gris | negro | royal,4,azul:11; gris:8; negro:9; royal:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,43,43,2,GG2.zip | T24.zip
+T637,T637,,COLOR,marino | negro | rojo | royal,4,marino:7; negro:7; rojo:7; royal:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,30,30,1,T21.zip
+T641,T641,,COLOR,azul | blanco | gris | negro,4,azul:5; blanco:6; gris:6; negro:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,28,28,2,GG2.zip | T21.zip
+T646,T646,,COLOR,azul | blanco | negro | rojo,4,azul:6; blanco:6; negro:6; rojo:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,36,36,2,GG2.zip | T21.zip
+T649,T649,,COLOR,azul | gris | negro | rojo,4,azul:5; gris:5; negro:5; rojo:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,26,26,2,GG2.zip | T22.zip
+T653,T653,,COLOR,cyan | humo | rojo | transparente,4,cyan:5; humo:5; rojo:5; transparente:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,26,26,3,GG2.zip | T21.zip | T22.zip
+T659,T659,,COLOR,azul | blanco | negro | rojo,4,azul:7; blanco:7; negro:7; rojo:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,30,30,3,GG1.zip | GG2.zip | T23.zip
+T671,T671,,COLOR,azul | negro | rojo | verde,4,azul:7; negro:7; rojo:7; verde:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,30,30,2,GG2.zip | T23.zip
+T679,T679,,COLOR,azul | blanco | negro | plata,4,azul:7; blanco:8; negro:8; plata:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,36,36,2,GG2.zip | T23.zip
+T686,T686,,COLOR,azul | gris | negro | rojo,4,azul:6; gris:6; negro:6; rojo:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,27,27,2,GG2.zip | T23.zip
+T701,T701,,COLOR,azul | gris | negro | rosa,4,azul:7; gris:13; negro:7; rosa:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,43,43,2,GG2.zip | T23.zip
+T702,T702,,COLOR,azul | gris | negro | rosa,4,azul:7; gris:14; negro:7; rosa:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,43,43,2,GG2.zip | T22.zip
+T726,T726,,COLOR,azul | negro | rojo | verde,4,azul:8; negro:8; rojo:8; verde:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,36,36,2,GG2.zip | T23.zip
+T743,T743,,COLOR,aqua | cyan | gris | rosa,4,aqua:8; cyan:8; gris:8; rosa:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,36,36,2,GG2.zip | T23.zip
+T764,T764,,COLOR,azul | blanco | gris | negro,4,azul:8; blanco:8; gris:8; negro:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,36,36,2,GG1.zip | T25.zip
+T765,T765,,COLOR,azul | blanco | gris | negro,4,azul:6; blanco:5; gris:6; negro:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,28,28,2,GG1.zip | T25.zip
+T788,T788,,COLOR,gris | marino | royal | verde,4,gris:19; marino:14; royal:14; verde:14,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,61,61,2,GG2.zip | T21.zip
+T789,T789,,COLOR,gris | marino | royal | verde,4,gris:6; marino:9; royal:8; verde:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,39,39,2,GG2.zip | T21.zip
+T794,T794,,COLOR,azul | blanco | negro | rojo,4,azul:7; blanco:7; negro:7; rojo:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,30,30,3,GG1.zip | GG2.zip | T24.zip
+T804,T804,,COLOR,azul | blanco | plata | rojo,4,azul:3; blanco:3; plata:3; rojo:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,16,16,3,GG1.zip | GG2.zip | T25.zip
+T807,T807,,COLOR,azul | blanco | negro | verde,4,azul:8; blanco:8; negro:8; verde:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,38,38,2,GG2.zip | T23.zip
+T809,T809,,COLOR,azul | beige | marino | negro,4,azul:1; beige:7; marino:6; negro:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,23,23,3,GG1.zip | GG2.zip | T24.zip
+T810,T810,,COLOR,azul | gris | rojo | rosa,4,azul:8; gris:8; rojo:9; rosa:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,35,35,2,GG1.zip | T24.zip
+U306,U306,,COLOR,azul | negro | rojo | turquesa,4,azul:4; negro:4; rojo:4; turquesa:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,8,8,1,U-20261009T225750Z-1-001(1).zip
+U311,U311,,COLOR,azul | morado | negro | rojo,4,azul:6; morado:6; negro:6; rojo:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,16,16,3,GG1.zip | GG2.zip | U-20261009T225750Z-1-001(1).zip
+U322,U322,,COLOR,azul | blanco | negro | rojo,4,azul:18; blanco:34; negro:18; rojo:20,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,41,41,3,GG1.zip | GG2.zip | U-20261009T225750Z-1-001(1).zip
+U326,U326,,COLOR,azul | gris | rojo | royal,4,azul:2; gris:18; rojo:18; royal:16,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,29,29,3,GG1.zip | GG2.zip | U-20261009T225750Z-1-001(1).zip
+BP216,BP216,,COLOR,blanco | negro | plata,3,blanco:2; negro:4; plata:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,9,9,2,BP-20261009T225340Z-1-001.zip | GG1.zip
+BP229,BP229,,COLOR,negro | rojo | verde,3,negro:4; rojo:2; verde:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,9,9,1,BP-20261009T225340Z-1-001.zip
+BP253,BP253,,COLOR,azul | negro | plata,3,azul:5; negro:2; plata:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,21,21,2,BP-20261009T225340Z-1-001.zip | GG1.zip
+BP254,BP254,,COLOR,azul | negro | plata,3,azul:4; negro:5; plata:9,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,19,19,2,BP-20261009T225340Z-1-001.zip | GG1.zip
+BP299,BP299,,COLOR,azul | gris | negro,3,azul:4; gris:4; negro:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,16,16,2,BP-20261009T225340Z-1-001.zip | GG2.zip
+BP304,BP304,,COLOR,azul | gris | negro,3,azul:5; gris:5; negro:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,20,20,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+BP316,BP316,,COLOR,azul | blanco | negro,3,azul:3; blanco:3; negro:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,13,13,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+BP322,BP322,,COLOR,gris | negro | rojo,3,gris:3; negro:4; rojo:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,13,13,2,BP-20261009T225340Z-1-001.zip | GG2.zip
+BP324,BP324,,COLOR,azul | blanco | negro,3,azul:4; blanco:4; negro:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,14,14,2,BP-20261009T225340Z-1-001.zip | GG2.zip
+BP344,BP344,,COLOR,azul | negro | rojo,3,azul:4; negro:3; rojo:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,12,12,2,BP-20261009T225340Z-1-001.zip | R-20261009T225719Z-1-001(1).zip
+C509,C509,,COLOR,azul | negro | rojo,3,azul:4; negro:4; rojo:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,13,13,2,Archivo(1).zip | GG1.zip
+C510,C510,,COLOR,azul | gris | rojo,3,azul:4; gris:4; rojo:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,16,16,3,GG1.zip | GG2.zip | cc3.zip
+C511,C511,,COLOR,azul | gris | negro,3,azul:7; gris:7; negro:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,24,24,3,GG1.zip | GG2.zip | cc1.zip
+C543,C543,,COLOR,gris | marino | negro,3,gris:9; marino:4; negro:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,24,23,2,GG1.zip | cc3.zip
+C553,C553,,COLOR,azul | gris | negro,3,azul:5; gris:9; negro:1,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,23,23,2,GG1.zip | cc1.zip
+C556,C556,,COLOR,gris | marino | negro,3,gris:12; marino:6; negro:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,24,24,2,GG2.zip | cc3.zip
+C562,C562,,COLOR,azul | gris | negro,3,azul:7; gris:9; negro:9,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,27,27,2,GG2.zip | cc2.zip
+C568,C568,,COLOR,azul | negro | rojo,3,azul:9; negro:9; rojo:9,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,31,31,2,GG2.zip | cc2.zip
+C576,C576,,COLOR,azul | gris | negro,3,azul:13; gris:14; negro:12,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,45,43,2,GG2.zip | cc1.zip
+C579,C579,,COLOR,azul | gris | negro,3,azul:8; gris:8; negro:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,28,28,2,GG2.zip | cc1.zip
+C582,C582,,COLOR,azul | gris | negro,3,azul:11; gris:11; negro:10,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,34,34,2,GG2.zip | cc1.zip
+C584,C584,,COLOR,azul | gris | negro,3,azul:5; gris:5; negro:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,19,19,1,cc2.zip
+C591,C591,,COLOR,cyan | gris | verde,3,cyan:8; gris:8; verde:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,27,27,2,GG2.zip | cc2.zip
+C596,C596,,COLOR,azul | beige | gris,3,azul:7; beige:8; gris:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,24,24,2,GG2.zip | cc2.zip
+EC686,EC686,,COLOR,azul | negro | rojo,3,azul:5; negro:3; rojo:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,13,13,2,EC2.zip | GG1.zip
+EC692,EC692,,COLOR,blanco | negro | rojo,3,blanco:2; negro:2; rojo:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,8,8,2,EC2.zip | GG2.zip
+EC709,EC709,,COLOR,azul | gris | rojo,3,azul:8; gris:4; rojo:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,26,26,2,EC2.zip | GG1.zip
+EC731,EC731,,COLOR,azul | blanco | rojo,3,azul:5; blanco:5; rojo:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,19,18,2,EC1.zip | GG1.zip
+G166,G166,Letters 1,COLOR,amarillo | blanco | negro,3,amarillo:3; blanco:3; negro:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,14,10,1,GATO-20261009T225629Z-1-001(1).zip
+G167,G167,Letter Board,COLOR,blanco | negro | oro,3,blanco:6; negro:24; oro:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,39,28,2,GATO-20261009T225629Z-1-001(1).zip | GG1.zip
+G200,G200,Owl,COLOR,azul | rojo | rosa,3,azul:4; rojo:4; rosa:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,15,15,2,GATO-20261009T225629Z-1-001(1).zip | GG1.zip
+G215,G215,,COLOR,azul | royal | verde,3,azul:3; royal:3; verde:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,9,9,1,G-20261009T225541Z-1-001(1).zip
+G217,G217,,COLOR,blanco | rojo | royal,3,blanco:3; rojo:3; royal:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,9,9,1,G-20261009T225541Z-1-001(1).zip
+G236,G236,Don Gato,COLOR,gris | rosa | turquesa,3,gris:10; rosa:5; turquesa:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,21,18,2,GATO-20261009T225629Z-1-001(1).zip | GG1.zip
+G260,G260,Power Blade,COLOR,azul | negro | turquesa,3,azul:7; negro:7; turquesa:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,25,23,2,GATO-20261009T225629Z-1-001(1).zip | GG2.zip
+G261,G261,Eggy,COLOR,aqua | gris | rosa,3,aqua:7; gris:16; rosa:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,38,38,3,GATO-20261009T225629Z-1-001(1).zip | GG1.zip | GG2.zip
+G262,G262,Rubber,COLOR,aqua | gris | rojo,3,aqua:2; gris:2; rojo:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,9,9,2,GATO-20261009T225629Z-1-001(1).zip | GG2.zip
+G263,G263,Urban 4,COLOR,azul | gris | negro,3,azul:11; gris:12; negro:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,32,32,2,GATO-20261009T225629Z-1-001(1).zip | GG2.zip
+G267,G267,Gema,COLOR,aqua | gris | rosa,3,aqua:6; gris:8; rosa:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,41,31,3,GATO-20261009T225629Z-1-001(1).zip | GG1.zip | GG2.zip
+G276,G276,Velvet,COLOR,gris | rosa | verde,3,gris:7; rosa:7; verde:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,32,31,2,GATO-20261009T225629Z-1-001(1).zip | GG1.zip
+G277,G277,Oslo,COLOR,aqua | azul | rojo,3,aqua:2; azul:2; rojo:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,13,13,2,GATO-20261009T225629Z-1-001(1).zip | GG2.zip
+G292,G292,66 U Card,COLOR,azul | gris | negro,3,azul:7; gris:21; negro:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,36,36,2,GATO-20261009T225629Z-1-001(1).zip | GG2.zip
+G306,G306,Sphere,COLOR,aqua | gris | rosa,3,aqua:1; gris:1; rosa:1,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,7,7,2,GATO-20261009T225629Z-1-001(1).zip | GG2.zip
+G307,G307,Ó 1000ml,COLOR,azul | rojo | verde,3,azul:1; rojo:1; verde:1,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,7,7,2,GATO-20261009T225629Z-1-001(1).zip | GG2.zip
+G308,G308,Ó 750ml,COLOR,azul | rojo | verde,3,azul:1; rojo:1; verde:1,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,6,6,1,GATO-20261009T225629Z-1-001(1).zip
+G323,G323,Inox,COLOR,azul | gris | negro,3,azul:7; gris:15; negro:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,31,31,1,GATO-20261009T225629Z-1-001(1).zip
+G90,G90,Apollo,COLOR,azul | blanco | rojo,3,azul:5; blanco:6; rojo:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,16,14,1,GATO-20261009T225629Z-1-001(1).zip
+T232,T232,,COLOR,amarillo | azul | naranja,3,amarillo:7; azul:4; naranja:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,16,16,2,GG2.zip | ttt2.zip
+T290,T290,,COLOR,azul | beige | rojo,3,azul:2; beige:2; rojo:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,12,12,2,GG2.zip | tt5.zip
+T350,T350,,COLOR,azul | negro | rojo,3,azul:4; negro:4; rojo:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,20,17,2,GG1.zip | tt5.zip
+T371,T371,,COLOR,azul | blanco | rojo,3,azul:3; blanco:2; rojo:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,11,11,2,GG1.zip | ttt1.zip
+T389,T389,,COLOR,azul | blanco | rojo,3,azul:2; blanco:2; rojo:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,10,10,2,GG1.zip | ttt1.zip
+T408,T408,,COLOR,azul | blanco | rojo,3,azul:4; blanco:4; rojo:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,15,15,3,GG1.zip | GG2.zip | tt5.zip
+T410,T410,,COLOR,azul | blanco | rojo,3,azul:4; blanco:4; rojo:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,15,15,2,GG1.zip | tt5.zip
+T424,T424,,COLOR,azul | blanco | rojo,3,azul:2; blanco:1; rojo:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,9,9,3,GG1.zip | GG2.zip | ttt1.zip
+T428,T428,,COLOR,azul | rojo | verde,3,azul:5; rojo:5; verde:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,19,19,3,GG1.zip | GG2.zip | tt5.zip
+T472,T472,,COLOR,azul | negro | rojo,3,azul:3; negro:3; rojo:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,12,12,2,GG1.zip | ttt2.zip
+T494,T494,,COLOR,azul | blanco | rojo,3,azul:5; blanco:3; rojo:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,14,14,2,GG2.zip | ttt2.zip
+T526,T526,,COLOR,blanco | negro | plata,3,blanco:5; negro:5; plata:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,24,24,3,GG1.zip | GG2.zip | ttt2.zip
+T555,T555,,COLOR,beige | cyan | gris,3,beige:5; cyan:5; gris:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,16,16,2,GG1.zip | ttt2.zip
+T559,T559,,COLOR,beige | cyan | gris,3,beige:6; cyan:6; gris:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,18,18,1,ttt2.zip
+T567,T567,,COLOR,azul | negro | rojo,3,azul:2; negro:2; rojo:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,7,7,2,GG2.zip | ttt1.zip
+T569,T569,,COLOR,azul | negro | rojo,3,azul:3; negro:3; rojo:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,13,13,2,GG2.zip | ttt1.zip
+T581,T581,,COLOR,azul | negro | rojo,3,azul:1; negro:1; rojo:1,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,3,3,1,T25.zip
+T588,T588,,COLOR,azul | rojo | transparente,3,azul:2; rojo:2; transparente:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,7,7,1,T21.zip
+T607,T607,,COLOR,azul | blanco | transparente,3,azul:7; blanco:1; transparente:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,19,18,2,GG2.zip | T24.zip
+T643,T643,,COLOR,azul | blanco | negro,3,azul:7; blanco:7; negro:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,27,27,2,GG2.zip | tttt1.zip
+T657,T657,,COLOR,azul | blanco | negro,3,azul:9; blanco:9; negro:9,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,34,34,2,GG2.zip | T23.zip
+T669,T669,,COLOR,azul | blanco | negro,3,azul:4; blanco:5; negro:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,21,21,2,GG2.zip | T24.zip
+T682,T682,,COLOR,azul | blanco | negro,3,azul:5; blanco:5; negro:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,17,17,2,GG2.zip | T24.zip
+T690,T690,,COLOR,azul | blanco | rojo,3,azul:10; blanco:10; rojo:10,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,32,32,2,GG2.zip | T21.zip
+T693,T693,,COLOR,azul | gris | rosa,3,azul:9; gris:9; rosa:9,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,30,30,2,GG2.zip | T23.zip
+T694,T694,,COLOR,azul | gris | rosa,3,azul:8; gris:8; rosa:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,26,26,2,GG2.zip | T23.zip
+T699,T699,,COLOR,azul | blanco | negro,3,azul:6; blanco:6; negro:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,20,20,3,GG1.zip | GG2.zip | T24.zip
+T716,T716,,COLOR,azul | negro | rojo,3,azul:4; negro:4; rojo:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,19,19,2,GG2.zip | T25.zip
+T719,T719,,COLOR,blanco | humo | negro,3,blanco:2; humo:2; negro:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,229,229,4,GG1.zip | GG2.zip | T21.zip | tttt1.zip
+T729,T729,,COLOR,azul | blanco | gris,3,azul:9; blanco:9; gris:9,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,29,29,2,GG2.zip | T23.zip
+T730,T730,,COLOR,azul | gris | negro,3,azul:10; gris:10; negro:10,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,33,33,2,GG2.zip | T23.zip
+T733,T733,,COLOR,azul | blanco | negro,3,azul:6; blanco:4; negro:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,27,27,2,GG2.zip | T23.zip
+T747,T747,,COLOR,azul | plata | rojo,3,azul:6; plata:6; rojo:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,21,21,3,GG1.zip | GG2.zip | T25.zip
+T756,T756,,COLOR,azul | beige | gris,3,azul:15; beige:14; gris:15,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,50,50,2,GG2.zip | T21.zip
+T758,T758,,COLOR,negro | rojo | royal,3,negro:8; rojo:8; royal:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,26,25,2,GG1.zip | T24.zip
+T762,T762,,COLOR,azul | blanco | negro,3,azul:7; blanco:8; negro:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,24,24,2,GG1.zip | T24.zip
+T763,T763,,COLOR,azul | blanco | negro,3,azul:5; blanco:5; negro:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,17,17,2,GG1.zip | T25.zip
+T776,T776,,COLOR,blanco | marino | negro,3,blanco:6; marino:5; negro:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,21,21,2,GG2.zip | T24.zip
+T777,T777,,COLOR,aqua | azul | negro,3,aqua:6; azul:6; negro:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,21,21,2,GG2.zip | T25.zip
+T778,T778,,COLOR,cyan | gris | rosa,3,cyan:8; gris:8; rosa:9,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,29,29,2,GG2.zip | T24.zip
+T779,T779,,COLOR,azul | negro | rosa,3,azul:13; negro:13; rosa:14,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,46,46,2,GG2.zip | T24.zip
+T795,T795,,COLOR,amarillo | naranja | verde,3,amarillo:10; naranja:6; verde:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,23,23,3,GG1.zip | GG2.zip | T21.zip
+T798,T798,,COLOR,azul | rojo | verde,3,azul:11; rojo:11; verde:11,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,49,49,2,GG2.zip | T22.zip
+T805,T805,,COLOR,azul | blanco | rojo,3,azul:3; blanco:3; rojo:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,11,11,2,GG2.zip | T25.zip
+U310,U310,,COLOR,naranja | rojo | verde,3,naranja:4; rojo:4; verde:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,6,6,1,U-20261009T225750Z-1-001(1).zip
+U317,U317,,COLOR,azul | blanco | rojo,3,azul:4; blanco:4; rojo:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,13,13,3,GG1.zip | GG2.zip | U-20261009T225750Z-1-001(1).zip
+U319,U319,,COLOR,azul | blanco | rojo,3,azul:22; blanco:22; rojo:22,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,37,37,2,GG1.zip | U-20261009T225750Z-1-001(1).zip
+U321,U321,,COLOR,azul | blanco | negro,3,azul:6; blanco:6; negro:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,11,11,2,GG1.zip | U-20261009T225750Z-1-001(1).zip
+BP165,BP165,,COLOR,rojo | verde,2,rojo:2; verde:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,5,5,2,BP-20261009T225340Z-1-001.zip | GG1.zip
+BP273,BP273,,COLOR,azul | negro,2,azul:1; negro:1,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,3,3,1,BP-20261009T225340Z-1-001.zip
+BP277,BP277,,COLOR,blanco | negro,2,blanco:2; negro:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,5,5,2,BP-20261009T225340Z-1-001.zip | GG1.zip
+BP282,BP282,,COLOR,gris | plata,2,gris:2; plata:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,7,7,1,BP-20261009T225340Z-1-001.zip
+BP336,BP336,,COLOR,azul | negro,2,azul:7; negro:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,15,15,2,BP-20261009T225340Z-1-001.zip | GG1.zip
+C431,C431,,COLOR,azul | negro,2,azul:3; negro:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,9,9,1,cc2.zip
+C481,C481,,COLOR,negro | rojo,2,negro:1; rojo:1,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,4,4,1,Archivo(1).zip
+C535,C535,,COLOR,azul | gris,2,azul:4; gris:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,10,10,2,GG2.zip | cc3.zip
+C539,C539,,COLOR,gris | negro,2,gris:4; negro:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,8,8,1,Archivo(1).zip
+C558,C558,,COLOR,gris | negro,2,gris:13; negro:11,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,27,27,2,GG2.zip | cc1.zip
+C563,C563,,COLOR,gris | negro,2,gris:12; negro:12,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,26,26,2,GG2.zip | cc2.zip
+C567,C567,,COLOR,azul | gris,2,azul:7; gris:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,16,16,2,GG2.zip | cc2.zip
+C572,C572,,COLOR,marino | negro,2,marino:7; negro:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,16,16,2,GG1.zip | cc2.zip
+C577,C577,,COLOR,azul | gris,2,azul:8; gris:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,18,18,2,GG2.zip | cc2.zip
+C583,C583,,COLOR,azul | beige,2,azul:7; beige:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,34,34,2,Archivo(1).zip | GG2.zip
+C597,C597,,COLOR,caqui | negro,2,caqui:18; negro:19,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,40,40,2,Archivo(1).zip | GG2.zip
+C599,C599,,COLOR,azul | gris,2,azul:9; gris:9,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,22,22,2,GG2.zip | cc2.zip
+C602,C602,,COLOR,azul | gris,2,azul:9; gris:9,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,20,20,2,GG2.zip | cc2.zip
+EC698,EC698,,COLOR,blanco | plata,2,blanco:3; plata:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,5,4,1,EC1.zip
+EC699,EC699,,COLOR,blanco | negro,2,blanco:2; negro:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,4,4,1,EC2.zip
+EC710,EC710,,COLOR,negro | plata,2,negro:2; plata:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,7,7,1,EC2.zip
+EC713,EC713,,COLOR,negro | plata,2,negro:2; plata:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,9,8,2,EC2.zip | GG1.zip
+EC728,EC728,,COLOR,negro | plata,2,negro:5; plata:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,11,11,2,EC2.zip | GG2.zip
+EC732,EC732,,COLOR,blanco | negro,2,blanco:5; negro:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,12,12,2,EC2.zip | GG1.zip
+EC736,EC736,,COLOR,blanco | negro,2,blanco:5; negro:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,18,17,2,EC2.zip | GG2.zip
+EC748,EC748,,COLOR,blanco | negro,2,blanco:11; negro:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,39,31,2,EC2.zip | GG1.zip
+EC755,EC755,,COLOR,gris | negro,2,gris:7; negro:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,21,20,2,EC2.zip | GG2.zip
+EC764,EC764,,COLOR,blanco | negro,2,blanco:9; negro:11,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,21,21,2,EC2.zip | GG2.zip
+EC765,EC765,,COLOR,azul | gris,2,azul:9; gris:18,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,32,32,2,EC2.zip | GG2.zip
+EC774,EC774,,COLOR,blanco | negro,2,blanco:10; negro:10,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,22,22,2,EC1.zip | GG1.zip
+EC781,EC781,,COLOR,negro | plata,2,negro:9; plata:9,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,29,29,2,EC2.zip | GG2.zip
+EC782,EC782,,COLOR,blanco | negro,2,blanco:13; negro:13,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,28,28,2,EC2.zip | GG1.zip
+EC786,EC786,,COLOR,negro | plata,2,negro:13; plata:13,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,29,19,2,EC2.zip | GG1.zip
+EC787,EC787,,COLOR,azul | blanco,2,azul:9; blanco:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,17,17,3,EC1.zip | GG1.zip | GG2.zip
+EC788,EC788,,COLOR,blanco | negro,2,blanco:11; negro:9,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,20,20,2,EC2.zip | GG1.zip
+G220,G220,,COLOR,azul | negro,2,azul:8; negro:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,16,16,1,G-20261009T225541Z-1-001(1).zip
+G222,G222,,COLOR,blanco | marino,2,blanco:4; marino:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,13,13,1,G-20261009T225541Z-1-001(1).zip
+G224,G224,,COLOR,gris | marino,2,gris:9; marino:9,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,18,18,1,G-20261009T225541Z-1-001(1).zip
+G275,G275,Silk,COLOR,gris | rosa,2,gris:7; rosa:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,32,31,3,GATO-20261009T225629Z-1-001(1).zip | GG1.zip | GG2.zip
+G325,G325,,COLOR,gris | negro,2,gris:20; negro:10,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,22,22,2,GATO-20261009T225629Z-1-001(1).zip | GG2.zip
+G47,G47,Flash,COLOR,amarillo | fucsia,2,amarillo:4; fucsia:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,10,9,3,GATO-20261009T225629Z-1-001(1).zip | GG1.zip | GG2.zip
+S03,S03,,COLOR,gris | negro,2,gris:9; negro:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,19,19,2,GG2.zip | S-20261009T225721Z-1-001(1).zip
+T172,T172,,COLOR,azul | rojo,2,azul:3; rojo:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,7,7,1,ttt1.zip
+T333,T333,,COLOR,blanco | negro,2,blanco:4; negro:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,11,11,2,GG1.zip | T21.zip
+T340,T340,,COLOR,negro | rojo,2,negro:5; rojo:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,12,12,2,GG2.zip | tttt1.zip
+T345,T345,,COLOR,morado | naranja,2,morado:5; naranja:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,12,12,2,GG1.zip | tt5.zip
+T405,T405,,COLOR,azul | plata,2,azul:3; plata:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,9,9,2,GG2.zip | ttt1.zip
+T432,T432,,COLOR,azul | rojo,2,azul:1; rojo:1,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,15,15,4,GG1.zip | GG2.zip | T21.zip | ttt1.zip
+T433,T433,,COLOR,azul | negro,2,azul:3; negro:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,7,7,2,GG2.zip | ttt1.zip
+T437,T437,,COLOR,azul | rojo,2,azul:2; rojo:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,4,4,1,ttt1.zip
+T439,T439,,COLOR,blanco | negro,2,blanco:4; negro:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,10,10,2,GG1.zip | tt5.zip
+T443,T443,,COLOR,azul | gris,2,azul:3; gris:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,8,8,2,GG1.zip | ttt1.zip
+T460,T460,,COLOR,beige | negro,2,beige:2; negro:2,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,4,4,1,tt5.zip
+T524,T524,,COLOR,azul | rojo,2,azul:1; rojo:1,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,23,23,3,GG1.zip | T21.zip | ttt1.zip
+T534,T534,,COLOR,blanco | negro,2,blanco:1; negro:1,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,20,20,3,GG1.zip | T21.zip | ttt1.zip
+T561,T561,,COLOR,blanco | negro,2,blanco:5; negro:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,11,11,2,GG1.zip | ttt1.zip
+T563,T563,,COLOR,blanco | negro,2,blanco:6; negro:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,21,21,4,GG1.zip | GG2.zip | T21.zip | ttt1.zip
+T570,T570,,COLOR,azul | negro,2,azul:1; negro:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,MEDIUM,11,11,1,tt5.zip
+T591,T591,,COLOR,cyan | transparente,2,cyan:11; transparente:9,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,24,20,3,GG1.zip | GG2.zip | T23.zip
+T592,T592,,COLOR,azul | gris,2,azul:11; gris:13,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,39,38,3,GG2.zip | T23.zip | ttt2.zip
+T610,T610,,COLOR,blanco | negro,2,blanco:5; negro:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,15,14,3,GG1.zip | GG2.zip | T25.zip
+T625,T625,,COLOR,blanco | negro,2,blanco:11; negro:18,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,36,36,2,GG2.zip | T22.zip
+T664,T664,,COLOR,gris | negro,2,gris:9; negro:9,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,21,21,2,GG2.zip | T24.zip
+T677,T677,,COLOR,blanco | negro,2,blanco:7; negro:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,19,19,2,GG2.zip | T24.zip
+T688,T688,,COLOR,negro | rosa,2,negro:11; rosa:11,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,39,38,4,GG1.zip | GG2.zip | T24.zip | T25.zip
+T692,T692,,COLOR,lila | rosa,2,lila:6; rosa:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,16,16,3,GG1.zip | GG2.zip | T25.zip
+T698,T698,,COLOR,blanco | gris,2,blanco:10; gris:10,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,22,22,2,GG2.zip | T24.zip
+T703,T703,,COLOR,azul | negro,2,azul:9; negro:9,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,29,29,2,GG2.zip | T24.zip
+T705,T705,,COLOR,azul | negro,2,azul:6; negro:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,12,12,1,T24.zip
+T709,T709,,COLOR,gris | negro,2,gris:7; negro:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,17,17,2,GG2.zip | T24.zip
+T710,T710,,COLOR,gris | rosa,2,gris:11; rosa:11,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,24,24,2,GG2.zip | T23.zip
+T718,T718,,COLOR,azul | gris,2,azul:11; gris:22,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,37,37,2,GG2.zip | T22.zip
+T732,T732,,COLOR,blanco | negro,2,blanco:5; negro:5,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,12,12,2,GG2.zip | T24.zip
+T737,T737,,COLOR,gris | negro,2,gris:8; negro:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,18,18,2,GG1.zip | T25.zip
+T744,T744,,COLOR,azul | negro,2,azul:7; negro:6,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,16,16,2,GG2.zip | T24.zip
+T766,T766,,COLOR,azul | gris,2,azul:10; gris:10,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,23,23,3,GG1.zip | GG2.zip | T25.zip
+T771,T771,,COLOR,gris | negro,2,gris:7; negro:7,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,17,17,2,GG2.zip | T24.zip
+T775,T775,,COLOR,azul | gris,2,azul:10; gris:10,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,21,21,1,T24.zip
+T837,T837,,COLOR,negro | plata,2,negro:8; plata:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,16,16,1,T23.zip
+T88,T88,,COLOR,azul | gris,2,azul:3; gris:3,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,7,7,2,GG1.zip | ttt1.zip
+U308,U308,,COLOR,azul | negro,2,azul:8; negro:8,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,8,8,1,U-20261009T225750Z-1-001(1).zip
+U312,U312,,COLOR,naranja | negro,2,naranja:4; negro:4,STRONG_COLOR_VARIANT_MODEL_CANDIDATE,HIGH,4,4,1,U-20261009T225750Z-1-001(1).zip
+BP134,BP134,,COLOR_POSSIBLE,morado,1,morado:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,2,2,1,BP-20261009T225340Z-1-001.zip
+BP149,BP149,,COLOR_POSSIBLE,negro,1,negro:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,4,4,1,BP-20261009T225340Z-1-001.zip
+BP167,BP167,,COLOR_POSSIBLE,rojo,1,rojo:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,1,1,1,BP-20261009T225340Z-1-001.zip
+BP175,BP175,,COLOR_POSSIBLE,amarillo,1,amarillo:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,2,2,2,BP-20261009T225340Z-1-001.zip | GG1.zip
+BP176,BP176,,COLOR_POSSIBLE,plata,1,plata:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,2,2,1,BP-20261009T225340Z-1-001.zip
+BP185,BP185,,COLOR_POSSIBLE,azul,1,azul:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,2,2,1,BP-20261009T225340Z-1-001.zip
+BP187,BP187,,COLOR_POSSIBLE,negro,1,negro:4,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,9,9,1,BP-20261009T225340Z-1-001.zip
+BP189,BP189,,COLOR_POSSIBLE,plata,1,plata:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,4,4,1,BP-20261009T225340Z-1-001.zip
+BP195,BP195,,COLOR_POSSIBLE,azul,1,azul:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,2,2,2,BP-20261009T225340Z-1-001.zip | GG1.zip
+BP200,BP200,,COLOR_POSSIBLE,blanco,1,blanco:3,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,3,3,1,BP-20261009T225340Z-1-001.zip
+BP222,BP222,,COLOR_POSSIBLE,rojo,1,rojo:3,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,3,3,1,BP-20261009T225340Z-1-001.zip
+BP226,BP226,,COLOR_POSSIBLE,negro,1,negro:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,7,7,1,BP-20261009T225340Z-1-001.zip
+BP231,BP231,,COLOR_POSSIBLE,negro,1,negro:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,6,6,1,BP-20261009T225340Z-1-001.zip
+BP236,BP236,,COLOR_POSSIBLE,rojo,1,rojo:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,1,1,1,BP-20261009T225340Z-1-001.zip
+BP255,BP255,,COLOR_POSSIBLE,plata,1,plata:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,3,3,1,BP-20261009T225340Z-1-001.zip
+BP260,BP260,,COLOR_POSSIBLE,negro,1,negro:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,2,2,1,BP-20261009T225340Z-1-001.zip
+BP262,BP262,,COLOR_POSSIBLE,negro,1,negro:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,4,4,1,BP-20261009T225340Z-1-001.zip
+BP263,BP263,,COLOR_POSSIBLE,negro,1,negro:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,4,4,1,BP-20261009T225340Z-1-001.zip
+BP265,BP265,,COLOR_POSSIBLE,negro,1,negro:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,4,4,1,BP-20261009T225340Z-1-001.zip
+BP267,BP267,,COLOR_POSSIBLE,naranja,1,naranja:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,2,2,1,BP-20261009T225340Z-1-001.zip
+BP279,BP279,,COLOR_POSSIBLE,plata,1,plata:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,2,2,1,BP-20261009T225340Z-1-001.zip
+BP280,BP280,,COLOR_POSSIBLE,gris,1,gris:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,6,6,1,BP-20261009T225340Z-1-001.zip
+BP281,BP281,,COLOR_POSSIBLE,negro,1,negro:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,5,5,1,BP-20261009T225340Z-1-001.zip
+BP283,BP283,,COLOR_POSSIBLE,negro,1,negro:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,5,5,1,BP-20261009T225340Z-1-001.zip
+BP284,BP284,,COLOR_POSSIBLE,negro,1,negro:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,3,3,1,BP-20261009T225340Z-1-001.zip
+BP286,BP286,,COLOR_POSSIBLE,negro,1,negro:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,4,4,1,BP-20261009T225340Z-1-001.zip
+BP287,BP287,,COLOR_POSSIBLE,negro,1,negro:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,4,4,1,BP-20261009T225340Z-1-001.zip
+BP288,BP288,,COLOR_POSSIBLE,negro,1,negro:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,4,4,1,BP-20261009T225340Z-1-001.zip
+BP289,BP289,,COLOR_POSSIBLE,negro,1,negro:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,5,5,1,BP-20261009T225340Z-1-001.zip
+BP290,BP290,,COLOR_POSSIBLE,negro,1,negro:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,4,4,1,BP-20261009T225340Z-1-001.zip
+BP292,BP292,,COLOR_POSSIBLE,negro,1,negro:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,4,4,1,BP-20261009T225340Z-1-001.zip
+BP293,BP293,,COLOR_POSSIBLE,gris,1,gris:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,6,6,1,BP-20261009T225340Z-1-001.zip
+C412,C412,,COLOR_POSSIBLE,negro,1,negro:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,4,4,1,Archivo(1).zip
+C474,C474,,COLOR_POSSIBLE,azul,1,azul:3,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,3,3,1,Archivo(1).zip
+C488,C488,,COLOR_POSSIBLE,negro,1,negro:4,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,4,4,1,Archivo(1).zip
+C492,C492,,COLOR_POSSIBLE,azul,1,azul:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,1,1,1,Archivo(1).zip
+C494,C494,,COLOR_POSSIBLE,gris,1,gris:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,7,7,1,cc2.zip
+C495,C495,,COLOR_POSSIBLE,gris,1,gris:4,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,8,8,1,cc2.zip
+C502,C502,,COLOR_POSSIBLE,rojo,1,rojo:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,2,2,1,Archivo(1).zip
+C513,C513,,COLOR_POSSIBLE,negro,1,negro:4,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,5,5,2,Archivo(1).zip | GG2.zip
+C517,C517,,COLOR_POSSIBLE,gris,1,gris:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,7,7,1,cc1.zip
+C521,C521,,COLOR_POSSIBLE,gris,1,gris:4,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,4,4,1,cc2.zip
+C522,C522,,COLOR_POSSIBLE,gris,1,gris:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,2,2,1,Archivo(1).zip
+C528,C528,,COLOR_POSSIBLE,negro,1,negro:3,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,3,3,1,Archivo(1).zip
+C557,C557,,COLOR_POSSIBLE,negro,1,negro:5,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,7,7,1,Archivo(1).zip
+C560,C560,,COLOR_POSSIBLE,gris,1,gris:9,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,9,9,1,Archivo(1).zip
+EC667,EC667,,COLOR_POSSIBLE,plata,1,plata:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,2,2,1,EC1.zip
+EC697,EC697,,COLOR_POSSIBLE,rojo,1,rojo:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,2,2,1,EC1.zip
+EC720,EC720,,COLOR_POSSIBLE,naranja,1,naranja:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,8,8,1,EC2.zip
+EC778,EC778,,COLOR_POSSIBLE,negro,1,negro:7,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,16,16,2,EC2.zip | GG2.zip
+EN24,EN24,,COLOR_POSSIBLE,vino,1,vino:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,12,11,1,EN-20261009T225514Z-1-001(1).zip
+G290,G290,66 U KIT,COLOR_POSSIBLE,gris,1,gris:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,20,20,2,GATO-20261009T225629Z-1-001(1).zip | GG2.zip
+G301,G301,Round,COLOR_POSSIBLE,gris,1,gris:7,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,23,23,2,GATO-20261009T225629Z-1-001(1).zip | GG1.zip
+G326,G326,,COLOR_POSSIBLE,gris,1,gris:20,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,22,22,2,GATO-20261009T225629Z-1-001(1).zip | GG2.zip
+K5,K5,,COLOR_POSSIBLE,negro,1,negro:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,82,57,2,GG2.zip | K2.zip
+T253,T253,,COLOR_POSSIBLE,blanco,1,blanco:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,1,1,1,T21.zip
+T260,T260,,COLOR_POSSIBLE,plata,1,plata:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,2,2,1,ttt1.zip
+T324,T324,,COLOR_POSSIBLE,azul,1,azul:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,3,3,1,ttt1.zip
+T398,T398,,COLOR_POSSIBLE,amarillo,1,amarillo:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,2,2,2,GG1.zip | T21.zip
+T422,T422,,COLOR_POSSIBLE,blanco,1,blanco:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,14,14,4,GG1.zip | GG2.zip | T21.zip | ttt1.zip
+T485,T485,,COLOR_POSSIBLE,azul,1,azul:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,1,1,1,T21.zip
+T488,T488,,COLOR_POSSIBLE,vino,1,vino:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,5,5,2,T21.zip | ttt1.zip
+T489,T489,,COLOR_POSSIBLE,vino,1,vino:6,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,8,8,1,ttt1.zip
+T492,T492,,COLOR_POSSIBLE,rojo,1,rojo:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,7,7,3,GG1.zip | T21.zip | ttt1.zip
+T497,T497,,COLOR_POSSIBLE,vino,1,vino:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,4,4,1,ttt1.zip
+T499,T499,,COLOR_POSSIBLE,cafe,1,cafe:3,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,6,6,1,tt5.zip
+T501,T501,,COLOR_POSSIBLE,vino,1,vino:3,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,5,5,1,ttt1.zip
+T533,T533,,COLOR_POSSIBLE,blanco,1,blanco:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,6,6,1,ttt1.zip
+T546,T546,,COLOR_POSSIBLE,blanco,1,blanco:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,6,6,1,ttt1.zip
+T549,T549,,COLOR_POSSIBLE,cafe,1,cafe:2,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,6,6,1,tt5.zip
+T601,T601,,COLOR_POSSIBLE,cafe,1,cafe:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,5,5,2,GG1.zip | T24.zip
+T603,T603,,COLOR_POSSIBLE,blanco,1,blanco:5,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,14,14,1,T23.zip
+T642,T642,,COLOR_POSSIBLE,blanco,1,blanco:7,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,17,17,2,GG2.zip | T23.zip
+T651,T651,,COLOR_POSSIBLE,azul,1,azul:7,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,16,16,2,GG2.zip | T22.zip
+T667,T667,,COLOR_POSSIBLE,vino,1,vino:17,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,17,17,1,T22.zip
+T673,T673,,COLOR_POSSIBLE,vino,1,vino:14,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,14,14,1,T24.zip
+T680,T680,T665T,COLOR_POSSIBLE,plata,1,plata:8,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,163,163,4,GG1.zip | GG2.zip | T25.zip | ttt2.zip
+T708,T708,,COLOR_POSSIBLE,vino,1,vino:15,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,15,15,1,T24.zip
+T727,T727,,COLOR_POSSIBLE,gris,1,gris:24,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,28,28,2,GG2.zip | T23.zip
+T736,T736,,COLOR_POSSIBLE,blanco,1,blanco:1,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,7,7,1,T25.zip
+T752,T752,,COLOR_POSSIBLE,negro,1,negro:7,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,18,18,3,GG1.zip | GG2.zip | T25.zip
+T760,T760,,COLOR_POSSIBLE,rosa,1,rosa:6,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,22,22,2,GG2.zip | T22.zip
+T799,T799,,COLOR_POSSIBLE,transparente,1,transparente:6,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,6,6,1,T25.zip
+T800,T800,,COLOR_POSSIBLE,transparente,1,transparente:7,POSSIBLE_SINGLE_COLOR_OR_INCOMPLETE_VARIANT_EVIDENCE,LOW,7,7,1,T25.zip
+BP169,BP169,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,BP-20261009T225340Z-1-001.zip
+BP181,BP181,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,BP-20261009T225340Z-1-001.zip
+BP192,BP192,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,BP-20261009T225340Z-1-001.zip
+BP218,BP218,(1),,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,BP-20261009T225340Z-1-001.zip
+BP225,BP225,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,BP-20261009T225340Z-1-001.zip
+BP232,BP232,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,BP-20261009T225340Z-1-001.zip
+BP235,BP235,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,BP-20261009T225340Z-1-001.zip
+BP242,BP242,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,GG2.zip
+BP252,BP252,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,BP-20261009T225340Z-1-001.zip
+BP258,BP258,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,BP-20261009T225340Z-1-001.zip
+BP261,BP261,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,BP-20261009T225340Z-1-001.zip
+BP270,BP270,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,BP-20261009T225340Z-1-001.zip
+BP271,BP271,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,BP-20261009T225340Z-1-001.zip
+BP275,BP275,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,BP-20261009T225340Z-1-001.zip
+BP294,BP294,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,11,11,1,BP-20261009T225340Z-1-001.zip
+BP296,BP296,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,BP-20261009T225340Z-1-001.zip
+BP297,BP297,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,BP-20261009T225340Z-1-001.zip
+BP301,BP301,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,BP-20261009T225340Z-1-001.zip
+BP302,BP302,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,BP-20261009T225340Z-1-001.zip
+BP303,BP303,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,BP-20261009T225340Z-1-001.zip
+BP305,BP305,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,BP-20261009T225340Z-1-001.zip
+BP306,BP306,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,BP-20261009T225340Z-1-001.zip
+BP308,BP308,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,BP-20261009T225340Z-1-001.zip
+BP310,BP310,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,BP-20261009T225340Z-1-001.zip
+BP313,BP313,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,14,14,1,BP-20261009T225340Z-1-001.zip
+BP315,BP315,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,BP-20261009T225340Z-1-001.zip
+BP317,BP317,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,BP-20261009T225340Z-1-001.zip
+BP320,BP320,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,BP-20261009T225340Z-1-001.zip
+BP321,BP321,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,BP-20261009T225340Z-1-001.zip
+BP326,BP326,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,BP-20261009T225340Z-1-001.zip
+BP331,BP331,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,BP-20261009T225340Z-1-001.zip
+BP332,BP332,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,BP-20261009T225340Z-1-001.zip
+BP339,BP339,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,BP-20261009T225340Z-1-001.zip
+BP340,BP340,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,BP-20261009T225340Z-1-001.zip
+BP341,BP341,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,BP-20261009T225340Z-1-001.zip
+BP342,BP342,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,13,13,1,BP-20261009T225340Z-1-001.zip
+BP345,BP345,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,3,BP-20261009T225340Z-1-001.zip | GG1.zip | GG2.zip
+C400,C400,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,Archivo(1).zip
+C482,C482,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,Archivo(1).zip
+C501,C501,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,Archivo(1).zip
+C508,C508,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,Archivo(1).zip
+C514,C514,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,Archivo(1).zip
+C518,C518,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,cc2.zip
+C520,C520,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,Archivo(1).zip
+C523,C523,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,cc3.zip
+C524,C524,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,cc2.zip
+C531,C531,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,cc3.zip
+C533,C533,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,Archivo(1).zip
+C534,C534,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,cc2.zip
+C536,C536,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,cc2.zip
+C538,C538,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,Archivo(1).zip
+C542,C542,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,Archivo(1).zip
+C544,C544,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,Archivo(1).zip
+C545,C545,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,Archivo(1).zip
+C547,C547,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,Archivo(1).zip
+C550,C550,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,cc3.zip
+C551,C551,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,cc3.zip
+C559,C559,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,11,11,1,Archivo(1).zip
+C561,C561,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,10,10,1,Archivo(1).zip
+C564,C564,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,42,22,3,GG1.zip | GG2.zip | cc2.zip
+C565,C565,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,42,22,3,GG1.zip | GG2.zip | cc2.zip
+C566,C566,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,Archivo(1).zip
+C569,C569,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,Archivo(1).zip
+C573,C573,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,8,1,Archivo(1).zip
+C575,C575,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,11,11,1,cc2.zip
+C580,C580,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,cc2.zip
+C581,C581,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,cc2.zip
+C585,C585,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,Archivo(1).zip
+C586,C586,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,Archivo(1).zip
+C588,C588,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,13,13,1,Archivo(1).zip
+C589,C589,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,13,13,1,Archivo(1).zip
+C590,C590,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,11,11,1,Archivo(1).zip
+C592,C592,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,Archivo(1).zip
+C593,C593,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,Archivo(1).zip
+C594,C594,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,Archivo(1).zip
+C595,C595,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,Archivo(1).zip
+C600,C600,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,13,13,1,cc2.zip
+C601,C601,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,13,13,1,cc2.zip
+EC660,EC660,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,EC1.zip
+EC661,EC661,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,EC1.zip
+EC669,EC669,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,EC1.zip
+EC671,EC671,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,EC1.zip
+EC673,EC673,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,EC1.zip
+EC677,EC677,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,EC1.zip
+EC678,EC678,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,EC2.zip
+EC681,EC681,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,EC2.zip
+EC683,EC683,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,EC1.zip
+EC691,EC691,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,EC2.zip
+EC693,EC693,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,EC1.zip
+EC696,EC696,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,EC1.zip
+EC700,EC700,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,EC1.zip
+EC702,EC702,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,11,11,1,EC2.zip
+EC703,EC703,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,EC1.zip
+EC705,EC705,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,EC1.zip
+EC706,EC706,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,EC2.zip
+EC708,EC708,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,EC1.zip
+EC712,EC712,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,EC1.zip
+EC714,EC714,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,EC2.zip
+EC716,EC716,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,EC1.zip
+EC717,EC717,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,EC1.zip
+EC719,EC719,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,EC1.zip
+EC722,EC722,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,EC1.zip
+EC723,EC723,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,EC2.zip
+EC724,EC724,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,EC1.zip
+EC725,EC725,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,EC1.zip
+EC726,EC726,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,EC1.zip
+EC727,EC727,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,EC2.zip
+EC730,EC730,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,EC1.zip
+EC734,EC734,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,EC1.zip
+EC737,EC737,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,EC2.zip
+EC738,EC738,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,EC1.zip
+EC739,EC739,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,EC2.zip
+EC740,EC740,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,EC1.zip
+EC741,EC741,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,EC2.zip
+EC743,EC743,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,EC2.zip
+EC744,EC744,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,EC1.zip
+EC745,EC745,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,EC2.zip
+EC746,EC746,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,EC2.zip
+EC747,EC747,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,EC2.zip
+EC749,EC749,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,EC1.zip
+EC750,EC750,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,14,14,1,EC2.zip
+EC752,EC752,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,EC2.zip
+EC756,EC756,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,10,10,1,EC2.zip
+EC757,EC757,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,18,18,1,EC2.zip
+EC758,EC758,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,EC1.zip
+EC759,EC759,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,12,1,EC1.zip
+EC760,EC760,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,12,1,EC1.zip
+EC761,EC761,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,11,11,1,EC1.zip
+EC762,EC762,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,10,10,1,EC1.zip
+EC763,EC763,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,11,11,1,EC2.zip
+EC766,EC766,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,12,1,EC1.zip
+EC767,EC767,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,EC1.zip
+EC768,EC768,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,12,1,EC1.zip
+EC769,EC769,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,10,10,1,EC1.zip
+EC770,EC770,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,EC2.zip
+EC771,EC771,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,EC1.zip
+EC772,EC772,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,12,1,EC1.zip
+EC773,EC773,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,11,11,1,EC2.zip
+EC775,EC775,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,EC1.zip
+EC776,EC776,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,11,11,1,EC2.zip
+EC777,EC777,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,18,18,1,EC2.zip
+EC779,EC779,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,13,13,1,EC2.zip
+EC780,EC780,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,EC1.zip
+EC783,EC783,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,14,14,1,EC1.zip
+EC785,EC785,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,EC1.zip
+EC789,EC789,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,10,10,1,EC2.zip
+EC790,EC790,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,16,16,1,EC2.zip
+EC791,EC791,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,EC1.zip
+EC792,EC792,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,12,1,EC2.zip
+EC793,EC793,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,12,1,EC2.zip
+EC794,EC794,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,13,13,1,EC2.zip
+EC795,EC795,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,10,10,1,EC2.zip
+EN1,EN1,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,EN-20261009T225514Z-1-001(1).zip
+EN13,EN13,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,EN-20261009T225514Z-1-001(1).zip
+EN15,EN15,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,EN-20261009T225514Z-1-001(1).zip
+EN17,EN17,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,EN-20261009T225514Z-1-001(1).zip
+EN18,EN18,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,EN-20261009T225514Z-1-001(1).zip
+EN19,EN19,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,EN-20261009T225514Z-1-001(1).zip
+EN20,EN20,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,18,18,1,EN-20261009T225514Z-1-001(1).zip
+EN21,EN21,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,12,1,EN-20261009T225514Z-1-001(1).zip
+EN22,EN22,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,10,10,1,EN-20261009T225514Z-1-001(1).zip
+EN23,EN23,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,EN-20261009T225514Z-1-001(1).zip
+EN25,EN25,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,10,10,1,EN-20261009T225514Z-1-001(1).zip
+EN7,EN7,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,EN-20261009T225514Z-1-001(1).zip
+G103,G103,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,GG1.zip
+G118,G118,MY TYPE,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,74,74,1,GATO-20261009T225629Z-1-001(1).zip
+G122,G122,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,GG2.zip
+G204,G204,40 Gambeta,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,10,10,1,GATO-20261009T225629Z-1-001(1).zip
+G205,G205,01 Big Misty,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,GATO-20261009T225629Z-1-001(1).zip
+G206,G206,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,71,51,2,GATO-20261009T225629Z-1-001(1).zip | GG1.zip
+G207,G207,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,71,51,2,GATO-20261009T225629Z-1-001(1).zip | GG1.zip
+G209,G209,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,71,51,2,GATO-20261009T225629Z-1-001(1).zip | GG1.zip
+G210,G210,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,71,51,2,GATO-20261009T225629Z-1-001(1).zip | GG1.zip
+G231,G231,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,23,23,1,GATO-20261009T225629Z-1-001(1).zip
+G239,G239,00 Hexa 4,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,11,11,1,GATO-20261009T225629Z-1-001(1).zip
+G240,G240,00 Hexa 5,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,13,13,1,GATO-20261009T225629Z-1-001(1).zip
+G241,G241,00 Hexa 6,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,14,14,1,GATO-20261009T225629Z-1-001(1).zip
+G256,G256,01 Pixie,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,GATO-20261009T225629Z-1-001(1).zip
+G257,G257,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,GG2.zip
+G259,G259,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,GG2.zip
+G265,G265,06 Ultra,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,GATO-20261009T225629Z-1-001(1).zip
+G266,G266,16 Zipping,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,15,15,1,GATO-20261009T225629Z-1-001(1).zip
+G278,G278,01 Rainbow,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,GATO-20261009T225629Z-1-001(1).zip
+G279,G279,11 Group,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,10,7,1,GATO-20261009T225629Z-1-001(1).zip
+G280,G280,11 Paste,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,GATO-20261009T225629Z-1-001(1).zip
+G282,G282,00 Notes,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,GATO-20261009T225629Z-1-001(1).zip
+G284,G284,Home office,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,GATO-20261009T225629Z-1-001(1).zip
+G286,G286,Home Calendario,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,GATO-20261009T225629Z-1-001(1).zip
+G287,G287,Home office,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,GATO-20261009T225629Z-1-001(1).zip
+G288,G288,Home office,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,GATO-20261009T225629Z-1-001(1).zip
+G291,G291,U Tech,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,2,GATO-20261009T225629Z-1-001(1).zip | GG2.zip
+G294,G294,UCell,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,GATO-20261009T225629Z-1-001(1).zip
+G296,G296,16 Buddies,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,13,13,1,GATO-20261009T225629Z-1-001(1).zip
+G303,G303,Big misty,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,GATO-20261009T225629Z-1-001(1).zip
+G305,G305,02 Bond,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,17,17,1,GATO-20261009T225629Z-1-001(1).zip
+G310,G310,U Hang,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,GATO-20261009T225629Z-1-001(1).zip
+G311,G311,Woodesk,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,GATO-20261009T225629Z-1-001(1).zip
+G312,G312,Frost 500ml,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,GATO-20261009T225629Z-1-001(1).zip
+G313,G313,Frost 1000ml,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,GATO-20261009T225629Z-1-001(1).zip
+G314,G314,Flex,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,GATO-20261009T225629Z-1-001(1).zip
+G315,G315,Puzzle,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,14,11,1,GATO-20261009T225629Z-1-001(1).zip
+G321,G321,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,25,25,3,GATO-20261009T225629Z-1-001(1).zip | GG1.zip | GG2.zip
+G618,G618,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,GG2.zip
+G7,G7,09 Open Bar,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,GATO-20261009T225629Z-1-001(1).zip
+G70,G70,WALL POCKET,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,GATO-20261009T225629Z-1-001(1).zip
+G91,G91,40 Cork Cooler,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,GATO-20261009T225629Z-1-001(1).zip
+K1,K1,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,16,10,2,K1.zip | K2.zip
+K10,K10,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,38,38,2,GG2.zip | K1.zip
+K101,K101,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,74,39,4,GG1.zip | GG2.zip | K1.zip | K2.zip
+K102,K102,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,26,16,2,K1.zip | K2.zip
+K103,K103,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,132,105,3,GG1.zip | GG2.zip | K2.zip
+K104,K104,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,24,16,2,K1.zip | K2.zip
+K105,K105,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,24,16,2,K1.zip | K2.zip
+K106,K106,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,53,53,2,GG2.zip | K1.zip
+K107,K107,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,K1.zip
+K108,K108,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,K1.zip
+K109,K109,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,78,78,2,GG2.zip | K2.zip
+K11,K11,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,18,18,1,K1.zip
+K110,K110,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,68,68,2,GG2.zip | K2.zip
+K111,K111,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,13,13,1,K1.zip
+K112,K112,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,26,26,3,GG1.zip | GG2.zip | K1.zip
+K113,K113,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,59,59,1,K2.zip
+K12,K12,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,12,1,K1.zip
+K13,K13,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,28,28,2,GG2.zip | K1.zip
+K14,K14,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,10,10,1,K1.zip
+K15,K15,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,31,30,2,GG2.zip | K2.zip
+K16,K16,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,14,14,1,K1.zip
+K17,K17,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,K1.zip
+K18,K18,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,14,14,1,K1.zip
+K19,K19,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,16,16,1,K1.zip
+K2,K2,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,32,17,1,K2.zip
+K20,K20,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,32,32,2,GG2.zip | K2.zip
+K21,K21,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,29,29,2,GG2.zip | K2.zip
+K22,K22,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,15,15,1,K1.zip
+K23,K23,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,16,16,1,K1.zip
+K24,K24,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,19,19,1,K1.zip
+K25,K25,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,K1.zip
+K26,K26,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,12,1,K1.zip
+K3,K3,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,33,16,1,K2.zip
+K4,K4,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,18,10,2,K1.zip | K2.zip
+K6,K6,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,40,28,3,GG2.zip | K1.zip | K2.zip
+K7,K7,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,21,11,2,K1.zip | K2.zip
+K8,K8,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,24,24,2,GG2.zip | K1.zip
+K9,K9,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,13,13,1,K1.zip
+R103,R103,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,R-20261009T225719Z-1-001(1).zip
+R105,R105,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,R-20261009T225719Z-1-001(1).zip
+R71,R71,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,R-20261009T225719Z-1-001(1).zip
+R89,R89,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,R-20261009T225719Z-1-001(1).zip
+S01,S01,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,15,15,1,S-20261009T225721Z-1-001(1).zip
+S02,S02,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,15,15,1,S-20261009T225721Z-1-001(1).zip
+T123,T123,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,T21.zip
+T130,T130,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,ttt1.zip
+T163,T163,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,tt5.zip
+T169,T169,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T175,T175,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T176,T176,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,ttt1.zip
+T183,T183,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T187,T187,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,ttt1.zip
+T189,T189,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,ttt1.zip
+T213,T213,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,T21.zip
+T215,T215,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,T21.zip
+T226,T226,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,11,3,GG1.zip | GG2.zip | ttt1.zip
+T227,T227,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,T21.zip
+T238,T238,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,ttt1.zip
+T241,T241,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,ttt1.zip
+T246,T246,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,ttt1.zip
+T247,T247,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,ttt1.zip
+T279,T279,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,GG1.zip
+T282,T282,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,T21.zip
+T289,T289,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,ttt1.zip
+T291,T291,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,ttt1.zip
+T292,T292,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,6,1,ttt1.zip
+T303,T303,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,ttt1.zip
+T307,T307,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,2,GG1.zip | ttt1.zip
+T312,T312,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T319,T319,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,T21.zip
+T321,T321,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,T21.zip
+T325,T325,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,ttt1.zip
+T326,T326,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,T21.zip
+T328,T328,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,T24.zip
+T348,T348,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,ttt1.zip
+T351,T351,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,T25.zip
+T353,T353,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,ttt1.zip
+T357,T357,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,ttt1.zip
+T361,T361,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,ttt1.zip
+T364,T364,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,ttt1.zip
+T370,T370,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T380,T380,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T384,T384,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,ttt1.zip
+T385,T385,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T386,T386,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,3,GG1.zip | GG2.zip | ttt1.zip
+T393,T393,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,ttt1.zip
+T397,T397,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T40,T40,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,tt5.zip
+T404,T404,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T406,T406,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T407,T407,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,ttt1.zip
+T4088,T4088,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,T21.zip
+T409,T409,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,ttt1.zip
+T411,T411,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,2,GG1.zip | ttt1.zip
+T412,T412,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T414,T414,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,11,11,2,GG2.zip | ttt1.zip
+T415,T415,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,tt5.zip
+T416,T416,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,ttt1.zip
+T419,T419,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T420,T420,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,ttt1.zip
+T423,T423,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T429,T429,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,2,GG1.zip | ttt1.zip
+T436,T436,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,ttt1.zip
+T438,T438,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,ttt1.zip
+T445,T445,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,16,15,2,T21.zip | ttt2.zip
+T446,T446,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,ttt1.zip
+T451,T451,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T452,T452,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T453,T453,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,ttt1.zip
+T458,T458,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,T24.zip
+T459,T459,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,ttt1.zip
+T462,T462,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,ttt1.zip
+T463,T463,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T464,T464,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,ttt1.zip
+T465,T465,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,tt5.zip
+T466,T466,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,ttt1.zip
+T468,T468,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,T25.zip
+T470,T470,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,ttt1.zip
+T471,T471,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T474,T474,(1),,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,11,8,2,T22.zip | ttt2.zip
+T476,T476,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,2,T21.zip | ttt1.zip
+T478,T478,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,ttt1.zip
+T48,T48,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,ttt1.zip
+T481,T481,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,tt5.zip
+T487,T487,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T490,T490,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,ttt1.zip
+T491,T491,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T493,T493,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,4,2,T21.zip | ttt1.zip
+T496,T496,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,ttt1.zip
+T502,T502,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,ttt1.zip
+T503,T503,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,ttt1.zip
+T504,T504,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T505,T505,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,ttt1.zip
+T506,T506,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,2,T21.zip | ttt1.zip
+T508,T508,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,ttt1.zip
+T510,T510,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,ttt1.zip
+T511,T511,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,ttt1.zip
+T512,T512,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,ttt1.zip
+T513,T513,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T514,T514,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,tt5.zip
+T516,T516,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,T21.zip
+T517,T517,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,ttt1.zip
+T518,T518,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,6,2,tt5.zip | ttt1.zip
+T519,T519,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,2,GG1.zip | ttt1.zip
+T520,T520,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,56,56,5,GG1.zip | GG2.zip | T21.zip | tt5.zip | ttt1.zip
+T521,T521,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,188,182,7,GG1.zip | GG2.zip | T21.zip | T22.zip | tt5.zip | ttt1.zip | ttt2.zip
+T523,T523,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,ttt1.zip
+T527,T527,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,ttt1.zip
+T528,T528,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,ttt2.zip
+T531,T531,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,2,T21.zip | ttt1.zip
+T532,T532,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,2,T21.zip | ttt1.zip
+T535,T535,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,ttt1.zip
+T536,T536,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,ttt1.zip
+T537,T537,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,ttt1.zip
+T538,T538,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,145,131,5,GG1.zip | GG2.zip | T21.zip | ttt1.zip | ttt2.zip
+T539,T539,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,78,77,5,GG1.zip | GG2.zip | T21.zip | T22.zip | tt5.zip
+T540,T540,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,82,82,5,GG1.zip | GG2.zip | T21.zip | tt5.zip | ttt1.zip
+T541,T541,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,55,55,5,GG1.zip | GG2.zip | T21.zip | ttt1.zip | ttt2.zip
+T542,T542,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,64,56,5,GG1.zip | GG2.zip | T21.zip | ttt1.zip | ttt2.zip
+T548,T548,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,2,T21.zip | ttt1.zip
+T551,T551,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,ttt1.zip
+T552,T552,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,2,T21.zip | ttt1.zip
+T553,T553,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,ttt1.zip
+T554,T554,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,2,T21.zip | tt5.zip
+T556,T556,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,2,T21.zip | ttt1.zip
+T557,T557,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,ttt1.zip
+T558,T558,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,2,T21.zip | ttt1.zip
+T560,T560,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,tt5.zip
+T562,T562,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,tt5.zip
+T565,T565,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,tt5.zip
+T568,T568,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,tt5.zip
+T57,T57,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,ttt1.zip
+T571,T571,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,11,2,GG2.zip | ttt2.zip
+T572,T572,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,ttt1.zip
+T574,T574,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,ttt2.zip
+T578,T578,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,11,11,2,T21.zip | ttt1.zip
+T589,T589,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,T21.zip
+T590,T590,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,14,14,2,GG1.zip | T24.zip
+T594,T594,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,6,1,T23.zip
+T595,T595,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,T24.zip
+T596,T596,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,4,2,GG2.zip | T25.zip
+T597,T597,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,T25.zip
+T599,T599,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,15,9,1,T25.zip
+T6,T6,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,ttt1.zip
+T604,T604,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,7,1,T23.zip
+T605,T605,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,T24.zip
+T609,T609,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,T25.zip
+T611,T611,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,1,1,1,T21.zip
+T612,T612,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,2,GG1.zip | GG2.zip
+T613,T613,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,T21.zip
+T620,T620,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,T21.zip
+T621,T621,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,T24.zip
+T623,T623,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,T25.zip
+T628,T628,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,14,14,1,T23.zip
+T629,T629,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,15,15,1,T24.zip
+T630,T630,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,T21.zip
+T631,T631,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,T25.zip
+T633,T633,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,T24.zip
+T634,T634,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,12,1,T23.zip
+T635,T635,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,T25.zip
+T636,T636,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,T25.zip
+T638,T638,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,T25.zip
+T647,T647,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,T24.zip
+T648,T648,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,T25.zip
+T652,T652,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,10,10,1,T24.zip
+T655,T655,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,T25.zip
+T656,T656,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,13,13,1,T24.zip
+T660,T660,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,T21.zip
+T661,T661,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,T21.zip
+T663,T663,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,T24.zip
+T666,T666,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,T25.zip
+T668,T668,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,16,16,1,T25.zip
+T670,T670,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,T23.zip
+T672,T672,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,12,1,T24.zip
+T674,T674,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,15,15,1,T25.zip
+T675,T675,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,15,15,1,T25.zip
+T681,T681,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,T24.zip
+T683,T683,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,12,1,T24.zip
+T684,T684,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,17,17,1,T25.zip
+T685,T685,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,11,11,1,T24.zip
+T689,T689,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,15,15,1,T25.zip
+T691,T691,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,13,13,1,T24.zip
+T695,T695,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,10,10,1,T24.zip
+T696,T696,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,T25.zip
+T697,T697,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,T25.zip
+T7,T7,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,374,372,2,T21.zip | ttt1.zip
+T706,T706,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,11,11,1,T23.zip
+T707,T707,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,T24.zip
+T711,T711,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,T24.zip
+T712,T712,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,10,10,1,T24.zip
+T713,T713,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,T25.zip
+T714,T714,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,T25.zip
+T715,T715,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,T23.zip
+T717,T717,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,10,10,1,T25.zip
+T720,T720,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,365,365,6,GG1.zip | GG2.zip | T21.zip | T25.zip | ttt2.zip | tttt1.zip
+T721,T721,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,14,14,1,T24.zip
+T722,T722,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,15,15,1,T24.zip
+T724,T724,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,13,13,1,T24.zip
+T725,T725,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,13,13,1,T24.zip
+T728,T728,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,18,9,1,T23.zip
+T734,T734,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,T25.zip
+T735,T735,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,10,10,1,T24.zip
+T738,T738,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,12,1,T24.zip
+T739,T739,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,10,10,1,T24.zip
+T74,T74,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,6,1,ttt1.zip
+T742,T742,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,11,11,1,T24.zip
+T745,T745,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,11,11,1,T25.zip
+T746,T746,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,T24.zip
+T748,T748,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,T21.zip
+T749,T749,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,T21.zip
+T753,T753,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,T25.zip
+T754,T754,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,T21.zip
+T755,T755,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,T21.zip
+T757,T757,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,T24.zip
+T759,T759,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,15,15,1,T24.zip
+T761,T761,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,11,11,1,T25.zip
+T767,T767,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,14,14,1,T25.zip
+T768,T768,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,13,13,1,T25.zip
+T769,T769,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,T21.zip
+T770,T770,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,11,11,1,T21.zip
+T772,T772,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,12,1,T24.zip
+T780,T780,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,T21.zip
+T781,T781,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,T21.zip
+T784,T784,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,66,55,2,GG1.zip | T24.zip
+T785,T785,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,56,43,2,GG1.zip | T24.zip
+T786,T786,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,7,7,1,T21.zip
+T787,T787,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,14,14,1,T24.zip
+T791,T791,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,T24.zip
+T792,T792,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,T21.zip
+T793,T793,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,68,57,2,GG1.zip | T24.zip
+T796,T796,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,12,1,T24.zip
+T797,T797,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,56,43,2,GG1.zip | T24.zip
+T801,T801,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,T25.zip
+T802,T802,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,6,6,1,T21.zip
+T803,T803,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,T25.zip
+T806,T806,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,T25.zip
+T808,T808,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,13,13,1,T23.zip
+T811,T811,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,T25.zip
+T812,T812,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,31,31,2,GG2.zip | T24.zip
+T813,T813,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,15,15,3,GG1.zip | GG2.zip | T25.zip
+T814,T814,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,9,9,1,T25.zip
+T815,T815,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,12,1,T25.zip
+T817,T817,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,12,1,T24.zip
+T820,T820,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,5,5,1,T25.zip
+T821,T821,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,4,4,1,T25.zip
+T822,T822,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,8,8,1,T25.zip
+T87,T87,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,2,2,1,T21.zip
+T883,T883,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,12,12,1,T24.zip
+T92,T92,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,14,14,3,GG1.zip | GG2.zip | ttt1.zip
+U318,U318,,,,0,,NO_COLOR_VARIANT_EVIDENCE_FROM_FILENAMES,LOW,3,3,1,U-20261009T225750Z-1-001(1).zip

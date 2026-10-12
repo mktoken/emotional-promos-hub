@@ -95,3 +95,23 @@ Antes de desarrollar:
 - Super Agente Comercial: `docs/06_SUPER_AGENTE_COMERCIAL.md`.
 - Roadmap Operación Primero: `docs/07_OPERATIONS_ROADMAP.md`.
 - Certificación G4 modelo/variante Governance: `docs/catalog-governance/CHK-CATGOV-05C_G4_MODEL_MEMBERSHIP_EXECUTION_CERTIFICATION.md`.
+
+## CHK-CATGOV-05G — closed model projection backend
+
+`CHK-CATGOV-05G` is `CLOSED / PASS` for the deployed backend read model. The
+public frontend has not been cut over; the existing public catalog path
+remains authoritative.
+
+Final artifacts:
+
+- `docs/catalog-governance/CHK-CATGOV-05G_MODEL_PROJECTION_PRECHECK_V3.sql`
+- `docs/catalog-governance/CHK-CATGOV-05G_MODEL_PROJECTION_POSTCHECK_V3.sql`
+- `docs/catalog-governance/CHK-CATGOV-05G_MODEL_PROJECTION_HASH_MANIFEST_V3.md`
+- `docs/catalog-governance/CHK-CATGOV-05G_MODEL_PROJECTION_ONE_SHOT_DEPLOYMENT_CONTRACT_V3.md`
+- `docs/catalog-governance/CHK-CATGOV-05G_REPLAY_CERTIFICATION_MANIFEST_V1.md`
+- `docs/catalog-governance/CHK-CATGOV-05G_C_MODEL_PROJECTION_DEPLOYMENT_CERTIFICATION.md`
+- `docs/catalog-governance/CHK-CATGOV-05G_R2_MIGRATION_SQL_CORRECTION.md`
+
+The certified state is 8 models, 18 memberships, zero public defaults, and
+two compatible live read-only RPCs. Membership is not publication. Future
+model/variant UX requires an explicit frontend cutover checkpoint.

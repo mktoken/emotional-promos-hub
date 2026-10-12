@@ -327,3 +327,22 @@ El query executor interno de Lovable tiene `SELECT = CONFIRMED` e `INSERT = CONF
 Cada uso futuro exige archivo versionado, hash verificado, precondiciones, tablas autorizadas de alcance estrecho, postcheck, rollback y autorización explícita. No usar Supabase externo, CLI externo, migración fallback, retry automático ni un segundo APPLY.
 
 Build 3 quedó `CLOSED / PASS`; el siguiente paso autorizado es `G4 PILOT HUMAN REVIEW`. No realizar nuevas escrituras hasta aprobar el plan de revisión humana.
+
+## CHK-CATGOV-05G — operación del backend de proyección modelo
+
+Estado: **CLOSED / PASS** para backend; el frontend público permanece sin
+cutover.
+
+Reglas operativas:
+
+- No reaplicar `drizzle/migrations/0007_catalog_model_public_projection_v1.sql`.
+- `PRECHECK_V3` debe devolver `ALREADY_APPLIED` después del despliegue.
+- `POSTCHECK_V3` es el artefacto de certificación de las RPCs desplegadas.
+- No establecer `is_public_default` de forma casual o automática.
+- La publicación de un modelo/default/variante requiere un checkpoint futuro
+  controlado con readiness, evidencia y rollback.
+- Membership no equivale a publicación.
+- El catálogo público existente permanece sin cambios hasta un cutover explícito.
+
+La siguiente operación no debe ejecutar migraciones, modificar defaults ni
+conectar el frontend a las nuevas RPCs sin una autorización específica.

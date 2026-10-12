@@ -2277,3 +2277,35 @@ reafirmada es `PROVIDER SKU → OFFER EVIDENCE → VARIANT → MODEL`: una card 
 futura representaría el modelo con selector de variantes, pero queda pendiente
 el contrato de proyección y su gate explícito. CDO/StockSur y ForPromotional no
 fueron modificados.
+
+## CHK-CATGOV-05G — final model public projection evidence
+
+Procedencia: `LIVE_RUNTIME_EVIDENCE_FROM_LOVABLE` para la aplicación y
+certificación live; Work verificó hashes, lineage y documentación. Este bloque
+no ejecuta ni repite SQL live.
+
+### B3 deployment and C-A/C-B certification
+
+- Canonical migration:
+  `supabase/migrations/20261011090000_catalog_model_public_projection_v1.sql`.
+- Canonical SHA-256:
+  `22c6737dec9cc16ed3981f1390234aea61165cf4a90b851ccffb882f854a3aca`.
+- Internal vehicle:
+  `drizzle/migrations/0007_catalog_model_public_projection_v1.sql`.
+- Canonical/0007 comparison: `BYTE-IDENTICAL`.
+- Logical migration count: `1`.
+- `drizzle/schema.ts`: unchanged.
+- POSTCHECK V3: `14/14 PASS`.
+- PRECHECK V3 replay: `deployment_state = ALREADY_APPLIED` and
+  `ready_to_deploy = false`.
+- Models: `8`; memberships: `18`; `is_public_default = true`: `0`;
+  duplicate defaults: `0`.
+- Search RPC: `catalog_search_model_projection_v1`, compatible/live.
+- Detail RPC: `get_model_projection_detail_v1`, compatible/live.
+- Existing `productos_publicos` and `catalog_search_products_v2`: unchanged.
+- Read-only certification writes: `0`; provider calls: `0`.
+- Frontend, routes, Storage, pricing, stock, mappings and images: unchanged.
+
+The earlier PRECHECK V2 replay conflict was caused by stale pre-R2 function
+fingerprints. PRECHECK V3 recognizes the deployed corrected bodies. No rollback
+or migration replay was performed.

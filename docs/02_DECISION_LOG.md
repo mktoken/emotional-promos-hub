@@ -58,3 +58,18 @@ Cuando una decisión sea superada, se conserva el registro y se añade una nueva
 | D-034 | 2026-10-11 | Cerrar la ejecución controlada del seed G4 de modelos y memberships como Governance live, sin proyectarlo al catálogo público | La evidencia live autorizada de 05C-B reporta precheck `READY_TO_APPLY`, 8 modelos, 18 memberships, 26 filas, postcheck PASS 13/13 y replay idempotente `ALREADY_APPLIED`; los bloqueos de imagen/identidad permanecen y no se modifican runtime, Storage ni publicación | `CHK-CATGOV-05C_G4_MODEL_MEMBERSHIP_EXECUTION_CERTIFICATION.md`, `docs/MASTER-STATE.md`, `docs/10_QA_EVIDENCE.md` | VIGENTE; proyección pública pendiente |
 
 La decisión no autoriza ejecución externa de Supabase, migraciones de fallback, nuevos APPLY sin precheck ni publicación automática. El siguiente paso es revisión humana del piloto G4.
+
+| D-035 | 2026-10-12 | Desplegar y certificar el backend de proyección pública a nivel modelo sin realizar cutover del frontend | 05G-B3, C-A y C-B confirman migración única, vehículo 0007 byte-identical, 8 modelos, 18 memberships, 0 defaults, RPCs compatibles, PRECHECK V3 `ALREADY_APPLIED` y objetos públicos existentes sin cambios | `docs/MASTER-STATE.md`, `docs/10_QA_EVIDENCE.md`, `docs/catalog-governance/CHK-CATGOV-05G_FINAL_CERTIFICATION.md` | VIGENTE |
+
+Decisiones canónicas asociadas:
+
+1. El backend de proyección modelo está desplegado; el frontend público no
+   consume todavía las nuevas RPCs.
+2. La ruta pública existente permanece como autoridad hasta un checkpoint
+   explícito de cutover.
+3. `MODEL MEMBERSHIP != PUBLICATION`; una membership nunca publica por sí sola.
+4. `is_public_default` existe, pero todos sus valores permanecen `false`.
+5. La publicación futura exige readiness explícito y selección controlada de
+   default/variante.
+6. El artefacto interno Drizzle es vehículo de despliegue y metadata, no una
+   segunda autoridad de esquema.

@@ -241,3 +241,28 @@ Las UIs `/crm/agente-qa` y `/agente-piloto` consumen el mismo panel de líneas. 
 La escritura se mantiene restringida a sesión/rol comercial e identidad QA fija. Una sesión crea/reutiliza una oportunidad por `sessionId` con todas las líneas seleccionadas; al actualizar un borrador QA, el código verifica la identidad/sesión dueña, reconsulta precio V2 del producto seleccionado y reconcilia únicamente `formal_quote_items` con marcador QA por `lineId`, actualizando, insertando o quitando líneas propias y recalculando subtotal/IVA/total. El resto de partidas se rechaza como conflicto. La cotización permanece `BORRADOR`; no hay emisión, correo, WhatsApp, impresión automática, migraciones ni nueva autoridad de precio.
 
 **Estado documentado:** **CERRADO / PASS**. Tests unitarios, tipos, lint dirigido y builds normal/QA PASS. El E2E local controlado validó catálogo real, tres líneas, sesión CRM, persistencia, oportunidad única, `COT-2026-00011` en `BORRADOR`, partidas/totales coherentes, recarga y QA visual desktop/mobile. Se corrigieron focalmente la captura de contexto multiproducto y la propagación del SKU público autoritativo. No se desplegó ni modificó producción.
+
+## Catalog Governance — model projection backend (05G)
+
+La arquitectura ahora incluye una capa de lectura desplegada, sin cutover
+público:
+
+```text
+Governance model layer
+        ↓
+model public projection RPC layer
+        ↓
+future model → variant public UX
+```
+
+El backend certificado expone `catalog_search_model_projection_v1` y
+`get_model_projection_detail_v1`. La migración lógica es única; el artefacto
+`drizzle/migrations/0007_catalog_model_public_projection_v1.sql` es solo el
+vehículo interno byte-identical, no una segunda autoridad de esquema.
+
+El estado es **DEPLOYED BACKEND READ MODEL** y **NOT YET ACTIVATED PUBLIC UX**.
+El frontend continúa consumiendo la ruta pública existente basada en
+`productos_publicos` y `catalog_search_products_v2`. No se debe inferir que
+8 modelos o 18 memberships sean publicación; `is_public_default` existe, pero
+ningún modelo tiene default público activo. El cutover requiere readiness,
+selección de variante/default y un checkpoint separado.

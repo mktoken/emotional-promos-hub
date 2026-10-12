@@ -1973,3 +1973,55 @@ trabajo futuro; este cierre no realiza cambios en esos proveedores ni en el
 runtime. **Siguiente paso:** diseñar el contrato de proyección pública a nivel
 modelo y continuar la normalización de CDO/StockSur. No modificar todavía el
 catálogo público.
+
+## CHK-CATGOV-05G-C — MODEL PUBLIC PROJECTION BACKEND DEPLOYMENT (2026-10-12)
+
+**Estado canónico:** `CLOSED / PASS`.
+
+El backend de proyección pública a nivel modelo está desplegado y certificado.
+La procedencia de la evidencia live es `LIVE_RUNTIME_EVIDENCE_FROM_LOVABLE`;
+Work únicamente reconcilió Git y documentó la certificación. No se ejecutó
+SQL live en este cierre.
+
+### Estado live certificado
+
+- Migración lógica única:
+  `supabase/migrations/20261011090000_catalog_model_public_projection_v1.sql`.
+- SHA-256 canónico:
+  `22c6737dec9cc16ed3981f1390234aea61165cf4a90b851ccffb882f854a3aca`.
+- Vehículo interno:
+  `drizzle/migrations/0007_catalog_model_public_projection_v1.sql`,
+  byte-identical al SQL canónico.
+- `drizzle/schema.ts`: sin cambios.
+- `catalog_product_model_members.is_public_default`: presente.
+- Modelos: `8`.
+- Memberships: `18`.
+- Defaults públicos verdaderos: `0`.
+- Defaults duplicados: `0`.
+- `catalog_search_model_projection_v1`: `COMPATIBLE / LIVE`.
+- `get_model_projection_detail_v1`: `COMPATIBLE / LIVE`.
+- `POSTCHECK_V3`: `14/14 PASS`.
+- Replay `PRECHECK_V3`: `ALREADY_APPLIED`; `ready_to_deploy = false`.
+- `productos_publicos`: presente y sin cambios.
+- `catalog_search_products_v2`: presente y sin cambios.
+- Efectos de escritura de la certificación: `0`.
+
+### Boundary público
+
+`MODEL MEMBERSHIP != PUBLICATION`. La existencia de memberships y de
+`is_public_default` no publica un modelo; todos los defaults permanecen en
+`false`. No se ha realizado cutover del frontend a las nuevas RPCs. El
+catálogo público continúa usando la ruta existente y sus autoridades
+`productos_publicos` y `catalog_search_products_v2`.
+
+El futuro flujo modelo → variante → oferta requiere readiness explícito,
+selección de default/variante y un checkpoint de cutover separado. No se
+alteraron frontend, rutas, precios, stock, mappings, imágenes, Storage,
+providers ni schedulers.
+
+### Lineage documental
+
+05G-A, 05G-R1, 05G-R2, B3, C-A y C-B quedan reconciliados como
+`CLOSED / PASS`. Los artefactos y hashes finales están indexados en
+`docs/catalog-governance/CHK-CATGOV-05G_MODEL_PROJECTION_HASH_MANIFEST_V3.md`
+y `CHK-CATGOV-05G_REPLAY_CERTIFICATION_MANIFEST_V1.md`.

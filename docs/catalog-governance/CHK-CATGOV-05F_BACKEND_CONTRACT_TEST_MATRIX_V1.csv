@@ -1,0 +1,19 @@
+test_id,contract_area,assertion,source,status
+05F-01,grouping,one approved model produces one MODEL_RESULT,src/lib/catalog-model-public-projection-contract.test.ts,PASS
+05F-02,deduplication,grouped members do not become duplicate model cards,src/lib/catalog-model-public-projection-contract.test.ts,PASS
+05F-03,standalone,standalone public product remains representable as VARIANT_RESULT,src/lib/catalog-model-public-projection-contract.test.ts,PASS
+05F-04,eligibility,blocked or noneligible members are excluded from selectable variants,src/lib/catalog-model-public-projection-contract.test.ts,PASS
+05F-05,siblings,eligible sibling variants retain product and SKU identity,src/lib/catalog-model-public-projection-contract.test.ts,PASS
+05F-06,commercial,price and MOQ stay in one product/variant context,src/lib/catalog-model-public-projection-contract.test.ts,PASS
+05F-07,isolation,membership joins remain scoped to the originating model,src/lib/catalog-model-public-projection-contract.test.ts,PASS
+05F-08,search,exact SKU/provider SKU resolves variant metadata,src/lib/catalog-model-public-projection-contract.test.ts,PASS
+05F-09,filter,color and material filters use eligible members,src/lib/catalog-model-public-projection-contract.test.ts,PASS
+05F-10,filter,multi-variant matches return one model result,src/lib/catalog-model-public-projection-contract.test.ts,PASS
+05F-11,default,eligible explicit default is used as model anchor,src/lib/catalog-model-public-projection-contract.test.ts,PASS
+05F-12,default,ineligible explicit default cannot bypass eligibility,src/lib/catalog-model-public-projection-contract.test.ts,PASS
+05F-13,default,missing default remains NO_EXPLICIT_DEFAULT without invented fallback,src/lib/catalog-model-public-projection-contract.test.ts,PASS
+05F-14,readiness,zero eligible variants cannot become public,src/lib/catalog-model-public-projection-contract.test.ts,PASS
+05F-15,images,identity technical visual rights and approval gates are required,src/lib/catalog-model-public-projection-contract.test.ts,PASS
+05F-16,images,SOURCE_MASTER_INSUFFICIENT cannot become a valid master,src/lib/catalog-model-public-projection-contract.test.ts,PASS
+05F-17,offers,exact offer resolution is preserved without provider identity output,src/lib/catalog-model-public-projection-contract.test.ts,PASS
+05F-18,security,SQL functions are stable read-only and have no DML path,src/lib/catalog-model-public-projection-contract.test.ts,PASS

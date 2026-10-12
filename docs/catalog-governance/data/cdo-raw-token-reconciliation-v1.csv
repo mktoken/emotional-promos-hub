@@ -1,0 +1,11 @@
+raw_token,normalized_token,source_archives,asset_count,reason_excluded_from_cleaned_universe,disposition
+C1,NOT_A_PRODUCT_TOKEN,Archivo(1).zip,66,Archive/root-folder token; not an internal provider/product code after CDO-00B path normalization.,FORMAT_ARTIFACT
+C2,NOT_A_PRODUCT_TOKEN,Archivo(1).zip,205,Archive/root-folder token; not an internal provider/product code after CDO-00B path normalization.,FORMAT_ARTIFACT
+C4,NOT_A_PRODUCT_TOKEN,Archivo(1).zip,352,Archive/root-folder token; not an internal provider/product code after CDO-00B path normalization.,FORMAT_ARTIFACT
+EC1,NOT_A_PRODUCT_TOKEN,EC1.zip,335,Archive/root-folder token; not an internal provider/product code after CDO-00B path normalization.,FORMAT_ARTIFACT
+EC2,NOT_A_PRODUCT_TOKEN,EC2.zip,709,Archive/root-folder token; not an internal provider/product code after CDO-00B path normalization.,FORMAT_ARTIFACT
+T21,NOT_A_PRODUCT_TOKEN,T21.zip,711,Archive/root-folder token; not an internal provider/product code after CDO-00B path normalization.,FORMAT_ARTIFACT
+T22,NOT_A_PRODUCT_TOKEN,T22.zip,645,Archive/root-folder token; not an internal provider/product code after CDO-00B path normalization.,FORMAT_ARTIFACT
+T23,NOT_A_PRODUCT_TOKEN,T23.zip,1000,Archive/root-folder token; not an internal provider/product code after CDO-00B path normalization.,FORMAT_ARTIFACT
+T24,NOT_A_PRODUCT_TOKEN,T24.zip,1223,Archive/root-folder token; not an internal provider/product code after CDO-00B path normalization.,FORMAT_ARTIFACT
+T25,NOT_A_PRODUCT_TOKEN,T25.zip,622,Archive/root-folder token; not an internal provider/product code after CDO-00B path normalization.,FORMAT_ARTIFACT

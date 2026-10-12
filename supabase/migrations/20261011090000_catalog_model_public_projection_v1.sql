@@ -210,7 +210,7 @@ AS $function$
       ON m.model_id = md.id
      AND m.membership_status = 'CONFIRMED'
      AND md.status = 'APPROVED'
-    LEFT JOIN public.productos_publicos pp ON pp.id = m.producto_b2b_id
+    LEFT JOIN public_products pp ON pp.id = m.producto_b2b_id
     LEFT JOIN public.producto_proveedor_ofertas o ON o.id = m.oferta_id
     LEFT JOIN public.producto_proveedor_stock os ON os.oferta_id = m.oferta_id
     LEFT JOIN public.provider_raw_products rp ON rp.id = o.provider_raw_product_id
@@ -654,7 +654,7 @@ AS $function$
       va.public_url AS variant_image_url
     FROM public.catalog_product_models md
     JOIN public.catalog_product_model_members m ON m.model_id = md.id AND m.membership_status = 'CONFIRMED' AND md.status = 'APPROVED'
-    LEFT JOIN public.productos_publicos pp ON pp.id = m.producto_b2b_id
+    LEFT JOIN public_products pp ON pp.id = m.producto_b2b_id
     LEFT JOIN public.producto_proveedor_ofertas o ON o.id = m.oferta_id
     LEFT JOIN public.producto_proveedor_stock os ON os.oferta_id = m.oferta_id
     LEFT JOIN LATERAL (

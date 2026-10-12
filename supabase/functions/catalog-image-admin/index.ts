@@ -30,7 +30,7 @@ function safePathPart(value: string): string {
 }
 
 async function sha256Hex(bytes: Uint8Array): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  const digest = await crypto.subtle.digest("SHA-256", bytes as Uint8Array<ArrayBuffer>);
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
@@ -59,7 +59,7 @@ function decodeBase64(value: string): Uint8Array | null {
 Deno.serve(async (request) => {
   const origin = request.headers.get("origin");
   if (request.method === "OPTIONS") {
-    const headers = responseHeaders(origin);
+    const headers = responseHeaders(origin) as Record<string, string>;
     headers["Access-Control-Allow-Headers"] = "authorization, content-type";
     headers["Access-Control-Allow-Methods"] = "POST, OPTIONS";
     return new Response("ok", { status: 200, headers });
@@ -223,7 +223,7 @@ Deno.serve(async (request) => {
   if (requestedHash && requestedHash !== digest) return json(400, { ok: false, error: "sha256_mismatch" }, origin);
   const extension = contentType === "image/png" ? "png" : contentType === "image/jpeg" ? "jpg" : "webp";
   const objectPath = `products/${safePathPart(productId)}/master-${digest.slice(0, 16)}.${extension}`;
-  const blob = new Blob([bytes], { type: contentType });
+  const blob = new Blob([bytes as Uint8Array<ArrayBuffer>], { type: contentType });
   const { error: uploadError } = await admin.storage.from(BUCKET).upload(objectPath, blob, {
     contentType,
     cacheControl: "31536000",

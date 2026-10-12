@@ -1,0 +1,183 @@
+{
+  "checkpoint": "CHK-CATGOV-05E",
+  "mode": "READ_ONLY_SIMULATION",
+  "source": {
+    "models": 8,
+    "memberships": 18,
+    "public_projection_implemented": false,
+    "publicly_eligible_members_now": 0,
+    "note": "05C memberships are candidates and model publication approvals remain pending; this JSON does not publish anything."
+  },
+  "read_model": "MODEL_PUBLIC_PROJECTION_V1",
+  "results": {
+    "READY": 0,
+    "PARTIAL": 2,
+    "BLOCKED": 5,
+    "INSUFFICIENT_EVIDENCE": 1,
+    "structural_variant_records": 18,
+    "structural_model_cards": 8,
+    "structural_reduction": 10,
+    "structural_reduction_percent": 55.56
+  },
+  "models": [
+    {
+      "model_id": "8691e041-0da3-5d8b-9407-29b6ad0a1f75",
+      "model_key": "G4_LOBBY",
+      "canonical_model_name": "Lobby",
+      "result_grain": "MODEL",
+      "members": [
+        {"producto_b2b_id": "dc7cc3e7-aa00-47b0-b8e4-edde4bc0b6d0", "provider_sku": "lob-sol-azu", "variant_type": "COLOR", "variant_value": "AZUL", "membership_status": "CANDIDATE", "asset_status": "PHASE_3_READY"},
+        {"producto_b2b_id": "38edd673-b077-4c9a-a0f1-ceb4e3d8a9aa", "provider_sku": "lob-sol-neg", "variant_type": "COLOR", "variant_value": "NEGRO", "membership_status": "CANDIDATE", "asset_status": "PHASE_3_READY"},
+        {"producto_b2b_id": "6a4f917b-f915-4da2-ae22-58ef089b2ecc", "provider_sku": "lob-sol-bla", "variant_type": "COLOR", "variant_value": "BLANCO", "membership_status": "CANDIDATE", "asset_status": "PHASE_3_READY"}
+      ],
+      "publicly_eligible_members": [],
+      "blocked_members": [],
+      "default_candidate": null,
+      "image_candidate": {"status": "MODEL_MASTER_NOT_APPROVED", "fallback": "variant candidates only"},
+      "price_source": {"status": "PRODUCT_LEVEL_AUTHORITY_EXISTS", "model_anchor": null},
+      "moq_source": {"status": "PRODUCT_LEVEL_AUTHORITY_EXISTS", "model_anchor": null},
+      "publication_readiness": "BLOCKED",
+      "reason": "Model and memberships are not approved for public projection."
+    },
+    {
+      "model_id": "4837aa49-03cc-5dd3-9f51-5b451f60ab2a",
+      "model_key": "G4_JELLO_COLORS_BIO",
+      "canonical_model_name": "Jello Colors Bio",
+      "result_grain": "MODEL",
+      "members": [
+        {"producto_b2b_id": "7e09a141-a116-48a9-bc9b-35f2b0898045", "provider_sku": "jbi-con-azu", "variant_type": "COLOR", "variant_value": "AZUL", "membership_status": "CANDIDATE", "asset_status": "SOURCE_MASTER_INSUFFICIENT"},
+        {"producto_b2b_id": "0c5fd12d-e232-4c0c-ae64-5524da62cdf9", "provider_sku": "jbi-con-neg", "variant_type": "COLOR", "variant_value": "NEGRO", "membership_status": "CANDIDATE", "asset_status": "SOURCE_MASTER_INSUFFICIENT"},
+        {"producto_b2b_id": "d129e6c7-ec52-4d0b-a304-33f7c9c1b316", "provider_sku": "jbi-con-ros", "variant_type": "COLOR", "variant_value": "ROSA", "membership_status": "CANDIDATE", "asset_status": "SOURCE_MASTER_INSUFFICIENT"}
+      ],
+      "publicly_eligible_members": [],
+      "blocked_members": ["jbi-con-azu", "jbi-con-neg", "jbi-con-ros"],
+      "default_candidate": null,
+      "image_candidate": {"status": "NO_VALID_MODEL_MASTER_CANDIDATE", "fallback": "source remediation required"},
+      "price_source": {"status": "PRODUCT_LEVEL_AUTHORITY_EXISTS", "model_anchor": null},
+      "moq_source": {"status": "PRODUCT_LEVEL_AUTHORITY_EXISTS", "model_anchor": null},
+      "publication_readiness": "BLOCKED",
+      "reason": "Weak source/master evidence blocks the family."
+    },
+    {
+      "model_id": "1f11a9a8-f283-5e55-b03a-e796afb3a8fa",
+      "model_key": "G4_JELLO_ZEN",
+      "canonical_model_name": "Jello Zen",
+      "result_grain": "MODEL",
+      "members": [
+        {"producto_b2b_id": "eb35ff6c-1d67-4630-8799-2df62b95e79a", "provider_sku": "jel-zen-azu", "variant_type": "COLOR", "variant_value": "AZUL", "membership_status": "CANDIDATE", "asset_status": "SOURCE_MASTER_INSUFFICIENT"},
+        {"producto_b2b_id": "9287b3dd-d356-4bf6-b41c-c0728cbfaadb", "provider_sku": "jel-zen-ver", "variant_type": "COLOR", "variant_value": "VERDE", "membership_status": "CANDIDATE", "asset_status": "SOURCE_MASTER_INSUFFICIENT"}
+      ],
+      "publicly_eligible_members": [],
+      "blocked_members": ["jel-zen-azu", "jel-zen-ver"],
+      "default_candidate": null,
+      "image_candidate": {"status": "NO_VALID_MODEL_MASTER_CANDIDATE", "fallback": "source remediation required"},
+      "price_source": {"status": "PRODUCT_LEVEL_AUTHORITY_EXISTS", "model_anchor": null},
+      "moq_source": {"status": "PRODUCT_LEVEL_AUTHORITY_EXISTS", "model_anchor": null},
+      "publication_readiness": "BLOCKED",
+      "reason": "Weak source/master evidence blocks the family."
+    },
+    {
+      "model_id": "dba78f0a-a7c4-5b73-9195-e4108772ce8b",
+      "model_key": "G4_VASO_NOMI",
+      "canonical_model_name": "Vaso Nomi",
+      "result_grain": "MODEL",
+      "members": [
+        {"producto_b2b_id": "0b889781-de86-4115-9a62-ae1540e1140d", "provider_sku": "vas-nom-az1", "variant_type": "COLOR", "variant_value": "AZUL", "membership_status": "CANDIDATE", "asset_status": "PHASE_3_READY"},
+        {"producto_b2b_id": "5a3b2909-d914-49e9-943c-b189f93b99b6", "provider_sku": "vas-nom-ro1", "variant_type": "COLOR", "variant_value": "ROJO", "membership_status": "CANDIDATE", "asset_status": "PHASE_3_READY"},
+        {"producto_b2b_id": "045d2c3e-4d9d-4594-b941-d9ecce15a6b6", "provider_sku": "vas-nom-ve1", "variant_type": "COLOR", "variant_value": "VERDE", "membership_status": "CANDIDATE", "asset_status": "PHASE_3_READY"}
+      ],
+      "publicly_eligible_members": [],
+      "blocked_members": [],
+      "default_candidate": null,
+      "image_candidate": {"status": "MODEL_MASTER_NOT_APPROVED", "fallback": "variant candidates only"},
+      "price_source": {"status": "PRODUCT_LEVEL_AUTHORITY_EXISTS", "model_anchor": null},
+      "moq_source": {"status": "PRODUCT_LEVEL_AUTHORITY_EXISTS", "model_anchor": null},
+      "publication_readiness": "BLOCKED",
+      "reason": "Membership/model/image/rights/public gates remain pending."
+    },
+    {
+      "model_id": "022199c9-a46c-512d-899a-a7dd1ab2c484",
+      "model_key": "G4_SPLASH",
+      "canonical_model_name": "Splash",
+      "result_grain": "MODEL",
+      "members": [
+        {"producto_b2b_id": "a8214d09-27a5-48b0-aa7e-68ec8a2707d9", "provider_sku": "spl-sol-azu", "variant_type": "COLOR", "variant_value": "AZUL", "membership_status": "CANDIDATE", "asset_status": "PHASE_3_READY"},
+        {"producto_b2b_id": "e20c1edf-3015-4b9d-bbd5-b283ad0a0f44", "provider_sku": "spl-sol-roj", "variant_type": "COLOR", "variant_value": "ROJO", "membership_status": "CANDIDATE", "asset_status": "PHASE_3_READY"}
+      ],
+      "publicly_eligible_members": [],
+      "blocked_members": [],
+      "default_candidate": null,
+      "image_candidate": {"status": "MODEL_MASTER_NOT_APPROVED", "fallback": "variant candidates only"},
+      "price_source": {"status": "PRODUCT_LEVEL_AUTHORITY_EXISTS", "model_anchor": null},
+      "moq_source": {"status": "PRODUCT_LEVEL_AUTHORITY_EXISTS", "model_anchor": null},
+      "publication_readiness": "BLOCKED",
+      "reason": "No public model approval or projection exists."
+    },
+    {
+      "model_id": "260a6f7f-740f-5c53-aaad-22330805f2f3",
+      "model_key": "G4_IMPERIAL",
+      "canonical_model_name": "Imperial",
+      "result_grain": "MODEL",
+      "members": [
+        {"producto_b2b_id": "3b1efba6-a127-49f4-b98b-fa4eb0b84249", "provider_sku": "imp-neg-cro", "variant_type": "FINISH", "variant_value": "NEGRA/PLATA", "membership_status": "CANDIDATE", "asset_status": "PHASE_3_READY"},
+        {"producto_b2b_id": "7b347c71-0cc9-41de-ad29-d8674fb5da1e", "provider_sku": "imp-neg-oro", "variant_type": "FINISH", "variant_value": "NEGRA/ORO", "membership_status": "CANDIDATE", "asset_status": "NO_VALID_MASTER"}
+      ],
+      "publicly_eligible_members": [],
+      "blocked_members": ["imp-neg-oro"],
+      "default_candidate": null,
+      "image_candidate": {"status": "PARTIAL", "candidate": "imp-neg-cro", "blocked_sibling": "imp-neg-oro"},
+      "price_source": {"status": "PRODUCT_LEVEL_AUTHORITY_EXISTS", "model_anchor": null},
+      "moq_source": {"status": "PRODUCT_LEVEL_AUTHORITY_EXISTS", "model_anchor": null},
+      "publication_readiness": "PARTIAL",
+      "reason": "Chrome may be a future eligible subset; gold remains blocked and cannot inherit chrome imagery."
+    },
+    {
+      "model_id": "b8a0cc81-23c0-50cb-8d34-e7aa509055bc",
+      "model_key": "G4_LIBRETA_BORDER",
+      "canonical_model_name": "Libreta Border",
+      "result_grain": "MODEL",
+      "members": [
+        {"producto_b2b_id": "7955df9c-8e9c-4203-9f65-505faf5d69cb", "provider_sku": "lib-bor-azu", "variant_type": "COLOR", "variant_value": "AZUL", "membership_status": "CANDIDATE", "asset_status": "PHASE_3_READY"},
+        {"producto_b2b_id": "5e03ff91-3b06-467c-a4ea-0d1f061b7eb4", "provider_sku": "lib-bor-gri", "variant_type": "COLOR", "variant_value": "GRIS", "membership_status": "CANDIDATE", "asset_status": "NO_VALID_MASTER"}
+      ],
+      "publicly_eligible_members": [],
+      "blocked_members": ["lib-bor-gri"],
+      "default_candidate": null,
+      "image_candidate": {"status": "PARTIAL", "candidate": "lib-bor-azu", "blocked_sibling": "lib-bor-gri"},
+      "price_source": {"status": "PRODUCT_LEVEL_AUTHORITY_EXISTS", "model_anchor": null},
+      "moq_source": {"status": "PRODUCT_LEVEL_AUTHORITY_EXISTS", "model_anchor": null},
+      "publication_readiness": "PARTIAL",
+      "reason": "Blue may be a future eligible subset; gray remains blocked and cannot inherit blue imagery."
+    },
+    {
+      "model_id": "bbe08fb7-318d-5e99-8c0b-343f9db9201d",
+      "model_key": "G4_KOI_TRA_AMA",
+      "canonical_model_name": "Koi Bio Translúcida Tinta Azul",
+      "result_grain": "PRODUCT_VARIANT",
+      "members": [
+        {"producto_b2b_id": "2ec3bee5-e6eb-461c-b865-53a281a5bbdf", "provider_sku": "kbi-tra-ama", "variant_type": "OTHER", "variant_value": "UNRESOLVED", "membership_status": "CANDIDATE", "asset_status": "BANK_MATCH_REVIEW_REQUIRED"}
+      ],
+      "publicly_eligible_members": [],
+      "blocked_members": ["kbi-tra-ama"],
+      "default_candidate": null,
+      "image_candidate": {"status": "IDENTITY_PROVENANCE_REVIEW_REQUIRED", "candidate": null},
+      "price_source": {"status": "NOT_SUFFICIENT_FOR_PROJECTION", "model_anchor": null},
+      "moq_source": {"status": "NOT_SUFFICIENT_FOR_PROJECTION", "model_anchor": null},
+      "publication_readiness": "INSUFFICIENT_EVIDENCE",
+      "reason": "KEEP_SEPARATE; no deterministic bank identity bridge."
+    }
+  ],
+  "no_change_record": {
+    "database": 0,
+    "governance": 0,
+    "views": 0,
+    "rpcs": 0,
+    "runtime": 0,
+    "storage": 0,
+    "frontend": 0,
+    "routes": 0,
+    "analytics": 0,
+    "lovable": 0,
+    "provider_calls": 0
+  }
+}

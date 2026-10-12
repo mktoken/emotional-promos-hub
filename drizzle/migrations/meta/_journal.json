@@ -50,6 +50,13 @@
       "when": 1791682590840,
       "tag": "0006_catalog_governance_detail_membership_order_fix_v1",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791774395037,
+      "tag": "0007_catalog_model_public_projection_v1",
+      "breakpoints": true
     }
   ]
 }

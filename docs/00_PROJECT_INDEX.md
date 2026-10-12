@@ -94,3 +94,4 @@ Antes de desarrollar:
 
 - Super Agente Comercial: `docs/06_SUPER_AGENTE_COMERCIAL.md`.
 - Roadmap Operación Primero: `docs/07_OPERATIONS_ROADMAP.md`.
+- Certificación G4 modelo/variante Governance: `docs/catalog-governance/CHK-CATGOV-05C_G4_MODEL_MEMBERSHIP_EXECUTION_CERTIFICATION.md`.

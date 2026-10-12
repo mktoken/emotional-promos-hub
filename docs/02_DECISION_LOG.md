@@ -55,4 +55,6 @@ Cuando una decisión sea superada, se conserva el registro y se añade una nueva
 
 | D-033 | 2026-10-10 | Permitir seeds data-only de Governance mediante el query executor interno de Lovable cuando el esquema no cambia | Requiere archivo versionado, hash, IDs deterministas, precheck, apply estrecho, postcheck, rollback, QA y cero targets runtime; no equivale a capacidad DML universal | `CHK-CATGOV-03G`, `docs/10_QA_EVIDENCE.md`, Package V3 | VIGENTE solo para operaciones Governance autorizadas |
 
+| D-034 | 2026-10-11 | Cerrar la ejecución controlada del seed G4 de modelos y memberships como Governance live, sin proyectarlo al catálogo público | La evidencia live autorizada de 05C-B reporta precheck `READY_TO_APPLY`, 8 modelos, 18 memberships, 26 filas, postcheck PASS 13/13 y replay idempotente `ALREADY_APPLIED`; los bloqueos de imagen/identidad permanecen y no se modifican runtime, Storage ni publicación | `CHK-CATGOV-05C_G4_MODEL_MEMBERSHIP_EXECUTION_CERTIFICATION.md`, `docs/MASTER-STATE.md`, `docs/10_QA_EVIDENCE.md` | VIGENTE; proyección pública pendiente |
+
 La decisión no autoriza ejecución externa de Supabase, migraciones de fallback, nuevos APPLY sin precheck ni publicación automática. El siguiente paso es revisión humana del piloto G4.

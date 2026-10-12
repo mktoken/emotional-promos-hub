@@ -1918,3 +1918,58 @@ El replay del PRECHECK devolvió `precheck_pass = false` porque los IDs determin
 - Próximo paso: **G4 PILOT HUMAN REVIEW**.
 
 No iniciar otro Build, no ejecutar Lovable Build y no realizar nuevas escrituras de DB hasta que se apruebe el plan de revisión humana.
+
+## CHK-CATGOV-05C-C — G4 MODEL / VARIANT GOVERNANCE SEED FINAL CERTIFICATION (2026-10-11)
+
+**Estado:** `CLOSED / PASS`.
+
+Este cierre es documental. La evidencia de ejecución runtime se acepta con
+procedencia separada como `LIVE_RUNTIME_EVIDENCE_FROM_LOVABLE` del checkpoint
+`CHK-CATGOV-05C-B`; Work no vuelve a ejecutar SQL ni reproduce la escritura.
+La reconciliación en Git se realizó contra el baseline
+`c0d98fcaf4730913c1a7537a24a50c8a9ec6814d`.
+
+### Resultado canónico de la ejecución 05C-B
+
+- Precheck: `READY_TO_APPLY`; `products_found = 18`; `evidence_found = 18`; filas actuales antes de aplicar: modelos `0`, memberships `0`.
+- Apply controlado: `8` modelos, `18` memberships, `26` filas totales; rollback no ejecutado.
+- Postcheck: `PASS 13/13`; modelos finales `8`; memberships finales `18`; productos únicos `18`; unexpected `0`; missing `0`; duplicates `0`; orphan `0`; assignment conflicts `0`; family diffs `0`; preservación de blockers `PASS`.
+- Replay: `ALREADY_APPLIED`; `ready_to_apply = false`; modelos exactos `8`; memberships exactos `18`; APPLY no se repitió.
+
+### Alcance y límites
+
+La escritura quedó limitada a `catalog_product_models` y
+`catalog_product_model_members`. La evidencia reporta cero escrituras en
+`productos_b2b`, imágenes runtime, stock, pricing, offers/mappings, categorías,
+visibilidad/publicación, Storage y frontend; cero llamadas a proveedores y cero
+cambios de runtime. No se ejecutó rollback.
+
+Los bloqueos siguen vigentes: `imp-neg-oro` y `lib-bor-gri` permanecen
+`WRONG_MASTER / BLOCKER / OPEN`; la fuente visual débil de Jello no se aprobó;
+`kbi-tra-ama` mantiene `BANK_MATCH_REVIEW_REQUIRED`. Ninguna membership equivale
+a `APPROVED`, `MASTER_APPROVED`, `EDITORIAL_READY`, `PUBLIC_READY` o
+`PUBLICATION`.
+
+La arquitectura canónica queda registrada como:
+
+`PROVIDER SKU → OFFER EVIDENCE → VARIANT → MODEL`.
+
+El provider SKU continúa siendo evidencia de identidad/oferta; el conteo de
+cards públicas no se interpreta como conteo de SKUs. G4 queda preparado para una
+futura card por modelo con selector de variantes, pero la proyección pública
+requiere un contrato y un gate separados. `productos_publicos`,
+`catalog_search_products_v2`, frontend, PDP e imágenes runtime no se modifican.
+
+### Reconciliación de checkpoints
+
+- `CHK-CATGOV-05A`: `CLOSED / PASS`.
+- `CHK-CATGOV-05B`: `CLOSED / PASS`.
+- `CHK-CATGOV-05C-A`: `CLOSED / PASS`.
+- `CHK-CATGOV-05C-B`: `CLOSED / PASS` por evidencia live autorizada.
+- `CHK-CATGOV-05C-C`: `CLOSED / PASS` documental.
+
+CDO/StockSur y ForPromotional conservan el mismo contrato de normalización como
+trabajo futuro; este cierre no realiza cambios en esos proveedores ni en el
+runtime. **Siguiente paso:** diseñar el contrato de proyección pública a nivel
+modelo y continuar la normalización de CDO/StockSur. No modificar todavía el
+catálogo público.

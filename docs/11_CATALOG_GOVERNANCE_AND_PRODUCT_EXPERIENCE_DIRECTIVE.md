@@ -478,14 +478,49 @@ Until separately authorized, do not modify:
 - CRM, email, WhatsApp, or production;
 - G4/ForPromotional/CDO assets or references without their own checkpoint.
 
+## 28. CHK-CATGOV-05C-C — G4 MODEL / VARIANT GOVERNANCE SEED CERTIFICATION
+
+El seed controlado de modelos y memberships de G4 queda certificado como
+`CLOSED / PASS` con procedencia `LIVE_RUNTIME_EVIDENCE_FROM_LOVABLE` del
+checkpoint 05C-B y reconciliación documental en Work. El resultado live es:
+
+- 8 modelos;
+- 18 memberships;
+- 18 productos únicos;
+- 26 filas totales;
+- postcheck `PASS 13/13`;
+- replay `ALREADY_APPLIED`, sin re-aplicar.
+
+La operación solo escribió las tablas Governance
+`catalog_product_models` y `catalog_product_model_members`. No proyectó datos a
+`productos_b2b`, `productos_publicos`, `catalog_search_products_v2`, imágenes
+runtime, stock, pricing, mappings, categorías, visibilidad, Storage, frontend o
+PDP. La evidencia reporta cero llamadas a proveedores y cero escrituras fuera
+del alcance aprobado.
+
+La regla de identidad queda reafirmada:
+
+`PROVIDER SKU → OFFER EVIDENCE → VARIANT → MODEL`.
+
+El provider SKU es evidencia de oferta/identidad y no se sustituye por el
+conteo de cards públicas. El modelo/variante Governance es una capa de
+normalización y revisión: no equivale a aprobación, `MASTER_APPROVED`,
+`EDITORIAL_READY`, `PUBLIC_READY` ni publicación. Los blockers de imagen e
+identidad de `imp-neg-oro`, `lib-bor-gri`, Jello y `kbi-tra-ama` permanecen.
+
+G4 puede evolucionar posteriormente hacia una card por modelo con selector de
+variantes, pero esa proyección exige un contrato público, revisión de readiness
+y un gate de publicación independiente. CDO/StockSur y ForPromotional siguen
+el mismo contrato de normalización sin cambios en este checkpoint.
+
 ## CURRENT STATUS
 
 ```text
 CATALOG GOVERNANCE / PRODUCT EXPERIENCE:
-DOCUMENTATION FOUNDATION / ARCHITECTURE DESIGN
+GOVERNANCE MODEL/MEMBERSHIP SEED LIVE / PUBLIC PROJECTION PENDING
 
 PUBLIC IMPLEMENTATION: BLOCKED
-GOVERNANCE BUILD: NOT STARTED
+GOVERNANCE BUILD: 05C MODEL/MEMBERSHIP SEED CLOSED / PASS
 PRODUCT EXPERIENCE BUILD: NOT STARTED
 G4_PHASE3B_RUNTIME_STATE: RECONCILIATION_REQUIRED
 ```

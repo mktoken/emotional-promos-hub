@@ -2233,3 +2233,47 @@ Rollback no ejecutado. `ROLLBACK READINESS = PASS` por hash aprobado, IDs determ
 `G4_PHASE3B_RUNTIME_STATE = VERIFIED WITH EXACT EVIDENCE`: 121 integrados y 1 skip documentado (`lla-SiO-azu`). Build 3 no modificó assets runtime ni referencias productivas.
 
 Build 3 fue un `CONTROLLED GOVERNANCE SEED / SHADOW IMPORT` aplicado mediante el query executor interno de Lovable, no una migración, no un runtime catalog migration y no una operación externa de Supabase.
+
+## CHK-CATGOV-05C-C — G4 MODEL / VARIANT GOVERNANCE SEED FINAL CERTIFICATION (2026-10-11)
+
+**Resultado:** `CLOSED / PASS`.
+
+**Procedencia:** la ejecución y las verificaciones live pertenecen a
+`LIVE_RUNTIME_EVIDENCE_FROM_LOVABLE` del checkpoint 05C-B. Esta sección es la
+reconciliación documental de esa evidencia; no reejecuta el query executor ni
+presenta Work como origen de las escrituras.
+
+### Certificación exacta
+
+| Control | Resultado |
+|---|---|
+| Baseline Git | `c0d98fcaf4730913c1a7537a24a50c8a9ec6814d` |
+| Precheck | `READY_TO_APPLY`; 18 productos; 18 evidencias; 0 modelos y 0 memberships previos |
+| Apply | Ejecutado una sola vez; 8 modelos, 18 memberships, 26 filas |
+| Postcheck | `PASS 13/13` |
+| Cobertura | 18 productos únicos; unexpected 0; missing 0; duplicates 0 |
+| Integridad | orphan 0; assignment conflicts 0; family diffs 0 |
+| Replay | `ALREADY_APPLIED`; ready false; exact models 8; exact memberships 18; no re-apply |
+| Rollback | No ejecutado |
+
+### Boundary de escritura y preservación
+
+La evidencia live limita la operación a `catalog_product_models` y
+`catalog_product_model_members`. `UNAUTHORIZED WRITES = 0`: no hubo escrituras
+en productos runtime, imágenes, stock, pricing, offers/mappings, categorías,
+visibilidad/publicación o Storage; tampoco hubo llamadas a proveedores ni
+cambios de frontend.
+
+`imp-neg-oro` y `lib-bor-gri` continúan bloqueados por `WRONG_MASTER`;
+Jello conserva su gate de fuente visual insuficiente y `kbi-tra-ama` conserva
+`BANK_MATCH_REVIEW_REQUIRED`. Las memberships no son aprobaciones editoriales,
+masters aprobados ni autorización de publicación.
+
+### Estado de producto y proyección
+
+La Governance live contiene 8 modelos, 18 memberships y 18 variantes únicas.
+Esto no cambia el catálogo público ni `catalog_search_products_v2`. La regla
+reafirmada es `PROVIDER SKU → OFFER EVIDENCE → VARIANT → MODEL`: una card pública
+futura representaría el modelo con selector de variantes, pero queda pendiente
+el contrato de proyección y su gate explícito. CDO/StockSur y ForPromotional no
+fueron modificados.

@@ -48,6 +48,8 @@ Required source ZIP names:
 - `data/cdo-visual-master-review-queue-v1.csv` — 969 human-decision rows.
 - `data/cdo-visual-review-pack-plan-v1.csv` — 20 first-pack rows.
 - Temporary visual pack: `/private/tmp/cdo-r1.R0lWW8/review-pack/CHK-CDO-01D-A-R1_visual-review-pack-01.jpg`; it embeds source imagery and is intentionally not committed.
+- Persistent first human pack: `review-packs/CHK-CDO-01D-B_PACK01.pdf` (20 decisions).
+- Blank decision sheet: `review-packs/CHK-CDO-01D-B_PACK01_decisions.csv`; all human fields are intentionally blank.
 
 ## Decision boundary
 

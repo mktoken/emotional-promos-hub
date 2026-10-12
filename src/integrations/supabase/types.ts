@@ -779,6 +779,7 @@ export type Database = {
           created_at: string
           evidence_id: string | null
           id: string
+          is_public_default: boolean
           membership_status: string
           model_id: string
           oferta_id: string | null
@@ -793,6 +794,7 @@ export type Database = {
           created_at?: string
           evidence_id?: string | null
           id?: string
+          is_public_default?: boolean
           membership_status?: string
           model_id: string
           oferta_id?: string | null
@@ -807,6 +809,7 @@ export type Database = {
           created_at?: string
           evidence_id?: string | null
           id?: string
+          is_public_default?: boolean
           membership_status?: string
           model_id?: string
           oferta_id?: string | null
@@ -5687,6 +5690,43 @@ export type Database = {
           stock_public_eligibility_pass: boolean
         }[]
       }
+      catalog_search_model_projection_v1: {
+        Args: {
+          p_availability?: string
+          p_category_slug?: string
+          p_collection_slug?: string
+          p_color?: string
+          p_limit?: number
+          p_material?: string
+          p_max_moq?: number
+          p_max_price?: number
+          p_min_moq?: number
+          p_min_price?: number
+          p_offset?: number
+          p_query?: string
+        }
+        Returns: {
+          availability: string
+          canonical_model_name: string
+          card_moq: number
+          card_price: Json
+          category: Json
+          default_producto_b2b_id: string
+          eligible_variant_count: number
+          model_id: string
+          model_key: string
+          projection_version: string
+          relevance: number
+          representative_image: Json
+          result_grain: string
+          result_id: string
+          search_match: Json
+          selected_variant_sku: string
+          selected_variant_value: string
+          total_count: number
+          variants: Json
+        }[]
+      }
       catalog_search_products: {
         Args: {
           p_category_slug?: string
@@ -5776,6 +5816,29 @@ export type Database = {
           product_count: number
           subcategory_name: string
           subcategory_slug: string
+        }[]
+      }
+      get_model_projection_detail_v1: {
+        Args: { p_model_key: string; p_variant_sku?: string }
+        Returns: {
+          availability: string
+          canonical_model_name: string
+          card_moq: number
+          card_price: Json
+          category: Json
+          default_producto_b2b_id: string
+          eligible_variant_count: number
+          model_id: string
+          model_key: string
+          projection_readiness: string
+          projection_version: string
+          representative_image: Json
+          result_grain: string
+          result_id: string
+          search_match: Json
+          selected_variant_sku: string
+          selected_variant_value: string
+          variants: Json
         }[]
       }
       get_public_product_price_quote: {

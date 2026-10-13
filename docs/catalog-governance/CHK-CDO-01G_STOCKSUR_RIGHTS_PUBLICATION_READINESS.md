@@ -1,7 +1,7 @@
 # CHK-CDO-01G — StockSur Rights / Publication Readiness
 
 **Date:** 2026-10-13
-**Status:** `BLOCKED_PENDING_CONFIRMATION`
+**Status:** `PASS`
 **Scope:** CDO / StockSur product photographs and related presentation assets.
 
 ## Current status
@@ -10,9 +10,23 @@
 - Identity/source remediation: **complete**; open identity/source cases: **0**.
 - Provider evidence cases: **0 open**.
 - Current rights state before this gate: `PROVIDER_BANK_PROVENANCE_ONLY`.
+- Current rights state after the owner attestation: `RIGHTS_ACCEPTABLE_FOR_PUBLICATION`.
 - `MASTER_APPROVED`: **0**.
 - Publication: **NO**.
 - No database, governance-live, runtime, frontend, Lovable, provider-contact, or publication action occurred.
+
+## Business owner attestation
+
+The project owner / responsible commercial user explicitly attests that
+Promocionales Emocionales / UNIONIZE has no image-usage restriction problem
+with its suppliers and may use supplier-provided product images commercially
+for website publication, digital catalogs, commercial presentations, digital
+advertising, and promotion and sale of supplier products, without additional
+publication restrictions.
+
+This is recorded as `BUSINESS_OWNER_RIGHTS_ATTESTATION`. It is the decisive
+project authorization for this gate. It does not set `MASTER_APPROVED` and does
+not itself publish any asset.
 
 ## Evidence reviewed
 
@@ -21,7 +35,13 @@
 - `docs/catalog-governance/CHK-CDO-01D_CDO_HUMAN_REVIEW_CERTIFICATION.md` records the 353 visual decisions as `PROVIDER_BANK_PROVENANCE_ONLY` and explicitly keeps rights clearance separate from visual review.
 - `docs/catalog-governance/CHK-CDO-01E2C_FINAL_IDENTITY_REMEDIATION_CLOSURE.md` records identity/variant closure while keeping rights, final master approval, and publication open.
 - `docs/catalog-governance/CHK-CDO-01F_CANONICAL_ANALYTICAL_NORMALIZATION.md` records `MASTER_APPROVED = 0`, `publication = NO`, and `rights_status = PROVIDER_BANK_PROVENANCE_ONLY`.
-- No agreement, contract, written authorization, or project decision was found that expressly grants PE/UNIONIZE permission to reuse StockSur photographs in its own website, digital catalog, presentations, or advertising.
+- Before CHK-CDO-01G2, no agreement, contract, written authorization, or
+  project decision had been recorded that expressly granted PE/UNIONIZE
+  permission to reuse StockSur photographs in its own website, digital catalog,
+  presentations, or advertising.
+- The current owner attestation is an explicit project authorization for those
+  uses and supersedes the prior need for a separate StockSur confirmation within
+  this project governance scope.
 
 ### Official StockSur source evidence
 
@@ -43,31 +63,37 @@ The requested functional labels—download low/high-resolution photo, add to pre
 - Source-bank provenance is established for the reviewed assets.
 - Visual identity and commercial suitability were reviewed separately from rights.
 - Historical or unassigned assets remain non-publicable under the prior analytical decisions.
-- No current evidence establishes permission for PE/UNIONIZE to rehost or publish the provider photographs in a commercial website, digital catalog/presentation, or advertising used to sell StockSur products.
-- No explicit provider prohibition was found in the reviewed sources; the blocker is the absence of affirmative permission, not a proven prohibition.
+- The owner attestation now establishes project permission for PE/UNIONIZE to
+  rehost and publish the provider photographs in those commercial surfaces.
+- No explicit provider prohibition was found in the reviewed sources. The
+  project authorization is recorded without claiming that it is a provider
+  contract or a legal opinion.
 
 ## Rights classification
 
-`RIGHTS_NOT_EXPLICITLY_ESTABLISHED`
+`RIGHTS_ACCEPTABLE_FOR_PUBLICATION`
 
-This is a rights-evidence result, not a statement that use is prohibited. The evidence supports provenance and a distributor channel, but not the requested downstream publication rights.
+The classification is based on the explicit business owner attestation,
+provider-bank provenance, and official distributor-channel context.
 
 ## Publication gate
 
-`BLOCKED_PENDING_CONFIRMATION`
+`PASS`
 
-Do not publish StockSur images, rehost them, or mark individual assets `MASTER_APPROVED` until StockSur or an applicable governing agreement confirms the permitted scope and any attribution or other restrictions.
+The rights blocker is closed for project governance purposes. This does not
+approve individual masters, alter image roles, or authorize publication in this
+checkpoint.
 
 ## Exact residual gap
 
-A concise affirmative confirmation is missing for this exact question: whether an authorized StockSur customer/distributor, specifically UNIONIZE / Promocionales Emocionales, may use photographs downloaded from the StockSur portal on its commercial website, digital catalog/presentations, and advertising used to promote and sell StockSur products, and whether attribution or other restrictions apply.
+A separate provider confirmation is not required under the current owner
+attestation. If the owner later changes or narrows that authorization, this gate
+must be reopened.
 
 ## Recommended next action
 
-Obtain owner approval before sending the prepared request in:
-`docs/catalog-governance/CHK-CDO-01G_STOCKSUR_RIGHTS_CONFIRMATION_REQUEST_ES.md`.
-
-After a response is received, register it in a separate evidence checkpoint. Do not execute the next checkpoint automatically.
+Proceed only to the separate master-certification checkpoint. Do not set
+`MASTER_APPROVED` or publish assets automatically from this rights gate.
 
 ## Scope counters
 

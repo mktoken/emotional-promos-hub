@@ -25,19 +25,19 @@
 - Cambios en DB, runtime, stock, pricing, mappings, categorías, visibilidad, frontend, Lovable, proveedores y publicación: **0**.
 - Siguiente gate independiente: `CHK-CDO-01G — rights / publication readiness`; no ejecutar automáticamente.
 
-## CHK-CDO-01G — Rights / Publication Readiness (2026-10-13)
+## CHK-CDO-01G2 — Business Rights Attestation (2026-10-13)
 
-- Estado: **`BLOCKED_PENDING_CONFIRMATION`**.
+- Estado: **`CLOSED / PASS — RIGHTS GATE`**.
 - Revisión humana CDO/StockSur: **353/353 COMPLETE**; identity remediation: **COMPLETE**; identity/source open: **0**; provider variant evidence open: **0**.
-- Clasificación de derechos: **`RIGHTS_NOT_EXPLICITLY_ESTABLISHED`**.
-- La revisión del repositorio y de fuentes públicas oficiales de StockSur confirmó procedencia del banco y el canal de distribuidores oficiales, pero no encontró autorización explícita para rehostear o publicar fotografías en el sitio web comercial, catálogo/presentaciones digitales o publicidad de PE/UNIONIZE.
-- La posible funcionalidad del portal (descarga de fotos, presentación y logo) no fue verificada independientemente en una sesión autenticada y, aun si se confirma, no sustituye términos aplicables o autorización escrita.
-- Gate de publicación: **`BLOCKED_PENDING_CONFIRMATION`**. No publicar imágenes StockSur ni convertirlas en `MASTER_APPROVED`.
-- `MASTER_APPROVED`: **0**. Publication: **NO**.
-- Solicitud breve preparada, no enviada: `docs/catalog-governance/CHK-CDO-01G_STOCKSUR_RIGHTS_CONFIRMATION_REQUEST_ES.md`.
-- Registro de evidencia: `docs/catalog-governance/data/cdo-stocksur-rights-evidence-register-v1.csv`.
+- Clasificación de derechos: **`RIGHTS_ACCEPTABLE_FOR_PUBLICATION`**.
+- Gate de publicación de derechos: **`PASS`**, basado en `BUSINESS_OWNER_RIGHTS_ATTESTATION` más `PROVIDER_BANK_PROVENANCE` y contexto oficial de distribuidores.
+- La atestación explícita del propietario autoriza el uso comercial de imágenes proporcionadas por proveedores en sitio web, catálogos digitales, presentaciones comerciales, publicidad digital y promoción/venta de productos del proveedor, sin restricciones adicionales de publicación según la decisión registrada.
+- Confirmación de StockSur: **NO REQUIRED** bajo esta atestación; no hubo contacto con el proveedor.
+- `MASTER_APPROVED`: **0**. Publication: **NO**. El cierre del gate de derechos no aprueba masters individuales ni publica assets.
+- La solicitud `CHK-CDO-01G_STOCKSUR_RIGHTS_CONFIRMATION_REQUEST_ES.md` queda preservada como histórica y marcada `NOT REQUIRED / SUPERSEDED BY BUSINESS OWNER ATTESTATION`.
+- Registro actualizado: `docs/catalog-governance/data/cdo-stocksur-rights-evidence-register-v1.csv`.
 - Cambios en DB, governance live, runtime, Lovable, frontend, contacto con proveedor y publicación: **0**.
-- Siguiente paso: **USER APPROVAL TO SEND MINIMAL STOCKSUR RIGHTS CONFIRMATION**. Después de una respuesta: `CHK-CDO-01G2 — REGISTER RIGHTS EVIDENCE`; no ejecutar automáticamente.
+- Siguiente paso: **`CHK-CDO-01H — FINAL MASTER CERTIFICATION + PUBLICATION ELIGIBILITY`**; no ejecutar automáticamente.
 
 ## Estado de reentrada vigente — 2026-09-29
 

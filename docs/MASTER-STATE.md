@@ -2025,3 +2025,39 @@ providers ni schedulers.
 `CLOSED / PASS`. Los artefactos y hashes finales están indexados en
 `docs/catalog-governance/CHK-CATGOV-05G_MODEL_PROJECTION_HASH_MANIFEST_V3.md`
 y `CHK-CATGOV-05G_REPLAY_CERTIFICATION_MANIFEST_V1.md`.
+
+## CHK-CDO-01E — Final Identity / Variant Source Reconciliation (2026-10-13)
+
+**Estado:** `PARTIAL / CLOSED FOR ANALYTICAL RECONCILIATION`.
+
+El universo de revisión humana CDO/StockSur queda documentado como **353/353
+completo**, con **0 sin revisar**. Este checkpoint cubrió exactamente las
+cinco relaciones post-visuales abiertas y no introdujo casos adicionales:
+
+- `T622`: `RESOLVED_FROM_EXISTING_EVIDENCE` — propuesta analítica separada
+  `color::negro` y `color::rojo`; `color::verde` permanece independiente.
+- `BP254`: `RESOLVED_FROM_EXISTING_EVIDENCE` — propuesta analítica
+  `color::plata+negro` y `color::grafito`; `color::plata` permanece distinta.
+- `T575`: `PARTIALLY_RESOLVED` — cobre confirmado por literal de fuente;
+  relación del primario genérico con negro pendiente.
+- `T625`: `PARTIALLY_RESOLVED` — `negro+cobre` respaldado por fuente;
+  `negro+plata` no confirmado literalmente.
+- `EC742`: `NEEDS_PROVIDER_EVIDENCE` — no se pudo asignar con seguridad la
+  relación genérica/celeste usando únicamente evidencia existente.
+
+**Conteo de estado:** `2 resolved`, `2 partial`, `1 provider-evidence-required`.
+Derechos: `PROVIDER_BANK_PROVENANCE_ONLY`. `MASTER_APPROVED = 0`. No se
+publicó ningún asset ni se modificó la proyección pública.
+
+El detalle y el plan analítico están en:
+
+- `docs/catalog-governance/CHK-CDO-01E_FINAL_IDENTITY_VARIANT_SOURCE_RECONCILIATION.md`
+- `docs/catalog-governance/CHK-CDO-01E_ANALYTICAL_REMEDIATION_PLAN.md`
+
+El siguiente paso acotado es **CHK-CDO-01E2 — MINIMAL PROVIDER EVIDENCE
+REQUEST**, exclusivamente para EC742, T575 y T625, con los hechos faltantes
+descritos en el reporte. T622 y BP254 quedan listos únicamente para una
+normalización analítica futura (`CHK-CDO-01F`); no hay cambios live autorizados.
+
+Base de seguridad: base de datos, runtime, llamadas a proveedores, Lovable,
+frontend y publicación modificados `0`.

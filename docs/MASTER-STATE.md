@@ -14,6 +14,17 @@
 - Working tree: limpio al cierre de `CHK-COM-6`.
 - Push: realizado a `origin/main`.
 
+## CHK-CDO-01F — Normalización analítica canónica CDO / StockSur (2026-10-13)
+
+- Estado: **CERRADO / PASS — SOLO ANALÍTICO**.
+- Revisión humana CDO: **353/353**; identidad/source open **0**; provider evidence open **0**.
+- Normalización aplicada a los artefactos canónicos de modelo/variante y assets; el ledger humano original se conserva sin reescritura.
+- Derechos: `PROVIDER_BANK_PROVENANCE_ONLY`; `MASTER_APPROVED = 0`; publicación **NO**.
+- Decisiones finales incorporadas: BP193 `azul+negro`; BP228 `celeste`; BP233/BP240/BP241/BP250/BP257/BP307 `violeta`; BP311/C543/C549/C556 `azul_marino`; T555/T559/T591 `celeste`; T592 `gris`; BP253 `grafito`; T622 `negro`/`rojo`; BP254 `plata+negro`/`grafito`; EC742 conserva sus cinco literales del proveedor y su asset genérico queda alterno; T575 y T625 conservan los acabados históricos fuera del catálogo actual.
+- PASS_IDENTITY preservados: BP298 `blanco`, C549 `negro`, T559 `gris`. EX02: candidatos seleccionados y alternos preservados.
+- Cambios en DB, runtime, stock, pricing, mappings, categorías, visibilidad, frontend, Lovable, proveedores y publicación: **0**.
+- Siguiente gate independiente: `CHK-CDO-01G — rights / publication readiness`; no ejecutar automáticamente.
+
 ## Estado de reentrada vigente — 2026-09-29
 
 - `AUTH-2`: **CERRADO / PASS**. Recuperación de contraseña validada en producción.

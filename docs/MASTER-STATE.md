@@ -25,6 +25,20 @@
 - Cambios en DB, runtime, stock, pricing, mappings, categorías, visibilidad, frontend, Lovable, proveedores y publicación: **0**.
 - Siguiente gate independiente: `CHK-CDO-01G — rights / publication readiness`; no ejecutar automáticamente.
 
+## CHK-CDO-01G — Rights / Publication Readiness (2026-10-13)
+
+- Estado: **`BLOCKED_PENDING_CONFIRMATION`**.
+- Revisión humana CDO/StockSur: **353/353 COMPLETE**; identity remediation: **COMPLETE**; identity/source open: **0**; provider variant evidence open: **0**.
+- Clasificación de derechos: **`RIGHTS_NOT_EXPLICITLY_ESTABLISHED`**.
+- La revisión del repositorio y de fuentes públicas oficiales de StockSur confirmó procedencia del banco y el canal de distribuidores oficiales, pero no encontró autorización explícita para rehostear o publicar fotografías en el sitio web comercial, catálogo/presentaciones digitales o publicidad de PE/UNIONIZE.
+- La posible funcionalidad del portal (descarga de fotos, presentación y logo) no fue verificada independientemente en una sesión autenticada y, aun si se confirma, no sustituye términos aplicables o autorización escrita.
+- Gate de publicación: **`BLOCKED_PENDING_CONFIRMATION`**. No publicar imágenes StockSur ni convertirlas en `MASTER_APPROVED`.
+- `MASTER_APPROVED`: **0**. Publication: **NO**.
+- Solicitud breve preparada, no enviada: `docs/catalog-governance/CHK-CDO-01G_STOCKSUR_RIGHTS_CONFIRMATION_REQUEST_ES.md`.
+- Registro de evidencia: `docs/catalog-governance/data/cdo-stocksur-rights-evidence-register-v1.csv`.
+- Cambios en DB, governance live, runtime, Lovable, frontend, contacto con proveedor y publicación: **0**.
+- Siguiente paso: **USER APPROVAL TO SEND MINIMAL STOCKSUR RIGHTS CONFIRMATION**. Después de una respuesta: `CHK-CDO-01G2 — REGISTER RIGHTS EVIDENCE`; no ejecutar automáticamente.
+
 ## Estado de reentrada vigente — 2026-09-29
 
 - `AUTH-2`: **CERRADO / PASS**. Recuperación de contraseña validada en producción.

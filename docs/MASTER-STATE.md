@@ -2061,3 +2061,37 @@ normalización analítica futura (`CHK-CDO-01F`); no hay cambios live autorizado
 
 Base de seguridad: base de datos, runtime, llamadas a proveedores, Lovable,
 frontend y publicación modificados `0`.
+
+## CHK-CDO-01E2 — Minimal Provider Evidence Request (2026-10-13)
+
+**Estado:** `READY / DOCUMENTATION ONLY`.
+
+Se preparó una solicitud mínima, sin contacto externo, exclusivamente para los
+tres casos que permanecen parcialmente resueltos o requieren evidencia del
+proveedor:
+
+- `EC742`: relación de los assets genérico/celeste con azul, gris, rosa, otra
+  variante, rol genérico/marketing u obsolescencia.
+- `T575`: relación del primario genérico `T575 frente.jpg` con negro y
+  confirmación de la estructura comercial cobre/negro.
+- `T625`: confirmación de si los acabados negro+cobre/dorado y negro+plata son
+  variantes, acabados, SKU/sub-SKU distintos o una versión vigente frente a
+  otra obsoleta.
+
+T622 y BP254 quedan excluidos de forma intencional: ambos fueron clasificados
+`RESOLVED_FROM_EXISTING_EVIDENCE` en CHK-CDO-01E y no se reabren.
+
+Artefactos preparados:
+
+- `docs/catalog-governance/CHK-CDO-01E2_PROVIDER_EVIDENCE_MATRIX.md`
+- `docs/catalog-governance/CHK-CDO-01E2_STOCKSUR_EVIDENCE_REQUEST_ES.md`
+- `docs/catalog-governance/CHK-CDO-01E2_PROVIDER_RESPONSE_DECISION_MAP.md`
+
+La solicitud no contiene una encuesta amplia ni fue enviada. No hubo contacto
+con StockSur, cambios de base de datos, runtime, Lovable, frontend,
+publicación ni `MASTER_APPROVED`. Se mantiene `353/353` de revisión humana,
+`MASTER_APPROVED = 0`, y derechos `PROVIDER_BANK_PROVENANCE_ONLY`.
+
+**Siguiente paso:** revisión del usuario y envío manual de la solicitud; tras
+recibir respuestas, abrir `CHK-CDO-01E3 — REGISTER PROVIDER EVIDENCE + FINALIZE
+3 CASES`.

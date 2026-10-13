@@ -14,6 +14,24 @@
 - Working tree: limpio al cierre de `CHK-COM-6`.
 - Push: realizado a `origin/main`.
 
+## CHK-CDO-01H3 — Cierre de certificación final de masters CDO / StockSur (2026-10-13)
+
+- Estado: **CLOSED / PASS — CDO / STOCKSUR IMAGE MASTER CERTIFICATION COMPLETE**.
+- Revisión humana de las seis excepciones finales: **6/6 COMPLETE**; decisiones registradas como `USER_ACCEPTED_CHAT_REVIEW`.
+- Variantes canónicas actuales: **354**.
+- `MASTER_APPROVED`: **354**.
+- Publication eligible: **354**.
+- Publication blocked: **0**.
+- Variants without master: **0**.
+- Conflicting masters: **0**.
+- Rights: **`RIGHTS_ACCEPTABLE_FOR_PUBLICATION` / PASS**.
+- Se certificaron BP254 `grafito`, EC742 `celeste` y `gris y negro`, T575 `negro`, T622 `rojo` y T625 `negro`.
+- Se preservan sin promoción los assets históricos T575 cobre y T625 cobre/oro, así como el asset marketing cobre/oro de T625.
+- El literal canónico `gris y negro` se conserva; el filename fuente `gris_oscuro` permanece como provenance.
+- `LIVE CATALOG PUBLICATION`: **NO**. `PUBLIC_ELIGIBLE` es elegibilidad documental y no modifica `productos_b2b.imagenes` ni la proyección pública.
+- Cambios en DB, Supabase, runtime, frontend, Lovable, proveedores, stock, pricing, mappings, categorías, visibilidad y publicación: **0**.
+- Siguiente gate: **`CHK-CDO-01I — PUBLICATION PROJECTION DRY RUN + LIVE CATALOG READINESS`**; no ejecutar automáticamente.
+
 ## CHK-CDO-01H — Certificación final de masters CDO / StockSur (2026-10-13)
 
 - Estado: **PASS WITH EXPLICIT FOLLOW-UP — CERTIFICACIÓN ANALÍTICA; PUBLICACIÓN NO EJECUTADA**.

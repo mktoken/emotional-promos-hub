@@ -177,3 +177,24 @@ distinct and is not reassigned to the bicolor key.
 5. For the partial cases, do not execute any split before `CHK-CDO-01E2`.
 6. Do not modify `productos_b2b`, runtime images, stock, pricing, mappings,
    categories, visibility, frontend, or provider runtime.
+
+## Subsequent official-site evidence supersession
+
+The provisional T575/T625 gates above were written before the current official
+StockSur Mexico site evidence was registered. They remain historical planning
+context and must not be executed as written. The current closure is recorded
+in `CHK-CDO-01E2C_FINAL_IDENTITY_REMEDIATION_CLOSURE.md`.
+
+- **EC742:** use provider literals `rosa`, `gris y negro`, `azul`, `gris`, and
+  `celeste`; map the exact celeste source asset to `color::celeste`; retain
+  generic imagery as generic/alternate unless independently determinable.
+- **T575:** use current `color::negro`; preserve historical `cobre` as
+  unassigned and not publication-certified. Do not create a current
+  `color::cobre` from the historical bank alone.
+- **T625:** retain current `color::negro` for the current silver/stainless-
+  steel-base version; preserve copper/gold assets as historical and do not
+  create current `negro+cobre` or `negro+dorado` keys.
+- **T622/BP254:** existing analytical resolutions remain unchanged.
+
+Identity/source remediation is now complete, but this plan does not clear
+rights, approve masters, or authorize publication.

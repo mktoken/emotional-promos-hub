@@ -2095,3 +2095,41 @@ publicación ni `MASTER_APPROVED`. Se mantiene `353/353` de revisión humana,
 **Siguiente paso:** revisión del usuario y envío manual de la solicitud; tras
 recibir respuestas, abrir `CHK-CDO-01E3 — REGISTER PROVIDER EVIDENCE + FINALIZE
 3 CASES`.
+
+## CHK-CDO-01E2C — Final CDO Identity / Variant Remediation Closure (2026-10-13)
+
+**Estado:** `CLOSED / PASS — IDENTITY / VARIANT REMEDIATION COMPLETE`.
+
+La evidencia actual de las páginas oficiales de StockSur México, revisada
+manualmente por el usuario, cerró los tres casos que quedaban de la
+remediación post-visual. El universo humano permanece en **353/353 complete**,
+con **0 unreviewed**, y los cinco casos originales quedan resueltos:
+
+- `EC742`: `RESOLVED_FROM_PROVIDER_SITE_EVIDENCE`; literales actuales `rosa`,
+  `gris y negro`, `azul`, `gris`, `celeste`. El asset exacto celeste se
+  conserva como `color::celeste`; el asset genérico no se fuerza a un color.
+- `T575`: `RESOLVED_FROM_PROVIDER_SITE_EVIDENCE`; `negro` es una variante
+  vigente. El asset histórico `cobre` queda
+  `PRESERVED_UNASSIGNED_NOT_PUBLICABLE`.
+- `T622`: `RESOLVED_FROM_EXISTING_EVIDENCE`; `negro` y `rojo` permanecen
+  separados y `verde` no se reabre.
+- `BP254`: `RESOLVED_FROM_EXISTING_EVIDENCE`; `plata+negro` y `grafito`
+  permanecen separados y `plata` no se colapsa.
+- `T625`: `RESOLVED_FROM_PROVIDER_SITE_EVIDENCE`; `negro` vigente es cuerpo
+  negro con base plateada/de acero inoxidable. Los assets cobre/dorado quedan
+  `PRESERVED_HISTORICAL_NOT_PUBLICABLE`.
+
+Conteos finales: **post-visual remediation 5/5 resolved**, **identity/source
+open 0**, **provider evidence requests open 0**. No se reabrieron T622 ni
+BP254. No hubo contacto con StockSur.
+
+La resolución de identidad/variante no equivale a aprobación de master ni a
+publicación. Derechos continúan en `PROVIDER_BANK_PROVENANCE_ONLY`,
+`MASTER_APPROVED = 0`, `PUBLICATION = NO`. Base de datos, governance live,
+runtime, Lovable, frontend y publicación modificados `0`.
+
+Detalle final:
+`docs/catalog-governance/CHK-CDO-01E2C_FINAL_IDENTITY_REMEDIATION_CLOSURE.md`.
+
+**Siguiente paso:** `CHK-CDO-01F — APPLY CANONICAL ANALYTICAL NORMALIZATION`;
+no ejecutar automáticamente.

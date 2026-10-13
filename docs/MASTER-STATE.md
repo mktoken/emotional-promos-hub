@@ -14,6 +14,19 @@
 - Working tree: limpio al cierre de `CHK-COM-6`.
 - Push: realizado a `origin/main`.
 
+## CHK-CDO-01H — Certificación final de masters CDO / StockSur (2026-10-13)
+
+- Estado: **PASS WITH EXPLICIT FOLLOW-UP — CERTIFICACIÓN ANALÍTICA; PUBLICACIÓN NO EJECUTADA**.
+- Revisión humana: **353/353** completa; identity/source open **0**; provider evidence open **0**; remediación geométrica/visual post-review **5/5** resuelta.
+- Variantes canónicas actuales: **354**. `MASTER_APPROVED`: **348**. Conflictos de master: **0**.
+- Derechos: **`RIGHTS_ACCEPTABLE_FOR_PUBLICATION` / PASS**, con atestación del propietario, procedencia del banco del proveedor y contexto de distribuidor.
+- Se mantienen **6 variantes bloqueadas** por falta de una revisión visual final inequívoca o vínculo actual de identidad: BP254 `grafito`; EC742 `celeste` y `gris_y_negro`; T575 `negro`; T622 `rojo`; T625 `negro`.
+- Los registros finales conservan roles y provenance: 374 relaciones de assets, con 348 `MASTER_APPROVED`, 15 `UNASSIGNED_NOT_PUBLICABLE`, 3 `SUPPORTING_EVIDENCE`, 5 `MARKETING_ASSET` y 3 `HISTORICAL_NOT_PUBLICABLE`.
+- `live_publication`: **NO**. `PUBLIC_ELIGIBLE` significa elegibilidad analítica y no modifica `productos_b2b.imagenes` ni la proyección pública.
+- Cambios en DB, runtime, Supabase, frontend, Lovable, proveedores, stock, pricing, mappings, categorías, visibilidad y publicación: **0**.
+- Artefactos: `docs/catalog-governance/CHK-CDO-01H_FINAL_MASTER_CERTIFICATION.md`, `data/cdo-final-master-registry-v1.csv`, `data/cdo-final-asset-role-registry-v1.csv`, `data/cdo-publication-readiness-v1.csv` y manifiesto canónico actualizado.
+- Siguiente gate: **`CHK-CDO-01H2` — revisión humana final de las seis variantes bloqueadas**. No abrir `CHK-CDO-01I` antes de resolverlas.
+
 ## CHK-CDO-01F — Normalización analítica canónica CDO / StockSur (2026-10-13)
 
 - Estado: **CERRADO / PASS — SOLO ANALÍTICO**.

@@ -1,54 +1,46 @@
-# CHK-CDO-01J — Recálculo de precios CDO: detenido antes del dry run
+# Reportes CDO / StockSur — resultados de las tres órdenes (solo lectura)
 
-Solo se hicieron lecturas. No se recalculó nada ni se escribió nada.
+Las tres órdenes se ejecutaron solo con lecturas. Cero escrituras, nada publicado.
+
+## 1. CHK-CDO-01I-R1 — Los 97 modelos / 354 variantes certificados
 
 ```text
-CHECKPOINT: CHK-CDO-01J
-STATUS: BLOCKED (STOP en el paso 3, antes de escribir)
+STATUS: PARTIAL
+MODELS FOUND LIVE: 38 de 97 (59 no vienen en la API)
+VARIANTS FOUND LIVE: 67 de 354 (287 sin oferta viva)
+PROVIDER OFFER MATCHED/UNMATCHED/AMBIGUOUS: 67 / 287 / 0
+MASTER ALREADY LINKED: 0 | LINK REQUIRED: 67 | TARGET MISSING: 287
+FULLY / PARTIAL / BLOCKED MODELS: 0 / 25 / 72
+```
 
-TARGET EXPECTED: 248
-TARGET OBSERVED: 248
-  (CDO activo + enlazado por producto_b2b_oferta_map + existe en
-   productos_b2b + sin precio "valid")
+## 2. Universo completo CDO en la API
 
-SOURCE DATA COMPLETE: YES
-  PRICE SOURCE PRESENT (escala con costo > 0): 248
-  MOQ PRESENT (min_qty > 0): 248
-  AMBIGUOUS (más de un proveedor): 0
+```text
+LATEST COMPLETE CYCLE: 2026-10-13 12:41 UTC, páginas 1-5, 0 errores
+API INGESTION COMPLETE: YES
+MODELS: 446 | OFFERS: 1192 (vs. histórico 408/1085: INCREASE, por la fuente actual)
+MODELS LINKED / NOT LINKED: 403 / 43
+OFFERS LINKED / NOT LINKED: 1061 / 131 | AMBIGUOUS: 0
+PUBLIC_VISIBLE CDO PRODUCTS: 104 (98 visibles y disponibles)
+PRICING V2 VALID: 155 | SIN PRECIO: 248
+STOCK / MOQ / COSTO: 1192 / 1192 / 1192
+CATEGORY ASSIGNED: 285 | MISSING: 118
+CERTIFIED MASTER MATCH: 67 | PROVIDER IMAGE FALLBACK: 1125 | WITHOUT IMAGE: 0
+CONCLUSIÓN: la ingesta está completa; la pérdida está en precio y visibilidad.
+```
 
-HALLAZGO DE LA CAUSA:
-  Los 248 no tienen NINGUNA fila de precio: ni en catalog_price_cache
-  ni en la generación activa de Pricing V2 (818d824a…, 16-sep).
-  No es un precio "inválido": nunca se calcularon (se crearon después
-  del último ciclo de precios).
+## 3. CHK-CDO-01J — Recálculo de precios
 
-DRY RUN: NOT RUN
-  Motivo: el mecanismo existente (recompute-catalog-price-cache-v2)
-  - solo acepta: mode (dry_run / shadow_write), idempotency_key,
-    batch_size, cursor;
-  - no permite elegir productos concretos;
-  - recorre únicamente productos que YA tienen fila en
-    catalog_price_cache, así que estos 248 quedan fuera por diseño;
-  - una ejecución sería global (todo el catálogo), lo que la orden prohíbe.
-
-LIVE RECOMPUTE EXECUTED: NO
-LIVE PRODUCTS PROCESSED: 0
-POST-RUN PRICING V2 VALID: N/A
-TOTAL CDO LINKED PRODUCTS: 403
-TOTAL CDO LINKED PRICING VALID: 155 (sin cambio)
-
-PRICE RULE CHANGES: 0
-PRODUCT CREATION: 0
-CATEGORY CHANGES: 0
-VISIBILITY CHANGES: 0
-IMAGE CHANGES: 0
+```text
+STATUS: BLOCKED (detenido antes del dry run, sin escribir)
+TARGET OBSERVED: 248 (= esperado)
+SOURCE DATA COMPLETE: YES (costo 248, MOQ 248, ambiguos 0)
+CAUSA: los 248 nunca tuvieron precio; el recálculo existente solo recorre
+  productos que ya tienen precio previo, no permite elegir productos y
+  siempre corre sobre todo el catálogo.
+LIVE RECOMPUTE EXECUTED: NO | TOTAL CDO PRICING VALID: 155 (sin cambio)
+CHANGES (precio/productos/categorías/visibilidad/imágenes): 0
 PUBLICATION: NO
-
-NEXT (una sola acción, requiere decisión de Work):
-  Autorizar cómo incorporar los 248 al cálculo, por ejemplo:
-  A) un cambio pequeño al recálculo para aceptar una lista exacta de
-     productos (y no depender de que ya tengan fila previa), o
-  B) un ciclo global de recálculo + nueva generación, aceptando que
-     toca todo el catálogo.
-STOP.
+NEXT: Work debe decidir entre (A) ajustar el recálculo para aceptar una
+  lista exacta de productos, o (B) un recálculo global con nueva versión.
 ```

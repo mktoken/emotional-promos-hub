@@ -3,6 +3,7 @@
 // public.calculate_product_price_v2.
 
 import { z } from "https://esm.sh/zod@3.23.8";
+import { TARGET_PRODUCT_IDS_MAX } from "./targeted.ts";
 
 export const CALCULATION_VERSION = "v2-shadow-1";
 export const DRAFT_RULE_SET_VERSION = "2026-01-v2-draft";
@@ -18,6 +19,7 @@ export const RequestSchema = z
     idempotency_key: z.string().trim().min(8).max(200),
     batch_size: z.number().int().min(BATCH_SIZE_MIN).max(BATCH_SIZE_MAX).optional(),
     cursor: z.string().uuid().nullable().optional(),
+    product_ids: z.array(z.string().uuid()).min(1).max(TARGET_PRODUCT_IDS_MAX).optional(),
   })
   .strict();
 

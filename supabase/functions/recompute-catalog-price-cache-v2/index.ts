@@ -23,6 +23,13 @@ import {
   RequestSchema,
   sanitizeError,
 } from "./logic.ts";
+import {
+  normalizeProductIds,
+  resolveTargetProductIds,
+  shouldPersistGeneration,
+  takeTargetProductBatch,
+  targetOffsetAfterCursor,
+} from "./targeted.ts";
 
 const ALLOWED_ORIGINS = new Set<string>([
   "https://promocionalesemocionales.lovable.app",
@@ -126,6 +133,38 @@ Deno.serve(async (req) => {
     const { mode, idempotency_key } = parsed.data;
     const batchSize = parsed.data.batch_size ?? BATCH_SIZE_DEFAULT;
     let cursor: string | null = parsed.data.cursor ?? null;
+    const targetProductIds = normalizeProductIds(parsed.data.product_ids);
+    const targeted = targetProductIds !== null;
+
+    let missingProductIds: string[] = [];
+    if (targeted) {
+      const { data: targetRows, error: targetErr } = await admin
+        .from("productos_b2b")
+        .select("id")
+        .in("id", targetProductIds);
+      if (targetErr) {
+        return json(500, { ok: false, request_id: requestId, error: "target_product_validation_failed" }, origin);
+      }
+      const resolved = resolveTargetProductIds(
+        targetProductIds,
+        (targetRows ?? []).map((row) => row.id as string),
+      );
+      missingProductIds = resolved.missingIds;
+      if (missingProductIds.length > 0) {
+        return json(
+          400,
+          {
+            ok: false,
+            request_id: requestId,
+            error: "unknown_product_ids",
+            requested_product_count: parsed.data.product_ids?.length ?? 0,
+            unique_product_count: resolved.uniqueIds.length,
+            missing_product_ids: missingProductIds,
+          },
+          origin,
+        );
+      }
+    }
 
     // ---------------- RULE SET DRAFT (resuelto en servidor) ----------------
     const { data: ruleSets, error: rsErr } = await admin
@@ -151,92 +190,107 @@ Deno.serve(async (req) => {
     const ruleSetId = ruleSets[0].id as string;
 
     // ---------------- GENERACIÓN (idempotencia + concurrencia) ----------------
-    const { data: existing } = await admin
-      .from("catalog_price_cache_v2_generations")
-      .select("*")
-      .eq("idempotency_key", idempotency_key)
-      .maybeSingle();
-
-    let generation = existing;
-
-    if (generation) {
-      if (generation.mode !== mode || generation.rule_set_id !== ruleSetId) {
-        return json(409, { ok: false, request_id: requestId, error: "idempotency_key_conflict" }, origin);
-      }
-      if (generation.status !== "running") {
-        // Repetición de una key ya terminada: no duplicar trabajo.
-        return json(
-          200,
-          {
-            ok: true,
-            request_id: requestId,
-            reused: true,
-            generation_id: generation.id,
-            mode,
-            status: generation.status,
-            candidate_count: generation.candidate_count,
-            processed_count: generation.processed_count,
-            priced_count: generation.priced_count,
-            request_quote_count: generation.request_quote_count,
-            unavailable_count: generation.unavailable_count,
-            error_count: generation.error_count,
-            unresolved_count: generation.unresolved_count,
-          },
-          origin,
-        );
-      }
-    } else {
-      // Impedir dos generaciones running simultáneas para el mismo rule set + modo.
-      const { count: runningCount } = await admin
+    // A targeted dry_run is intentionally zero-write: it validates the target
+    // against productos_b2b and invokes only the canonical pricing RPC.
+    // Global mode and targeted shadow_write retain the existing generation
+    // persistence, idempotency and concurrency behavior.
+    let generation = null;
+    if (shouldPersistGeneration(mode, targeted)) {
+      const { data: existing } = await admin
         .from("catalog_price_cache_v2_generations")
-        .select("id", { count: "exact", head: true })
-        .eq("rule_set_id", ruleSetId)
-        .eq("mode", mode)
-        .eq("status", "running");
-      if ((runningCount ?? 0) > 0) {
-        return json(409, { ok: false, request_id: requestId, error: "generation_already_running" }, origin);
-      }
-
-      // Universo de candidatos certificado por el preflight B:
-      // productos con entrada en catalog_price_cache (1 fila por producto).
-      const { count: candidateCount, error: candErr } = await admin
-        .from("catalog_price_cache")
-        .select("producto_b2b_id", { count: "exact", head: true })
-        .not("producto_b2b_id", "is", null);
-      if (candErr) {
-        return json(500, { ok: false, request_id: requestId, error: "candidate_count_failed" }, origin);
-      }
-
-      const { data: created, error: genErr } = await admin
-        .from("catalog_price_cache_v2_generations")
-        .insert({
-          rule_set_id: ruleSetId,
-          status: "running",
-          mode,
-          idempotency_key,
-          candidate_count: candidateCount ?? 0,
-          request_id: requestId,
-          created_by: actorId,
-        })
         .select("*")
-        .single();
-      if (genErr || !created) {
-        // Carrera con otra ejecución que insertó la misma key.
-        return json(409, { ok: false, request_id: requestId, error: "generation_insert_failed" }, origin);
+        .eq("idempotency_key", idempotency_key)
+        .maybeSingle();
+
+      generation = existing;
+
+      if (generation) {
+        if (generation.mode !== mode || generation.rule_set_id !== ruleSetId) {
+          return json(409, { ok: false, request_id: requestId, error: "idempotency_key_conflict" }, origin);
+        }
+        if (generation.status !== "running") {
+          // Repetición de una key ya terminada: no duplicar trabajo.
+          return json(
+            200,
+            {
+              ok: true,
+              request_id: requestId,
+              reused: true,
+              generation_id: generation.id,
+              mode,
+              status: generation.status,
+              candidate_count: generation.candidate_count,
+              processed_count: generation.processed_count,
+              priced_count: generation.priced_count,
+              request_quote_count: generation.request_quote_count,
+              unavailable_count: generation.unavailable_count,
+              error_count: generation.error_count,
+              unresolved_count: generation.unresolved_count,
+            },
+            origin,
+          );
+        }
+      } else {
+        // Impedir dos generaciones running simultáneas para el mismo rule set + modo.
+        const { count: runningCount } = await admin
+          .from("catalog_price_cache_v2_generations")
+          .select("id", { count: "exact", head: true })
+          .eq("rule_set_id", ruleSetId)
+          .eq("mode", mode)
+          .eq("status", "running");
+        if ((runningCount ?? 0) > 0) {
+          return json(409, { ok: false, request_id: requestId, error: "generation_already_running" }, origin);
+        }
+
+        // Global mode keeps its existing candidate authority. Targeted mode
+        // uses the validated productos_b2b list and does not require cache rows.
+        let candidateCount: number;
+        if (targeted) {
+          candidateCount = targetProductIds.length;
+        } else {
+          const { count, error: candErr } = await admin
+            .from("catalog_price_cache")
+            .select("producto_b2b_id", { count: "exact", head: true })
+            .not("producto_b2b_id", "is", null);
+          if (candErr) {
+            return json(500, { ok: false, request_id: requestId, error: "candidate_count_failed" }, origin);
+          }
+          candidateCount = count ?? 0;
+        }
+
+        const { data: created, error: genErr } = await admin
+          .from("catalog_price_cache_v2_generations")
+          .insert({
+            rule_set_id: ruleSetId,
+            status: "running",
+            mode,
+            idempotency_key,
+            candidate_count: candidateCount,
+            request_id: requestId,
+            created_by: actorId,
+          })
+          .select("*")
+          .single();
+        if (genErr || !created) {
+          // Carrera con otra ejecución que insertó la misma key.
+          return json(409, { ok: false, request_id: requestId, error: "generation_insert_failed" }, origin);
+        }
+        generation = created;
       }
-      generation = created;
     }
 
-    const generationId = generation.id as string;
-    const candidateCount = generation.candidate_count as number;
+    const generationId = generation?.id as string | null;
+    const candidateCount = targeted
+      ? targetProductIds.length
+      : (generation?.candidate_count as number);
 
     const totals: Counters = {
-      processed_count: generation.processed_count ?? 0,
-      priced_count: generation.priced_count ?? 0,
-      request_quote_count: generation.request_quote_count ?? 0,
-      unavailable_count: generation.unavailable_count ?? 0,
-      error_count: generation.error_count ?? 0,
-      unresolved_count: generation.unresolved_count ?? 0,
+      processed_count: generation?.processed_count ?? 0,
+      priced_count: generation?.priced_count ?? 0,
+      request_quote_count: generation?.request_quote_count ?? 0,
+      unavailable_count: generation?.unavailable_count ?? 0,
+      error_count: generation?.error_count ?? 0,
+      unresolved_count: generation?.unresolved_count ?? 0,
       moq_resolved_count: 0,
     };
 
@@ -244,21 +298,30 @@ Deno.serve(async (req) => {
     const issues: Array<{ product_id: string; reason: string }> = [];
     let batches = 0;
     let done = false;
+    let targetOffset = targeted ? targetOffsetAfterCursor(targetProductIds, cursor) : 0;
 
     // ---------------- PROCESAMIENTO POR BATCHES ----------------
     while (!done) {
       if (Date.now() - startedAt > TIME_BUDGET_MS) break;
 
-      let q = admin
-        .from("catalog_price_cache")
-        .select("producto_b2b_id")
-        .not("producto_b2b_id", "is", null)
-        .order("producto_b2b_id", { ascending: true })
-        .limit(batchSize);
-      if (cursor) q = q.gt("producto_b2b_id", cursor);
+      let rows: Array<{ producto_b2b_id: string }> | null;
+      if (targeted) {
+        rows = takeTargetProductBatch(targetProductIds, targetOffset, batchSize)
+          .map((producto_b2b_id) => ({ producto_b2b_id }));
+        targetOffset += rows.length;
+      } else {
+        let q = admin
+          .from("catalog_price_cache")
+          .select("producto_b2b_id")
+          .not("producto_b2b_id", "is", null)
+          .order("producto_b2b_id", { ascending: true })
+          .limit(batchSize);
+        if (cursor) q = q.gt("producto_b2b_id", cursor);
 
-      const { data: rows, error: batchErr } = await q;
-      if (batchErr) throw new Error("candidate_batch_failed");
+        const result = await q;
+        if (result.error) throw new Error("candidate_batch_failed");
+        rows = result.data as Array<{ producto_b2b_id: string }> | null;
+      }
       if (!rows || rows.length === 0) {
         done = true;
         break;
@@ -337,25 +400,27 @@ Deno.serve(async (req) => {
       }
 
       // Persistir progreso acumulado tras cada batch (resultados previos sobreviven).
-      totals.processed_count = (generation.processed_count ?? 0) + batchCounters.processed_count;
-      totals.priced_count = (generation.priced_count ?? 0) + batchCounters.priced_count;
-      totals.request_quote_count = (generation.request_quote_count ?? 0) + batchCounters.request_quote_count;
-      totals.unavailable_count = (generation.unavailable_count ?? 0) + batchCounters.unavailable_count;
-      totals.error_count = (generation.error_count ?? 0) + batchCounters.error_count;
-      totals.unresolved_count = (generation.unresolved_count ?? 0) + batchCounters.unresolved_count;
+      totals.processed_count = (generation?.processed_count ?? 0) + batchCounters.processed_count;
+      totals.priced_count = (generation?.priced_count ?? 0) + batchCounters.priced_count;
+      totals.request_quote_count = (generation?.request_quote_count ?? 0) + batchCounters.request_quote_count;
+      totals.unavailable_count = (generation?.unavailable_count ?? 0) + batchCounters.unavailable_count;
+      totals.error_count = (generation?.error_count ?? 0) + batchCounters.error_count;
+      totals.unresolved_count = (generation?.unresolved_count ?? 0) + batchCounters.unresolved_count;
       totals.moq_resolved_count = batchCounters.moq_resolved_count;
 
-      await admin
-        .from("catalog_price_cache_v2_generations")
-        .update({
-          processed_count: Math.min(totals.processed_count, candidateCount),
-          priced_count: totals.priced_count,
-          request_quote_count: totals.request_quote_count,
-          unavailable_count: totals.unavailable_count,
-          error_count: totals.error_count,
-          unresolved_count: totals.unresolved_count,
-        })
-        .eq("id", generationId);
+      if (generation) {
+        await admin
+          .from("catalog_price_cache_v2_generations")
+          .update({
+            processed_count: Math.min(totals.processed_count, candidateCount),
+            priced_count: totals.priced_count,
+            request_quote_count: totals.request_quote_count,
+            unavailable_count: totals.unavailable_count,
+            error_count: totals.error_count,
+            unresolved_count: totals.unresolved_count,
+          })
+          .eq("id", generationId);
+      }
 
       console.log(
         JSON.stringify({
@@ -369,7 +434,7 @@ Deno.serve(async (req) => {
         }),
       );
 
-      if (rows.length < batchSize) done = true;
+      if (targeted ? targetOffset >= targetProductIds.length : rows.length < batchSize) done = true;
     }
 
     // ---------------- CIERRE ----------------
@@ -379,10 +444,12 @@ Deno.serve(async (req) => {
       if (!certifiable) finalStatus = "failed";
       else finalStatus = mode === "dry_run" ? "completed" : "certified";
 
-      await admin
-        .from("catalog_price_cache_v2_generations")
-        .update({ status: finalStatus, completed_at: new Date().toISOString() })
-        .eq("id", generationId);
+      if (generation) {
+        await admin
+          .from("catalog_price_cache_v2_generations")
+          .update({ status: finalStatus, completed_at: new Date().toISOString() })
+          .eq("id", generationId);
+      }
     }
 
     const durationMs = Date.now() - startedAt;
@@ -406,6 +473,9 @@ Deno.serve(async (req) => {
         request_id: requestId,
         generation_id: generationId,
         mode,
+        targeted,
+        target_product_count: targeted ? targetProductIds.length : null,
+        writes: targeted && mode === "dry_run" ? 0 : undefined,
         authorized_via: authorizedVia,
         status: finalStatus,
         done,

@@ -15,6 +15,13 @@ import {
   RequestSchema,
   sanitizeError,
 } from "./logic.ts";
+import {
+  normalizeProductIds,
+  resolveTargetProductIds,
+  shouldPersistGeneration,
+  takeTargetProductBatch,
+  targetOffsetAfterCursor,
+} from "./targeted.ts";
 
 const SUPABASE_URL = Deno.env.get("VITE_SUPABASE_URL") ?? "";
 const ANON_KEY = Deno.env.get("VITE_SUPABASE_PUBLISHABLE_KEY") ?? "";
@@ -28,12 +35,44 @@ Deno.test("3. payload inválido es rechazado", () => {
   assertFalse(RequestSchema.safeParse({ mode: "dry_run", idempotency_key: "short" }).success);
 });
 
-Deno.test("4. campos desconocidos rechazados (rule_set_id, product_ids, counts)", () => {
+Deno.test("4. campos desconocidos rechazados (rule_set_id, counts)", () => {
   const base = { mode: "dry_run", idempotency_key: "abcdefgh12" };
   assertFalse(RequestSchema.safeParse({ ...base, rule_set_id: crypto.randomUUID() }).success);
-  assertFalse(RequestSchema.safeParse({ ...base, product_ids: [crypto.randomUUID()] }).success);
   assertFalse(RequestSchema.safeParse({ ...base, priced_count: 10 }).success);
   assertFalse(RequestSchema.safeParse({ ...base, status: "certified" }).success);
+});
+
+Deno.test("5. targeted product_ids accepts UUIDs and deduplicates deterministically", () => {
+  const first = crypto.randomUUID();
+  const second = crypto.randomUUID();
+  const parsed = RequestSchema.safeParse({
+    mode: "dry_run",
+    idempotency_key: "targeted-001",
+    product_ids: [second, first, second],
+  });
+  assert(parsed.success);
+  assertEquals(normalizeProductIds(parsed.data.product_ids), [first, second].sort());
+});
+
+Deno.test("6. targeted product selection reports missing IDs without widening scope", () => {
+  const first = crypto.randomUUID();
+  const second = crypto.randomUUID();
+  const missing = crypto.randomUUID();
+  assertEquals(resolveTargetProductIds([second, first, second, missing], [first, second]), {
+    uniqueIds: [first, second, missing].sort(),
+    validIds: [first, second].sort(),
+    missingIds: [missing],
+  });
+  assertEquals(takeTargetProductBatch([first, second], 0, 1), [first]);
+  assertEquals(takeTargetProductBatch([first, second], 1, 1), [second]);
+  assertEquals(targetOffsetAfterCursor([first, second], first), 1);
+  assertEquals(targetOffsetAfterCursor([first, second], null), 0);
+});
+
+Deno.test("6b. targeted dry_run is zero-write while global behavior persists generations", () => {
+  assertFalse(shouldPersistGeneration("dry_run", true));
+  assert(shouldPersistGeneration("dry_run", false));
+  assert(shouldPersistGeneration("shadow_write", true));
 });
 
 Deno.test("7. batch_size fuera de rango", () => {

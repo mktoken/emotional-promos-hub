@@ -57,6 +57,13 @@
       "when": 1791774395037,
       "tag": "0007_catalog_model_public_projection_v1",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792033525477,
+      "tag": "0008_cdo_public_projection_canonical_v1",
+      "breakpoints": true
     }
   ]
 }

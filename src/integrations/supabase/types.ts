@@ -361,6 +361,13 @@ export type Database = {
             referencedRelation: "productos_b2b"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "catalog_governance_state_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: true
+            referencedRelation: "productos_publicos"
+            referencedColumns: ["id"]
+          },
         ]
       }
       catalog_price_cache: {
@@ -425,6 +432,13 @@ export type Database = {
             columns: ["producto_b2b_id"]
             isOneToOne: false
             referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_price_cache_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_publicos"
             referencedColumns: ["id"]
           },
           {
@@ -566,6 +580,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "catalog_price_cache_v2_shadow_product_fk"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "productos_publicos"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "catalog_price_cache_v2_shadow_rule_set_fk"
             columns: ["rule_set_id"]
             isOneToOne: false
@@ -703,6 +724,13 @@ export type Database = {
             referencedRelation: "productos_b2b"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "catalog_product_asset_links_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_publicos"
+            referencedColumns: ["id"]
+          },
         ]
       }
       catalog_product_content: {
@@ -770,6 +798,13 @@ export type Database = {
             columns: ["producto_b2b_id"]
             isOneToOne: false
             referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_product_content_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_publicos"
             referencedColumns: ["id"]
           },
         ]
@@ -847,6 +882,13 @@ export type Database = {
             columns: ["producto_b2b_id"]
             isOneToOne: false
             referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_product_model_members_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_publicos"
             referencedColumns: ["id"]
           },
         ]
@@ -1774,6 +1816,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_deal_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "productos_publicos"
             referencedColumns: ["id"]
           },
         ]
@@ -3842,6 +3891,13 @@ export type Database = {
             referencedRelation: "productos_b2b"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "product_category_assignments_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: true
+            referencedRelation: "productos_publicos"
+            referencedColumns: ["id"]
+          },
         ]
       }
       product_category_review_queue: {
@@ -3887,6 +3943,13 @@ export type Database = {
             columns: ["producto_b2b_id"]
             isOneToOne: false
             referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_category_review_queue_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_publicos"
             referencedColumns: ["id"]
           },
           {
@@ -3942,6 +4005,13 @@ export type Database = {
             columns: ["producto_b2b_id"]
             isOneToOne: false
             referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_collection_assignments_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_publicos"
             referencedColumns: ["id"]
           },
         ]
@@ -4049,6 +4119,13 @@ export type Database = {
             columns: ["producto_b2b_id"]
             isOneToOne: true
             referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_personalization_capabilities_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: true
+            referencedRelation: "productos_publicos"
             referencedColumns: ["id"]
           },
         ]
@@ -4291,6 +4368,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "product_subcategory_assignments_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_publicos"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "product_subcategory_assignments_subcategory_id_fkey"
             columns: ["subcategory_id"]
             isOneToOne: false
@@ -4352,6 +4436,13 @@ export type Database = {
             columns: ["producto_b2b_id"]
             isOneToOne: false
             referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_subcategory_review_queue_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_publicos"
             referencedColumns: ["id"]
           },
           {
@@ -4419,6 +4510,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "producto_b2b_oferta_map_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_publicos"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "producto_b2b_oferta_map_proveedor_id_fkey"
             columns: ["proveedor_id"]
             isOneToOne: false
@@ -4479,6 +4577,13 @@ export type Database = {
             columns: ["producto_b2b_id"]
             isOneToOne: false
             referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "producto_b2b_status_producto_b2b_id_fkey"
+            columns: ["producto_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_publicos"
             referencedColumns: ["id"]
           },
         ]
@@ -4989,6 +5094,13 @@ export type Database = {
             columns: ["productos_b2b_id"]
             isOneToOne: false
             referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_raw_products_productos_b2b_id_fkey"
+            columns: ["productos_b2b_id"]
+            isOneToOne: false
+            referencedRelation: "productos_publicos"
             referencedColumns: ["id"]
           },
           {
@@ -5527,6 +5639,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_price_cache_v2_shadow_product_fk"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "productos_publicos"
             referencedColumns: ["id"]
           },
           {

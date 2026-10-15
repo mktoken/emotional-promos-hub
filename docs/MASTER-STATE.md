@@ -2189,3 +2189,21 @@ Detalle final:
 
 **Siguiente paso:** `CHK-CDO-01F — APPLY CANONICAL ANALYTICAL NORMALIZATION`;
 no ejecutar automáticamente.
+
+## CDO Public Projection Final (2026-10-14)
+
+**Estado Git:** migración versionada y validada estáticamente; aplicación al
+runtime pendiente de la ruta interna canónica.
+
+`supabase/migrations/20261014090000_cdo_public_projection_canonical_v1.sql`
+redefine `public.productos_publicos` directamente desde `productos_b2b`, el
+último `producto_b2b_status`, categorías activas y
+`catalog_price_v2_current_prices`. Conserva el contrato público de 11 columnas
+y deja intacta `public.productos_publicos_legacy_v1`; no modifica filas,
+pricing, stock, mappings, categorías, imágenes, frontend ni proveedores.
+
+La elegibilidad versionada es: `public_visible`, `price_valid`,
+`image_available`, `stock_qty > 0` y existencia de una categoría activa. La
+proyección ya no usa `activo`, `pilot` ni `catalog_price_cache` como gates.
+Los conteos CDO y el impacto BEFORE/AFTER de G4 y ForPromotional requieren
+postcheck read-only del runtime; no se inventan desde evidencia estática.

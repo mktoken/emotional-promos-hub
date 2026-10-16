@@ -71,6 +71,13 @@
       "when": 1792104380869,
       "tag": "0009_catalog_search_products_canonical_visibility_v1",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792121391348,
+      "tag": "0010_g4_model_variant_governance_coverage_v1_apply",
+      "breakpoints": true
     }
   ]
 }

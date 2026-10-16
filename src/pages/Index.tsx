@@ -34,6 +34,7 @@ export default function Index() {
   const currentView: ViewType =
     viewParam === "catalog" || viewParam === "pdp" || viewParam === "cart" || viewParam === "brief" ? viewParam : "landing";
   const selectedProductId = searchParams.get("product");
+  const selectedModelKey = searchParams.get("model");
 
   const setView = useCallback(
     (v: ViewType) => {
@@ -85,7 +86,7 @@ export default function Index() {
     setQuoteCart((prev) => prev.filter((item) => item.cartId !== cartId));
   };
 
-  const openProduct = (productId: string) => {
+  const openProduct = (productId: string, modelKey?: string | null) => {
     const returnTo = `${window.location.pathname}${window.location.search}`;
     try {
       sessionStorage.setItem(`${SCROLL_KEY_PREFIX}${returnTo}`, String(window.scrollY));
@@ -95,6 +96,7 @@ export default function Index() {
     const next = new URLSearchParams();
     next.set("view", "pdp");
     next.set("product", productId);
+    if (modelKey) next.set("model", modelKey);
     next.set("returnTo", returnTo);
     setSearchParams(next);
   };
@@ -189,7 +191,12 @@ export default function Index() {
         <CatalogView onViewChange={(v) => setView(v as ViewType)} onOpenProduct={openProduct} />
       )}
       {currentView === "pdp" && (
-        <ProductDetailView productId={selectedProductId} onBack={backFromProduct} onAddToQuote={addToQuote} />
+        <ProductDetailView
+          productId={selectedProductId}
+          modelKey={selectedModelKey}
+          onBack={backFromProduct}
+          onAddToQuote={addToQuote}
+        />
       )}
       {currentView === "brief" && <ProjectBriefView onBack={() => setView("landing")} />}
       {currentView === "cart" && (

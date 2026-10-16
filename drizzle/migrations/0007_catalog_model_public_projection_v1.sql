@@ -267,6 +267,7 @@ AS $function$
           'sku', mm.variant_sku,
           'variant_type', CASE WHEN mm.material IS NOT NULL THEN 'material_variant' ELSE 'color_variant' END,
           'variant_value', mm.variant_value,
+          'material', mm.material,
           'image', CASE
             WHEN mm.variant_image_url IS NOT NULL
               THEN jsonb_build_object('url', mm.variant_image_url, 'role', 'VARIANT_MASTER', 'status', 'PUBLIC_READY')

@@ -61,6 +61,10 @@ describe("CHK-CATGOV-05F model public projection SQL contract", () => {
     expect(migration).toMatch(/ORDER BY mm\.variant_sku, mm\.producto_b2b_id/);
   });
 
+  it("exposes the resolved material on each model variant without changing the RPC shape", () => {
+    expect(migration).toMatch(/'material', mm\.material/);
+  });
+
   it("uses one variant context for price and MOQ", () => {
     expect(migration).toMatch(/'card_price',[\s\S]*'minimum_quantity', mm\.minimum_quantity/);
     expect(migration).toMatch(/default_price_status/);

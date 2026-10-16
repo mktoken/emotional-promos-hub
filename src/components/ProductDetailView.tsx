@@ -22,6 +22,12 @@ import type {
   PersonalizationOptionRule,
 } from "@/data/mockData";
 import { normalizeProductImages } from "@/lib/product-images";
+import {
+  isModelResult,
+  projectionImageUrls,
+  projectionVariants,
+  type CatalogModelProjectionRow,
+} from "@/lib/catalog-model-projection";
 import SafeProductImage from "@/components/catalog/SafeProductImage";
 import ProductImageLightbox from "@/components/catalog/ProductImageLightbox";
 import {
@@ -35,6 +41,7 @@ import type { NewQuoteSelectionItem } from "@/features/quotes/lib/quote-selectio
 
 interface ProductDetailViewProps {
   productId: string | null;
+  modelKey?: string | null;
   onBack: () => void;
   onAddToQuote: (item: NewQuoteSelectionItem) => void;
 }
@@ -58,6 +65,7 @@ interface ProductoB2B {
     personalizacion_capacidades?: PersonalizationCapabilities;
   } | null;
   variantes: Array<{
+    producto_b2b_id?: string;
     sku_variante?: string;
     clave_variante?: string;
     color_nombre?: string;
@@ -73,6 +81,58 @@ interface ProductoB2B {
   activo: boolean | null;
   updated_at: string | null;
 }
+
+const modelProjectionToProduct = (
+  row: CatalogModelProjectionRow,
+  fallbackProductId: string | null,
+): { product: ProductoB2B; variantProductIds: string[] } | null => {
+  if (!isModelResult(row)) return null;
+  const variants = projectionVariants(row)
+    .filter((variant) => variant.public_eligible !== false)
+    .map((variant) => {
+      const variantProductId = variant.producto_b2b_id ?? fallbackProductId ?? "";
+      const imageUrl = projectionImageUrls(variant.image)[0];
+      const stock = Number(variant.stock_qty ?? 0);
+      return {
+        producto_b2b_id: variantProductId,
+        sku_variante: variant.sku ?? undefined,
+        clave_variante: variant.sku ?? undefined,
+        color_nombre: variant.variant_value ?? "Disponible",
+        stock_total: stock,
+        agregable_a_propuesta: stock > 0 && variant.stock_status === "disponible",
+        imagen_url: imageUrl,
+        disponibilidad: variant.stock_status ?? "consultar",
+        material: variant.material ?? undefined,
+      };
+    });
+  if (variants.length === 0) return null;
+
+  const defaultProductId = row.default_producto_b2b_id ?? variants[0].producto_b2b_id ?? fallbackProductId;
+  if (!defaultProductId) return null;
+
+  const canonicalName = row.canonical_model_name ?? row.model_key ?? "Producto";
+  const representativeImages = projectionImageUrls(row.representative_image);
+  return {
+    product: {
+      id: defaultProductId,
+      id_interno: row.model_key ?? defaultProductId,
+      sku_base: row.selected_variant_sku ?? variants[0].sku_variante ?? null,
+      categoria_principal: null,
+      datos_generales: {
+        nombre: canonicalName,
+        modelo_comercial: canonicalName,
+        clave_producto: row.selected_variant_sku ?? undefined,
+        agregable_a_propuesta: true,
+      },
+      variantes: variants,
+      imagenes: representativeImages,
+      motor_de_personalizacion: null,
+      activo: true,
+      updated_at: null,
+    },
+    variantProductIds: variants.map((variant) => variant.producto_b2b_id),
+  };
+};
 
 const QUICK_QUANTITIES = [100, 250, 500, 1000];
 
@@ -147,10 +207,11 @@ const PERSONALIZATION_STATUS_META: Record<string, { label: string; className: st
   },
 };
 
-export default function ProductDetailView({ productId, onBack, onAddToQuote }: ProductDetailViewProps) {
+export default function ProductDetailView({ productId, modelKey, onBack, onAddToQuote }: ProductDetailViewProps) {
   const [product, setProduct] = useState<ProductoB2B | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
+  const [variantProductIds, setVariantProductIds] = useState<string[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(100);
   const [priceQuote, setPriceQuote] = useState<PublicPriceQuote | null>(null);
@@ -165,8 +226,33 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
 
   useEffect(() => {
     async function fetchProduct() {
-      if (!productId) return;
+      if (!productId) {
+        setProduct(null);
+        setLoading(false);
+        return;
+      }
       setLoading(true);
+      setProduct(null);
+      setVariantProductIds([]);
+
+      if (modelKey) {
+        const { data: modelData, error: modelError } = await supabase.rpc("get_model_projection_detail_v1", {
+          p_model_key: modelKey,
+          p_variant_sku: null,
+        });
+        const modelRow = Array.isArray(modelData) ? (modelData[0] as CatalogModelProjectionRow | undefined) : undefined;
+        const projected = !modelError && modelRow ? modelProjectionToProduct(modelRow, productId) : null;
+        if (projected) {
+          setProduct(projected.product);
+          setVariantProductIds(projected.variantProductIds);
+          setSelectedColorIndex(0);
+          setSelectedImageIndex(0);
+          setQuantity(100);
+          setLoading(false);
+          return;
+        }
+      }
+
       const { data, error } = await supabase
         .from("productos_publicos")
         .select(
@@ -176,7 +262,9 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
         .maybeSingle();
 
       if (!error && data) {
-        setProduct(data as unknown as ProductoB2B);
+        const legacyProduct = data as unknown as ProductoB2B;
+        setProduct(legacyProduct);
+        setVariantProductIds((legacyProduct.variantes ?? []).map(() => legacyProduct.id));
         setSelectedColorIndex(0);
         setSelectedImageIndex(0);
         setQuantity(100);
@@ -186,7 +274,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
     }
 
     fetchProduct();
-  }, [productId]);
+  }, [modelKey, productId]);
 
 
 
@@ -218,7 +306,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
     "";
 
   const productDesc = product?.datos_generales?.descripcion?.trim() || "";
-  const productClave = (product?.datos_generales?.clave_producto?.trim() || product?.sku_base?.trim() || "").trim();
+  const productBaseClave = (product?.datos_generales?.clave_producto?.trim() || product?.sku_base?.trim() || "").trim();
   const deliveryEstimate =
     product?.datos_generales?.entrega_estimada || "10 a 15 días hábiles después de aprobación de arte";
   const deliveryNote =
@@ -267,6 +355,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
     imgAlt: productName,
     agregableToProposal: false,
   };
+  const productClave = (currentColor.claveVariante?.trim() || productBaseClave).trim();
 
   const productImages = normalizeProductImages(product?.imagenes);
   const variantImagesRaw = colors.map((color) => color.imageUrl).filter((url): url is string => Boolean(url));
@@ -294,11 +383,11 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
   const allVariantsOutOfStock =
     colors.length === 0 || colors.every((c) => !c.agregableToProposal || Number(c.stock ?? 0) <= 0);
   const currentVariantOutOfStock = availableStock <= 0 || !currentColor.agregableToProposal;
-  const productDbId = product?.id ?? null;
+  const currentVariantProductId = variantProductIds[selectedColorIndex] ?? product?.id ?? null;
 
   // Precio autoritativo del servidor (debounce + protección contra respuestas viejas).
   useEffect(() => {
-    if (!productDbId) return;
+    if (!currentVariantProductId) return;
     if (!isValidQuoteQuantity(quantity)) {
       setPriceQuote(null);
       setPriceError(false);
@@ -313,7 +402,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
 
     let cancelled = false;
     const timer = setTimeout(() => {
-      fetchPublicProductPriceQuote(productDbId, quantity)
+      fetchPublicProductPriceQuote(currentVariantProductId, quantity)
         .then((quote) => {
           if (cancelled || priceRequestRef.current !== requestSeq) return;
           setPriceQuote(quote);
@@ -331,7 +420,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [productDbId, quantity, priceReloadToken]);
+  }, [currentVariantProductId, quantity, priceReloadToken]);
 
   const priceStatus = priceQuote?.status ?? null;
   const unitPrice = priceQuote?.unitPriceBeforeTaxMxn ?? null;
@@ -417,7 +506,7 @@ export default function ProductDetailView({ productId, onBack, onAddToQuote }: P
         : null;
 
     const quoteItem: NewQuoteSelectionItem = {
-      productId: product.id,
+      productId: currentVariantProductId ?? product.id,
       name: productName,
       sku: productClave,
       claveProducto: productClave,

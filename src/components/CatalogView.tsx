@@ -10,6 +10,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { normalizeProductImages } from "@/lib/product-images";
+import {
+  hasModelResults,
+  projectionToCatalogCard,
+  type CatalogModelProjectionRow,
+  type CatalogModelCard,
+} from "@/lib/catalog-model-projection";
 import SafeProductImage from "@/components/catalog/SafeProductImage";
 import MobileFiltersDrawer from "@/components/catalog/MobileFiltersDrawer";
 
@@ -30,6 +36,8 @@ interface RpcProduct {
   subcategoria_nombre: string | null;
   relevance: number | null;
   total_count: number | null;
+  model_key: string | null;
+  eligible_variant_count: number;
 }
 
 interface CategoryOption {
@@ -53,7 +61,7 @@ const SCROLL_KEY_PREFIX = "catalog-scroll:";
 
 interface CatalogViewProps {
   onViewChange: (view: string) => void;
-  onOpenProduct: (productId: string) => void;
+  onOpenProduct: (productId: string, modelKey?: string | null) => void;
 }
 
 type RpcCaller = (
@@ -207,7 +215,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
     setErrorList(null);
     try {
       const rpc = supabase.rpc.bind(supabase) as unknown as RpcCaller;
-      const { data, error } = await rpc("catalog_search_products_v2", {
+      const legacyArgs = {
         p_query: q,
         p_category_slug: selectedCategorySlug || null,
         p_collection_slug: ecoOnly ? "ecologicos" : null,
@@ -216,9 +224,52 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
         p_limit: PAGE_SIZE,
         p_offset: (page - 1) * PAGE_SIZE,
         p_subcategory_slug: selectedSubcategorySlug || null,
-      });
-      if (error) throw new Error(error.message);
-      const rows = (data as RpcProduct[] | null) ?? [];
+      };
+
+      let rows: RpcProduct[];
+      // The model projection does not yet expose subcategory filtering. When
+      // that filter is active, or while the model migration is not live, keep
+      // the canonical product RPC as the safe provider-agnostic fallback.
+      if (selectedSubcategorySlug) {
+        const { data, error } = await rpc("catalog_search_products_v2", legacyArgs);
+        if (error) throw new Error(error.message);
+        rows = ((data as RpcProduct[] | null) ?? []).map((row) => ({
+          ...row,
+          model_key: null,
+          eligible_variant_count: 1,
+        }));
+      } else {
+        const modelResult = await rpc("catalog_search_model_projection_v1", {
+          p_query: q,
+          p_category_slug: selectedCategorySlug || null,
+          p_collection_slug: ecoOnly ? "ecologicos" : null,
+          p_min_price: null,
+          p_max_price: null,
+          p_min_moq: null,
+          p_max_moq: null,
+          p_color: null,
+          p_material: null,
+          p_availability: null,
+          p_limit: PAGE_SIZE,
+          p_offset: (page - 1) * PAGE_SIZE,
+        });
+        const modelRows = (modelResult.data as CatalogModelProjectionRow[] | null) ?? [];
+        const modelCards = !modelResult.error && hasModelResults(modelRows)
+          ? modelRows.map(projectionToCatalogCard).filter((row): row is CatalogModelCard => row !== null)
+          : [];
+
+        if (modelCards.length > 0) {
+          rows = modelCards;
+        } else {
+          const { data, error } = await rpc("catalog_search_products_v2", legacyArgs);
+          if (error) throw new Error(error.message);
+          rows = ((data as RpcProduct[] | null) ?? []).map((row) => ({
+            ...row,
+            model_key: null,
+            eligible_variant_count: 1,
+          }));
+        }
+      }
       const total = rows.length > 0 ? Number(rows[0].total_count ?? 0) : 0;
       setTotalCount(total);
       setProducts(rows);
@@ -704,7 +755,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
                     <div
                       key={prod.id}
                       className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-md transition-shadow group cursor-pointer"
-                      onClick={() => onOpenProduct(prod.id)}
+                      onClick={() => onOpenProduct(prod.id, prod.model_key)}
                     >
                       <div className="aspect-square bg-white relative flex items-center justify-center overflow-hidden">
                         <div className="absolute top-3 left-3 bg-card/90 backdrop-blur px-2 py-1 rounded-md text-[10px] font-bold text-foreground border border-border z-10 max-w-[70%] truncate">
@@ -723,6 +774,11 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
 
                       <div className="p-5">
                         <h3 className="font-bold text-foreground mb-2 line-clamp-1">{nombre}</h3>
+                        {prod.model_key && prod.eligible_variant_count > 1 ? (
+                          <p className="text-xs text-muted-foreground mb-2">
+                            {prod.eligible_variant_count.toLocaleString("es-MX")} variantes disponibles
+                          </p>
+                        ) : null}
                         {conPrecio ? (
                           <p className="text-muted-foreground text-sm mb-4">
                             Desde{" "}

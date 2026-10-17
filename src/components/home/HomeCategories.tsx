@@ -1,23 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, ImageIcon, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-
-interface HomeCategoryCard {
-  label: string;
-  slug: string;
-  /** Slot reemplazable: URL del asset aprobado cuando exista. */
-  imageSrc?: string;
-}
-
-// "Regalos ejecutivos" diferida hasta que exista inventario público (decisión del propietario, opción D).
-const CARDS: HomeCategoryCard[] = [
-  { label: "Termos y vasos", slug: "bebidas-termos-vasos" },
-  { label: "Libretas", slug: "libretas-cuadernos" },
-  { label: "Ropa promocional", slug: "textiles-ropa" },
-  { label: "Bolsas y mochilas", slug: "bolsas-mochilas-viaje" },
-  { label: "Tecnología", slug: "tecnologia" },
-];
+import { HOME_CATEGORY_CARDS } from "@/components/home/home-category-cards";
 
 export default function HomeCategories() {
   const navigate = useNavigate();
@@ -32,7 +17,7 @@ export default function HomeCategories() {
         .eq("is_active", true)
         .in(
           "slug",
-          CARDS.map((c) => c.slug),
+          HOME_CATEGORY_CARDS.map((c) => c.slug),
         );
       if (cancelled) return;
       setActiveSlugs(error ? new Set() : new Set((data ?? []).map((r) => r.slug)));
@@ -42,7 +27,7 @@ export default function HomeCategories() {
     };
   }, []);
 
-  const visible = activeSlugs ? CARDS.filter((c) => activeSlugs.has(c.slug)) : [];
+  const visible = activeSlugs ? HOME_CATEGORY_CARDS.filter((c) => activeSlugs.has(c.slug)) : [];
 
   return (
     <section className="py-16 bg-card border-y border-border">
@@ -63,17 +48,11 @@ export default function HomeCategories() {
                     onClick={() => navigate(`/?view=catalog&category=${encodeURIComponent(c.slug)}`)}
                     className="group w-full min-h-[44px] text-left bg-surface rounded-xl border border-border hover:border-primary/40 hover:shadow-md transition-all overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
-                    <div className="w-full aspect-[4/3] bg-muted flex items-center justify-center overflow-hidden">
-                      {c.imageSrc ? (
-                        <img
-                          src={c.imageSrc}
-                          alt=""
-                          loading="lazy"
-                          className="w-full h-full object-contain p-4"
-                        />
-                      ) : (
-                        <ImageIcon size={32} className="text-muted-foreground opacity-40" aria-hidden="true" />
-                      )}
+                    <div className="w-full aspect-[4/3] bg-primary/[0.06] flex flex-col items-center justify-center gap-3 overflow-hidden">
+                      <c.icon size={42} strokeWidth={1.5} className="text-primary" aria-hidden="true" />
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                        Explora la categoría
+                      </span>
                     </div>
                     <p className="p-4 font-bold text-foreground text-sm md:text-base group-hover:text-primary transition-colors">
                       {c.label}

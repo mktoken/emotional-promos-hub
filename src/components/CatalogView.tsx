@@ -468,7 +468,7 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-3xl sm:text-4xl font-extrabold mb-4">Catálogo Mayorista</h1>
           <p className="text-dark-section-foreground/60 max-w-2xl mx-auto mb-8">
-            Inventario enlazado en tiempo real con los principales importadores de México.
+            Consulta el catálogo; disponibilidad por confirmar.
           </p>
           <div className="max-w-2xl mx-auto relative">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">

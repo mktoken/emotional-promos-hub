@@ -259,7 +259,7 @@ AS $function$
           AND v.variant->>'oferta_id' = m.oferta_id::text
         ORDER BY v.variant->>'imagen_url'
         LIMIT 1
-      ), '') AS provider_image_url
+      ), '') AS provider_image_url,
       rp.provider_sku
     FROM public.catalog_product_models md
     JOIN public.catalog_product_model_members m

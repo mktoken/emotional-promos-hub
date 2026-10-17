@@ -31,19 +31,25 @@ export default function SafeProductImage({
   onLoadedIndexChange,
   onClick,
 }: SafeProductImageProps) {
+  const candidateImages = images
+    .map((url, originalIndex) => ({ url, originalIndex }))
+    .filter(({ url }) => typeof url === "string" && url.trim().length > 0);
+  const candidateCount = candidateImages.length;
+  const imageSignature = candidateImages.map(({ url }) => url).join("\u0000");
   const [index, setIndex] = useState(0);
-  const [allFailed, setAllFailed] = useState(images.length === 0);
+  const [allFailed, setAllFailed] = useState(candidateCount === 0);
 
   // Reset cuando cambia el array de imágenes.
   useEffect(() => {
     setIndex(0);
-    setAllFailed(images.length === 0);
-  }, [images]);
+    setAllFailed(candidateCount === 0);
+  }, [imageSignature, candidateCount]);
 
-  const currentSrc = images[index];
+  const currentImage = candidateImages[index];
+  const currentSrc = currentImage?.url;
 
   const handleError = () => {
-    if (index + 1 < images.length) {
+    if (index + 1 < candidateImages.length) {
       setIndex(index + 1);
     } else {
       setAllFailed(true);
@@ -51,7 +57,7 @@ export default function SafeProductImage({
   };
 
   const handleLoad = () => {
-    onLoadedIndexChange?.(index);
+    onLoadedIndexChange?.(currentImage?.originalIndex ?? index);
   };
 
   if (!currentSrc || allFailed) {
@@ -59,15 +65,20 @@ export default function SafeProductImage({
       <div
         className={
           placeholderClassName ??
-          "w-full h-full flex items-center justify-center"
+          "w-full h-full flex items-center justify-center px-4"
         }
-        aria-label={alt}
+        role="img"
+        aria-label={`${alt}: Imagen en actualización`}
       >
-        <Package
-          size={placeholderSize}
-          className="opacity-40 text-muted-foreground"
-          aria-hidden="true"
-        />
+        <div className="flex max-w-[14rem] flex-col items-center text-center text-muted-foreground">
+          <Package
+            size={placeholderSize}
+            className="opacity-40"
+            aria-hidden="true"
+          />
+          <span className="mt-3 text-sm font-medium">Imagen en actualización</span>
+          <span className="mt-1 text-xs">Consulta disponibilidad</span>
+        </div>
       </div>
     );
   }

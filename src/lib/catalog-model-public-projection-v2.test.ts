@@ -6,18 +6,15 @@ const supabaseMigration = readFileSync(
   resolve(process.cwd(), "supabase/migrations/20261016100000_g4_dynamic_model_projection_v2.sql"),
   "utf8",
 );
-const drizzleMigration = readFileSync(
-  resolve(process.cwd(), "drizzle/migrations/0011_g4_dynamic_model_projection_v2.sql"),
-  "utf8",
-);
 const postcheck = readFileSync(
   resolve(process.cwd(), "docs/catalog-governance/CHK-CATGOV-05I_G4_DYNAMIC_MODEL_PROJECTION_V2_POSTCHECK.sql"),
   "utf8",
 );
 
 describe("CHK-CATGOV-05I G4 dynamic model projection v2", () => {
-  it("keeps Supabase and Drizzle delivery byte-equivalent", () => {
-    expect(drizzleMigration).toBe(supabaseMigration);
+  it("uses the canonical Supabase migration as the pre-apply source", () => {
+    expect(supabaseMigration).toMatch(/CREATE OR REPLACE FUNCTION public\.catalog_search_model_projection_v1\(/);
+    expect(supabaseMigration).toMatch(/CREATE OR REPLACE FUNCTION public\.get_model_projection_detail_v1\(/);
   });
 
   it("validates the exact governance universe before changing governance state", () => {

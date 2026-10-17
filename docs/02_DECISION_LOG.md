@@ -61,6 +61,8 @@ La decisión no autoriza ejecución externa de Supabase, migraciones de fallback
 
 | D-035 | 2026-10-12 | Desplegar y certificar el backend de proyección pública a nivel modelo sin realizar cutover del frontend | 05G-B3, C-A y C-B confirman migración única, vehículo 0007 byte-identical, 8 modelos, 18 memberships, 0 defaults, RPCs compatibles, PRECHECK V3 `ALREADY_APPLIED` y objetos públicos existentes sin cambios | `docs/MASTER-STATE.md`, `docs/10_QA_EVIDENCE.md`, `docs/catalog-governance/CHK-CATGOV-05G_FINAL_CERTIFICATION.md` | VIGENTE |
 
+| D-036 | 2026-10-17 | Mantener el Consultor de Proyectos Inteligente como `PARKED / PLANNED` y retomarlo solo mediante `CHK-AI-ADVISOR-01` después de cerrar Brand/Web, certificar la beta y validar el flujo catálogo → brief → solicitud → CRM → asesor | El handoff canónico conserva la investigación y las decisiones preliminares. La arquitectura futura es workflow determinístico + un LLM especializado + herramientas autoritativas + validación humana; no se autoriza un agente público, múltiples agentes, cambios en catálogo/pricing/stock ni claims inventados | `docs/strategy/PE_AI_PROJECT_ADVISOR_HANDOFF_V1.md`, `docs/MASTER-STATE.md`, `docs/06_SUPER_AGENTE_COMERCIAL.md`, `docs/10_QA_EVIDENCE.md` | VIGENTE; iniciativa aparcada |
+
 Decisiones canónicas asociadas:
 
 1. El backend de proyección modelo está desplegado; el frontend público no

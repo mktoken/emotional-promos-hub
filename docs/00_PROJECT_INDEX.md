@@ -25,6 +25,7 @@ El estado Git y el checkpoint vigente no se mantienen aquí. La fuente de verdad
 4. El documento especializado que corresponda:
    - producto: `docs/04_PRODUCT_SCOPE.md`;
    - Super Agente Comercial: `docs/06_SUPER_AGENTE_COMERCIAL.md`;
+   - AI Project Advisor handoff: `docs/strategy/PE_AI_PROJECT_ADVISOR_HANDOFF_V1.md`;
    - roadmap Operación Primero: `docs/07_OPERATIONS_ROADMAP.md`;
    - arquitectura: `docs/05_ARCHITECTURE.md`;
    - precios y catálogo: `docs/09_PRICING_CATALOG_V2.md`;
@@ -93,6 +94,7 @@ Antes de desarrollar:
 ## Documentos especializados vigentes
 
 - Super Agente Comercial: `docs/06_SUPER_AGENTE_COMERCIAL.md`.
+- AI Project Advisor handoff: `docs/strategy/PE_AI_PROJECT_ADVISOR_HANDOFF_V1.md`.
 - Roadmap Operación Primero: `docs/07_OPERATIONS_ROADMAP.md`.
 - Certificación G4 modelo/variante Governance: `docs/catalog-governance/CHK-CATGOV-05C_G4_MODEL_MEMBERSHIP_EXECUTION_CERTIFICATION.md`.
 

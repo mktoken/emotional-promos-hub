@@ -14,6 +14,39 @@
 - Working tree: limpio al cierre de `CHK-COM-6`.
 - Push: realizado a `origin/main`.
 
+## CHK-AI-ADVISOR-HANDOFF — Continuidad canónica (2026-10-17)
+
+- **Iniciativa:** Consultor de Proyectos Inteligente.
+- **Estado:** `PARKED / PLANNED`.
+- **Factibilidad:** `PASS WITH CONDITIONS`.
+- **Implementación de la iniciativa:** `NOT STARTED`.
+- **Prioridad actual:** cierre de la beta comercial y de las dependencias de
+  `CHK-BRAND-WEB-1`; no iniciar el asesor IA en este paso.
+- **Siguiente frente activo:** certificación E2E comercial, publicación controlada
+  y cierre documental según las dependencias reales de `CHK-BRAND-WEB-1`.
+- **Siguiente checkpoint de la iniciativa IA:** `CHK-AI-ADVISOR-01`, únicamente
+  después de cumplir el gate de reactivación y obtener autorización expresa del
+  propietario.
+- **Arquitectura recomendada:** workflow determinístico + un LLM especializado
+  + herramientas autoritativas + validación humana. No se autorizan múltiples
+  agentes ni un agente autónomo público.
+- **Guardrails:** catálogo, Pricing V2, stock observado, MOQ, identidad, imagen,
+  publicación, privacidad y claims conservan sus autoridades existentes; la IA
+  no puede inventar datos ni publicar por sí sola.
+- **Gate de reactivación:** `CHK-BRAND-WEB-1` cerrado; beta con QA
+  público/controlado documentada; flujo catálogo → brief → solicitud → CRM →
+  asesor validado; catálogo verificable para el piloto; autorización expresa del
+  propietario.
+- **Evidencia y límites:** la base reutilizable y los QA controlados están
+  documentados en `docs/06_SUPER_AGENTE_COMERCIAL.md` y
+  `docs/10_QA_EVIDENCE.md`; los 12 proyectos del futuro piloto, ROI, costes
+  operativos, stock fresco universal, disponibilidad final, impresión, WhatsApp
+  AI y escritura CRM anónima no están comprobados en este handoff.
+- **Documento de continuidad:** `docs/strategy/PE_AI_PROJECT_ADVISOR_HANDOFF_V1.md`.
+- No se reabren `CHK-AI-SALES-1` a `CHK-AI-SALES-5` ni fases Brand/Web ya
+  certificadas; `CHK-BRAND-WEB-1` continúa abierto y no se declara publicado por
+  la sola existencia de commits.
+
 ## CHK-CDO-01H3 — Cierre de certificación final de masters CDO / StockSur (2026-10-13)
 
 - Estado: **CLOSED / PASS — CDO / STOCKSUR IMAGE MASTER CERTIFICATION COMPLETE**.
@@ -335,6 +368,7 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 - No modificar backend, Supabase, migraciones, RLS, grants, secrets o Edge Functions.
 - No ejecutar rollback.
 - No ejecutar `CHK-CATALOG-P0-STOCK-PROVIDER-TRACEABILITY-V1` dentro de este cierre; queda como siguiente checkpoint autorizado para investigar origen y refresh de stock.
+- No iniciar `CHK-AI-ADVISOR-01` hasta cumplir el gate de reactivación documentado en el handoff canónico y recibir autorización expresa del propietario.
 
 ## Siguiente paso autorizado
 

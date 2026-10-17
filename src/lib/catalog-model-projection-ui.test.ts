@@ -7,12 +7,13 @@ const detailView = readFileSync(resolve(process.cwd(), "src/components/ProductDe
 const indexView = readFileSync(resolve(process.cwd(), "src/pages/Index.tsx"), "utf8");
 
 describe("G4 model/variant public experience contract", () => {
-  it("uses model cards only for explicit MODEL_RESULT rows and retains the legacy fallback", () => {
+  it("treats a valid V2 page as authoritative even without MODEL_RESULT rows", () => {
     expect(catalogView).toMatch(/catalog_search_model_projection_v1/);
-    expect(catalogView).toMatch(/hasModelResults/);
+    expect(catalogView).toMatch(/isCatalogModelProjectionPayload\(modelResult\.data\)/);
     expect(catalogView).toMatch(/projectionToCatalogCard/);
     expect(catalogView).toMatch(/catalog_search_products_v2/);
     expect(catalogView).toMatch(/selectedSubcategorySlug/);
+    expect(catalogView).not.toMatch(/hasModelResults\(modelRows\)/);
   });
 
   it("carries the model key to PDP and resolves a selected variant", () => {

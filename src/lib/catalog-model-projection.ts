@@ -74,6 +74,27 @@ export const hasOnlyModelResults = (rows: unknown[]): rows is CatalogModelProjec
 
 export const hasModelResults = (rows: unknown[]): boolean => rows.some(isModelResult);
 
+const isProjectionResultGrain = (value: unknown): value is "MODEL_RESULT" | "VARIANT_RESULT" =>
+  value === "MODEL_RESULT" || value === "VARIANT_RESULT";
+
+/**
+ * A valid V2 page is authoritative even when it contains no model rows.
+ * A page made only of standalone VARIANT_RESULT rows is still a valid
+ * projection response and must not fall back to the legacy product RPC.
+ */
+export const isCatalogModelProjectionPayload = (value: unknown): value is CatalogModelProjectionRow[] => {
+  if (!Array.isArray(value)) return false;
+
+  return value.every((entry) => {
+    const row = asRecord(entry);
+    if (!row || !isProjectionResultGrain(row.result_grain)) return false;
+    if (typeof row.result_id !== "string") return false;
+
+    const totalCount = row.total_count;
+    return totalCount === null || totalCount === undefined || Number.isFinite(Number(totalCount));
+  });
+};
+
 export const projectionVariants = (row: CatalogModelProjectionRow): CatalogModelProjectionVariant[] =>
   Array.isArray(row.variants)
     ? row.variants.filter((variant): variant is CatalogModelProjectionVariant => asRecord(variant) !== null)

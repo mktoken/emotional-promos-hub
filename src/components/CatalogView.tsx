@@ -11,9 +11,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { normalizeProductImages } from "@/lib/product-images";
 import {
-  hasModelResults,
+  isCatalogModelProjectionPayload,
   projectionToCatalogCard,
-  type CatalogModelProjectionRow,
   type CatalogModelCard,
 } from "@/lib/catalog-model-projection";
 import SafeProductImage from "@/components/catalog/SafeProductImage";
@@ -253,13 +252,10 @@ export default function CatalogView({ onOpenProduct }: CatalogViewProps) {
           p_limit: PAGE_SIZE,
           p_offset: (page - 1) * PAGE_SIZE,
         });
-        const modelRows = (modelResult.data as CatalogModelProjectionRow[] | null) ?? [];
-        const modelCards = !modelResult.error && hasModelResults(modelRows)
-          ? modelRows.map(projectionToCatalogCard).filter((row): row is CatalogModelCard => row !== null)
-          : [];
-
-        if (modelCards.length > 0) {
-          rows = modelCards;
+        if (!modelResult.error && isCatalogModelProjectionPayload(modelResult.data)) {
+          rows = modelResult.data
+            .map(projectionToCatalogCard)
+            .filter((row): row is CatalogModelCard => row !== null);
         } else {
           const { data, error } = await rpc("catalog_search_products_v2", legacyArgs);
           if (error) throw new Error(error.message);

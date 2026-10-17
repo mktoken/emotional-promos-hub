@@ -453,7 +453,7 @@ AS $function$
       em.model_id,
       em.model_key,
       em.model_label AS canonical_model_name,
-      em.representative_producto_b2b_id,
+      em.representative_producto_b2b_id AS default_producto_b2b_id,
       COALESCE(match.variant_sku, em.representative_variant_sku) AS selected_variant_sku,
       COALESCE(match.variant_value, em.representative_variant_value) AS selected_variant_value,
       em.eligible_variant_count,

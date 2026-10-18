@@ -108,6 +108,25 @@ export const projectionImageUrls = (image: unknown): string[] => {
   return normalizeProductImages(record && "value" in record ? record.value : image);
 };
 
+const containsImageRole = (value: unknown, roles: ReadonlySet<string>): boolean => {
+  if (Array.isArray(value)) return value.some((item) => containsImageRole(item, roles));
+  const record = asRecord(value);
+  if (!record) return false;
+  if (typeof record.role === "string" && roles.has(record.role)) return true;
+  return "value" in record && containsImageRole(record.value, roles);
+};
+
+/**
+ * Extracts only explicitly model-scoped image sources. Variant and unverified
+ * runtime alternatives are intentionally excluded from this set.
+ */
+export const projectionImageUrlsByRole = (image: unknown, roles: readonly string[]): string[] => {
+  const allowedRoles = new Set(roles);
+  const record = asRecord(image);
+  const orderedSources = record && Array.isArray(record.ordered_sources) ? record.ordered_sources : [image];
+  return normalizeProductImages(orderedSources.filter((source) => containsImageRole(source, allowedRoles)));
+};
+
 export const modelProjectionToCatalogCard = (row: CatalogModelProjectionRow): CatalogModelCard | null => {
   const modelKey = asText(row.model_key);
   const id = asText(row.default_producto_b2b_id) || asText(row.result_id);

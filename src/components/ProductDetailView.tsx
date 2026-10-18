@@ -22,15 +22,20 @@ import type {
   PersonalizationOptionRule,
 } from "@/data/mockData";
 import { normalizeProductImages } from "@/lib/product-images";
-import { normalizeProductVariantLabel } from "@/lib/product-variant-label";
+import {
+  normalizeProductCommercialName,
+  normalizeProductVariantLabel,
+} from "@/lib/product-variant-label";
 import {
   findGalleryImageIndex,
   getGalleryFallbackCandidates,
+  getProductGalleryImages,
   getVisibleGalleryImages,
 } from "@/lib/product-gallery";
 import {
   isModelResult,
   projectionImageUrls,
+  projectionImageUrlsByRole,
   projectionVariants,
   type CatalogModelProjectionRow,
 } from "@/lib/catalog-model-projection";
@@ -82,8 +87,10 @@ interface ProductoB2B {
     material?: string;
     disponibilidad?: string;
     variantLabelKnown?: boolean;
+    imageCandidates?: string[];
   }> | null;
   imagenes: unknown[] | null;
+  modelSharedImages?: string[];
   motor_de_personalizacion: Record<string, unknown> | null;
   activo: boolean | null;
   updated_at: string | null;
@@ -98,7 +105,7 @@ const modelProjectionToProduct = (
     .filter((variant) => variant.public_eligible !== false)
     .map((variant) => {
       const variantProductId = variant.producto_b2b_id ?? fallbackProductId ?? "";
-      const imageUrl = projectionImageUrls(variant.image)[0];
+      const imageCandidates = projectionImageUrls(variant.image);
       const stock = Number(variant.stock_qty ?? 0);
       const normalizedVariantLabel = normalizeProductVariantLabel(variant.variant_value);
       return {
@@ -109,7 +116,8 @@ const modelProjectionToProduct = (
         variantLabelKnown: Boolean(normalizedVariantLabel),
         stock_total: stock,
         agregable_a_propuesta: stock > 0 && variant.stock_status === "disponible",
-        imagen_url: imageUrl,
+        imagen_url: imageCandidates[0],
+        imageCandidates,
         disponibilidad: variant.stock_status ?? "consultar",
         material: variant.material ?? undefined,
       };
@@ -119,8 +127,9 @@ const modelProjectionToProduct = (
   const defaultProductId = row.default_producto_b2b_id ?? variants[0].producto_b2b_id ?? fallbackProductId;
   if (!defaultProductId) return null;
 
-  const canonicalName = row.canonical_model_name ?? row.model_key ?? "Producto";
+  const canonicalName = normalizeProductCommercialName(row.canonical_model_name) ?? "Producto";
   const representativeImages = projectionImageUrls(row.representative_image);
+  const modelSharedImages = projectionImageUrlsByRole(row.representative_image, ["MODEL_MASTER"]);
   return {
     product: {
       id: defaultProductId,
@@ -135,6 +144,7 @@ const modelProjectionToProduct = (
       },
       variantes: variants,
       imagenes: representativeImages,
+      modelSharedImages,
       motor_de_personalizacion: null,
       activo: true,
       updated_at: null,
@@ -344,7 +354,8 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
     Boolean(personalizationCapabilities?.requires_manual_review) ||
     ["allowed_with_validation", "manual_review", "not_recommended"].includes(selectedPersonalizationRule.status || "");
 
-  const colors: ProductColor[] = (product?.variantes ?? []).map((v, i) => {
+  type ProductColorWithImages = ProductColor & { imageCandidates: string[] };
+  const colors: ProductColorWithImages[] = (product?.variantes ?? []).map((v, i) => {
     const normalizedColorName = normalizeProductVariantLabel(v.color_nombre);
     const colorName = normalizedColorName ?? "Color por confirmar";
     return {
@@ -354,6 +365,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
       stock: Number(v.stock_total ?? 0),
       imgAlt: `${productName} ${colorName}`.trim(),
       imageUrl: v.imagen_url,
+      imageCandidates: v.imageCandidates ?? (v.imagen_url ? [v.imagen_url] : []),
       agregableToProposal: Boolean(v.agregable_a_propuesta ?? Number(v.stock_total ?? 0) > 0),
       disponibilidad: v.disponibilidad,
       material: v.material,
@@ -362,25 +374,28 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
     };
   });
 
-  const currentColor = colors[selectedColorIndex] ?? {
+  const currentColor: ProductColorWithImages = colors[selectedColorIndex] ?? {
     id: "c0",
-    name: "Disponible",
+    name: "Color por confirmar",
     hex: "#94a3b8",
     stock: 0,
     imgAlt: productName,
     agregableToProposal: false,
+    imageCandidates: [],
   };
   const productClave = (currentColor.claveVariante?.trim() || productBaseClave).trim();
 
-  const productImages = normalizeProductImages(product?.imagenes);
-  const variantImagesRaw = colors.map((color) => color.imageUrl).filter((url): url is string => Boolean(url));
-  const variantImages = normalizeProductImages(variantImagesRaw);
-  const currentVariantImages = currentColor.imageUrl ? normalizeProductImages([currentColor.imageUrl]) : [];
-  const galleryImages = normalizeProductImages([
-    ...currentVariantImages,
-    ...productImages,
-    ...variantImages,
-  ]);
+  const currentVariantProductId = variantProductIds[selectedColorIndex] ?? product?.id ?? null;
+  const currentVariantImages = normalizeProductImages(currentColor.imageCandidates);
+  const sameProductImages =
+    currentVariantProductId && currentVariantProductId === product?.id
+      ? normalizeProductImages(product?.imagenes)
+      : [];
+  const galleryImages = getProductGalleryImages({
+    selectedVariantImages: currentVariantImages,
+    sameProductImages,
+    sharedModelImages: product?.modelSharedImages ?? [],
+  });
   const gallerySignature = galleryImages.join("\u0000");
   const visibleGalleryImages = getVisibleGalleryImages(galleryImages, failedGalleryImageUrls);
   const safeSelectedIndex =
@@ -417,8 +432,6 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
   const allVariantsOutOfStock =
     colors.length === 0 || colors.every((c) => !c.agregableToProposal || Number(c.stock ?? 0) <= 0);
   const currentVariantOutOfStock = availableStock <= 0 || !currentColor.agregableToProposal;
-  const currentVariantProductId = variantProductIds[selectedColorIndex] ?? product?.id ?? null;
-
   // Precio autoritativo del servidor (debounce + protección contra respuestas viejas).
   useEffect(() => {
     if (!currentVariantProductId) return;
@@ -608,7 +621,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
 
   return (
     <div className="pb-20 bg-surface">
-      <div className="bg-card border-b border-border py-4">
+      <div className="sticky top-0 z-30 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 border-b border-border py-3">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <button
             onClick={onBack}

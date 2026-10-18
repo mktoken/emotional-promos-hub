@@ -1,6 +1,20 @@
+import { normalizeProductImages } from "@/lib/product-images";
+
 export interface GalleryImageReference {
   url: string;
   index: number;
+}
+
+export function getProductGalleryImages({
+  selectedVariantImages,
+  sameProductImages,
+  sharedModelImages,
+}: {
+  selectedVariantImages: unknown;
+  sameProductImages: unknown;
+  sharedModelImages: unknown;
+}): string[] {
+  return normalizeProductImages([selectedVariantImages, sameProductImages, sharedModelImages]);
 }
 
 export function getVisibleGalleryImages(

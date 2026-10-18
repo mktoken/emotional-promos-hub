@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   findGalleryImageIndex,
   getGalleryFallbackCandidates,
+  getProductGalleryImages,
   getVisibleGalleryImages,
 } from "./product-gallery";
 
@@ -29,5 +30,29 @@ describe("product gallery failure handling", () => {
 
   it("maps the resolved URL back to the canonical selection", () => {
     expect(findGalleryImageIndex(images, "variant.webp")).toBe(2);
+  });
+
+  it("builds a gallery only from the selected variant, its own product, and explicit model assets", () => {
+    expect(
+      getProductGalleryImages({
+        selectedVariantImages: ["https://cdn.test/selected-variant.webp"],
+        sameProductImages: ["https://cdn.test/same-product.webp"],
+        sharedModelImages: ["https://cdn.test/model-master.webp"],
+      }),
+    ).toEqual([
+      "https://cdn.test/selected-variant.webp",
+      "https://cdn.test/same-product.webp",
+      "https://cdn.test/model-master.webp",
+    ]);
+  });
+
+  it("does not introduce another variant when the selected variant has no image", () => {
+    expect(
+      getProductGalleryImages({
+        selectedVariantImages: [],
+        sameProductImages: [],
+        sharedModelImages: [],
+      }),
+    ).toEqual([]);
   });
 });

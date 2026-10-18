@@ -21,6 +21,9 @@ describe("G4 model/variant public experience contract", () => {
     expect(indexView).toMatch(/modelKey=\{selectedModelKey\}/);
     expect(detailView).toMatch(/get_model_projection_detail_v1/);
     expect(detailView).toMatch(/currentVariantProductId/);
+    expect(detailView).toMatch(/getProductGalleryImages/);
+    expect(detailView).toMatch(/currentVariantProductId === product\?\.id/);
+    expect(detailView).not.toMatch(/variantImagesRaw/);
     expect(detailView).toMatch(/productId: currentVariantProductId/);
     expect(detailView).toMatch(/fetchPublicProductPriceQuote\(currentVariantProductId/);
   });
@@ -29,5 +32,11 @@ describe("G4 model/variant public experience contract", () => {
     expect(catalogView).toMatch(/object-contain/);
     expect(detailView).toMatch(/object-contain/);
     expect(detailView).not.toMatch(/object-cover/);
+  });
+
+  it("keeps the PDP return control available during long product pages", () => {
+    expect(detailView).toMatch(/sticky top-0 z-30/);
+    expect(detailView).toMatch(/Volver al Catálogo/);
+    expect(detailView).toMatch(/onClick=\{onBack\}/);
   });
 });

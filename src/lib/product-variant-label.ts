@@ -11,6 +11,36 @@ const LABEL_KEYS = [
   "text",
 ] as const;
 
+const TECHNICAL_EMPTY_VALUE = /^(?:other\s*:\s*)?(?:unresolved|unknown|n\/a|none|null)$/i;
+
+const normalizeVariantText = (value: string): string | null => {
+  const normalized = value.trim();
+  if (!normalized || normalized === "[object Object]") return null;
+
+  const parts = normalized
+    .split(/\s*\/\s*/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  const colorNamePart = parts.find((part) => /^color\s*name\s*:/i.test(part));
+  const colorPart = parts.find((part) => /^color\s*:/i.test(part));
+  const candidatePart = colorNamePart ?? colorPart;
+
+  if (candidatePart) {
+    const candidate = candidatePart.replace(/^color(?:\s*name)?\s*:\s*/i, "").trim();
+    return candidate && !TECHNICAL_EMPTY_VALUE.test(candidate) ? candidate : null;
+  }
+
+  if (
+    TECHNICAL_EMPTY_VALUE.test(normalized) ||
+    /^g4\s+provider\s+model\b/i.test(normalized) ||
+    /^g4_[a-z0-9_]+$/i.test(normalized)
+  ) {
+    return null;
+  }
+
+  return normalized;
+};
+
 /**
  * Normalizes the provider/public variant label without coercing objects to
  * "[object Object]". Unknown object shapes intentionally return null so the
@@ -20,8 +50,7 @@ export function normalizeProductVariantLabel(value: unknown, depth = 0, seen = n
   if (depth > 4 || value === null || value === undefined) return null;
 
   if (typeof value === "string") {
-    const normalized = value.trim();
-    return normalized || null;
+    return normalizeVariantText(value);
   }
 
   if (typeof value === "number" && Number.isFinite(value)) return String(value);
@@ -45,4 +74,17 @@ export function normalizeProductVariantLabel(value: unknown, depth = 0, seen = n
   }
 
   return null;
+}
+
+/**
+ * Returns only a readable commercial model name. Technical provider labels
+ * intentionally return null so callers can use a neutral existing fallback.
+ */
+export function normalizeProductCommercialName(value: unknown): string | null {
+  const normalized = normalizeProductVariantLabel(value);
+  if (!normalized) return null;
+  if (/^g4\s+provider\s+model\b/i.test(normalized) || /^g4_[a-z0-9_]+$/i.test(normalized)) {
+    return null;
+  }
+  return normalized;
 }

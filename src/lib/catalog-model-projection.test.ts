@@ -7,6 +7,7 @@ import {
   modelProjectionToCatalogCard,
   projectionToCatalogCard,
   projectionImageUrls,
+  projectionImageUrlsByRole,
 } from "@/lib/catalog-model-projection";
 
 describe("model-level catalog projection adapter", () => {
@@ -87,5 +88,20 @@ describe("model-level catalog projection adapter", () => {
     expect(projectionImageUrls({ value: ["https://example.test/value.webp"] })).toEqual([
       "https://example.test/value.webp",
     ]);
+  });
+
+  it("extracts only explicitly model-scoped representative assets", () => {
+    expect(
+      projectionImageUrlsByRole(
+        {
+          ordered_sources: [
+            { url: "https://example.test/variant.webp", role: "VARIANT_MASTER" },
+            { url: "https://example.test/model.webp", role: "MODEL_MASTER" },
+            { value: ["https://example.test/public.webp"], role: "PUBLIC_RUNTIME_ALTERNATIVE" },
+          ],
+        },
+        ["MODEL_MASTER"],
+      ),
+    ).toEqual(["https://example.test/model.webp"]);
   });
 });

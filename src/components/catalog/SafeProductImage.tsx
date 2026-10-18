@@ -11,6 +11,8 @@ interface SafeProductImageProps {
   loading?: "lazy" | "eager";
   fetchPriority?: "high" | "low" | "auto";
   onLoadedIndexChange?: (index: number) => void;
+  onCandidateError?: (url: string) => void;
+  onResolvedImageChange?: (url: string) => void;
   onClick?: () => void;
 }
 
@@ -29,6 +31,8 @@ export default function SafeProductImage({
   loading = "lazy",
   fetchPriority,
   onLoadedIndexChange,
+  onCandidateError,
+  onResolvedImageChange,
   onClick,
 }: SafeProductImageProps) {
   const candidateImages = images
@@ -49,6 +53,7 @@ export default function SafeProductImage({
   const currentSrc = currentImage?.url;
 
   const handleError = () => {
+    if (currentSrc) onCandidateError?.(currentSrc);
     if (index + 1 < candidateImages.length) {
       setIndex(index + 1);
     } else {
@@ -58,6 +63,7 @@ export default function SafeProductImage({
 
   const handleLoad = () => {
     onLoadedIndexChange?.(currentImage?.originalIndex ?? index);
+    if (currentSrc) onResolvedImageChange?.(currentSrc);
   };
 
   if (!currentSrc || allFailed) {

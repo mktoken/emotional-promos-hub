@@ -22,6 +22,7 @@ export interface ProductColor {
   disponibilidad?: string;
   material?: string;
   claveVariante?: string;
+  variantLabelKnown?: boolean;
 }
 
 export type PersonalizationOptionKey =

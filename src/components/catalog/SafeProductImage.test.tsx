@@ -30,6 +30,26 @@ describe("SafeProductImage", () => {
     expect(screen.queryByText("Imagen en actualización")).not.toBeInTheDocument();
   });
 
+  it("reports failed candidates without changing the fallback order", () => {
+    const onCandidateError = vi.fn();
+    const onResolvedImageChange = vi.fn();
+
+    render(
+      <SafeProductImage
+        images={["https://cdn.test/broken.webp", "https://cdn.test/valid.webp"]}
+        alt="Producto demo"
+        onCandidateError={onCandidateError}
+        onResolvedImageChange={onResolvedImageChange}
+      />,
+    );
+
+    fireEvent.error(screen.getByRole("img", { name: "Producto demo" }));
+    expect(onCandidateError).toHaveBeenCalledWith("https://cdn.test/broken.webp");
+
+    fireEvent.load(screen.getByRole("img", { name: "Producto demo" }));
+    expect(onResolvedImageChange).toHaveBeenCalledWith("https://cdn.test/valid.webp");
+  });
+
   it("shows the deliberate final state only after every candidate fails", () => {
     render(
       <SafeProductImage

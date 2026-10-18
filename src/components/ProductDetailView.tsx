@@ -22,6 +22,12 @@ import type {
   PersonalizationOptionRule,
 } from "@/data/mockData";
 import { normalizeProductImages } from "@/lib/product-images";
+import { normalizeProductVariantLabel } from "@/lib/product-variant-label";
+import {
+  findGalleryImageIndex,
+  getGalleryFallbackCandidates,
+  getVisibleGalleryImages,
+} from "@/lib/product-gallery";
 import {
   isModelResult,
   projectionImageUrls,
@@ -68,13 +74,14 @@ interface ProductoB2B {
     producto_b2b_id?: string;
     sku_variante?: string;
     clave_variante?: string;
-    color_nombre?: string;
+    color_nombre?: unknown;
     color_hex?: string;
     stock_total?: number;
     agregable_a_propuesta?: boolean;
     imagen_url?: string;
     material?: string;
     disponibilidad?: string;
+    variantLabelKnown?: boolean;
   }> | null;
   imagenes: unknown[] | null;
   motor_de_personalizacion: Record<string, unknown> | null;
@@ -93,11 +100,13 @@ const modelProjectionToProduct = (
       const variantProductId = variant.producto_b2b_id ?? fallbackProductId ?? "";
       const imageUrl = projectionImageUrls(variant.image)[0];
       const stock = Number(variant.stock_qty ?? 0);
+      const normalizedVariantLabel = normalizeProductVariantLabel(variant.variant_value);
       return {
         producto_b2b_id: variantProductId,
         sku_variante: variant.sku ?? undefined,
         clave_variante: variant.sku ?? undefined,
-        color_nombre: variant.variant_value ?? "Disponible",
+        color_nombre: normalizedVariantLabel ?? "Color por confirmar",
+        variantLabelKnown: Boolean(normalizedVariantLabel),
         stock_total: stock,
         agregable_a_propuesta: stock > 0 && variant.stock_status === "disponible",
         imagen_url: imageUrl,
@@ -222,6 +231,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
   const [selectedPersonalization, setSelectedPersonalization] = useState<PersonalizationOptionKey>("logo_1_ink");
   const [includeEconomyAlternative, setIncludeEconomyAlternative] = useState(true);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [failedGalleryImageUrls, setFailedGalleryImageUrls] = useState<Set<string>>(new Set());
 
 
   useEffect(() => {
@@ -334,18 +344,23 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
     Boolean(personalizationCapabilities?.requires_manual_review) ||
     ["allowed_with_validation", "manual_review", "not_recommended"].includes(selectedPersonalizationRule.status || "");
 
-  const colors: ProductColor[] = (product?.variantes ?? []).map((v, i) => ({
-    id: `c${i}`,
-    name: v.color_nombre ?? "Disponible",
-    hex: v.color_hex ?? "#94a3b8",
-    stock: Number(v.stock_total ?? 0),
-    imgAlt: `${productName} ${v.color_nombre ?? "Disponible"}`.trim(),
-    imageUrl: v.imagen_url,
-    agregableToProposal: Boolean(v.agregable_a_propuesta ?? Number(v.stock_total ?? 0) > 0),
-    disponibilidad: v.disponibilidad,
-    material: v.material,
-    claveVariante: v.clave_variante ?? v.sku_variante,
-  }));
+  const colors: ProductColor[] = (product?.variantes ?? []).map((v, i) => {
+    const normalizedColorName = normalizeProductVariantLabel(v.color_nombre);
+    const colorName = normalizedColorName ?? "Color por confirmar";
+    return {
+      id: `c${i}`,
+      name: colorName,
+      hex: v.color_hex ?? "#94a3b8",
+      stock: Number(v.stock_total ?? 0),
+      imgAlt: `${productName} ${colorName}`.trim(),
+      imageUrl: v.imagen_url,
+      agregableToProposal: Boolean(v.agregable_a_propuesta ?? Number(v.stock_total ?? 0) > 0),
+      disponibilidad: v.disponibilidad,
+      material: v.material,
+      claveVariante: v.clave_variante ?? v.sku_variante,
+      variantLabelKnown: Boolean(normalizedColorName),
+    };
+  });
 
   const currentColor = colors[selectedColorIndex] ?? {
     id: "c0",
@@ -366,15 +381,34 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
     ...productImages,
     ...variantImages,
   ]);
+  const gallerySignature = galleryImages.join("\u0000");
+  const visibleGalleryImages = getVisibleGalleryImages(galleryImages, failedGalleryImageUrls);
   const safeSelectedIndex =
     galleryImages.length > 0
       ? Math.min(Math.max(0, selectedImageIndex), galleryImages.length - 1)
       : 0;
-  const mainImageFallbackList =
-    galleryImages.length > 0
-      ? [...galleryImages.slice(safeSelectedIndex), ...galleryImages.slice(0, safeSelectedIndex)]
-      : [];
+  const mainImageFallbackList = getGalleryFallbackCandidates(galleryImages, safeSelectedIndex, failedGalleryImageUrls);
   const mainImage = galleryImages[safeSelectedIndex] ?? null;
+
+  useEffect(() => {
+    setFailedGalleryImageUrls(new Set());
+  }, [gallerySignature]);
+
+  const markGalleryImageFailed = (url: string) => {
+    setFailedGalleryImageUrls((failed) => {
+      if (failed.has(url)) return failed;
+      const next = new Set(failed);
+      next.add(url);
+      return next;
+    });
+  };
+
+  const handleMainImageResolved = (url: string) => {
+    const resolvedIndex = findGalleryImageIndex(galleryImages, url);
+    if (resolvedIndex >= 0 && resolvedIndex !== selectedImageIndex) {
+      setSelectedImageIndex(resolvedIndex);
+    }
+  };
 
   const material = currentColor.material?.trim() || "Por confirmar con asesor";
   const availableStock = Number(currentColor.stock ?? 0);
@@ -618,6 +652,8 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
                       imgClassName="max-w-[82%] max-h-[82%] object-contain z-0 transition-transform duration-300 group-hover/main:scale-[1.02]"
                       placeholderClassName="w-full h-full flex items-center justify-center"
                       placeholderSize={180}
+                      onCandidateError={markGalleryImageFailed}
+                      onResolvedImageChange={handleMainImageResolved}
                     />
                     <span className="absolute bottom-3 right-3 bg-foreground/70 text-background rounded-full p-2 opacity-0 group-hover/main:opacity-100 transition-opacity z-10">
                       <ZoomIn size={16} />
@@ -630,28 +666,29 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
                 )}
               </div>
 
-              {galleryImages.length > 1 && (
+              {visibleGalleryImages.length > 1 && (
                 <div className="grid grid-cols-5 gap-3">
-                  {galleryImages.slice(0, 10).map((imageUrl, index) => (
+                  {visibleGalleryImages.slice(0, 10).map(({ url: imageUrl, index: galleryIndex }, visibleIndex) => (
                     <button
-                      key={`${imageUrl}-${index}`}
+                      key={`${imageUrl}-${galleryIndex}`}
                       type="button"
-                      onClick={() => setSelectedImageIndex(index)}
-                      aria-label={`Ver imagen ${index + 1} de ${galleryImages.length}`}
-                      aria-current={safeSelectedIndex === index ? "true" : undefined}
+                      onClick={() => setSelectedImageIndex(galleryIndex)}
+                      aria-label={`Ver imagen ${visibleIndex + 1} de ${visibleGalleryImages.length}`}
+                      aria-current={safeSelectedIndex === galleryIndex ? "true" : undefined}
                       className={`aspect-square rounded-xl border overflow-hidden bg-white transition ${
-                        safeSelectedIndex === index
+                        safeSelectedIndex === galleryIndex
                           ? "border-primary ring-2 ring-primary/20"
                           : "border-border hover:border-primary/40"
                       }`}
                     >
                       <SafeProductImage
                         images={[imageUrl]}
-                        alt={`${productName} ${index + 1}`}
+                        alt={`${productName} ${visibleIndex + 1}`}
                         loading="lazy"
                         imgClassName="w-full h-full object-contain p-1"
                         placeholderClassName="w-full h-full flex items-center justify-center"
                         placeholderSize={24}
+                        onCandidateError={markGalleryImageFailed}
                       />
                     </button>
                   ))}
@@ -661,8 +698,11 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
               <ProductImageLightbox
                 open={lightboxOpen}
                 onOpenChange={setLightboxOpen}
-                images={galleryImages}
-                initialIndex={safeSelectedIndex}
+                images={visibleGalleryImages.map(({ url }) => url)}
+                initialIndex={Math.max(
+                  0,
+                  visibleGalleryImages.findIndex(({ index }) => index === safeSelectedIndex),
+                )}
                 alt={productName}
               />
             </div>
@@ -746,6 +786,9 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
                           />
                           <div className="min-w-0 flex-1">
                             <p className="font-bold text-foreground truncate">{color.name}</p>
+                            {!color.variantLabelKnown && color.claveVariante ? (
+                              <p className="text-xs text-muted-foreground truncate">Clave: {color.claveVariante}</p>
+                            ) : null}
                             <p className={`text-xs ${colorAvailable ? "text-success" : "text-destructive"}`}>
                               {colorAvailable
                                 ? `${color.stock.toLocaleString("es-MX")} disponibles`

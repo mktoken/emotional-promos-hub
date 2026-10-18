@@ -102,6 +102,9 @@ export const projectionVariants = (row: CatalogModelProjectionRow): CatalogModel
 
 export const projectionImageUrls = (image: unknown): string[] => {
   const record = asRecord(image);
+  if (record && Array.isArray(record.ordered_sources)) {
+    return normalizeProductImages(image);
+  }
   return normalizeProductImages(record && "value" in record ? record.value : image);
 };
 

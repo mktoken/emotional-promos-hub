@@ -59,6 +59,15 @@ interface RankedUrl {
   order: number;
 }
 
+const dedupeUrls = (urls: string[]): string[] => {
+  const seen = new Set<string>();
+  return urls.filter((url) => {
+    if (seen.has(url)) return false;
+    seen.add(url);
+    return true;
+  });
+};
+
 const collectRanked = (input: unknown, bucket: RankedUrl[], counter: { i: number }): void => {
   if (input === null || input === undefined) return;
 
@@ -101,19 +110,18 @@ const collectRanked = (input: unknown, bucket: RankedUrl[], counter: { i: number
 };
 
 export function normalizeProductImages(input: unknown): string[] {
+  if (typeof input === "object" && input !== null && !Array.isArray(input)) {
+    const orderedSources = (input as ImageObject).ordered_sources;
+    if (Array.isArray(orderedSources)) {
+      return dedupeUrls(orderedSources.flatMap((source) => normalizeProductImages(source)));
+    }
+  }
+
   const bucket: RankedUrl[] = [];
   collectRanked(input, bucket, { i: 0 });
 
   // Orden estable: primero por rank (0=principal, 1=neutro, 2=secundario), luego por orden original.
   bucket.sort((a, b) => (a.rank - b.rank) || (a.order - b.order));
 
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const { url } of bucket) {
-    if (!seen.has(url)) {
-      seen.add(url);
-      out.push(url);
-    }
-  }
-  return out;
+  return dedupeUrls(bucket.map(({ url }) => url));
 }

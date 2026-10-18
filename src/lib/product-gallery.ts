@@ -5,6 +5,16 @@ export interface GalleryImageReference {
   index: number;
 }
 
+export function getProductTrustedImageCandidates({
+  selectedVariantImages,
+  sameProductImages,
+}: {
+  selectedVariantImages: unknown;
+  sameProductImages: unknown;
+}): string[] {
+  return normalizeProductImages([selectedVariantImages, sameProductImages]);
+}
+
 export function getProductGalleryImages({
   selectedVariantImages,
   sameProductImages,
@@ -14,7 +24,36 @@ export function getProductGalleryImages({
   sameProductImages: unknown;
   sharedModelImages: unknown;
 }): string[] {
-  return normalizeProductImages([selectedVariantImages, sameProductImages, sharedModelImages]);
+  const trustedImages = getProductTrustedImageCandidates({ selectedVariantImages, sameProductImages });
+
+  // A model-scoped image may enrich a gallery only when the selected variant
+  // already has a trusted image source. It must never become the automatic
+  // primary image for a variant without an exact/product-scoped candidate.
+  if (trustedImages.length === 0) return [];
+
+  return normalizeProductImages([trustedImages, sharedModelImages]);
+}
+
+export function getProductMainImageFallbackCandidates({
+  trustedImages,
+  galleryImages,
+  selectedIndex,
+  failedUrls,
+}: {
+  trustedImages: string[];
+  galleryImages: string[];
+  selectedIndex: number;
+  failedUrls: ReadonlySet<string>;
+}): string[] {
+  const selectedImage = galleryImages[selectedIndex];
+  const trustedIndex = selectedImage ? trustedImages.indexOf(selectedImage) : -1;
+
+  // A shared model image can be shown after an explicit thumbnail selection,
+  // but it is never used as an automatic fallback for a variant image.
+  const candidates =
+    trustedIndex >= 0 || !selectedImage ? trustedImages : [selectedImage, ...trustedImages];
+  const startIndex = trustedIndex >= 0 ? trustedIndex : 0;
+  return getGalleryFallbackCandidates(candidates, startIndex, failedUrls);
 }
 
 export function getVisibleGalleryImages(

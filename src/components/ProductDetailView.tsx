@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import {
   ChevronLeft,
   CheckCircle2,
-  Package,
   Minus,
   Plus,
   ClipboardList,
@@ -28,8 +27,9 @@ import {
 } from "@/lib/product-variant-label";
 import {
   findGalleryImageIndex,
-  getGalleryFallbackCandidates,
   getProductGalleryImages,
+  getProductMainImageFallbackCandidates,
+  getProductTrustedImageCandidates,
   getVisibleGalleryImages,
 } from "@/lib/product-gallery";
 import {
@@ -391,6 +391,10 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
     currentVariantProductId && currentVariantProductId === product?.id
       ? normalizeProductImages(product?.imagenes)
       : [];
+  const trustedImageCandidates = getProductTrustedImageCandidates({
+    selectedVariantImages: currentVariantImages,
+    sameProductImages,
+  });
   const galleryImages = getProductGalleryImages({
     selectedVariantImages: currentVariantImages,
     sameProductImages,
@@ -402,7 +406,12 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
     galleryImages.length > 0
       ? Math.min(Math.max(0, selectedImageIndex), galleryImages.length - 1)
       : 0;
-  const mainImageFallbackList = getGalleryFallbackCandidates(galleryImages, safeSelectedIndex, failedGalleryImageUrls);
+  const mainImageFallbackList = getProductMainImageFallbackCandidates({
+    trustedImages: trustedImageCandidates,
+    galleryImages,
+    selectedIndex: safeSelectedIndex,
+    failedUrls: failedGalleryImageUrls,
+  });
   const mainImage = galleryImages[safeSelectedIndex] ?? null;
 
   useEffect(() => {
@@ -621,7 +630,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
 
   return (
     <div className="pb-20 bg-surface">
-      <div className="sticky top-0 z-30 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 border-b border-border py-3">
+      <div className="sticky top-[var(--nav-height)] z-30 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 border-b border-border py-3">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <button
             onClick={onBack}
@@ -673,9 +682,14 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
                     </span>
                   </button>
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Package size={180} className="opacity-30 text-muted-foreground" aria-hidden="true" />
-                  </div>
+                  <SafeProductImage
+                    images={[]}
+                    alt={productName}
+                    loading="eager"
+                    fetchPriority="high"
+                    placeholderClassName="w-full h-full flex items-center justify-center"
+                    placeholderSize={180}
+                  />
                 )}
               </div>
 

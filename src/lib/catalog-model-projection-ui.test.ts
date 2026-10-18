@@ -35,8 +35,17 @@ describe("G4 model/variant public experience contract", () => {
   });
 
   it("keeps the PDP return control available during long product pages", () => {
-    expect(detailView).toMatch(/sticky top-0 z-30/);
+    expect(detailView).toMatch(/sticky top-\[var\(--nav-height\)\] z-30/);
+    expect(detailView).not.toMatch(/sticky top-0 z-30/);
+    expect(detailView).toMatch(/--nav-height/);
     expect(detailView).toMatch(/Volver al Catálogo/);
     expect(detailView).toMatch(/onClick=\{onBack\}/);
+  });
+
+  it("does not use model-scoped images as automatic variant fallbacks", () => {
+    expect(detailView).toMatch(/getProductTrustedImageCandidates/);
+    expect(detailView).toMatch(/getProductMainImageFallbackCandidates/);
+    expect(detailView).toMatch(/sharedModelImages: product\?\.modelSharedImages \?\? \[\]/);
+    expect(detailView).toMatch(/<SafeProductImage[\s\S]*images=\{\[\]\}/);
   });
 });

@@ -3,6 +3,8 @@ import {
   findGalleryImageIndex,
   getGalleryFallbackCandidates,
   getProductGalleryImages,
+  getProductMainImageFallbackCandidates,
+  getProductTrustedImageCandidates,
   getVisibleGalleryImages,
 } from "./product-gallery";
 
@@ -44,6 +46,51 @@ describe("product gallery failure handling", () => {
       "https://cdn.test/same-product.webp",
       "https://cdn.test/model-master.webp",
     ]);
+  });
+
+  it("does not expose a shared model image when the selected variant has no trusted image", () => {
+    expect(
+      getProductGalleryImages({
+        selectedVariantImages: [],
+        sameProductImages: [],
+        sharedModelImages: ["https://cdn.test/model-master.webp"],
+      }),
+    ).toEqual([]);
+  });
+
+  it("does not use a shared model image as an automatic fallback after trusted images fail", () => {
+    const trustedImages = getProductTrustedImageCandidates({
+      selectedVariantImages: ["https://cdn.test/selected-variant.webp"],
+      sameProductImages: ["https://cdn.test/same-product.webp"],
+    });
+    const galleryImages = getProductGalleryImages({
+      selectedVariantImages: trustedImages,
+      sameProductImages: [],
+      sharedModelImages: ["https://cdn.test/model-master.webp"],
+    });
+
+    expect(
+      getProductMainImageFallbackCandidates({
+        trustedImages,
+        galleryImages,
+        selectedIndex: 0,
+        failedUrls: new Set(trustedImages),
+      }),
+    ).toEqual([]);
+  });
+
+  it("allows an explicitly selected shared image without changing variant fallback rules", () => {
+    const trustedImages = ["https://cdn.test/selected-variant.webp"];
+    const galleryImages = [...trustedImages, "https://cdn.test/model-master.webp"];
+
+    expect(
+      getProductMainImageFallbackCandidates({
+        trustedImages,
+        galleryImages,
+        selectedIndex: 1,
+        failedUrls: new Set(),
+      }),
+    ).toEqual(["https://cdn.test/model-master.webp", "https://cdn.test/selected-variant.webp"]);
   });
 
   it("does not introduce another variant when the selected variant has no image", () => {

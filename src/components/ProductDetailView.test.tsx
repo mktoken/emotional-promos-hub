@@ -40,10 +40,10 @@ const modelRow = {
   variants: [
     {
       producto_b2b_id: "product-azu",
-      sku: "manga-azu",
+      sku: null,
       variant_value: "Azul",
       stock_qty: 120,
-      stock_status: "disponible",
+      stock_status: "available",
       material: "Plástico",
       image: ["https://images.example/manga-azu.webp"],
       public_eligible: true,
@@ -94,6 +94,8 @@ describe("ProductDetailView PDP simplificada", () => {
     );
 
     await waitFor(() => expect(screen.getByText("MANGA")).toBeInTheDocument());
+    expect(screen.getByText("SKU: manga-azu")).toBeInTheDocument();
+    expect(screen.getAllByText("Stock observado: 120 piezas").length).toBeGreaterThan(0);
 
     const quantity = screen.getByDisplayValue("100");
     fireEvent.change(quantity, { target: { value: "250" } });
@@ -138,5 +140,32 @@ describe("ProductDetailView PDP simplificada", () => {
     expect(screen.queryByText("Logo a 1 tinta")).not.toBeInTheDocument();
     expect(screen.queryByText("Full color")).not.toBeInTheDocument();
     expect(screen.queryByText("Grabado")).not.toBeInTheDocument();
+  });
+
+  it("mantiene disponibilidad por confirmar cuando la variante no reporta stock confiable", async () => {
+    rpcMock.mockResolvedValue({
+      data: [
+        {
+          ...modelRow,
+          variants: modelRow.variants.map((variant, index) =>
+            index === 0 ? { ...variant, stock_qty: 0, stock_status: "consultar" } : variant,
+          ),
+        },
+      ],
+      error: null,
+    });
+
+    render(
+      <ProductDetailView
+        productId="product-azu"
+        modelKey="manga"
+        onBack={vi.fn()}
+        onAddToQuote={vi.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(screen.getByText("MANGA")).toBeInTheDocument());
+    expect(screen.getAllByText("Disponibilidad por confirmar").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Stock observado: 0 piezas")).not.toBeInTheDocument();
   });
 });

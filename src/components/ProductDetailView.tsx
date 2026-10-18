@@ -101,6 +101,7 @@ const modelProjectionToProduct = (
   fallbackProductId: string | null,
 ): { product: ProductoB2B; variantProductIds: string[] } | null => {
   if (!isModelResult(row)) return null;
+  const projectedDefaultProductId = row.default_producto_b2b_id ?? fallbackProductId ?? null;
   const variants = projectionVariants(row)
     .filter((variant) => variant.public_eligible !== false)
     .map((variant) => {
@@ -108,14 +109,21 @@ const modelProjectionToProduct = (
       const imageCandidates = projectionImageUrls(variant.image);
       const stock = Number(variant.stock_qty ?? 0);
       const normalizedVariantLabel = normalizeProductVariantLabel(variant.variant_value);
+      const directVariantSku = typeof variant.sku === "string" && variant.sku.trim() ? variant.sku.trim() : null;
+      const variantSku =
+        directVariantSku ??
+        (variantProductId && variantProductId === projectedDefaultProductId ? row.selected_variant_sku : null);
       return {
         producto_b2b_id: variantProductId,
-        sku_variante: variant.sku ?? undefined,
-        clave_variante: variant.sku ?? undefined,
+        sku_variante: variantSku ?? undefined,
+        clave_variante: variantSku ?? undefined,
         color_nombre: normalizedVariantLabel ?? "Color por confirmar",
         variantLabelKnown: Boolean(normalizedVariantLabel),
         stock_total: stock,
-        agregable_a_propuesta: stock > 0 && variant.stock_status === "disponible",
+        agregable_a_propuesta:
+          stock > 0 &&
+          typeof variant.stock_status === "string" &&
+          ["available", "disponible"].includes(variant.stock_status.trim().toLowerCase()),
         imagen_url: imageCandidates[0],
         imageCandidates,
         disponibilidad: variant.stock_status ?? "consultar",
@@ -124,7 +132,7 @@ const modelProjectionToProduct = (
     });
   if (variants.length === 0) return null;
 
-  const defaultProductId = row.default_producto_b2b_id ?? variants[0].producto_b2b_id ?? fallbackProductId;
+  const defaultProductId = projectedDefaultProductId ?? variants[0].producto_b2b_id ?? fallbackProductId;
   if (!defaultProductId) return null;
 
   const canonicalName = normalizeProductCommercialName(row.canonical_model_name) ?? "Producto";
@@ -471,7 +479,8 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
                 : canAddToProposal && priceReady
                   ? "Agregar a mi solicitud"
                   : "Consultar disponibilidad";
-  const stockLabel = canAddToProposal
+  const hasReportedStock = Number.isFinite(availableStock) && availableStock > 0;
+  const stockLabel = hasReportedStock
     ? `Stock observado: ${availableStock.toLocaleString("es-MX")} piezas`
     : "Disponibilidad por confirmar";
   const canSubmitSelection = canAddToProposal && priceReady && !priceLoading && !priceError && !priceBlocked;

@@ -173,21 +173,30 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
     [contact, quoteFormat, requestItems],
   );
 
-  const getPersonalizationLabel = (item: QuoteSelectionItem) =>
-    item.personalizacionSolicitadaCliente?.label ||
-    (item.logoFormat === "none"
-      ? "Sin personalización"
-      : item.logoFormat === "logo_1_ink"
-        ? "Logo a 1 tinta"
-        : item.logoFormat === "logo_2_ink"
-          ? "Logo a 2 tintas"
-          : item.logoFormat === "logo_3_plus_ink"
-            ? "Logo a 3+ tintas"
-            : item.logoFormat === "full_color"
-              ? "Full color"
-              : item.logoFormat === "engraving"
-                ? "Grabado"
-                : "Por definir con asesor");
+  const getPersonalizationLabel = (item: QuoteSelectionItem) => {
+    if (item.personalizacionSolicitadaCliente?.label) {
+      return item.personalizacionSolicitadaCliente.label;
+    }
+
+    switch (item.logoFormat) {
+      case "none":
+        return "Sin personalización";
+      case "logo_1_ink":
+        return "Logo a 1 tinta";
+      case "logo_2_ink":
+        return "Logo a 2 tintas";
+      case "logo_3_plus_ink":
+        return "Logo a 3+ tintas";
+      case "full_color":
+        return "Full color";
+      case "engraving":
+        return "Grabado";
+      case "advisor_review":
+        return "Con mi logo";
+      default:
+        return "Por definir con asesor";
+    }
+  };
 
   const getEconomySuggestionLabel = (item: QuoteSelectionItem) =>
     item.personalizacionSugeridaEconomica?.incluida ? item.personalizacionSugeridaEconomica.label : "";
@@ -415,7 +424,7 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
                         )}
                         {item.entregaEstimada && (
                           <span className="bg-success/10 text-success px-2 py-1 rounded">
-                            Entrega estimada: {item.entregaEstimada}
+                            Fecha de entrega: {item.entregaEstimada}
                           </span>
                         )}
                         {item.hasVirtualSample && (
@@ -645,7 +654,7 @@ export default function QuoteCartView({ cart, onRemove, onBack, onSubmitted }: Q
                                     Observaciones: {observationsByCartId[item.cartId].trim()}
                                   </p>
                                 )}
-                                {item.entregaEstimada && <p className="text-sm text-muted-foreground">Entrega estimada: {item.entregaEstimada}</p>}
+                                {item.entregaEstimada && <p className="text-sm text-muted-foreground">Fecha de entrega: {item.entregaEstimada}</p>}
                                 {item.requiereRevisionTecnica && <p className="text-sm font-medium text-amber-700">Requiere revisión técnica</p>}
                               </div>
                               <p className="font-bold text-success whitespace-nowrap">

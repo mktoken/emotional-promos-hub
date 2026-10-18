@@ -155,51 +155,36 @@ const modelProjectionToProduct = (
 
 const QUICK_QUANTITIES = [100, 250, 500, 1000];
 
-const PERSONALIZATION_OPTIONS: Array<{ key: PersonalizationOptionKey; fallbackLabel: string }> = [
-  { key: "none", fallbackLabel: "Sin personalización" },
-  { key: "logo_1_ink", fallbackLabel: "Logo a 1 tinta" },
-  { key: "logo_2_ink", fallbackLabel: "Logo a 2 tintas" },
-  { key: "logo_3_plus_ink", fallbackLabel: "Logo a 3+ tintas" },
-  { key: "full_color", fallbackLabel: "Full color" },
-  { key: "engraving", fallbackLabel: "Grabado" },
-  { key: "advisor_review", fallbackLabel: "Por definir con asesor" },
+const PUBLIC_PERSONALIZATION_OPTIONS: Array<{
+  key: "none" | "advisor_review";
+  label: string;
+  message: string;
+}> = [
+  {
+    key: "none",
+    label: "Sin personalización",
+    message: "Cotizaremos el producto sin impresión ni grabado.",
+  },
+  {
+    key: "advisor_review",
+    label: "Con mi logo",
+    message: "El asesor confirmará la técnica, viabilidad y costo según el producto y tu logo.",
+  },
 ];
 
-const FALLBACK_PERSONALIZATION_RULES: Record<PersonalizationOptionKey, PersonalizationOptionRule> = {
+const FALLBACK_PERSONALIZATION_RULES: Pick<
+  Record<PersonalizationOptionKey, PersonalizationOptionRule>,
+  "none" | "advisor_review"
+> = {
   none: {
     label: "Sin personalización",
     status: "allowed",
     message: "Cotizaremos el producto sin impresión ni grabado.",
   },
-  logo_1_ink: {
-    label: "Logo a 1 tinta",
-    status: "recommended_economy",
-    message: "Suele ser la opción más económica para propuestas promocionales.",
-  },
-  logo_2_ink: {
-    label: "Logo a 2 tintas",
-    status: "allowed_with_validation",
-    message: "Sujeto a validación de arte, área disponible y material.",
-  },
-  logo_3_plus_ink: {
-    label: "Logo a 3+ tintas",
-    status: "manual_review",
-    message: "Puede requerir técnica especial o alternativa económica.",
-  },
-  full_color: {
-    label: "Full color",
-    status: "manual_review",
-    message: "Requiere revisión técnica según material, logo y área disponible.",
-  },
-  engraving: {
-    label: "Grabado",
-    status: "manual_review",
-    message: "Sujeto a validación técnica.",
-  },
   advisor_review: {
-    label: "Por definir con asesor",
-    status: "allowed",
-    message: "Nuestro equipo recomendará la opción adecuada.",
+    label: "Con mi logo",
+    status: "manual_review",
+    message: "El asesor confirmará la técnica, viabilidad y costo según el producto y tu logo.",
   },
 };
 
@@ -238,8 +223,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
   const [priceError, setPriceError] = useState(false);
   const [priceReloadToken, setPriceReloadToken] = useState(0);
   const priceRequestRef = useRef(0);
-  const [selectedPersonalization, setSelectedPersonalization] = useState<PersonalizationOptionKey>("logo_1_ink");
-  const [includeEconomyAlternative, setIncludeEconomyAlternative] = useState(true);
+  const [selectedPersonalization, setSelectedPersonalization] = useState<"none" | "advisor_review">("none");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [failedGalleryImageUrls, setFailedGalleryImageUrls] = useState<Set<string>>(new Set());
 
@@ -305,13 +289,8 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
       maximumFractionDigits: 2,
     });
 
-  const getPersonalizationRule = (
-    key: PersonalizationOptionKey,
-    capabilities?: PersonalizationCapabilities,
-  ): PersonalizationOptionRule => ({
-    ...FALLBACK_PERSONALIZATION_RULES[key],
-    ...(capabilities?.options?.[key] ?? {}),
-  });
+  const getPersonalizationRule = (key: "none" | "advisor_review"): PersonalizationOptionRule =>
+    FALLBACK_PERSONALIZATION_RULES[key];
 
   const getPersonalizationStatus = (status?: string) =>
     PERSONALIZATION_STATUS_META[status || "allowed"] ?? {
@@ -327,10 +306,9 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
 
   const productDesc = product?.datos_generales?.descripcion?.trim() || "";
   const productBaseClave = (product?.datos_generales?.clave_producto?.trim() || product?.sku_base?.trim() || "").trim();
-  const deliveryEstimate =
-    product?.datos_generales?.entrega_estimada || "10 a 15 días hábiles después de aprobación de arte";
+  const deliveryEstimate = "Fecha por confirmar";
   const deliveryNote =
-    product?.datos_generales?.entrega_nota || "Puede variar por temporada, cantidad, disponibilidad y carga de taller.";
+    "La fecha se confirma en la cotización según cantidad, disponibilidad y personalización.";
   const personalizationText =
     product?.datos_generales?.personalizacion_publica ||
     "Nuestro equipo definirá la técnica adecuada según material, logo y cantidad.";
@@ -338,21 +316,9 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
     product?.datos_generales?.precio_nota || "Precio antes de IVA e impresión. Sujeto a validación comercial.";
 
   const personalizationCapabilities = product?.datos_generales?.personalizacion_capacidades;
-  const economyRecommendation =
-    personalizationCapabilities?.economy_recommendation &&
-    FALLBACK_PERSONALIZATION_RULES[personalizationCapabilities.economy_recommendation]
-      ? personalizationCapabilities.economy_recommendation
-      : "logo_1_ink";
-  const selectedPersonalizationRule = getPersonalizationRule(selectedPersonalization, personalizationCapabilities);
+  const selectedPersonalizationRule = getPersonalizationRule(selectedPersonalization);
   const selectedPersonalizationStatus = getPersonalizationStatus(selectedPersonalizationRule.status);
-  const economyPersonalizationRule = getPersonalizationRule(economyRecommendation, personalizationCapabilities);
-  const shouldShowEconomyAlternative =
-    selectedPersonalization !== "none" &&
-    economyRecommendation !== "none" &&
-    selectedPersonalization !== economyRecommendation;
-  const requiresTechnicalReview =
-    Boolean(personalizationCapabilities?.requires_manual_review) ||
-    ["allowed_with_validation", "manual_review", "not_recommended"].includes(selectedPersonalizationRule.status || "");
+  const requiresTechnicalReview = selectedPersonalization === "advisor_review";
 
   type ProductColorWithImages = ProductColor & { imageCandidates: string[] };
   const colors: ProductColorWithImages[] = (product?.variantes ?? []).map((v, i) => {
@@ -503,11 +469,11 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
               : priceStatus === "below_minimum"
                 ? "Ajusta la cantidad mínima"
                 : canAddToProposal && priceReady
-                  ? "Agregar a la cotización"
+                  ? "Agregar a mi solicitud"
                   : "Consultar disponibilidad";
   const stockLabel = canAddToProposal
-    ? `${availableStock.toLocaleString("es-MX")} piezas disponibles`
-    : "Consultar disponibilidad";
+    ? `Stock observado: ${availableStock.toLocaleString("es-MX")} piezas`
+    : "Disponibilidad por confirmar";
   const canSubmitSelection = canAddToProposal && priceReady && !priceLoading && !priceError && !priceBlocked;
   const canRetryPrice = canAddToProposal && priceError;
 
@@ -518,9 +484,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
   useEffect(() => {
     if (!product) return;
 
-    const nextDefault = product.datos_generales?.personalizacion_capacidades?.economy_recommendation || "logo_1_ink";
-    setSelectedPersonalization(FALLBACK_PERSONALIZATION_RULES[nextDefault] ? nextDefault : "logo_1_ink");
-    setIncludeEconomyAlternative(true);
+    setSelectedPersonalization("none");
   }, [product]);
 
   const setSafeQuantity = (value: number) => {
@@ -551,16 +515,6 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
   const handleAddToProposal = () => {
     if (!product || !canSubmitSelection) return;
 
-    const economySuggestion =
-      shouldShowEconomyAlternative && includeEconomyAlternative
-        ? {
-            tipo: economyRecommendation,
-            label: economyPersonalizationRule.label,
-            incluida: true,
-            motivo: "Suele ser la opción más económica para comparar en la propuesta.",
-          }
-        : null;
-
     const quoteItem: NewQuoteSelectionItem = {
       productId: currentVariantProductId ?? product.id,
       name: productName,
@@ -578,7 +532,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
         message: selectedPersonalizationRule.message,
         requiereRevision: requiresTechnicalReview,
       },
-      personalizacionSugeridaEconomica: economySuggestion,
+      personalizacionSugeridaEconomica: null,
       requiereRevisionTecnica: requiresTechnicalReview,
       personalizationCompatibilityNote: selectedPersonalizationRule.message,
       // Última estimación autoritativa conocida; el servidor recalcula al enviar.
@@ -594,16 +548,11 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
   };
 
   const handleWhatsAppConsult = () => {
-    const economyText =
-      shouldShowEconomyAlternative && includeEconomyAlternative
-        ? `\nTambién me interesa comparar la opción económica sugerida: ${economyPersonalizationRule.label}.`
-        : "";
-
     const message = `Hola, quiero consultar disponibilidad y propuesta para este producto:\n\nClave: ${
       productClave || "Por confirmar"
     }\nModelo: ${productName}\nColor: ${currentColor.name}\nCantidad estimada: ${quantity.toLocaleString(
       "es-MX",
-    )} piezas\nPersonalización solicitada: ${selectedPersonalizationRule.label}${economyText}\n\nQuedo atento a su asesoría.`;
+    )} piezas\nPersonalización solicitada: ${selectedPersonalizationRule.label}\n\nQuedo atento a su asesoría.`;
 
     window.open(`https://wa.me/5215530311686?text=${encodeURIComponent(message)}`, "_blank");
   };
@@ -780,7 +729,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
                 </div>
                 <div className="bg-surface rounded-2xl p-4 border border-border">
                   <p className="text-xs text-muted-foreground font-semibold mb-1">Entrega estimada</p>
-                  <p className="text-lg font-black text-foreground">10 a 15 días</p>
+                  <p className="text-lg font-black text-foreground">Fecha por confirmar</p>
                   <p className="text-xs text-muted-foreground mt-1">Después de aprobación de arte</p>
                 </div>
               </div>
@@ -791,42 +740,33 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
                 <h2 className="font-bold text-foreground mb-4 flex items-center gap-2">
                   <Palette size={18} className="text-primary" /> Selecciona color / variante
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {colors.map((color, idx) => {
-                    const colorAvailable = Boolean(color.agregableToProposal) && color.stock > 0;
-                    return (
-                      <button
-                        key={color.id}
-                        type="button"
-                        onClick={() => setSelectedColorIndex(idx)}
-                        className={`text-left p-4 rounded-2xl border transition-all ${
-                          selectedColorIndex === idx
-                            ? "border-primary bg-primary/5 ring-2 ring-primary/10"
-                            : "border-border bg-surface hover:border-primary/40"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span
-                            className="w-8 h-8 rounded-full border border-border shrink-0"
-                            style={{ backgroundColor: color.hex }}
-                            aria-hidden="true"
-                          />
-                          <div className="min-w-0 flex-1">
-                            <p className="font-bold text-foreground truncate">{color.name}</p>
-                            {!color.variantLabelKnown && color.claveVariante ? (
-                              <p className="text-xs text-muted-foreground truncate">Clave: {color.claveVariante}</p>
-                            ) : null}
-                            <p className={`text-xs ${colorAvailable ? "text-success" : "text-destructive"}`}>
-                              {colorAvailable
-                                ? `${color.stock.toLocaleString("es-MX")} disponibles`
-                                : "Consultar disponibilidad"}
-                            </p>
-                          </div>
-                          {selectedColorIndex === idx && <CheckCircle2 size={20} className="text-primary shrink-0" />}
-                        </div>
-                      </button>
-                    );
-                  })}
+                <div className="flex flex-col gap-3">
+                  <label htmlFor="product-variant" className="sr-only">
+                    Color o variante
+                  </label>
+                  <select
+                    id="product-variant"
+                    value={selectedColorIndex}
+                    onChange={(event) => setSelectedColorIndex(Number(event.target.value))}
+                    className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-foreground font-semibold focus:ring-2 focus:ring-primary outline-none"
+                  >
+                    {colors.map((color, idx) => (
+                      <option key={color.id} value={idx}>
+                        {color.name}{color.claveVariante ? ` · ${color.claveVariante}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-sm">
+                    <span className="font-semibold text-foreground">Seleccionado: {currentColor.name}</span>
+                    <span className="text-muted-foreground">
+                      {currentColor.claveVariante ? `SKU: ${currentColor.claveVariante}` : "SKU por confirmar"}
+                    </span>
+                    <span className="w-full text-xs text-muted-foreground">
+                      {currentColor.stock > 0
+                        ? `Stock observado: ${currentColor.stock.toLocaleString("es-MX")} piezas`
+                        : "Disponibilidad por confirmar"}
+                    </span>
+                  </div>
                 </div>
               </section>
             )}
@@ -838,8 +778,8 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
               <p className="text-muted-foreground leading-relaxed mb-5">{personalizationText}</p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {PERSONALIZATION_OPTIONS.map((option) => {
-                  const rule = getPersonalizationRule(option.key, personalizationCapabilities);
+                {PUBLIC_PERSONALIZATION_OPTIONS.map((option) => {
+                  const rule = getPersonalizationRule(option.key);
                   const statusMeta = getPersonalizationStatus(rule.status);
                   const selected = selectedPersonalization === option.key;
 
@@ -856,9 +796,9 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className="font-bold text-foreground">{rule.label || option.fallbackLabel}</p>
-                          {rule.message ? (
-                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{rule.message}</p>
+                          <p className="font-bold text-foreground">{option.label}</p>
+                          {option.message ? (
+                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{option.message}</p>
                           ) : null}
                         </div>
                         {selected && <CheckCircle2 size={18} className="text-primary shrink-0 mt-0.5" />}
@@ -883,25 +823,6 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
                 </p>
               </div>
 
-              {shouldShowEconomyAlternative && (
-                <details className="mt-4 rounded-2xl border border-success/20 bg-success/5 p-4">
-                  <summary className="cursor-pointer font-bold text-foreground text-sm">
-                    Ver alternativa económica: {economyPersonalizationRule.label}
-                  </summary>
-                  <label className="mt-3 flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={includeEconomyAlternative}
-                      onChange={(event) => setIncludeEconomyAlternative(event.target.checked)}
-                      className="mt-1 accent-primary"
-                    />
-                    <p className="text-sm text-muted-foreground">
-                      Incluirla como comparativa para que ventas pueda proponerte la opción más conveniente.
-                    </p>
-                  </label>
-                </details>
-              )}
-
               <div className="mt-4 bg-primary/5 border border-primary/20 rounded-2xl p-4 flex gap-3">
                 <Info size={18} className="text-primary shrink-0 mt-0.5" />
                 <p className="text-sm text-foreground">
@@ -924,7 +845,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
             <section className="bg-dark-section p-6 rounded-3xl shadow-xl border border-dark-section text-dark-section-foreground">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label className="block text-sm text-dark-section-foreground/60 mb-2">Cantidad estimada</label>
+                  <label className="block text-sm text-dark-section-foreground/60 mb-2">Cantidad para cotizar</label>
 
                   <div className="bg-dark-section/80 rounded-xl p-2 flex items-center justify-between border border-dark-section-foreground/10 w-full mb-3">
                     <button
@@ -941,7 +862,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
                       inputMode="numeric"
                       value={quantity}
                       onChange={handleQuantityInputChange}
-                      aria-label="Cantidad estimada"
+                      aria-label="Cantidad para cotizar"
                       className="w-28 bg-transparent text-center font-black text-2xl tracking-tight text-dark-section-foreground outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                     <button

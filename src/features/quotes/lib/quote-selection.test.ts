@@ -129,4 +129,57 @@ describe("buildQuoteRequestItems", () => {
     expect(item).not.toHaveProperty("estimatedUnit");
     expect(item).not.toHaveProperty("estimatedTotal");
   });
+
+  it("preserva SKU, cantidad y la decisión comercial de usar logo sin fijar una técnica", () => {
+    const payload = buildQuoteRequestItems([
+      {
+        ...item,
+        quantity: 250,
+        logoFormat: "advisor_review",
+        personalizacionSolicitadaCliente: {
+          tipo: "advisor_review",
+          label: "Con mi logo",
+          status: "manual_review",
+          message: "La técnica se confirma con asesor.",
+          requiereRevision: true,
+        },
+      },
+    ])[0];
+
+    expect(payload).toEqual({
+      product_id: "product-1",
+      quantity: 250,
+      color: "Azul",
+      personalization: {
+        type: "advisor_review",
+        label: "Con mi logo",
+        message: "La técnica se confirma con asesor.",
+        requires_review: true,
+      },
+    });
+  });
+
+  it("transporta la selección sin personalización sin inventar una técnica", () => {
+    const payload = buildQuoteRequestItems([
+      {
+        ...item,
+        logoFormat: "none",
+        personalizacionSolicitadaCliente: {
+          tipo: "none",
+          label: "Sin personalización",
+          status: "allowed",
+          message: "Cotizaremos sin impresión ni grabado.",
+          requiereRevision: false,
+        },
+        requiereRevisionTecnica: false,
+      },
+    ])[0];
+
+    expect(payload.personalization).toEqual({
+      type: "none",
+      label: "Sin personalización",
+      message: "Cotizaremos sin impresión ni grabado.",
+      requires_review: false,
+    });
+  });
 });

@@ -77,6 +77,7 @@ interface ProductoB2B {
   } | null;
   variantes: Array<{
     producto_b2b_id?: string;
+    oferta_id?: string;
     sku_variante?: string;
     clave_variante?: string;
     color_nombre?: unknown;
@@ -88,6 +89,7 @@ interface ProductoB2B {
     disponibilidad?: string;
     variantLabelKnown?: boolean;
     imageCandidates?: string[];
+    sku_scope?: string;
   }> | null;
   imagenes: unknown[] | null;
   modelSharedImages?: string[];
@@ -95,6 +97,62 @@ interface ProductoB2B {
   activo: boolean | null;
   updated_at: string | null;
 }
+
+interface PublicProductVariantContext {
+  producto_b2b_id: string;
+  oferta_id: string;
+  display_sku: string | null;
+  sku_scope: string;
+  variant_value: string | null;
+  color_code: string | null;
+  color_nombre: string | null;
+  material: string | null;
+  stock_status: string;
+  stock_qty: number | null;
+}
+
+const normalizeOptionalText = (value: unknown): string | undefined =>
+  typeof value === "string" && value.trim() ? value.trim() : undefined;
+
+const isSyntheticProviderVariantSku = (value: string): boolean => /^(FP|CDO)\|/i.test(value);
+
+const enrichLegacyProductWithVariantContext = (
+  product: ProductoB2B,
+  contexts: PublicProductVariantContext[],
+): ProductoB2B => {
+  if (!product.variantes?.length || !contexts.length) return product;
+
+  const contextByOfferId = new Map(contexts.map((context) => [context.oferta_id, context]));
+  const variantes = product.variantes.map((variant) => {
+    const context = variant.oferta_id ? contextByOfferId.get(variant.oferta_id) : undefined;
+    if (!context) return variant;
+
+    const currentSku = normalizeOptionalText(variant.sku_variante ?? variant.clave_variante);
+    const contextSku = normalizeOptionalText(context.display_sku);
+    const resolvedSku = currentSku && !isSyntheticProviderVariantSku(currentSku) ? currentSku : contextSku;
+    const observedStock = typeof context.stock_qty === "number" ? context.stock_qty : variant.stock_total;
+    const observedStatus = normalizeOptionalText(context.stock_status) ?? variant.disponibilidad;
+    const hasAvailableStock =
+      typeof observedStock === "number" &&
+      observedStock > 0 &&
+      typeof observedStatus === "string" &&
+      ["available", "disponible"].includes(observedStatus.toLowerCase());
+
+    return {
+      ...variant,
+      sku_variante: resolvedSku ?? variant.sku_variante,
+      clave_variante: resolvedSku ?? variant.clave_variante,
+      color_nombre: variant.color_nombre ?? context.variant_value ?? context.color_nombre,
+      stock_total: observedStock,
+      disponibilidad: observedStatus,
+      agregable_a_propuesta: variant.agregable_a_propuesta ?? hasAvailableStock,
+      material: variant.material ?? context.material ?? undefined,
+      sku_scope: variant.sku_scope ?? context.sku_scope,
+    };
+  });
+
+  return { ...product, variantes };
+};
 
 const modelProjectionToProduct = (
   row: CatalogModelProjectionRow,
@@ -274,7 +332,17 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
         .maybeSingle();
 
       if (!error && data) {
-        const legacyProduct = data as unknown as ProductoB2B;
+        let legacyProduct = data as unknown as ProductoB2B;
+        const { data: variantContextData, error: variantContextError } = await supabase.rpc(
+          "get_public_product_variant_context_v1",
+          { p_producto_b2b_id: legacyProduct.id },
+        );
+        if (!variantContextError && Array.isArray(variantContextData)) {
+          legacyProduct = enrichLegacyProductWithVariantContext(
+            legacyProduct,
+            variantContextData as PublicProductVariantContext[],
+          );
+        }
         setProduct(legacyProduct);
         setVariantProductIds((legacyProduct.variantes ?? []).map(() => legacyProduct.id));
         setSelectedColorIndex(0);
@@ -328,7 +396,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
   const selectedPersonalizationStatus = getPersonalizationStatus(selectedPersonalizationRule.status);
   const requiresTechnicalReview = selectedPersonalization === "advisor_review";
 
-  type ProductColorWithImages = ProductColor & { imageCandidates: string[] };
+  type ProductColorWithImages = ProductColor & { imageCandidates: string[]; skuScope?: string };
   const colors: ProductColorWithImages[] = (product?.variantes ?? []).map((v, i) => {
     const normalizedColorName = normalizeProductVariantLabel(v.color_nombre);
     const colorName = normalizedColorName ?? "Color por confirmar";
@@ -345,6 +413,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
       material: v.material,
       claveVariante: v.clave_variante ?? v.sku_variante,
       variantLabelKnown: Boolean(normalizedColorName),
+      skuScope: v.sku_scope,
     };
   });
 
@@ -410,6 +479,8 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
 
   const material = currentColor.material?.trim() || "Por confirmar con asesor";
   const availableStock = Number(currentColor.stock ?? 0);
+  const observedStockStatus = currentColor.disponibilidad?.trim().toLowerCase();
+  const stockStatusIsObserved = ["available", "disponible"].includes(observedStockStatus ?? "");
   const productAllowsProposal = Boolean(product?.datos_generales?.agregable_a_propuesta ?? true);
   const canAddToProposal = productAllowsProposal && Boolean(currentColor.agregableToProposal) && availableStock > 0;
   const allVariantsOutOfStock =
@@ -479,7 +550,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
                 : canAddToProposal && priceReady
                   ? "Agregar a mi solicitud"
                   : "Consultar disponibilidad";
-  const hasReportedStock = Number.isFinite(availableStock) && availableStock > 0;
+  const hasReportedStock = stockStatusIsObserved && Number.isFinite(availableStock) && availableStock > 0;
   const stockLabel = hasReportedStock
     ? `Stock observado: ${availableStock.toLocaleString("es-MX")} piezas`
     : "Disponibilidad por confirmar";
@@ -768,10 +839,12 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
                   <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-sm">
                     <span className="font-semibold text-foreground">Seleccionado: {currentColor.name}</span>
                     <span className="text-muted-foreground">
-                      {currentColor.claveVariante ? `SKU: ${currentColor.claveVariante}` : "SKU por confirmar"}
+                      {currentColor.claveVariante
+                        ? `${currentColor.skuScope === "PRODUCT" ? "SKU de producto" : "SKU"}: ${currentColor.claveVariante}`
+                        : "SKU por confirmar"}
                     </span>
                     <span className="w-full text-xs text-muted-foreground">
-                      {currentColor.stock > 0
+                      {stockStatusIsObserved && currentColor.stock > 0
                         ? `Stock observado: ${currentColor.stock.toLocaleString("es-MX")} piezas`
                         : "Disponibilidad por confirmar"}
                     </span>

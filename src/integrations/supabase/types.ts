@@ -5960,6 +5960,21 @@ export type Database = {
           variants: Json
         }[]
       }
+      get_public_product_variant_context_v1: {
+        Args: { p_producto_b2b_id: string }
+        Returns: {
+          color_code: string | null
+          color_nombre: string | null
+          display_sku: string | null
+          material: string | null
+          oferta_id: string
+          producto_b2b_id: string
+          sku_scope: string
+          stock_qty: number | null
+          stock_status: string
+          variant_value: string | null
+        }[]
+      }
       get_public_product_price_quote: {
         Args: { p_producto_b2b_id: string; p_quantity: number }
         Returns: {

@@ -5846,6 +5846,43 @@ export type Database = {
           variants: Json
         }[]
       }
+      catalog_search_model_projection_v1_base_20261017: {
+        Args: {
+          p_availability?: string
+          p_category_slug?: string
+          p_collection_slug?: string
+          p_color?: string
+          p_limit?: number
+          p_material?: string
+          p_max_moq?: number
+          p_max_price?: number
+          p_min_moq?: number
+          p_min_price?: number
+          p_offset?: number
+          p_query?: string
+        }
+        Returns: {
+          availability: string
+          canonical_model_name: string
+          card_moq: number
+          card_price: Json
+          category: Json
+          default_producto_b2b_id: string
+          eligible_variant_count: number
+          model_id: string
+          model_key: string
+          projection_version: string
+          relevance: number
+          representative_image: Json
+          result_grain: string
+          result_id: string
+          search_match: Json
+          selected_variant_sku: string
+          selected_variant_value: string
+          total_count: number
+          variants: Json
+        }[]
+      }
       catalog_search_products: {
         Args: {
           p_category_slug?: string
@@ -5960,19 +5997,27 @@ export type Database = {
           variants: Json
         }[]
       }
-      get_public_product_variant_context_v1: {
-        Args: { p_producto_b2b_id: string }
+      get_model_projection_detail_v1_base_20261017: {
+        Args: { p_model_key: string; p_variant_sku?: string }
         Returns: {
-          color_code: string | null
-          color_nombre: string | null
-          display_sku: string | null
-          material: string | null
-          oferta_id: string
-          producto_b2b_id: string
-          sku_scope: string
-          stock_qty: number | null
-          stock_status: string
-          variant_value: string | null
+          availability: string
+          canonical_model_name: string
+          card_moq: number
+          card_price: Json
+          category: Json
+          default_producto_b2b_id: string
+          eligible_variant_count: number
+          model_id: string
+          model_key: string
+          projection_readiness: string
+          projection_version: string
+          representative_image: Json
+          result_grain: string
+          result_id: string
+          search_match: Json
+          selected_variant_sku: string
+          selected_variant_value: string
+          variants: Json
         }[]
       }
       get_public_product_price_quote: {
@@ -5996,6 +6041,21 @@ export type Database = {
           precio_unitario_mxn: number
           price_status: string
           tax_included: boolean
+        }[]
+      }
+      get_public_product_variant_context_v1: {
+        Args: { p_producto_b2b_id: string }
+        Returns: {
+          color_code: string
+          color_nombre: string
+          display_sku: string
+          material: string
+          oferta_id: string
+          producto_b2b_id: string
+          sku_scope: string
+          stock_qty: number
+          stock_status: string
+          variant_value: string
         }[]
       }
       has_role: {

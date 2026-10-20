@@ -174,6 +174,26 @@ describe("ProductDetailView PDP simplificada", () => {
 
   it("resuelve SKU comercial y stock del offer exacto en un producto standalone", async () => {
     const onAddToQuote = vi.fn();
+    priceMock.mockImplementation((_productId: string, quantity: number) =>
+      Promise.resolve(
+        quantity < 834
+          ? {
+              ...pricedQuote,
+              status: "below_minimum",
+              unitPriceBeforeTaxMxn: null,
+              minimumQuantity: 834,
+              requestedQuantity: quantity,
+              isValidQuantity: false,
+            }
+          : {
+              ...pricedQuote,
+              unitPriceBeforeTaxMxn: 1.8,
+              minimumQuantity: 834,
+              requestedQuantity: quantity,
+              isValidQuantity: true,
+            },
+      ),
+    );
     const legacyProduct = {
       id: "product-goma",
       id_interno: "O 014",
@@ -224,16 +244,106 @@ describe("ProductDetailView PDP simplificada", () => {
     expect(screen.getByText("SKU de producto: O 014")).toBeInTheDocument();
     expect(screen.getAllByText("Stock observado: 126,514 piezas").length).toBeGreaterThan(0);
     expect(screen.queryByText(/FP\|O_014/)).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByDisplayValue("834")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText("$1.80").length).toBeGreaterThan(0));
+    expect(screen.queryByText("Por confirmar")).not.toBeInTheDocument();
     await waitFor(() => expect(screen.getByRole("button", { name: "Agregar a mi solicitud" })).toBeEnabled());
     fireEvent.click(screen.getByRole("button", { name: "Agregar a mi solicitud" }));
     expect(onAddToQuote).toHaveBeenCalledWith(
       expect.objectContaining({
         productId: "product-goma",
         sku: "O 014",
-        quantity: 100,
+        quantity: 834,
         color: expect.objectContaining({ name: "BLANCO" }),
       }),
     );
+  });
+
+  it("sugiere 100 para un MOQ menor, pero corrige exactamente al MOQ", async () => {
+    rpcMock.mockResolvedValue({
+      data: [
+        {
+          ...modelRow,
+          variants: [{ ...modelRow.variants[0], minimum_quantity: 36 }],
+        },
+      ],
+      error: null,
+    });
+    priceMock.mockImplementation((_productId: string, quantity: number) =>
+      Promise.resolve(
+        quantity < 36
+          ? {
+              ...pricedQuote,
+              status: "below_minimum",
+              unitPriceBeforeTaxMxn: null,
+              minimumQuantity: 36,
+              requestedQuantity: quantity,
+              isValidQuantity: false,
+            }
+          : {
+              ...pricedQuote,
+              minimumQuantity: 36,
+              requestedQuantity: quantity,
+              isValidQuantity: true,
+            },
+      ),
+    );
+
+    render(
+      <ProductDetailView
+        productId="product-azu"
+        modelKey="manga"
+        onBack={vi.fn()}
+        onAddToQuote={vi.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(screen.getByDisplayValue("100")).toBeInTheDocument());
+
+    fireEvent.change(screen.getByRole("spinbutton", { name: "Cantidad para cotizar" }), { target: { value: "50" } });
+    await waitFor(() => expect(screen.getByDisplayValue("50")).toBeInTheDocument());
+    await waitFor(() => expect(priceMock).toHaveBeenCalledWith("product-azu", 50));
+
+    fireEvent.change(screen.getByRole("spinbutton", { name: "Cantidad para cotizar" }), { target: { value: "36" } });
+    await waitFor(() => expect(screen.getByDisplayValue("36")).toBeInTheDocument());
+    await waitFor(() => expect(priceMock).toHaveBeenCalledWith("product-azu", 36));
+
+    fireEvent.change(screen.getByRole("spinbutton", { name: "Cantidad para cotizar" }), { target: { value: "35" } });
+    await waitFor(() => expect(priceMock).toHaveBeenCalledWith("product-azu", 35));
+    await waitFor(() => expect(screen.getByDisplayValue("36")).toBeInTheDocument());
+    await waitFor(() => expect(priceMock).toHaveBeenCalledWith("product-azu", 36));
+  });
+
+  it("actualiza la cantidad mínima al cambiar a una variante con MOQ mayor", async () => {
+    rpcMock.mockResolvedValue({
+      data: [
+        {
+          ...modelRow,
+          variants: [
+            { ...modelRow.variants[0], minimum_quantity: 50 },
+            { ...modelRow.variants[1], minimum_quantity: 834 },
+          ],
+        },
+      ],
+      error: null,
+    });
+    priceMock.mockImplementation((_productId: string, quantity: number) =>
+      Promise.resolve({ ...pricedQuote, minimumQuantity: quantity >= 834 ? 834 : 50, requestedQuantity: quantity }),
+    );
+
+    render(
+      <ProductDetailView
+        productId="product-azu"
+        modelKey="manga"
+        onBack={vi.fn()}
+        onAddToQuote={vi.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(screen.getByDisplayValue("100")).toBeInTheDocument());
+    fireEvent.change(screen.getByRole("combobox", { name: "Color o variante" }), { target: { value: "1" } });
+    await waitFor(() => expect(screen.getByDisplayValue("834")).toBeInTheDocument());
+    await waitFor(() => expect(priceMock).toHaveBeenCalledWith("product-rojo", 834));
   });
 
   it("mantiene los mensajes conservadores si no hay una relación pública exacta", async () => {

@@ -87,6 +87,7 @@ interface ProductoB2B {
     imagen_url?: string;
     material?: string;
     disponibilidad?: string;
+    minimum_quantity?: number | null;
     variantLabelKnown?: boolean;
     imageCandidates?: string[];
     sku_scope?: string;
@@ -113,6 +114,17 @@ interface PublicProductVariantContext {
 
 const normalizeOptionalText = (value: unknown): string | undefined =>
   typeof value === "string" && value.trim() ? value.trim() : undefined;
+
+const normalizePositiveInteger = (value: unknown): number | undefined => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.trunc(parsed) : undefined;
+};
+
+const initialQuantityForMinimum = (minimumQuantity: unknown): number =>
+  Math.max(100, normalizePositiveInteger(minimumQuantity) ?? 100);
+
+const minimumQuantityForCorrection = (minimumQuantity: unknown): number =>
+  normalizePositiveInteger(minimumQuantity) ?? 1;
 
 const isSyntheticProviderVariantSku = (value: string): boolean => /^(FP|CDO)\|/i.test(value);
 
@@ -166,6 +178,9 @@ const modelProjectionToProduct = (
       const variantProductId = variant.producto_b2b_id ?? fallbackProductId ?? "";
       const imageCandidates = projectionImageUrls(variant.image);
       const stock = Number(variant.stock_qty ?? 0);
+      const minimumQuantity =
+        normalizePositiveInteger(variant.minimum_quantity) ??
+        (variantProductId === projectedDefaultProductId ? normalizePositiveInteger(row.card_moq) : undefined);
       const normalizedVariantLabel = normalizeProductVariantLabel(variant.variant_value);
       const directVariantSku = typeof variant.sku === "string" && variant.sku.trim() ? variant.sku.trim() : null;
       const variantSku =
@@ -185,6 +200,7 @@ const modelProjectionToProduct = (
         imagen_url: imageCandidates[0],
         imageCandidates,
         disponibilidad: variant.stock_status ?? "consultar",
+        minimum_quantity: minimumQuantity,
         material: variant.material ?? undefined,
       };
     });
@@ -285,6 +301,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(100);
   const [priceQuote, setPriceQuote] = useState<PublicPriceQuote | null>(null);
+  const [priceQuoteKey, setPriceQuoteKey] = useState<string | null>(null);
   const [priceLoading, setPriceLoading] = useState(false);
   const [priceError, setPriceError] = useState(false);
   const [priceReloadToken, setPriceReloadToken] = useState(0);
@@ -298,12 +315,18 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
     async function fetchProduct() {
       if (!productId) {
         setProduct(null);
+        setPriceQuote(null);
+        setPriceQuoteKey(null);
         setLoading(false);
         return;
       }
       setLoading(true);
       setProduct(null);
       setVariantProductIds([]);
+      setPriceQuote(null);
+      setPriceQuoteKey(null);
+      setPriceError(false);
+      setPriceLoading(false);
 
       if (modelKey) {
         const { data: modelData, error: modelError } = await supabase.rpc("get_model_projection_detail_v1", {
@@ -317,7 +340,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
           setVariantProductIds(projected.variantProductIds);
           setSelectedColorIndex(0);
           setSelectedImageIndex(0);
-          setQuantity(100);
+          setQuantity(initialQuantityForMinimum(projected.product.variantes?.[0]?.minimum_quantity));
           setLoading(false);
           return;
         }
@@ -347,7 +370,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
         setVariantProductIds((legacyProduct.variantes ?? []).map(() => legacyProduct.id));
         setSelectedColorIndex(0);
         setSelectedImageIndex(0);
-        setQuantity(100);
+        setQuantity(initialQuantityForMinimum(legacyProduct.variantes?.[0]?.minimum_quantity));
       }
 
       setLoading(false);
@@ -396,7 +419,11 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
   const selectedPersonalizationStatus = getPersonalizationStatus(selectedPersonalizationRule.status);
   const requiresTechnicalReview = selectedPersonalization === "advisor_review";
 
-  type ProductColorWithImages = ProductColor & { imageCandidates: string[]; skuScope?: string };
+  type ProductColorWithImages = ProductColor & {
+    imageCandidates: string[];
+    skuScope?: string;
+    minimumQuantity?: number;
+  };
   const colors: ProductColorWithImages[] = (product?.variantes ?? []).map((v, i) => {
     const normalizedColorName = normalizeProductVariantLabel(v.color_nombre);
     const colorName = normalizedColorName ?? "Color por confirmar";
@@ -414,6 +441,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
       claveVariante: v.clave_variante ?? v.sku_variante,
       variantLabelKnown: Boolean(normalizedColorName),
       skuScope: v.sku_scope,
+      minimumQuantity: normalizePositiveInteger(v.minimum_quantity),
     };
   });
 
@@ -498,6 +526,9 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
 
     const requestSeq = priceRequestRef.current + 1;
     priceRequestRef.current = requestSeq;
+    const requestKey = `${currentVariantProductId}:${selectedColorIndex}:${quantity}`;
+    setPriceQuote(null);
+    setPriceQuoteKey(null);
     setPriceLoading(true);
     setPriceError(false);
 
@@ -507,11 +538,13 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
         .then((quote) => {
           if (cancelled || priceRequestRef.current !== requestSeq) return;
           setPriceQuote(quote);
+          setPriceQuoteKey(requestKey);
           setPriceLoading(false);
         })
         .catch(() => {
           if (cancelled || priceRequestRef.current !== requestSeq) return;
           setPriceQuote(null);
+          setPriceQuoteKey(null);
           setPriceError(true);
           setPriceLoading(false);
         });
@@ -521,17 +554,26 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [currentVariantProductId, quantity, priceReloadToken]);
+  }, [currentVariantProductId, selectedColorIndex, quantity, priceReloadToken]);
 
-  const priceStatus = priceQuote?.status ?? null;
-  const unitPrice = priceQuote?.unitPriceBeforeTaxMxn ?? null;
-  const estimatedTotal = estimatedLineTotal(priceQuote, quantity);
+  const priceRequestKey = currentVariantProductId
+    ? `${currentVariantProductId}:${selectedColorIndex}:${quantity}`
+    : null;
+  const activePriceQuote = priceRequestKey !== null && priceQuoteKey === priceRequestKey ? priceQuote : null;
+  const priceStatus = activePriceQuote?.status ?? null;
+  const unitPrice = activePriceQuote?.unitPriceBeforeTaxMxn ?? null;
+  const estimatedTotal = estimatedLineTotal(activePriceQuote, quantity);
   const priceBlocked = priceStatus === "below_minimum" || priceStatus === "unavailable";
   const priceReady =
     (priceStatus === "priced" || priceStatus === "request_quote") &&
-    priceQuote?.requestedQuantity === quantity &&
-    priceQuote.isValidQuantity === true;
-  const minimumQuantity = priceQuote?.minimumQuantity ?? null;
+    activePriceQuote?.requestedQuantity === quantity &&
+    activePriceQuote.isValidQuantity === true;
+  const minimumQuantity = activePriceQuote?.minimumQuantity ?? currentColor.minimumQuantity ?? null;
+
+  useEffect(() => {
+    if (priceStatus !== "below_minimum" || !minimumQuantity || quantity >= minimumQuantity) return;
+    setQuantity(minimumQuantityForCorrection(minimumQuantity));
+  }, [minimumQuantity, priceStatus, quantity]);
 
   const ctaLabel: string = !productAllowsProposal
     ? "Consultar por WhatsApp"
@@ -570,6 +612,18 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
   const setSafeQuantity = (value: number) => {
     const normalizedValue = Number.isFinite(value) ? value : 1;
     setQuantity(Math.max(1, Math.min(Math.trunc(normalizedValue), 1_000_000)));
+  };
+
+  const setQuickQuantity = (value: number) => {
+    setSafeQuantity(minimumQuantity && value < minimumQuantity ? minimumQuantityForCorrection(minimumQuantity) : value);
+  };
+
+  const handleVariantChange = (nextIndex: number) => {
+    setSelectedColorIndex(nextIndex);
+    const nextMinimum = colors[nextIndex]?.minimumQuantity;
+    if (nextMinimum && quantity < nextMinimum) {
+      setSafeQuantity(minimumQuantityForCorrection(nextMinimum));
+    }
   };
 
   const handleQuantityInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -616,7 +670,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
       requiereRevisionTecnica: requiresTechnicalReview,
       personalizationCompatibilityNote: selectedPersonalizationRule.message,
       // Última estimación autoritativa conocida; el servidor recalcula al enviar.
-      pricing: priceQuote,
+      pricing: activePriceQuote,
       hasVirtualSample: false,
       imageUrl: mainImage ?? undefined,
       entregaEstimada: deliveryEstimate,
@@ -796,10 +850,14 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
                         ? `$${formatMoney(unitPrice)}`
                         : priceStatus === "unavailable"
                           ? "No disponible"
+                          : priceStatus === "below_minimum"
+                            ? minimumQuantity
+                              ? `Cantidad mínima: ${minimumQuantity.toLocaleString("es-MX")}`
+                              : "Cantidad mínima por confirmar"
                           : "Por confirmar"}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {priceQuote?.currency ?? "MXN"} · antes de IVA e impresión
+                    {activePriceQuote?.currency ?? "MXN"} · antes de IVA e impresión
                   </p>
                 </div>
                 <div className="bg-surface rounded-2xl p-4 border border-border">
@@ -827,7 +885,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
                   <select
                     id="product-variant"
                     value={selectedColorIndex}
-                    onChange={(event) => setSelectedColorIndex(Number(event.target.value))}
+                    onChange={(event) => handleVariantChange(Number(event.target.value))}
                     className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-foreground font-semibold focus:ring-2 focus:ring-primary outline-none"
                   >
                     {colors.map((color, idx) => (
@@ -939,7 +997,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
                     </button>
                     <input
                       type="number"
-                      min={1}
+                      min={minimumQuantity ?? 1}
                       max={1_000_000}
                       inputMode="numeric"
                       value={quantity}
@@ -961,7 +1019,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
                       <button
                         key={quickQty}
                         type="button"
-                        onClick={() => setSafeQuantity(quickQty)}
+                        onClick={() => setQuickQuantity(quickQty)}
                         className={`rounded-lg border px-2 py-2 text-xs font-bold transition ${
                           quantity === quickQty
                             ? "bg-primary text-primary-foreground border-primary"
@@ -997,13 +1055,13 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
                         <div className="flex items-end gap-2">
                           <span className="text-4xl font-black text-success">${formatMoney(unitPrice)}</span>
                           <span className="text-sm text-dark-section-foreground/60 mb-1.5">
-                            {priceQuote?.currency ?? "MXN"} · antes de IVA e impresión
+                            {activePriceQuote?.currency ?? "MXN"} · antes de IVA e impresión
                           </span>
                         </div>
                         <div className="mt-4 pt-4 border-t border-dark-section-foreground/10">
                           <p className="text-xs text-dark-section-foreground/50 mb-1">Subtotal estimado</p>
                           <p className="text-2xl font-black text-dark-section-foreground">
-                            {estimatedTotal !== null ? `$${formatMoney(estimatedTotal)} ${priceQuote?.currency ?? "MXN"}` : "Por confirmar"}
+                            {estimatedTotal !== null ? `$${formatMoney(estimatedTotal)} ${activePriceQuote?.currency ?? "MXN"}` : "Por confirmar"}
                           </p>
                           <p className="text-[11px] text-dark-section-foreground/50 mt-1">
                             Estimación antes de IVA e impresión. Se recalculará al enviar.

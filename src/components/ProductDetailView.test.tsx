@@ -97,6 +97,7 @@ describe("ProductDetailView PDP simplificada", () => {
     );
 
     await waitFor(() => expect(screen.getByText("MANGA")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Cantidad mínima: 50 piezas")).toBeInTheDocument());
     expect(screen.getByText("SKU: manga-azu")).toBeInTheDocument();
     expect(screen.getAllByText("Stock observado: 120 piezas").length).toBeGreaterThan(0);
 
@@ -245,6 +246,17 @@ describe("ProductDetailView PDP simplificada", () => {
     expect(screen.getAllByText("Stock observado: 126,514 piezas").length).toBeGreaterThan(0);
     expect(screen.queryByText(/FP\|O_014/)).not.toBeInTheDocument();
     await waitFor(() => expect(screen.getByDisplayValue("834")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Cantidad mínima: 834 piezas")).toBeInTheDocument());
+    expect(screen.queryByRole("button", { name: "100" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "250" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "500" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "834" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "1,000" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "1,000" }));
+    await waitFor(() => expect(screen.getByDisplayValue("1000")).toBeInTheDocument());
+    await waitFor(() => expect(priceMock).toHaveBeenCalledWith("product-goma", 1000));
+    fireEvent.click(screen.getByRole("button", { name: "834" }));
+    await waitFor(() => expect(screen.getByDisplayValue("834")).toBeInTheDocument());
     await waitFor(() => expect(screen.getAllByText("$1.80").length).toBeGreaterThan(0));
     expect(screen.queryByText("Por confirmar")).not.toBeInTheDocument();
     await waitFor(() => expect(screen.getByRole("button", { name: "Agregar a mi solicitud" })).toBeEnabled());
@@ -299,6 +311,8 @@ describe("ProductDetailView PDP simplificada", () => {
     );
 
     await waitFor(() => expect(screen.getByDisplayValue("100")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Cantidad mínima: 36 piezas")).toBeInTheDocument());
+    expect(screen.getByRole("button", { name: "36" })).toBeInTheDocument();
 
     fireEvent.change(screen.getByRole("spinbutton", { name: "Cantidad para cotizar" }), { target: { value: "50" } });
     await waitFor(() => expect(screen.getByDisplayValue("50")).toBeInTheDocument());
@@ -312,6 +326,50 @@ describe("ProductDetailView PDP simplificada", () => {
     await waitFor(() => expect(priceMock).toHaveBeenCalledWith("product-azu", 35));
     await waitFor(() => expect(screen.getByDisplayValue("36")).toBeInTheDocument());
     await waitFor(() => expect(priceMock).toHaveBeenCalledWith("product-azu", 36));
+  });
+
+  it("muestra el MOQ autoritativo de BOOKRAFT/T671 sin imponerlo como cantidad inicial", async () => {
+    rpcMock.mockResolvedValue({
+      data: [
+        {
+          ...modelRow,
+          model_key: "bookraft",
+          default_producto_b2b_id: "857df6f5-2abc-4a71-8840-c045262ea194",
+          canonical_model_name: "BOOKRAFT",
+          selected_variant_sku: "T671",
+          variants: [
+            {
+              ...modelRow.variants[0],
+              producto_b2b_id: "857df6f5-2abc-4a71-8840-c045262ea194",
+              sku: "T671",
+              variant_value: "Royal Blue",
+              minimum_quantity: null,
+            },
+          ],
+        },
+      ],
+      error: null,
+    });
+    priceMock.mockResolvedValue({
+      ...pricedQuote,
+      minimumQuantity: 36,
+      requestedQuantity: 100,
+      isValidQuantity: true,
+    });
+
+    render(
+      <ProductDetailView
+        productId="857df6f5-2abc-4a71-8840-c045262ea194"
+        modelKey="bookraft"
+        onBack={vi.fn()}
+        onAddToQuote={vi.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(screen.getByText("BOOKRAFT")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Cantidad mínima: 36 piezas")).toBeInTheDocument());
+    expect(screen.getByDisplayValue("100")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "36" })).toBeInTheDocument();
   });
 
   it("actualiza la cantidad mínima al cambiar a una variante con MOQ mayor", async () => {
@@ -343,6 +401,8 @@ describe("ProductDetailView PDP simplificada", () => {
     await waitFor(() => expect(screen.getByDisplayValue("100")).toBeInTheDocument());
     fireEvent.change(screen.getByRole("combobox", { name: "Color o variante" }), { target: { value: "1" } });
     await waitFor(() => expect(screen.getByDisplayValue("834")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Cantidad mínima: 834 piezas")).toBeInTheDocument());
+    expect(screen.queryByRole("button", { name: "100" })).not.toBeInTheDocument();
     await waitFor(() => expect(priceMock).toHaveBeenCalledWith("product-rojo", 834));
   });
 
@@ -378,6 +438,7 @@ describe("ProductDetailView PDP simplificada", () => {
     );
 
     await waitFor(() => expect(screen.getByText("Producto sin contexto")).toBeInTheDocument());
+    expect(screen.getByText("Cantidad mínima por confirmar")).toBeInTheDocument();
     expect(screen.getByText("SKU por confirmar")).toBeInTheDocument();
     expect(screen.getAllByText("Disponibilidad por confirmar").length).toBeGreaterThan(0);
   });

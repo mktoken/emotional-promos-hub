@@ -237,6 +237,14 @@ const modelProjectionToProduct = (
 
 const QUICK_QUANTITIES = [100, 250, 500, 1000];
 
+const quickQuantitiesForMinimum = (minimumQuantity: number | null): number[] => {
+  const normalizedMinimum = normalizePositiveInteger(minimumQuantity);
+  if (!normalizedMinimum) return [...QUICK_QUANTITIES];
+
+  const validPresets = QUICK_QUANTITIES.filter((quickQuantity) => quickQuantity >= normalizedMinimum);
+  return validPresets.includes(normalizedMinimum) ? validPresets : [normalizedMinimum, ...validPresets];
+};
+
 const PUBLIC_PERSONALIZATION_OPTIONS: Array<{
   key: "none" | "advisor_review";
   label: string;
@@ -569,6 +577,7 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
     activePriceQuote?.requestedQuantity === quantity &&
     activePriceQuote.isValidQuantity === true;
   const minimumQuantity = activePriceQuote?.minimumQuantity ?? currentColor.minimumQuantity ?? null;
+  const quickQuantities = quickQuantitiesForMinimum(minimumQuantity);
 
   useEffect(() => {
     if (priceStatus !== "below_minimum" || !minimumQuantity || quantity >= minimumQuantity) return;
@@ -1014,8 +1023,8 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-4 gap-2">
-                    {QUICK_QUANTITIES.map((quickQty) => (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {quickQuantities.map((quickQty) => (
                       <button
                         key={quickQty}
                         type="button"
@@ -1030,6 +1039,11 @@ export default function ProductDetailView({ productId, modelKey, onBack, onAddTo
                       </button>
                     ))}
                   </div>
+                  <p className="mt-3 text-xs text-dark-section-foreground/60" aria-live="polite">
+                    {minimumQuantity
+                      ? `Cantidad mínima: ${minimumQuantity.toLocaleString("es-MX")} piezas`
+                      : "Cantidad mínima por confirmar"}
+                  </p>
                 </div>
 
                 <div className="lg:border-l lg:border-dark-section-foreground/10 lg:pl-6">

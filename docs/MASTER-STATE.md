@@ -1,5 +1,37 @@
 # ESTADO MAESTRO — EMOTIONAL PROMOS HUB
 
+## PE QUALITY GOVERNANCE BUILD 01 — referencia documental
+
+La gobernanza permanente G01–G06 está definida en
+`docs/governance/PE_QUALITY_GATES.md` con estado
+`GOVERNANCE_LOCAL_READY_FOR_REVIEW`. Es una capa lógica de documentación y
+control; no crea autoridades paralelas, no modifica runtime y no autoriza SQL,
+Supabase, Lovable, GitHub, CRM, commit, push o Publish.
+
+La fuente de verdad del estado continúa siendo este documento. La directiva de
+arquitectura vigente es `docs/11_CATALOG_GOVERNANCE_AND_PRODUCT_EXPERIENCE_DIRECTIVE.md`.
+Pricing V2, búsqueda V2, stock, imágenes, proveedores, privacidad y contratos
+CRM permanecen protegidos. Los paquetes P01–P10 son backlog gobernado y no
+implican autorización de implementación.
+
+## PE QUALITY GOVERNANCE REMEDIATION 01 — reconciliación documental
+
+El `AGENTS.md` original del proyecto permanece como base operativa y se
+conserva íntegramente; solo incorpora una referencia mínima a los quality
+gates. `docs/governance/PE_QUALITY_GATES.md` separa autoridad de estado,
+decisiones permanentes, petición humana y contratos especializados.
+
+La remediación añade clases de evidencia separadas del veredicto, gates de
+release proporcionales, cierre únicamente con evidencia posterior, y la
+distinción entre información incompleta y ambigüedad de identidad comercial.
+P06 Buscador global queda como prioridad comercial P1 para el siguiente
+paquete de navegación, sin implicar criticidad automática de release ni
+autorización de implementación.
+
+Los releases documentales y funcionales se distinguen. La criticidad de release
+se registra como R0/R1/R2 según el alcance; una prioridad comercial P1 no
+bloquea por sí sola una superficie independiente.
+
 ## Identidad de reentrada
 
 - Repositorio: `mktoken/emotional-promos-hub`

@@ -6,6 +6,10 @@ Este es el punto de entrada documental del proyecto. Una nueva sesión debe come
 
 Este índice no reemplaza el estado maestro ni duplica su estado técnico completo.
 
+La gobernanza permanente de calidad se define en
+`docs/governance/PE_QUALITY_GATES.md`. Es un estándar de control documental y
+no sustituye las autoridades runtime ni autoriza por sí solo cambios o release.
+
 ## Identidad
 
 - Proyecto: **Emotional Promos Hub / Promocionales Emocionales**.
@@ -30,6 +34,7 @@ El estado Git y el checkpoint vigente no se mantienen aquí. La fuente de verdad
    - arquitectura: `docs/05_ARCHITECTURE.md`;
    - precios y catálogo: `docs/09_PRICING_CATALOG_V2.md`;
    - evidencia QA: `docs/10_QA_EVIDENCE.md`;
+   - quality gates: `docs/governance/PE_QUALITY_GATES.md`;
    - decisiones: `docs/02_DECISION_LOG.md`.
 
 ## Jerarquía y autoridad

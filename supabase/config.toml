@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.catalog-image-admin]
 verify_jwt = false
+
+# The atomic-cycle endpoint is reached only by the provider cron and validates
+# STOCK_REFRESH_CRON_KEY itself. It remains operationally disabled until the
+# private automatic-cycle flag is enabled in a separately authorized step.
+[functions.run-forpromotional-atomic-cycle-v1]
+verify_jwt = false

@@ -34,7 +34,9 @@ describe("ForPromotional automatic cycle contract", () => {
     expect(source).toContain("pe_forpromotional_cycle_certify_v1");
     expect(source).toContain("pe_forpromotional_cycle_activate_v1");
     expect(source).toContain("last_valid_generation_remains: true");
-    expect(source).toContain("API total changed during cycle");
+    expect(source).toContain("API reconciliation changed during paginated cycle");
+    expect(source).toContain("api_unique_variants");
+    expect(source).toContain("api_duplicate_records");
     expect(source).toContain("automatic_cycle_disabled");
     expect(source).not.toContain("sync-forpromotional-products?");
     expect(source).not.toContain("provider=g4_mx");

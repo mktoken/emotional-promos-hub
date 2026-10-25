@@ -161,11 +161,14 @@ BEGIN
   DROP FUNCTION IF EXISTS public.pe_forpromotional_cycle_certify_v1(uuid);
   DROP FUNCTION IF EXISTS public.pe_forpromotional_cycle_finish_v1(uuid,text,jsonb,text);
   DROP FUNCTION IF EXISTS public.pe_forpromotional_cycle_begin_v1(text,text);
+  DROP FUNCTION IF EXISTS public.pe_forpromotional_reconcile_candidate_v1(uuid);
 
   DROP TABLE IF EXISTS public.forpromotional_atomic_restore_rows;
   DROP TABLE IF EXISTS public.forpromotional_atomic_restore_meta;
   DROP TABLE IF EXISTS public.forpromotional_atomic_cycle_state;
   DROP TABLE IF EXISTS public.forpromotional_atomic_cycle_runs;
+  DROP TABLE IF EXISTS public.forpromotional_atomic_local_absences;
+  DROP TABLE IF EXISTS public.forpromotional_atomic_variant_shadow;
   DROP TABLE IF EXISTS public.forpromotional_atomic_exceptions;
   DROP TABLE IF EXISTS public.forpromotional_atomic_cost_shadow;
   DROP TABLE IF EXISTS public.forpromotional_atomic_candidates;

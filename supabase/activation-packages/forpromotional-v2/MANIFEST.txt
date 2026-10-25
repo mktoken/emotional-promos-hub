@@ -13,6 +13,7 @@ PE ForPromotional activation package
 08_switch_forpromotional_cron_to_v2.sql
 09_pause_v2_for_rollback.sql
 10_install_atomic_staging.sql
+10a_install_atomic_reconciliation.sql
 11_prepare_atomic_candidate.sql
 12_certify_atomic_candidate.sql
 13_activate_atomic_candidate.sql
@@ -27,6 +28,7 @@ PE ForPromotional activation package
 README.md
 MANIFEST.txt
 functions/_shared/forpromotional-api-cost.ts
+functions/_shared/forpromotional-reconciliation.ts
 functions/_shared/catalog-stock-status.ts
 functions/_shared/refresh-provider-stock-contract.ts
 functions/_shared/refresh-provider-stock-runtime.ts
@@ -39,6 +41,7 @@ functions/PARALLEL_DEPLOYMENT.md
 tests/forpromotional-api-cost-contract.test.ts
 tests/forpromotional-parallel-deployment.test.ts
 tests/forpromotional-atomic-activation.test.ts
+tests/forpromotional-reconciliation.test.ts
 tests/forpromotional-curve-invariants.test.ts
 tests/forpromotional-automatic-cycle.test.ts
 tests/forpromotional-disabled-install.test.ts

@@ -70,6 +70,9 @@ CREATE TABLE IF NOT EXISTS public.forpromotional_atomic_restore_meta (
   old_rule_notes text,
   old_policy_enabled boolean NOT NULL,
   old_policy_version text,
+  old_release_row jsonb,
+  old_rule_row jsonb,
+  old_policy_row jsonb,
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
@@ -85,8 +88,18 @@ CREATE TABLE IF NOT EXISTS public.forpromotional_atomic_restore_rows (
     ON UPDATE RESTRICT ON DELETE RESTRICT,
   old_stock_qty integer NOT NULL,
   old_stock_status text NOT NULL,
+  old_scale_row jsonb,
+  old_stock_row jsonb,
   PRIMARY KEY (candidate_id, scale_id, stock_id)
 );
+
+ALTER TABLE public.forpromotional_atomic_restore_meta
+  ADD COLUMN IF NOT EXISTS old_release_row jsonb,
+  ADD COLUMN IF NOT EXISTS old_rule_row jsonb,
+  ADD COLUMN IF NOT EXISTS old_policy_row jsonb;
+ALTER TABLE public.forpromotional_atomic_restore_rows
+  ADD COLUMN IF NOT EXISTS old_scale_row jsonb,
+  ADD COLUMN IF NOT EXISTS old_stock_row jsonb;
 
 ALTER TABLE public.forpromotional_atomic_candidates
   ADD COLUMN IF NOT EXISTS cycle_run_id uuid;
@@ -317,11 +330,16 @@ SET search_path = public, pg_temp
 AS $cycle_certify$
 DECLARE
   v_candidate record;
+  v_variant_count integer;
+  v_occurrence_count integer;
   v_stage_count integer;
   v_expected_count integer;
   v_exception_count integer;
   v_ambiguous_count integer;
   v_overlap_count integer;
+  v_absent_count integer;
+  v_public_absent_count integer;
+  v_pending_public_count integer;
   v_updated_count integer;
   v_product_id uuid;
   v_cost numeric;
@@ -352,11 +370,61 @@ BEGIN
     RAISE EXCEPTION 'candidate API import is incomplete';
   END IF;
 
+  IF v_candidate.api_record_count IS NULL
+     OR v_candidate.api_unique_variant_count IS NULL
+     OR v_candidate.api_duplicate_record_count IS NULL
+     OR nullif(v_candidate.api_source_fingerprint, '') IS NULL
+     OR v_candidate.api_record_count
+        <> v_candidate.api_unique_variant_count + v_candidate.api_duplicate_record_count THEN
+    RAISE EXCEPTION 'candidate API reconciliation metrics are incomplete';
+  END IF;
+
+  SELECT count(*)::integer, COALESCE(sum(api_occurrences), 0)::integer
+  INTO v_variant_count, v_occurrence_count
+  FROM public.forpromotional_atomic_variant_shadow
+  WHERE candidate_id = p_candidate_id;
+  IF v_variant_count <> v_candidate.api_unique_variant_count
+     OR v_occurrence_count <> v_candidate.api_record_count THEN
+    RAISE EXCEPTION
+      'candidate API inventory mismatch: variants %/% occurrences %/%',
+      v_variant_count, v_candidate.api_unique_variant_count,
+      v_occurrence_count, v_candidate.api_record_count;
+  END IF;
+
   SELECT count(*)::integer INTO v_exception_count
   FROM public.forpromotional_atomic_exceptions
   WHERE candidate_id = p_candidate_id;
   IF v_exception_count <> 0 THEN
     RAISE EXCEPTION 'candidate contains % unresolved API exceptions', v_exception_count;
+  END IF;
+
+  SELECT count(*)::integer,
+         count(*) FILTER (WHERE public_mapping_count > 0)::integer,
+         count(*) FILTER (
+           WHERE public_mapping_count > 0 AND resolution_status = 'pending'
+         )::integer
+  INTO v_absent_count, v_public_absent_count, v_pending_public_count
+  FROM public.forpromotional_atomic_local_absences
+  WHERE candidate_id = p_candidate_id;
+  IF v_pending_public_count > 0 THEN
+    RAISE EXCEPTION
+      'candidate blocked: % API-absent local offers affect public products and lack a documented decision',
+      v_pending_public_count;
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM public.forpromotional_atomic_local_absences AS a
+    WHERE a.candidate_id = p_candidate_id
+      AND a.public_mapping_count > 0
+      AND a.resolution_status = 'resolved_externally'
+      AND EXISTS (
+        SELECT 1 FROM public.producto_b2b_oferta_map AS m
+        WHERE m.oferta_id = a.offer_id
+          AND m.provider_code = 'forpromotional'
+      )
+  ) THEN
+    RAISE EXCEPTION 'candidate has externally-resolved absences whose public mappings still exist';
   END IF;
 
   SELECT count(*)::integer INTO v_stage_count
@@ -366,11 +434,34 @@ BEGIN
     RAISE EXCEPTION 'candidate contains no staged API costs';
   END IF;
 
+  IF EXISTS (
+    SELECT 1
+    FROM public.forpromotional_atomic_cost_shadow AS s
+    LEFT JOIN public.forpromotional_atomic_variant_shadow AS v
+      ON v.candidate_id = s.candidate_id
+     AND v.variant_key = s.variant_sku
+     AND v.offer_id = s.offer_id
+     AND v.scale_id = s.scale_id
+     AND v.stock_id = s.stock_id
+     AND v.product_id = s.product_id
+     AND v.publication_state = 'publishable'
+    WHERE s.candidate_id = p_candidate_id
+      AND v.id IS NULL
+  ) THEN
+    RAISE EXCEPTION 'publishable cost staging is not backed by exact variant evidence';
+  END IF;
+
   SELECT count(*)::integer INTO v_expected_count
   FROM (
     SELECT DISTINCT m.oferta_id
     FROM public.producto_b2b_oferta_map AS m
     JOIN public.producto_proveedor_ofertas AS o ON o.id = m.oferta_id
+    JOIN public.provider_raw_products AS raw ON raw.id = o.provider_raw_product_id
+    JOIN public.forpromotional_atomic_variant_shadow AS v
+      ON v.candidate_id = p_candidate_id
+     AND v.provider_sku = upper(raw.provider_sku)
+     AND v.variant_sku = o.variant_sku
+     AND v.publication_state = 'publishable'
     JOIN public.producto_precio_escalas AS s
       ON s.oferta_id = o.id AND s.proveedor_id = v_candidate.provider_id
     JOIN public.producto_proveedor_stock AS st
@@ -384,6 +475,32 @@ BEGIN
   ) AS eligible;
   IF v_expected_count <> v_stage_count THEN
     RAISE EXCEPTION 'candidate coverage mismatch: staged %, eligible %', v_stage_count, v_expected_count;
+  END IF;
+
+  -- Every currently published ForPromotional offer must either be staged from
+  -- an exact API match or have an explicit retain-current decision. Nothing is
+  -- silently unpublished and no potentially stale price is retained by default.
+  IF EXISTS (
+    SELECT 1
+    FROM public.producto_b2b_oferta_map AS m
+    JOIN public.producto_proveedor_ofertas AS o ON o.id = m.oferta_id
+    JOIN public.catalog_price_cache_v2_shadow AS base
+      ON base.product_id = m.producto_b2b_id
+     AND base.generation_id = v_candidate.base_generation_id
+    LEFT JOIN public.forpromotional_atomic_cost_shadow AS s
+      ON s.candidate_id = p_candidate_id
+     AND s.offer_id = o.id
+     AND s.product_id = m.producto_b2b_id
+    LEFT JOIN public.forpromotional_atomic_local_absences AS a
+      ON a.candidate_id = p_candidate_id
+     AND a.offer_id = o.id
+    WHERE m.provider_code = 'forpromotional'
+      AND o.proveedor_id = v_candidate.provider_id
+      AND o.activo = true
+      AND s.id IS NULL
+      AND COALESCE(a.resolution_status, 'pending') <> 'retain_current'
+  ) THEN
+    RAISE EXCEPTION 'candidate leaves a public ForPromotional offer without API evidence or retain-current decision';
   END IF;
 
   SELECT count(*)::integer INTO v_ambiguous_count
@@ -402,6 +519,16 @@ BEGIN
   ) AS ambiguous;
   IF v_ambiguous_count > 0 THEN
     RAISE EXCEPTION 'candidate has % products with ambiguous active offers', v_ambiguous_count;
+  END IF;
+
+  IF EXISTS (
+    SELECT product_id
+    FROM public.forpromotional_atomic_cost_shadow
+    WHERE candidate_id = p_candidate_id
+    GROUP BY product_id
+    HAVING count(DISTINCT offer_id) <> 1
+  ) THEN
+    RAISE EXCEPTION 'candidate has more than one active ForPromotional offer per public product';
   END IF;
 
   IF EXISTS (
@@ -466,14 +593,6 @@ BEGIN
     RAISE EXCEPTION 'candidate generation differs outside staged ForPromotional products';
   END IF;
 
-  IF EXISTS (
-    SELECT product_id FROM public.forpromotional_atomic_cost_shadow
-    WHERE candidate_id = p_candidate_id
-    GROUP BY product_id HAVING count(DISTINCT offer_id) <> 1
-  ) THEN
-    RAISE EXCEPTION 'candidate has more than one active ForPromotional offer per public product';
-  END IF;
-
   FOR v_product_id, v_cost IN
     SELECT product_id, max(unit_cost)
     FROM public.forpromotional_atomic_cost_shadow
@@ -481,7 +600,7 @@ BEGIN
     GROUP BY product_id
     ORDER BY product_id
   LOOP
-    SELECT GREATEST(s.supplier_moq, CEIL(4000 / (s.unit_cost * (74.52 / 57.38)))::integer)
+    SELECT GREATEST(max(s.supplier_moq), CEIL(4000 / (max(s.unit_cost) * (74.52 / 57.38)))::integer)
     INTO v_qmin
     FROM public.forpromotional_atomic_cost_shadow AS s
     WHERE s.candidate_id = p_candidate_id AND s.product_id = v_product_id;
@@ -545,7 +664,19 @@ BEGIN
 
   v_report := jsonb_build_object(
     'candidate_id', p_candidate_id,
+    'api_records', v_candidate.api_record_count,
+    'unique_variants', v_candidate.api_unique_variant_count,
+    'duplicate_records', v_candidate.api_duplicate_record_count,
+    'source_fingerprint', v_candidate.api_source_fingerprint,
     'staged_rows', v_stage_count,
+    'unpublished_variants', (
+      SELECT count(*) FROM public.forpromotional_atomic_variant_shadow
+      WHERE candidate_id = p_candidate_id
+        AND publication_state IN ('unpublished','api_only')
+    ),
+    'absent_local_offers', v_absent_count,
+    'public_absent_offers', v_public_absent_count,
+    'pending_public_decisions', v_pending_public_count,
     'exceptions', 0,
     'factor', 1.0000,
     'cost_source', 'forpromotional.api.precio_desc',
@@ -624,6 +755,38 @@ BEGIN
     RAISE EXCEPTION 'ForPromotional import batch is running';
   END IF;
 
+  IF EXISTS (
+    SELECT 1
+    FROM public.forpromotional_atomic_local_absences
+    WHERE candidate_id = p_candidate_id
+      AND public_mapping_count > 0
+      AND resolution_status = 'pending'
+  ) THEN
+    RAISE EXCEPTION 'public API-absence decisions changed or remain pending after certification';
+  END IF;
+  IF EXISTS (
+    SELECT 1
+    FROM public.forpromotional_atomic_cost_shadow AS s
+    LEFT JOIN public.producto_b2b_oferta_map AS fp
+      ON fp.oferta_id = s.offer_id
+     AND fp.producto_b2b_id = s.product_id
+     AND fp.provider_code = 'forpromotional'
+    WHERE s.candidate_id = p_candidate_id
+      AND fp.oferta_id IS NULL
+  ) THEN
+    RAISE EXCEPTION 'a certified ForPromotional mapping changed before activation';
+  END IF;
+  IF EXISTS (
+    SELECT 1
+    FROM public.forpromotional_atomic_cost_shadow AS s
+    JOIN public.producto_b2b_oferta_map AS other
+      ON other.producto_b2b_id = s.product_id
+     AND other.provider_code IN ('g4_mx','cdo_mx')
+    WHERE s.candidate_id = p_candidate_id
+  ) THEN
+    RAISE EXCEPTION 'G4/CDO overlap appeared after certification';
+  END IF;
+
   SELECT * INTO v_rule FROM public.provider_pricing_rules
   WHERE rule_set_id = v_candidate.rule_set_id AND provider_code = 'forpromotional';
   IF NOT FOUND OR v_rule.cost_factor IS NULL
@@ -643,17 +806,20 @@ BEGIN
   END IF;
   INSERT INTO public.forpromotional_atomic_restore_meta (
     candidate_id, old_release_id, old_generation_id, old_factor, old_rule_notes,
-    old_policy_enabled, old_policy_version
+    old_policy_enabled, old_policy_version, old_release_row, old_rule_row,
+    old_policy_row
   ) VALUES (
     p_candidate_id, v_current_release.id, v_current_release.generation_id,
-    v_rule.cost_factor, v_rule.notes, v_flag.enabled, v_flag.policy_version
+    v_rule.cost_factor, v_rule.notes, v_flag.enabled, v_flag.policy_version,
+    to_jsonb(v_current_release) - 'rule_set_id', to_jsonb(v_rule), to_jsonb(v_flag)
   );
   INSERT INTO public.forpromotional_atomic_restore_rows (
     candidate_id, scale_id, old_unit_cost, old_currency, old_source_field,
-    stock_id, old_stock_qty, old_stock_status
+    stock_id, old_stock_qty, old_stock_status, old_scale_row, old_stock_row
   )
   SELECT p_candidate_id, s.scale_id, live_scale.unit_cost, live_scale.currency, live_scale.source_field,
-         s.stock_id, live_stock.cantidad, live_stock.disponibilidad
+         s.stock_id, live_stock.cantidad, live_stock.disponibilidad,
+         to_jsonb(live_scale), to_jsonb(live_stock)
   FROM public.forpromotional_atomic_cost_shadow AS s
   JOIN public.producto_precio_escalas AS live_scale ON live_scale.id = s.scale_id
   JOIN public.producto_proveedor_stock AS live_stock ON live_stock.id = s.stock_id
@@ -735,7 +901,8 @@ DECLARE
   v_candidate record;
   v_meta record;
   v_current_release record;
-  v_rule record;
+  v_restored integer;
+  v_expected integer;
 BEGIN
   IF current_user NOT IN ('postgres', 'service_role') THEN RAISE EXCEPTION 'service_role required'; END IF;
   PERFORM pg_advisory_xact_lock(hashtextextended('pe_forpromotional_atomic_cycle_v1', 0));
@@ -748,32 +915,122 @@ BEGIN
   IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'catalog-stock-refresh-forpromotional' AND active) THEN
     RAISE EXCEPTION 'pause the automatic cron before rollback';
   END IF;
+  IF to_regclass('public.stock_refresh_locks') IS NOT NULL AND EXISTS (
+    SELECT 1 FROM public.stock_refresh_locks
+    WHERE scope = 'forpromotional' AND locked_until > now()
+  ) THEN
+    RAISE EXCEPTION 'ForPromotional refresh lock is active';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM public.provider_import_batches
+    WHERE proveedor_id = v_candidate.provider_id AND status = 'running'
+  ) THEN
+    RAISE EXCEPTION 'ForPromotional import batch is running';
+  END IF;
   SELECT * INTO v_current_release FROM public.catalog_price_v2_releases
   WHERE generation_id = v_candidate.catalog_generation_id AND is_current FOR UPDATE;
   IF NOT FOUND THEN RAISE EXCEPTION 'candidate release is not current'; END IF;
 
+  IF v_meta.old_release_row IS NULL OR v_meta.old_rule_row IS NULL
+     OR v_meta.old_policy_row IS NULL THEN
+    RAISE EXCEPTION 'exact candidate restore metadata is incomplete';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM public.forpromotional_atomic_restore_rows
+    WHERE candidate_id = p_candidate_id
+      AND (old_scale_row IS NULL OR old_stock_row IS NULL)
+  ) THEN
+    RAISE EXCEPTION 'exact candidate restore rows are incomplete';
+  END IF;
+
+  SELECT count(*)::integer INTO v_expected
+  FROM public.forpromotional_atomic_restore_rows
+  WHERE candidate_id = p_candidate_id;
+
   UPDATE public.producto_precio_escalas AS live
-  SET unit_cost = old.old_unit_cost, currency = old.old_currency,
-      source_field = old.old_source_field, updated_at = now()
-  FROM public.forpromotional_atomic_restore_rows AS old
-  WHERE old.candidate_id = p_candidate_id AND live.id = old.scale_id;
+  SET oferta_id = saved.oferta_id,
+      proveedor_id = saved.proveedor_id,
+      min_qty = saved.min_qty,
+      max_qty = saved.max_qty,
+      unit_cost = saved.unit_cost,
+      currency = saved.currency,
+      source_field = saved.source_field,
+      created_at = saved.created_at,
+      updated_at = saved.updated_at
+  FROM (
+    SELECT (jsonb_populate_record(NULL::public.producto_precio_escalas, r.old_scale_row)).*
+    FROM public.forpromotional_atomic_restore_rows AS r
+    WHERE r.candidate_id = p_candidate_id
+  ) AS saved
+  WHERE live.id = saved.id AND live.proveedor_id = v_candidate.provider_id;
+  GET DIAGNOSTICS v_restored = ROW_COUNT;
+  IF v_restored <> v_expected THEN
+    RAISE EXCEPTION 'exact scale rollback count mismatch: %/%', v_restored, v_expected;
+  END IF;
+
   UPDATE public.producto_proveedor_stock AS live
-  SET cantidad = old.old_stock_qty, disponibilidad = old.old_stock_status, updated_at = now()
-  FROM public.forpromotional_atomic_restore_rows AS old
-  WHERE old.candidate_id = p_candidate_id AND live.id = old.stock_id;
+  SET oferta_id = saved.oferta_id,
+      proveedor_id = saved.proveedor_id,
+      cantidad = saved.cantidad,
+      disponibilidad = saved.disponibilidad,
+      updated_at = saved.updated_at
+  FROM (
+    SELECT (jsonb_populate_record(NULL::public.producto_proveedor_stock, r.old_stock_row)).*
+    FROM public.forpromotional_atomic_restore_rows AS r
+    WHERE r.candidate_id = p_candidate_id
+  ) AS saved
+  WHERE live.id = saved.id AND live.proveedor_id = v_candidate.provider_id;
+  GET DIAGNOSTICS v_restored = ROW_COUNT;
+  IF v_restored <> v_expected THEN
+    RAISE EXCEPTION 'exact stock rollback count mismatch: %/%', v_restored, v_expected;
+  END IF;
+
   UPDATE public.provider_pricing_rules AS live
-  SET cost_factor = v_meta.old_factor, notes = v_meta.old_rule_notes, updated_at = now()
-  WHERE rule_set_id = v_candidate.rule_set_id AND provider_code = 'forpromotional';
-  UPDATE public.pricing_policy_flags
-  SET enabled = v_meta.old_policy_enabled, policy_version = v_meta.old_policy_version, updated_at = now()
-  WHERE policy_key = 'forpromotional_continuous_v1';
+  SET rule_set_id = saved.rule_set_id,
+      provider_code = saved.provider_code,
+      base_cost_strategy = saved.base_cost_strategy,
+      provider_tier_number = saved.provider_tier_number,
+      cost_factor = saved.cost_factor,
+      fallback_strategy = saved.fallback_strategy,
+      requires_manual_review_on_fallback = saved.requires_manual_review_on_fallback,
+      notes = saved.notes,
+      created_at = saved.created_at,
+      updated_at = saved.updated_at
+  FROM (
+    SELECT (jsonb_populate_record(NULL::public.provider_pricing_rules, v_meta.old_rule_row)).*
+  ) AS saved
+  WHERE live.id = saved.id
+    AND live.rule_set_id = v_candidate.rule_set_id
+    AND live.provider_code = 'forpromotional';
+  IF NOT FOUND THEN RAISE EXCEPTION 'exact ForPromotional rule rollback failed'; END IF;
+
+  UPDATE public.pricing_policy_flags AS live
+  SET enabled = saved.enabled,
+      policy_version = saved.policy_version,
+      updated_at = saved.updated_at
+  FROM (
+    SELECT (jsonb_populate_record(NULL::public.pricing_policy_flags, v_meta.old_policy_row)).*
+  ) AS saved
+  WHERE live.policy_key = saved.policy_key
+    AND live.policy_key = 'forpromotional_continuous_v1';
+  IF NOT FOUND THEN RAISE EXCEPTION 'exact policy rollback failed'; END IF;
 
   UPDATE public.catalog_price_v2_releases
   SET is_current = false, superseded_at = now(), superseded_by = v_meta.old_release_id, updated_at = now()
   WHERE id = v_current_release.id AND is_current;
-  UPDATE public.catalog_price_v2_releases
-  SET is_current = true, superseded_at = NULL, superseded_by = NULL, updated_at = now()
-  WHERE id = v_meta.old_release_id;
+  UPDATE public.catalog_price_v2_releases AS live
+  SET generation_id = saved.generation_id,
+      is_current = saved.is_current,
+      published_at = saved.published_at,
+      published_by = saved.published_by,
+      superseded_at = saved.superseded_at,
+      superseded_by = saved.superseded_by,
+      created_at = saved.created_at,
+      updated_at = saved.updated_at
+  FROM (
+    SELECT (jsonb_populate_record(NULL::public.catalog_price_v2_releases, v_meta.old_release_row)).*
+  ) AS saved
+  WHERE live.id = saved.id AND live.id = v_meta.old_release_id;
   IF NOT FOUND THEN RAISE EXCEPTION 'previous release is missing'; END IF;
   UPDATE public.forpromotional_atomic_candidates
   SET status = 'rolled_back', rolled_back_at = now(), updated_at = now()

@@ -162,7 +162,10 @@ Deno.serve(async (req) => {
       "x-stock-refresh-key": cronKey,
     };
     let offset = 0;
-    let expectedTotal: number | null = null;
+    let expectedSourceRecords: number | null = null;
+    let expectedUniqueVariants: number | null = null;
+    let expectedDuplicateRecords: number | null = null;
+    let expectedFingerprint: string | null = null;
     let page = 0;
     let hasMore = true;
     while (hasMore) {
@@ -180,7 +183,10 @@ Deno.serve(async (req) => {
         headers: syncHeaders,
       });
       const body = asObject(await response.json().catch(() => ({})));
-      const total = Number(body.total_received ?? 0);
+      const sourceRecords = Number(body.total_received ?? 0);
+      const uniqueVariants = Number(body.unique_variants ?? 0);
+      const duplicateRecords = Number(body.duplicate_records ?? 0);
+      const fingerprint = String(body.source_fingerprint ?? "");
       const currentOffset = Number(body.offset_applied ?? offset);
       const currentPage = {
         page,
@@ -188,6 +194,10 @@ Deno.serve(async (req) => {
         ok: body.ok === true && response.ok,
         offset: currentOffset,
         items_processed: Number(body.items_processed ?? 0),
+        source_records: sourceRecords,
+        unique_variants: uniqueVariants,
+        duplicate_records: duplicateRecords,
+        source_fingerprint: fingerprint,
         staged: Number(body.staged ?? 0),
         exceptions: Number(body.exceptions ?? 0),
         has_more: body.has_more === true,
@@ -197,8 +207,18 @@ Deno.serve(async (req) => {
       if (!response.ok || body.ok !== true || Number(body.exceptions ?? 0) !== 0) {
         throw new Error(`shadow sync failed at page ${page}: ${String(body.error_message ?? "unresolved API exception")}`);
       }
-      if (expectedTotal === null) expectedTotal = total;
-      if (total !== expectedTotal) throw new Error(`API total changed during cycle: ${expectedTotal} -> ${total}`);
+      if (expectedSourceRecords === null) {
+        expectedSourceRecords = sourceRecords;
+        expectedUniqueVariants = uniqueVariants;
+        expectedDuplicateRecords = duplicateRecords;
+        expectedFingerprint = fingerprint;
+      }
+      if (sourceRecords !== expectedSourceRecords
+          || uniqueVariants !== expectedUniqueVariants
+          || duplicateRecords !== expectedDuplicateRecords
+          || fingerprint !== expectedFingerprint) {
+        throw new Error("API reconciliation changed during paginated cycle");
+      }
       hasMore = body.has_more === true;
       if (hasMore) {
         const nextOffset = Number(body.next_offset);
@@ -223,7 +243,10 @@ Deno.serve(async (req) => {
 
     const result = {
       pages: pageResults,
-      api_items: expectedTotal,
+      api_records: expectedSourceRecords,
+      api_unique_variants: expectedUniqueVariants,
+      api_duplicate_records: expectedDuplicateRecords,
+      api_source_fingerprint: expectedFingerprint,
       started_at: startedAt,
       certified: asObject(certification.data),
       activated: asObject(activation.data),

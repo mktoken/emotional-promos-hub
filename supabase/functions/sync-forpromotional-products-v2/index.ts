@@ -7,6 +7,11 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { resolveForPromotionalApiCost } from "../_shared/forpromotional-api-cost.ts";
+import {
+  normalizeForPromotionalKeyPart,
+  reconcileForPromotionalItems,
+  sha256Hex,
+} from "../_shared/forpromotional-reconciliation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -124,24 +129,6 @@ function buildOfertaAtributos(p: Record<string, unknown>) {
     if (p[k] !== undefined) out[k] = p[k];
   }
   return out;
-}
-
-function normalizeKeyPart(v: unknown): string {
-  if (v === null || v === undefined) return "";
-  const s = String(v).trim().toUpperCase().replace(/\s+/g, "_");
-  return s;
-}
-
-function buildVariantSku(p: Record<string, unknown>): string {
-  const parts = [
-    "FP",
-    normalizeKeyPart(p["id_articulo"]),
-    normalizeKeyPart(p["id_artd"]),
-    normalizeKeyPart(p["modelo"]),
-    normalizeKeyPart(p["color"]),
-    normalizeKeyPart(p["talla"]),
-  ];
-  return parts.join("|");
 }
 
 Deno.serve(async (req) => {
@@ -313,16 +300,19 @@ Deno.serve(async (req) => {
     }
 
     const { list, topLevelKeys } = locateProductList(parsed);
-    const itemsReceived = list.length;
-    const sliceEnd = limit ? offset + limit : list.length;
-    const slice = list.slice(offset, sliceEnd);
+    const reconciled = reconcileForPromotionalItems(list);
+    const sourceFingerprint = await sha256Hex(reconciled.sourceFingerprintInput);
+    const itemsReceived = reconciled.sourceRecords;
+    const uniqueVariants = reconciled.uniqueVariants;
+    const sliceEnd = limit ? offset + limit : uniqueVariants;
+    const slice = reconciled.variants.slice(offset, sliceEnd);
     const nextOffset = offset + slice.length;
-    const hasMore = nextOffset < itemsReceived;
+    const hasMore = nextOffset < uniqueVariants;
     const nextUrlSuggested = hasMore
       ? `${url.pathname}?mode=${encodeURIComponent(url.searchParams.get("mode") ?? "dry_run")}&limit=${limit ?? slice.length}&offset=${nextOffset}&test_key=<PROVIDERS_TEST_KEY>`
       : null;
-    const firstKeys = slice.length > 0 && slice[0] && typeof slice[0] === "object"
-      ? Object.keys(slice[0] as Record<string, unknown>)
+    const firstKeys = slice.length > 0
+      ? Object.keys(slice[0].item)
       : [];
 
     // Dry run: no escribe nada
@@ -331,9 +321,8 @@ Deno.serve(async (req) => {
       const reviewReasons = new Map<string, number>();
       const affectedSkuSample: string[] = [];
       const sampleCategoria = new Set<string>();
-      for (const it of slice) {
-        if (!it || typeof it !== "object") continue;
-        const p = it as Record<string, unknown>;
+      for (const variant of slice) {
+        const p = variant.item;
         if (!cleanText(p["id_articulo"])) missingSku++;
         const priceInfo = pickPrice(p);
         if (!priceInfo.manual_review) {
@@ -357,6 +346,10 @@ Deno.serve(async (req) => {
         mode,
         provider: PROVIDER_CODE,
         total_received: itemsReceived,
+        unique_variants: uniqueVariants,
+        duplicate_records: reconciled.duplicateRecords,
+        invalid_records: reconciled.invalidRecords,
+        source_fingerprint: sourceFingerprint,
         offset_applied: offset,
         limit_applied: limit ?? null,
         items_processed: slice.length,
@@ -377,7 +370,7 @@ Deno.serve(async (req) => {
           missing_sku: missingSku,
         },
         sample_categorias: Array.from(sampleCategoria),
-        note: "dry_run: no se escribió en la base. Soft-delete desactivado.",
+        note: "dry_run: conciliación única por variante; no se escribió en la base. Soft-delete desactivado.",
       });
     }
 
@@ -404,6 +397,7 @@ Deno.serve(async (req) => {
       }
 
       let staged = 0;
+      let privateStaged = 0;
       let exceptions = 0;
       const exceptionReasons = new Map<string, number>();
 
@@ -427,22 +421,81 @@ Deno.serve(async (req) => {
         if (error) throw new Error(`shadow exception write: ${error.message}`);
       };
 
+      const upsertVariant = async (row: Record<string, unknown>) => {
+        const { error } = await supabase
+          .from("forpromotional_atomic_variant_shadow")
+          .upsert(row, { onConflict: "candidate_id,variant_key" });
+        if (error) throw new Error(`variant shadow write: ${error.message}`);
+        privateStaged++;
+      };
+
+      if (reconciled.invalidRecords > 0 && offset === 0) {
+        await recordException("<missing>", "<invalid>", "invalid_api_item", {
+          records: reconciled.invalidRecords,
+        });
+      }
+
       stage = "shadow_stage";
-      for (const it of slice) {
-        if (!it || typeof it !== "object") {
-          await recordException("<missing>", "<missing>", "invalid_api_item", {});
+      for (const variant of slice) {
+        const p = variant.item;
+        const providerSku = variant.providerSku;
+        const variantSku = variant.variantSku;
+        let publicationState = "api_only";
+        let offerId: string | null = null;
+        let scaleId: string | null = null;
+        let stockId: string | null = null;
+        let productId: string | null = null;
+
+        const variantRow = () => ({
+          candidate_id: candidateId,
+          variant_key: variant.variantKey,
+          provider_sku: providerSku,
+          variant_sku: variantSku,
+          categories: variant.categories,
+          subcategories: variant.subcategories,
+          api_occurrences: variant.apiOccurrences,
+          unit_cost: variant.unitCost,
+          stock_qty: variant.stockQty,
+          stock_status: variant.stockQty === null ? null : stockBucket(variant.stockQty),
+          commercial_mode: variant.commercialMode,
+          source_field: variant.costSource,
+          publication_state: publicationState,
+          offer_id: offerId,
+          scale_id: scaleId,
+          stock_id: stockId,
+          product_id: productId,
+          control_data: {
+            precio: p["precio"] ?? null,
+            precio_desc: p["precio_desc"] ?? null,
+            opc_promo: p["opc_promo"] ?? null,
+            opc_unico: p["opc_unico"] ?? null,
+            desc_promo: p["desc_promo"] ?? null,
+            categories: variant.categories,
+            subcategories: variant.subcategories,
+            conflict_fields: variant.conflictFields,
+          },
+          api_seen_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+
+        if (variant.conflictFields.length > 0) {
+          publicationState = "ambiguous";
+          await recordException(providerSku, variantSku, "duplicate_variant_conflict", {
+            fields: variant.conflictFields,
+            occurrences: variant.apiOccurrences,
+          });
+          await upsertVariant(variantRow());
           continue;
         }
-        const p = it as Record<string, unknown>;
-        const skuRaw = cleanText(p["id_articulo"]);
-        const providerSku = skuRaw?.toUpperCase() ?? "<missing>";
-        const variantSku = buildVariantSku(p);
-        const priceInfo = pickPrice(p);
-        if (!skuRaw || priceInfo.manual_review || priceInfo.unit_cost <= 0) {
-          await recordException(providerSku, variantSku, priceInfo.review_reason || "invalid_api_cost", {
-            source: priceInfo.source,
-            commercial_mode: priceInfo.commercial_mode,
+        if (variant.invalidReason || variant.unitCost === null || variant.unitCost <= 0
+            || variant.stockQty === null
+            || variant.costSource !== "forpromotional.api.precio_desc") {
+          publicationState = "invalid";
+          await recordException(providerSku, variantSku, variant.invalidReason || "invalid_api_cost_or_stock", {
+            source: variant.costSource,
+            commercial_mode: variant.commercialMode,
           });
+          await upsertVariant(variantRow());
           continue;
         }
 
@@ -453,14 +506,20 @@ Deno.serve(async (req) => {
           .eq("provider_sku", providerSku)
           .limit(2);
         if (rawError) throw new Error(`shadow raw lookup: ${rawError.message}`);
-        if ((rawRows ?? []).length !== 1) {
+        if ((rawRows ?? []).length > 1) {
+          publicationState = "ambiguous";
           await recordException(providerSku, variantSku, "raw_product_not_unique", {
             matches: (rawRows ?? []).length,
           });
+          await upsertVariant(variantRow());
+          continue;
+        }
+        if ((rawRows ?? []).length === 0) {
+          await upsertVariant(variantRow());
           continue;
         }
 
-        const tallaNorm = normalizeKeyPart(p["talla"]);
+        const tallaNorm = normalizeForPromotionalKeyPart(p["talla"]);
         const { data: offerRows, error: offerError } = await supabase
           .from("producto_proveedor_ofertas")
           .select("id,activo")
@@ -469,16 +528,22 @@ Deno.serve(async (req) => {
           .eq("variant_sku", variantSku)
           .eq("color_code", "")
           .eq("talla", tallaNorm)
-          .limit(2);
+          .limit(3);
         if (offerError) throw new Error(`shadow offer lookup: ${offerError.message}`);
-        if ((offerRows ?? []).length !== 1 || offerRows![0].activo !== true) {
+        if ((offerRows ?? []).length > 1) {
+          publicationState = "ambiguous";
           await recordException(providerSku, variantSku, "active_offer_not_unique", {
             matches: (offerRows ?? []).length,
           });
+          await upsertVariant(variantRow());
+          continue;
+        }
+        if ((offerRows ?? []).length === 0) {
+          await upsertVariant(variantRow());
           continue;
         }
 
-        const offerId = offerRows![0].id as string;
+        offerId = offerRows![0].id as string;
         const { data: scaleRows, error: scaleError } = await supabase
           .from("producto_precio_escalas")
           .select("id,min_qty,max_qty")
@@ -486,14 +551,7 @@ Deno.serve(async (req) => {
           .eq("proveedor_id", proveedor_id)
           .limit(2);
         if (scaleError) throw new Error(`shadow scale lookup: ${scaleError.message}`);
-        if ((scaleRows ?? []).length !== 1
-            || Number(scaleRows![0].min_qty) < 1
-            || scaleRows![0].max_qty !== null) {
-          await recordException(providerSku, variantSku, "live_scale_not_atomic_compatible", {
-            matches: (scaleRows ?? []).length,
-          });
-          continue;
-        }
+        if ((scaleRows ?? []).length === 1) scaleId = scaleRows![0].id as string;
 
         const { data: stockRows, error: stockError } = await supabase
           .from("producto_proveedor_stock")
@@ -502,33 +560,62 @@ Deno.serve(async (req) => {
           .eq("proveedor_id", proveedor_id)
           .limit(2);
         if (stockError) throw new Error(`shadow stock lookup: ${stockError.message}`);
-        if ((stockRows ?? []).length !== 1) {
-          await recordException(providerSku, variantSku, "live_stock_not_unique", {
-            matches: (stockRows ?? []).length,
-          });
-          continue;
-        }
+        if ((stockRows ?? []).length === 1) stockId = stockRows![0].id as string;
 
         const { data: mapRows, error: mapError } = await supabase
           .from("producto_b2b_oferta_map")
           .select("producto_b2b_id,provider_code")
           .eq("oferta_id", offerId)
           .eq("provider_code", PROVIDER_CODE)
-          .limit(2);
+          .limit(3);
         if (mapError) throw new Error(`shadow mapping lookup: ${mapError.message}`);
+        if ((mapRows ?? []).length === 0) {
+          publicationState = "unpublished";
+          await upsertVariant(variantRow());
+          continue;
+        }
         if ((mapRows ?? []).length !== 1) {
+          publicationState = "ambiguous";
           await recordException(providerSku, variantSku, "public_mapping_not_unique", {
             matches: (mapRows ?? []).length,
           });
+          await upsertVariant(variantRow());
+          continue;
+        }
+        productId = mapRows![0].producto_b2b_id as string;
+        if (offerRows![0].activo !== true
+            || (scaleRows ?? []).length !== 1
+            || Number(scaleRows![0].min_qty) < 1
+            || scaleRows![0].max_qty !== null
+            || (stockRows ?? []).length !== 1) {
+          publicationState = "ambiguous";
+          await recordException(providerSku, variantSku, "public_offer_not_atomic_compatible", {
+            offer_active: offerRows![0].activo === true,
+            scale_matches: (scaleRows ?? []).length,
+            stock_matches: (stockRows ?? []).length,
+          });
+          await upsertVariant(variantRow());
           continue;
         }
 
-        const stockRaw = toNum(p["inventario"]);
-        if (stockRaw === null || stockRaw < 0) {
-          await recordException(providerSku, variantSku, "invalid_api_stock", {});
+        const { data: baseRows, error: baseError } = await supabase
+          .from("catalog_price_cache_v2_shadow")
+          .select("product_id")
+          .eq("generation_id", candidate.base_generation_id)
+          .eq("product_id", productId)
+          .limit(2);
+        if (baseError) throw new Error(`candidate base lookup: ${baseError.message}`);
+        if ((baseRows ?? []).length !== 1) {
+          publicationState = "ambiguous";
+          await recordException(providerSku, variantSku, "public_product_not_in_base_generation", {
+            matches: (baseRows ?? []).length,
+          });
+          await upsertVariant(variantRow());
           continue;
         }
-        const stockQty = Math.floor(stockRaw);
+
+        publicationState = "publishable";
+        await upsertVariant(variantRow());
         const { error: stageError } = await supabase
           .from("forpromotional_atomic_cost_shadow")
           .upsert({
@@ -536,17 +623,17 @@ Deno.serve(async (req) => {
             offer_id: offerId,
             scale_id: scaleRows![0].id,
             stock_id: stockRows![0].id,
-            product_id: mapRows![0].producto_b2b_id,
+            product_id: productId,
             provider_sku: providerSku,
             variant_sku: variantSku,
-            unit_cost: priceInfo.unit_cost,
+            unit_cost: variant.unitCost,
             currency: "MXN",
-            source_field: priceInfo.source,
+            source_field: variant.costSource,
             factor: 1,
             supplier_moq: scaleRows![0].min_qty,
-            stock_qty: stockQty,
-            stock_status: stockBucket(stockQty),
-            commercial_mode: priceInfo.commercial_mode,
+            stock_qty: variant.stockQty,
+            stock_status: stockBucket(variant.stockQty),
+            commercial_mode: variant.commercialMode,
             control_data: {
               precio: p["precio"] ?? null,
               precio_desc: p["precio_desc"] ?? null,
@@ -561,6 +648,32 @@ Deno.serve(async (req) => {
       }
 
       if (!hasMore) {
+        if (reconciled.invalidRecords > 0) {
+          return jsonResponse(409, {
+            ok: false,
+            stage: "shadow_completion",
+            error_message: "La respuesta contiene registros sin clave de variante",
+            invalid_records: reconciled.invalidRecords,
+          });
+        }
+        const { error: metricsError } = await supabase
+          .from("forpromotional_atomic_candidates")
+          .update({
+            api_record_count: reconciled.sourceRecords,
+            api_unique_variant_count: reconciled.uniqueVariants,
+            api_duplicate_record_count: reconciled.duplicateRecords,
+            api_source_fingerprint: sourceFingerprint,
+          })
+          .eq("id", candidateId)
+          .eq("status", "building");
+        if (metricsError) throw new Error(`candidate metrics: ${metricsError.message}`);
+
+        const reconciliation = await supabase.rpc("pe_forpromotional_reconcile_candidate_v1", {
+          p_candidate_id: candidateId,
+        });
+        if (reconciliation.error) {
+          throw new Error(`candidate reconciliation: ${reconciliation.error.message}`);
+        }
         const { error: completeError } = await supabase
           .from("forpromotional_atomic_candidates")
           .update({ api_complete: true, api_completed_at: new Date().toISOString() })
@@ -577,7 +690,11 @@ Deno.serve(async (req) => {
         offset_applied: offset,
         limit_applied: limit ?? null,
         items_processed: slice.length,
+        unique_variants: uniqueVariants,
+        duplicate_records: reconciled.duplicateRecords,
+        source_fingerprint: sourceFingerprint,
         staged,
+        private_staged: privateStaged,
         exceptions,
         exception_reasons: Object.fromEntries(exceptionReasons),
         next_offset: hasMore ? nextOffset : null,

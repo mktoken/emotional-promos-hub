@@ -10,7 +10,9 @@ WITH current_release AS (
   WHERE r.is_current
 ), candidate_state AS (
   SELECT c.id, c.status, c.base_generation_id, c.catalog_generation_id,
-         c.api_complete, c.validation_report
+         c.api_complete, c.api_record_count, c.api_unique_variant_count,
+         c.api_duplicate_record_count, c.api_source_fingerprint,
+         c.validation_report
   FROM public.forpromotional_atomic_candidates AS c
   WHERE c.status IN ('active','rolled_back','certified')
 ), forpromo_rule AS (
@@ -36,7 +38,33 @@ WITH current_release AS (
           WHERE st.candidate_id = c.id) AS staged_cost_rows,
          (SELECT count(*)::integer
           FROM public.forpromotional_atomic_exceptions AS ex
-          WHERE ex.candidate_id = c.id) AS exceptions
+          WHERE ex.candidate_id = c.id) AS exceptions,
+         (SELECT count(*)::integer
+          FROM public.forpromotional_atomic_variant_shadow AS v
+          WHERE v.candidate_id = c.id) AS private_variants,
+         (SELECT count(*)::integer
+          FROM public.forpromotional_atomic_variant_shadow AS v
+          WHERE v.candidate_id = c.id
+            AND v.publication_state IN ('unpublished','api_only')) AS unpublished_variants,
+         (SELECT count(*)::integer
+          FROM public.forpromotional_atomic_local_absences AS a
+          WHERE a.candidate_id = c.id) AS absent_local_offers,
+         (SELECT count(*)::integer
+          FROM public.forpromotional_atomic_local_absences AS a
+          WHERE a.candidate_id = c.id
+            AND a.public_mapping_count > 0) AS public_absent_offers,
+         (SELECT count(*)::integer
+          FROM public.forpromotional_atomic_local_absences AS a
+          WHERE a.candidate_id = c.id
+            AND a.public_mapping_count > 0
+            AND a.resolution_status = 'pending') AS pending_public_decisions,
+         EXISTS (
+           SELECT 1 FROM public.forpromotional_atomic_restore_meta AS rm
+           WHERE rm.candidate_id = c.id
+             AND rm.old_release_row IS NOT NULL
+             AND rm.old_rule_row IS NOT NULL
+             AND rm.old_policy_row IS NOT NULL
+         ) AS exact_restore_meta
   FROM candidate_state AS c
 )
 SELECT jsonb_build_object(
@@ -48,9 +76,19 @@ SELECT jsonb_build_object(
       'id', c.id,
       'status', c.status,
       'api_complete', c.api_complete,
+      'api_records', c.api_record_count,
+      'unique_variants', c.api_unique_variant_count,
+      'duplicate_records', c.api_duplicate_record_count,
+      'source_fingerprint', c.api_source_fingerprint,
       'base_generation_id', c.base_generation_id,
       'catalog_generation_id', c.catalog_generation_id,
       'staged_cost_rows', cc.staged_cost_rows,
+      'private_variants', cc.private_variants,
+      'unpublished_variants', cc.unpublished_variants,
+      'absent_local_offers', cc.absent_local_offers,
+      'public_absent_offers', cc.public_absent_offers,
+      'pending_public_decisions', cc.pending_public_decisions,
+      'exact_restore_meta', cc.exact_restore_meta,
       'exceptions', cc.exceptions,
       'validation_report', c.validation_report
     ) ORDER BY c.id)

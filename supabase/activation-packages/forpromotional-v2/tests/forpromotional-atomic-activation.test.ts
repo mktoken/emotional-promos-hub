@@ -20,28 +20,37 @@ describe("ForPromotional atomic activation package", () => {
     expect(refresh).toContain("shadow_only: true");
   });
 
-  it("requires the exact staged source, factor, mapping, and G4/CDO guard", () => {
-    const certify = read("12_certify_atomic_candidate.sql");
+  it("uses one canonical certification implementation with public-absence and G4/CDO guards", () => {
+    const wrapper = read("12_certify_atomic_candidate.sql");
+    const certify = read("16_install_forpromotional_automatic_cycle.sql");
+    expect(wrapper).toContain("pe_forpromotional_cycle_certify_v1");
+    expect(wrapper).not.toContain("UPDATE public.catalog_price_cache_v2_shadow");
     expect(certify).toContain("forpromotional.api.precio_desc");
-    expect(certify).toContain("st.factor <> 1.0000");
-    expect(certify).toContain("staged offer without its exact public mapping");
+    expect(certify).toContain("s.factor <> 1.0000");
+    expect(certify).toContain("staged offer without exact public mapping");
     expect(certify).toContain("'g4_mx','cdo_mx'");
-    expect(certify).toContain("sampled_control_quantities; exhaustive consecutive validation remains a local test gate");
+    expect(certify).toContain("lack a documented decision");
+    expect(certify).toContain("retain-current decision");
   });
 
-  it("changes live state only in one guarded transaction and has an atomic reverse path", () => {
+  it("routes manual activation and rollback through candidate-scoped canonical RPCs", () => {
     const activate = read("13_activate_atomic_candidate.sql");
     const rollback = read("14_rollback_atomic_candidate.sql");
+    const canonical = read("16_install_forpromotional_automatic_cycle.sql");
     expect(activate).toMatch(/^--[\s\S]*BEGIN;/);
     expect(activate).toContain("COMMIT;");
-    expect(activate).toContain("catalog_price_v2_release_pointer");
-    expect(activate).toContain("cost_factor = 1.0000");
-    expect(activate).toContain("enabled = true");
-    expect(activate).toContain("v_candidate.catalog_generation_id");
+    expect(activate).toContain("pe_forpromotional_cycle_activate_v1");
+    expect(activate).not.toContain("UPDATE public.producto_precio_escalas");
     expect(rollback).toMatch(/^--[\s\S]*BEGIN;/);
-    expect(rollback).toContain("jsonb_populate_record(NULL::public.producto_precio_escalas");
-    expect(rollback).toContain("jsonb_populate_record(NULL::public.producto_proveedor_stock");
-    expect(rollback).toContain("status = 'rolled_back'");
+    expect(rollback).toContain("pe_forpromotional_cycle_rollback_v1");
+    expect(rollback).not.toContain("UPDATE public.producto_proveedor_stock");
+    expect(canonical).toContain("to_jsonb(live_scale)");
+    expect(canonical).toContain("to_jsonb(live_stock)");
+    expect(canonical).toContain("old_scale_row");
+    expect(canonical).toContain("old_stock_row");
+    expect(canonical).toContain("jsonb_populate_record(NULL::public.producto_precio_escalas");
+    expect(canonical).toContain("jsonb_populate_record(NULL::public.producto_proveedor_stock");
+    expect(canonical).not.toContain("v_snapshot_scales_md5");
     expect(rollback).not.toMatch(/DROP[\\s\\S]*CASCADE/);
   });
 

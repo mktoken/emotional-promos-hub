@@ -2726,6 +2726,10 @@ export type Database = {
           activated_at: string | null
           api_complete: boolean
           api_completed_at: string | null
+          api_duplicate_record_count: number | null
+          api_record_count: number | null
+          api_source_fingerprint: string | null
+          api_unique_variant_count: number | null
           base_generation_id: string
           catalog_generation_id: string
           certified_at: string | null
@@ -2746,6 +2750,10 @@ export type Database = {
           activated_at?: string | null
           api_complete?: boolean
           api_completed_at?: string | null
+          api_duplicate_record_count?: number | null
+          api_record_count?: number | null
+          api_source_fingerprint?: string | null
+          api_unique_variant_count?: number | null
           base_generation_id: string
           catalog_generation_id: string
           certified_at?: string | null
@@ -2766,6 +2774,10 @@ export type Database = {
           activated_at?: string | null
           api_complete?: boolean
           api_completed_at?: string | null
+          api_duplicate_record_count?: number | null
+          api_record_count?: number | null
+          api_source_fingerprint?: string | null
+          api_unique_variant_count?: number | null
           base_generation_id?: string
           catalog_generation_id?: string
           certified_at?: string | null
@@ -3052,6 +3064,72 @@ export type Database = {
           },
         ]
       }
+      forpromotional_atomic_local_absences: {
+        Row: {
+          base_sku_absent: boolean
+          candidate_id: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_reason: string | null
+          id: string
+          offer_id: string
+          provider_sku: string
+          public_mapping_count: number
+          public_product_ids: string[]
+          resolution_status: string
+          updated_at: string
+          variant_sku: string
+        }
+        Insert: {
+          base_sku_absent: boolean
+          candidate_id: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_reason?: string | null
+          id?: string
+          offer_id: string
+          provider_sku: string
+          public_mapping_count?: number
+          public_product_ids?: string[]
+          resolution_status?: string
+          updated_at?: string
+          variant_sku: string
+        }
+        Update: {
+          base_sku_absent?: boolean
+          candidate_id?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_reason?: string | null
+          id?: string
+          offer_id?: string
+          provider_sku?: string
+          public_mapping_count?: number
+          public_product_ids?: string[]
+          resolution_status?: string
+          updated_at?: string
+          variant_sku?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forpromotional_atomic_local_absences_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "forpromotional_atomic_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forpromotional_atomic_local_absences_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "producto_proveedor_ofertas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forpromotional_atomic_restore_meta: {
         Row: {
           candidate_id: string
@@ -3059,9 +3137,12 @@ export type Database = {
           old_factor: number
           old_generation_id: string
           old_policy_enabled: boolean
+          old_policy_row: Json | null
           old_policy_version: string | null
           old_release_id: string
+          old_release_row: Json | null
           old_rule_notes: string | null
+          old_rule_row: Json | null
         }
         Insert: {
           candidate_id: string
@@ -3069,9 +3150,12 @@ export type Database = {
           old_factor: number
           old_generation_id: string
           old_policy_enabled: boolean
+          old_policy_row?: Json | null
           old_policy_version?: string | null
           old_release_id: string
+          old_release_row?: Json | null
           old_rule_notes?: string | null
+          old_rule_row?: Json | null
         }
         Update: {
           candidate_id?: string
@@ -3079,9 +3163,12 @@ export type Database = {
           old_factor?: number
           old_generation_id?: string
           old_policy_enabled?: boolean
+          old_policy_row?: Json | null
           old_policy_version?: string | null
           old_release_id?: string
+          old_release_row?: Json | null
           old_rule_notes?: string | null
+          old_rule_row?: Json | null
         }
         Relationships: [
           {
@@ -3111,8 +3198,10 @@ export type Database = {
         Row: {
           candidate_id: string
           old_currency: string
+          old_scale_row: Json | null
           old_source_field: string
           old_stock_qty: number
+          old_stock_row: Json | null
           old_stock_status: string
           old_unit_cost: number
           scale_id: string
@@ -3121,8 +3210,10 @@ export type Database = {
         Insert: {
           candidate_id: string
           old_currency: string
+          old_scale_row?: Json | null
           old_source_field: string
           old_stock_qty: number
+          old_stock_row?: Json | null
           old_stock_status: string
           old_unit_cost: number
           scale_id: string
@@ -3131,8 +3222,10 @@ export type Database = {
         Update: {
           candidate_id?: string
           old_currency?: string
+          old_scale_row?: Json | null
           old_source_field?: string
           old_stock_qty?: number
+          old_stock_row?: Json | null
           old_stock_status?: string
           old_unit_cost?: number
           scale_id?: string
@@ -3155,6 +3248,124 @@ export type Database = {
           },
           {
             foreignKeyName: "forpromotional_atomic_restore_rows_stock_id_fkey"
+            columns: ["stock_id"]
+            isOneToOne: false
+            referencedRelation: "producto_proveedor_stock"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forpromotional_atomic_variant_shadow: {
+        Row: {
+          api_occurrences: number
+          api_seen_at: string
+          candidate_id: string
+          categories: string[]
+          commercial_mode: string | null
+          control_data: Json
+          created_at: string
+          id: string
+          offer_id: string | null
+          product_id: string | null
+          provider_sku: string
+          publication_state: string
+          scale_id: string | null
+          source_field: string | null
+          stock_id: string | null
+          stock_qty: number | null
+          stock_status: string | null
+          subcategories: string[]
+          unit_cost: number | null
+          updated_at: string
+          variant_key: string
+          variant_sku: string
+        }
+        Insert: {
+          api_occurrences?: number
+          api_seen_at: string
+          candidate_id: string
+          categories?: string[]
+          commercial_mode?: string | null
+          control_data?: Json
+          created_at?: string
+          id?: string
+          offer_id?: string | null
+          product_id?: string | null
+          provider_sku: string
+          publication_state: string
+          scale_id?: string | null
+          source_field?: string | null
+          stock_id?: string | null
+          stock_qty?: number | null
+          stock_status?: string | null
+          subcategories?: string[]
+          unit_cost?: number | null
+          updated_at?: string
+          variant_key: string
+          variant_sku: string
+        }
+        Update: {
+          api_occurrences?: number
+          api_seen_at?: string
+          candidate_id?: string
+          categories?: string[]
+          commercial_mode?: string | null
+          control_data?: Json
+          created_at?: string
+          id?: string
+          offer_id?: string | null
+          product_id?: string | null
+          provider_sku?: string
+          publication_state?: string
+          scale_id?: string | null
+          source_field?: string | null
+          stock_id?: string | null
+          stock_qty?: number | null
+          stock_status?: string | null
+          subcategories?: string[]
+          unit_cost?: number | null
+          updated_at?: string
+          variant_key?: string
+          variant_sku?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forpromotional_atomic_variant_shadow_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "forpromotional_atomic_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forpromotional_atomic_variant_shadow_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "producto_proveedor_ofertas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forpromotional_atomic_variant_shadow_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "productos_b2b"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forpromotional_atomic_variant_shadow_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "productos_publicos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forpromotional_atomic_variant_shadow_scale_id_fkey"
+            columns: ["scale_id"]
+            isOneToOne: false
+            referencedRelation: "producto_precio_escalas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forpromotional_atomic_variant_shadow_stock_id_fkey"
             columns: ["stock_id"]
             isOneToOne: false
             referencedRelation: "producto_proveedor_stock"
@@ -6681,6 +6892,10 @@ export type Database = {
         Returns: Json
       }
       pe_forpromotional_cycle_rollback_v1: {
+        Args: { p_candidate_id: string }
+        Returns: Json
+      }
+      pe_forpromotional_reconcile_candidate_v1: {
         Args: { p_candidate_id: string }
         Returns: Json
       }

@@ -14,3 +14,6 @@ verify_jwt = false
 # private automatic-cycle flag is enabled in a separately authorized step.
 [functions.run-forpromotional-atomic-cycle-v1]
 verify_jwt = false
+
+[functions.pe-forpromotional-dry-run-admin]
+verify_jwt = true

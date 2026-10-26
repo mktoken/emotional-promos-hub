@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.pe-forpromotional-dry-run-admin]
 verify_jwt = true
+
+[functions.pe-g4-cost-audit-admin]
+verify_jwt = true

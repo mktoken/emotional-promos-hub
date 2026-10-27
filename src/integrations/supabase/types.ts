@@ -3549,6 +3549,39 @@ export type Database = {
         }
         Relationships: []
       }
+      pe_g4_public_quote_original_v1: {
+        Row: {
+          captured_at: string
+          original_definition: string
+          original_md5: string
+          original_owner: unknown
+          original_proacl: unknown[] | null
+          original_proconfig: string[] | null
+          singleton: boolean
+          wrapper_md5: string | null
+        }
+        Insert: {
+          captured_at?: string
+          original_definition: string
+          original_md5: string
+          original_owner: unknown
+          original_proacl?: unknown[] | null
+          original_proconfig?: string[] | null
+          singleton?: boolean
+          wrapper_md5?: string | null
+        }
+        Update: {
+          captured_at?: string
+          original_definition?: string
+          original_md5?: string
+          original_owner?: unknown
+          original_proacl?: unknown[] | null
+          original_proconfig?: string[] | null
+          singleton?: boolean
+          wrapper_md5?: string | null
+        }
+        Relationships: []
+      }
       pricing_policy_flags: {
         Row: {
           enabled: boolean
@@ -6754,6 +6787,88 @@ export type Database = {
       forpromotional_curve_price_v1: {
         Args: { p_cost: number; p_qmin: number; p_quantity: number }
         Returns: number
+      }
+      g4_calculate_product_price_v2_shadow_v1: {
+        Args: {
+          p_producto_b2b_id: string
+          p_quantity: number
+          p_rule_set_id: string
+        }
+        Returns: {
+          acquisition_scale_min_qty: number
+          acquisition_unit_cost: number
+          adjusted_unit_cost: number
+          applied_cost_factor: number
+          applied_level: number
+          applied_multiplier: number
+          applied_provider_code: string
+          applied_unit_cost: number
+          currency: string
+          is_valid_quantity: boolean
+          lower_valid_quantity: number
+          minimum_quantity: number
+          requested_quantity: number
+          source_oferta_id: string
+          status: string
+          subtotal_mxn: number
+          suggested: Json
+          tax_included: boolean
+          unit_price_mxn: number
+          upper_valid_quantity: number
+          warning_code: string
+        }[]
+      }
+      g4_get_public_product_price_quote_shadow_v1: {
+        Args: {
+          p_producto_b2b_id: string
+          p_quantity: number
+          p_rule_set_id: string
+        }
+        Returns: {
+          currency: string
+          is_valid_quantity: boolean
+          minimum_quantity: number
+          price_before_tax_mxn: number
+          public_price_status: string
+          requested_quantity: number
+          shadow_only: boolean
+          subtotal_before_tax_mxn: number
+        }[]
+      }
+      g4_is_controlled_pilot_sku_v1: {
+        Args: { p_provider_sku: string }
+        Returns: boolean
+      }
+      g4_progressive_curve_price_v1: {
+        Args: { p_cost: number; p_quantity: number }
+        Returns: number
+      }
+      g4_progressive_minimum_quantity_v1: {
+        Args: { p_cost: number; p_supplier_moq: number }
+        Returns: number
+      }
+      g4_progressive_price_v2_shadow_v1: {
+        Args: { p_cost: number; p_quantity: number; p_supplier_moq: number }
+        Returns: {
+          currency: string
+          minimum_quantity: number
+          shadow_only: boolean
+          status: string
+          subtotal_mxn: number
+          tax_included: boolean
+          unit_price_mxn: number
+          warning_code: string
+        }[]
+      }
+      g4_verified_price_evidence_v1: {
+        Args: {
+          p_audit_date: string
+          p_oferta_id: string
+          p_provider_id: string
+          p_provider_sku: string
+          p_unit_cost: number
+        }
+        Returns: boolean
       }
       get_catalog_subcategories_with_counts: {
         Args: { p_category_slug?: string; p_collection_slug?: string }

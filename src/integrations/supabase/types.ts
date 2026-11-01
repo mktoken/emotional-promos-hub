@@ -3373,6 +3373,181 @@ export type Database = {
           },
         ]
       }
+      g4_activation_original_functions_v1: {
+        Row: {
+          created_at: string
+          original_definition: string
+          original_md5: string
+          singleton: boolean
+        }
+        Insert: {
+          created_at?: string
+          original_definition: string
+          original_md5: string
+          singleton?: boolean
+        }
+        Update: {
+          created_at?: string
+          original_definition?: string
+          original_md5?: string
+          singleton?: boolean
+        }
+        Relationships: []
+      }
+      g4_price_generation_candidate_rows_v1: {
+        Row: {
+          acquisition_cost_mxn: number
+          calculation_version: string
+          candidate_id: string
+          created_at: string
+          currency: string
+          evidence_id: string
+          evidence_version_ref: string
+          id: string
+          minimum_quantity: number
+          observed_at: string
+          offer_id: string
+          product_id: string
+          provider_sku: string
+          source_document_id: string
+          source_document_sha256: string
+          subtotal_mxn: number
+          supplier_moq: number
+          tax_included: boolean
+          unit_price_mxn: number
+        }
+        Insert: {
+          acquisition_cost_mxn: number
+          calculation_version: string
+          candidate_id: string
+          created_at?: string
+          currency: string
+          evidence_id: string
+          evidence_version_ref: string
+          id?: string
+          minimum_quantity: number
+          observed_at: string
+          offer_id: string
+          product_id: string
+          provider_sku: string
+          source_document_id: string
+          source_document_sha256: string
+          subtotal_mxn: number
+          supplier_moq: number
+          tax_included?: boolean
+          unit_price_mxn: number
+        }
+        Update: {
+          acquisition_cost_mxn?: number
+          calculation_version?: string
+          candidate_id?: string
+          created_at?: string
+          currency?: string
+          evidence_id?: string
+          evidence_version_ref?: string
+          id?: string
+          minimum_quantity?: number
+          observed_at?: string
+          offer_id?: string
+          product_id?: string
+          provider_sku?: string
+          source_document_id?: string
+          source_document_sha256?: string
+          subtotal_mxn?: number
+          supplier_moq?: number
+          tax_included?: boolean
+          unit_price_mxn?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "g4_price_generation_candidate_rows_v1_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "g4_price_generation_candidates_v1"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "g4_price_generation_candidate_rows_v1_evidence_id_fkey"
+            columns: ["evidence_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_source_evidence"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "g4_price_generation_candidate_rows_v1_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "producto_proveedor_ofertas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "g4_price_generation_candidate_rows_v1_source_document_id_fkey"
+            columns: ["source_document_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_source_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      g4_price_generation_candidates_v1: {
+        Row: {
+          created_at: string
+          evidence_count: number
+          generation_key: string
+          global_release_generation_id: string | null
+          global_release_untouched: boolean
+          id: string
+          product_count: number
+          provider_code: string
+          public_generation_id: string | null
+          release_approved_at: string | null
+          release_approved_by: string | null
+          rule_set_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          evidence_count?: number
+          generation_key: string
+          global_release_generation_id?: string | null
+          global_release_untouched?: boolean
+          id?: string
+          product_count?: number
+          provider_code?: string
+          public_generation_id?: string | null
+          release_approved_at?: string | null
+          release_approved_by?: string | null
+          rule_set_id: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          evidence_count?: number
+          generation_key?: string
+          global_release_generation_id?: string | null
+          global_release_untouched?: boolean
+          id?: string
+          product_count?: number
+          provider_code?: string
+          public_generation_id?: string | null
+          release_approved_at?: string | null
+          release_approved_by?: string | null
+          rule_set_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "g4_price_generation_candidates_v1_rule_set_id_fkey"
+            columns: ["rule_set_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_rule_sets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       margin_tiers: {
         Row: {
           applies_to: string
@@ -6788,6 +6963,14 @@ export type Database = {
         Args: { p_cost: number; p_qmin: number; p_quantity: number }
         Returns: number
       }
+      g4_activate_candidate_v1: {
+        Args: { p_candidate_id: string }
+        Returns: string
+      }
+      g4_approve_candidate_v1: {
+        Args: { p_candidate_id: string }
+        Returns: string
+      }
       g4_calculate_product_price_v2_shadow_v1: {
         Args: {
           p_producto_b2b_id: string
@@ -6818,6 +7001,10 @@ export type Database = {
           warning_code: string
         }[]
       }
+      g4_evidence_bundle_version_v1: {
+        Args: { p_offer_id: string; p_provider_id: string; p_sku: string }
+        Returns: string
+      }
       g4_get_public_product_price_quote_shadow_v1: {
         Args: {
           p_producto_b2b_id: string
@@ -6838,6 +7025,26 @@ export type Database = {
       g4_is_controlled_pilot_sku_v1: {
         Args: { p_provider_sku: string }
         Returns: boolean
+      }
+      g4_materialize_price_generation_v1: {
+        Args: { p_candidate_id: string }
+        Returns: {
+          candidate_id: string
+          copied_row_count: number
+          generation_id: string
+          pilot_row_count: number
+          status: string
+        }[]
+      }
+      g4_prepare_price_generation_v1: {
+        Args: { p_generation_key: string; p_rule_set_id: string }
+        Returns: {
+          candidate_id: string
+          evidence_count: number
+          product_count: number
+          provider_code: string
+          status: string
+        }[]
       }
       g4_progressive_curve_price_v1: {
         Args: { p_cost: number; p_quantity: number }
@@ -6860,16 +7067,36 @@ export type Database = {
           warning_code: string
         }[]
       }
-      g4_verified_price_evidence_v1: {
-        Args: {
-          p_audit_date: string
-          p_oferta_id: string
-          p_provider_id: string
-          p_provider_sku: string
-          p_unit_cost: number
-        }
-        Returns: boolean
+      g4_rollback_candidate_v1: {
+        Args: { p_candidate_id: string }
+        Returns: string
       }
+      g4_verified_price_evidence_v1:
+        | {
+            Args: {
+              p_audit_date: string
+              p_oferta_id: string
+              p_provider_id: string
+              p_provider_sku: string
+              p_unit_cost: number
+            }
+            Returns: boolean
+          }
+        | {
+            Args: {
+              p_expected_cost: number
+              p_offer_id: string
+              p_provider_sku: string
+            }
+            Returns: {
+              evidence_id: string
+              observed_at: string
+              reason: string
+              source_document_id: string
+              source_document_sha256: string
+              verified: boolean
+            }[]
+          }
       get_catalog_subcategories_with_counts: {
         Args: { p_category_slug?: string; p_collection_slug?: string }
         Returns: {

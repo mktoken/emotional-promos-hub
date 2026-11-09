@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { readFile } from "node:fs/promises";
 import {
   createCaptureAssistantLeadHandler,
   createCloudflareTurnstileVerifier,
@@ -68,7 +69,7 @@ describe("assistant capture handler", () => {
   });
 
   it("wires activation to its own environment variable, not the Turnstile secret", async () => {
-    const entrypoint = await Bun.file(new URL("./index.ts", import.meta.url)).text();
+    const entrypoint = await readFile(new URL("./index.ts", import.meta.url), "utf8");
     expect(entrypoint).toMatch(/captureEnabled:\s*isAssistantCaptureEnabled\(Deno\.env\.get\("PE_ASSISTANT_CAPTURE_ENABLED"\)\)/);
     expect(entrypoint).not.toMatch(/captureEnabled:\s*[^,\n]*CLOUDFLARE_TURNSTILE_SECRET_KEY/);
   });
@@ -384,9 +385,10 @@ describe("assistant capture handler", () => {
   });
 
   it("keeps contact advisory locks before the transactional limit count", async () => {
-    const migration = await Bun.file(
+    const migration = await readFile(
       new URL("../../migrations/20261106150000_secure_public_assistant_lead_capture_v1.sql", import.meta.url),
-    ).text();
+      "utf8",
+    );
     const emailLock = migration.indexOf("PERFORM pg_catalog.pg_advisory_xact_lock(v_email_lock)");
     const phoneLock = migration.indexOf("PERFORM pg_catalog.pg_advisory_xact_lock(v_phone_lock)");
     const contactCount = migration.indexOf("SELECT count(*)::integer");
@@ -402,9 +404,10 @@ describe("assistant capture handler", () => {
   });
 
   it("removes all IP/cron dependencies while keeping the RPC private and insert-only", async () => {
-    const migration = await Bun.file(
+    const migration = await readFile(
       new URL("../../migrations/20261106150000_secure_public_assistant_lead_capture_v1.sql", import.meta.url),
-    ).text();
+      "utf8",
+    );
 
     expect(migration).not.toMatch(/p_client_ip|assistant_capture_private|assistant_lead_ip_events|cron\.(schedule|unschedule)|cf-connecting-ip|x-forwarded-for/i);
     expect(migration).not.toMatch(/UPDATE\s+public\.crm_leads|DELETE\s+FROM\s+public\.crm_leads/i);

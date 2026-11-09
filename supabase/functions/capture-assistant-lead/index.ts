@@ -37,7 +37,7 @@ const turnstileAllowedHostnames = new Set(
 Deno.serve(createCaptureAssistantLeadHandler({
   captureEnabled: isAssistantCaptureEnabled(Deno.env.get("PE_ASSISTANT_CAPTURE_ENABLED")),
   rpc: admin
-    ? (args) => admin.rpc("capture_assistant_lead_internal", args)
+    ? async (args) => await admin.rpc("capture_assistant_lead_internal", args)
     : null,
   turnstileVerifier,
   turnstileAllowedHostnames,

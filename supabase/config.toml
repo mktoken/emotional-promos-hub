@@ -20,3 +20,7 @@ verify_jwt = true
 
 [functions.pe-g4-cost-audit-admin]
 verify_jwt = true
+
+# Add this section to the verified destination config.toml; do not replace that file.
+[functions.capture-assistant-lead]
+verify_jwt = false

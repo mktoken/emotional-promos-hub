@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { X, Send, Loader2, CheckCircle2, AlertCircle, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,13 +15,152 @@ interface Props {
 
 type Phase = "chat" | "summary" | "success";
 
+type TurnstileRenderOptions = {
+  sitekey: string;
+  action: string;
+  language: string;
+  callback: (token: string) => void;
+  "expired-callback": () => void;
+  "error-callback": (errorCode: string) => boolean;
+  "timeout-callback": () => void;
+};
+
+type TurnstileApi = {
+  render: (container: HTMLElement, options: TurnstileRenderOptions) => string;
+  reset: (widgetId: string) => void;
+  remove: (widgetId: string) => void;
+};
+
+declare global {
+  interface Window {
+    turnstile?: TurnstileApi;
+  }
+}
+
+const TURNSTILE_ACTION = "assistant_lead_capture";
+let turnstileScriptLoad: Promise<void> | null = null;
+
+function loadTurnstileScript(): Promise<void> {
+  if (window.turnstile) return Promise.resolve();
+  if (turnstileScriptLoad) return turnstileScriptLoad;
+
+  turnstileScriptLoad = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      if (window.turnstile) resolve();
+      else {
+        turnstileScriptLoad = null;
+        reject(new Error("turnstile_api_unavailable"));
+      }
+    };
+    script.onerror = () => {
+      script.remove();
+      turnstileScriptLoad = null;
+      reject(new Error("turnstile_script_failed"));
+    };
+    document.head.appendChild(script);
+  });
+
+  return turnstileScriptLoad;
+}
+
+function TurnstileChallenge({
+  onTokenChange,
+  resetKey,
+}: {
+  onTokenChange: (token: string) => void;
+  resetKey: number;
+}) {
+  const siteKey = import.meta.env.VITE_CLOUDFLARE_TURNSTILE_SITE_KEY?.trim() ?? "";
+  const containerRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
+  const [status, setStatus] = useState<"loading" | "ready" | "unavailable">("loading");
+
+  useEffect(() => {
+    onTokenChange("");
+    if (!siteKey) {
+      setStatus("unavailable");
+      return;
+    }
+
+    let disposed = false;
+    let widgetId: string | null = null;
+    setStatus("loading");
+    void loadTurnstileScript().then(() => {
+      if (disposed || !containerRef.current || !window.turnstile) return;
+      widgetId = window.turnstile.render(containerRef.current, {
+        sitekey: siteKey,
+        action: TURNSTILE_ACTION,
+        language: "es",
+        callback: (token) => onTokenChange(token),
+        "expired-callback": () => {
+          onTokenChange("");
+          if (widgetId) window.turnstile?.reset(widgetId);
+        },
+        "error-callback": () => {
+          onTokenChange("");
+          setStatus("unavailable");
+          return true;
+        },
+        "timeout-callback": () => {
+          onTokenChange("");
+          if (widgetId) window.turnstile?.reset(widgetId);
+        },
+      });
+      widgetIdRef.current = widgetId;
+      setStatus("ready");
+    }).catch(() => {
+      if (!disposed) {
+        onTokenChange("");
+        setStatus("unavailable");
+      }
+    });
+
+    return () => {
+      disposed = true;
+      if (widgetId) window.turnstile?.remove(widgetId);
+      if (widgetIdRef.current === widgetId) widgetIdRef.current = null;
+    };
+  }, [onTokenChange, siteKey]);
+
+  useEffect(() => {
+    onTokenChange("");
+    if (!widgetIdRef.current || !window.turnstile) return;
+    try {
+      window.turnstile.reset(widgetIdRef.current);
+      setStatus("ready");
+    } catch {
+      setStatus("unavailable");
+    }
+  }, [onTokenChange, resetKey]);
+
+  return (
+    <div role="group" aria-label="Verificación de seguridad" className="flex flex-col items-center gap-1">
+      <div ref={containerRef} />
+      {status === "loading" && (
+        <p className="text-xs text-muted-foreground" role="status">Preparando verificación…</p>
+      )}
+      {status === "unavailable" && (
+        <p className="text-xs text-destructive" role="status">La verificación no está disponible. Inténtalo más tarde.</p>
+      )}
+    </div>
+  );
+}
+
 export default function AssistantPanel({ open, onClose }: Props) {
   const [stepIdx, setStepIdx] = useState(0);
   const [data, setData] = useState<CapturedData>({});
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [draft, setDraft] = useState("");
   const [phase, setPhase] = useState<Phase>("chat");
+  const [privacyConsent, setPrivacyConsent] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const honeypotRef = useRef<HTMLInputElement>(null);
   const { submit, loading, error, success, reset } = useAssistantLeadCapture();
 
   const step: Step | undefined = STEPS[stepIdx];
@@ -103,11 +243,19 @@ export default function AssistantPanel({ open, onClose }: Props) {
   }
 
   async function handleConfirmSend() {
-    const summary = buildSummary(data);
+    if (!privacyConsent || !turnstileToken) return;
     try {
-      await submit({ captured: data, summary, messages });
+      await submit({
+        captured: data,
+        messages,
+        privacyConsent,
+        honeypot: honeypotRef.current?.value ?? "",
+        turnstileToken,
+      });
       setPhase("success");
     } catch {
+      setTurnstileToken("");
+      setTurnstileResetKey((key) => key + 1);
       // error displayed below
     }
   }
@@ -118,11 +266,17 @@ export default function AssistantPanel({ open, onClose }: Props) {
     setMessages([]);
     setDraft("");
     setPhase("chat");
+    setPrivacyConsent(false);
+    setTurnstileToken("");
+    setTurnstileResetKey((key) => key + 1);
+    if (honeypotRef.current) honeypotRef.current.value = "";
     reset();
   }
 
   function handleBack() {
     if (phase === "summary") {
+      setTurnstileToken("");
+      setTurnstileResetKey((key) => key + 1);
       setPhase("chat");
       return;
     }
@@ -207,22 +361,7 @@ export default function AssistantPanel({ open, onClose }: Props) {
               <AlertCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
               <div className="space-y-1 min-w-0">
                 <p className="font-bold">No se pudo registrar la solicitud</p>
-                {error.stage && (
-                  <p>
-                    <span className="font-semibold">Etapa:</span> {error.stage}
-                  </p>
-                )}
-                {error.error && (
-                  <p className="break-words">
-                    <span className="font-semibold">Error:</span> {error.error}
-                  </p>
-                )}
-                {error.details && (
-                  <p className="break-words opacity-80">
-                    <span className="font-semibold">Detalles:</span> {error.details}
-                  </p>
-                )}
-                {!error.stage && !error.error && <p className="break-words">{error.message}</p>}
+                <p className="break-words">{error.message}</p>
               </div>
             </div>
           )}
@@ -244,14 +383,39 @@ export default function AssistantPanel({ open, onClose }: Props) {
 
           {phase === "summary" && (
             <div className="space-y-2">
+              <input
+                ref={honeypotRef}
+                type="text"
+                name="website"
+                autoComplete="off"
+                tabIndex={-1}
+                aria-hidden="true"
+                className="absolute -left-[10000px] h-px w-px opacity-0"
+              />
+              <label className="flex items-start gap-2 text-xs leading-relaxed">
+                <input
+                  type="checkbox"
+                  checked={privacyConsent}
+                  onChange={(event) => setPrivacyConsent(event.target.checked)}
+                  disabled={loading || success}
+                  className="mt-0.5"
+                />
+                <span>
+                  He leído el <Link to="/aviso-de-privacidad" target="_blank" rel="noreferrer" className="font-semibold text-primary underline">Aviso de Privacidad</Link> y autorizo el uso de mis datos para revisar esta solicitud y contactarme sobre ella.
+                </span>
+              </label>
               <p className="text-xs text-center text-muted-foreground">
                 ¿Deseas que un asesor te contacte con esta información?
               </p>
+              <TurnstileChallenge
+                onTokenChange={setTurnstileToken}
+                resetKey={turnstileResetKey}
+              />
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="outline" onClick={handleBack} disabled={loading}>
                   Editar
                 </Button>
-                <Button onClick={handleConfirmSend} disabled={loading || success}>
+                <Button onClick={handleConfirmSend} disabled={loading || success || !privacyConsent || !turnstileToken}>
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Enviando…

@@ -197,7 +197,7 @@ export default function AssistantPanel({ open, onClose }: Props) {
               <CheckCircle2 className="w-12 h-12 text-primary mx-auto mb-3" />
               <p className="font-bold">¡Gracias! Recibimos tu solicitud.</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Un asesor te contactará por WhatsApp o email muy pronto.
+                Revisaremos tu solicitud y usaremos los datos proporcionados para contactarte
               </p>
             </div>
           )}

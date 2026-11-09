@@ -21,6 +21,10 @@ El registro de especialistas es una capa de enrutamiento y plantillas de rol. No
 - No reabrir componentes, contratos o datos certificados sin evidencia concreta de regresión.
 - No modificar producción, Supabase, Lovable, GitHub, CRM, pricing, stock, proveedores, catálogo o imágenes sin autorización explícita y específica.
 
+## Pre-flight obligatorio PE-OPS-001 (D-037)
+
+Todo agente, especialista y nueva sesión, antes de auditar, probar, reparar, integrar, desarrollar o gastar créditos, debe acreditar con evidencia que es la siguiente acción de mayor valor frente al backlog: riesgo/beneficio, por qué ahora, efecto de posponer, entregable verificable, costo/créditos, responsable/entorno, criterio de cierre y dictamen GO/NO-GO/CONDICIONADO. Sin ello: NO-GO o POSPONER. Excepción: riesgo crítico demostrado de seguridad, privacidad, datos, integridad de precios o continuidad. Objetar al propietario cuando la evidencia lo exija. Regla completa: `docs/07_OPERATIONS_ROADMAP.md`.
+
 ## Enrutamiento automático
 
 Al recibir una tarea, identificar primero el dominio, elegir un único perfil líder del registro y añadir solo los perfiles de apoyo imprescindibles. Los perfiles no seleccionados permanecen inactivos.

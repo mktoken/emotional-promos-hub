@@ -15,6 +15,19 @@ Reglas permanentes:
 - P2 y posteriores no bloquean P0 salvo dependencia real;
 - cada corrección sigue Construir → Validar → Documentar → Cerrar subcheckpoint → Commit/push → Verificar sincronización.
 
+### Regla vinculante PE-OPS-001 — prioridad comparativa (D-037, 2026-11-09)
+
+Complementa OPERACIÓN PRIMERO; no sustituye fases ni prioridades.
+
+- Toda auditoría, prueba, reparación, integración, desarrollo, gasto o actividad debe demostrar **antes**, con evidencia, por qué es la siguiente acción de mayor valor frente a las alternativas del backlog.
+- Requisitos: (a) riesgo o beneficio concreto; (b) por qué ahora; (c) efecto demostrable de posponer; (d) entregable funcional verificable o decisión desbloqueada; (e) costo, recursos y créditos; (f) criterio de cierre único; (g) responsable y entorno; (h) dictamen GO / NO-GO / CONDICIONADO.
+- Sin prioridad comparativa acreditada: **NO-GO o POSPONER**.
+- Excepción proporcionada: seguridad, privacidad, datos, integridad de precios/financiera y continuidad ante riesgo crítico demostrado, aunque no genere ventas inmediatas.
+- Auditorías solo si cambian una decisión o reducen un riesgo material; no encadenarlas ni reabrir cierres sin evidencia nueva.
+- Estados: PROPUESTO → DESARROLLADO → INSTALADO → VERIFICADO. El avance se mide por capacidad útil verificada y resultados operativos, no por documentos, prompts o commits.
+- La dirección debe objetar al propietario o a los especialistas cuando la evidencia lo exige.
+- Se aplican las escalas P0/P1/P2 y R0/R1/R2 existentes.
+
 ## Prioridades
 
 | Prioridad | Frente | Estado de alcance |

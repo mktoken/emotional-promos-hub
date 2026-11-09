@@ -1,5 +1,9 @@
 # ESTADO MAESTRO — EMOTIONAL PROMOS HUB
 
+## PE-OPS-001 — Política de prioridad comparativa (D-037, vigente desde 2026-11-09)
+
+Adoptada por aprobación expresa del propietario. Toda iniciativa requiere prioridad comparativa acreditada antes de ejecutarse; sin ella es NO-GO o POSPONER. Regla en `docs/07_OPERATIONS_ROADMAP.md`; decisión en `docs/02_DECISION_LOG.md`; pre-flight en `AGENTS.md`. No modifica hechos anteriores de este documento.
+
 ## PE QUALITY GOVERNANCE BUILD 01 — referencia documental
 
 La gobernanza permanente G01–G06 está definida en

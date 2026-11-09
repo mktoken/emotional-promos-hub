@@ -414,6 +414,8 @@ Esos cambios fueron revertidos o excluidos del resultado funcional de Fase 3. Es
 
 `CHK-BRAND-WEB-1 — REDEFINICIÓN DE MARCA, COMUNICACIÓN Y EXPERIENCIA WEB` queda **PENDIENTE** como requisito previo al lanzamiento público. La plataforma puede utilizarse comercialmente de forma controlada desde la baseline operativa aprobada, pero no deben iniciarse promoción activa, campañas de adquisición ni un escalamiento significativo de tráfico hacia `articulospromocionales.vip` hasta cerrar este checkpoint.
 
+**CONTACTO FOOTER OWNER CONFIRMED 2026-11-09** — Atestación del propietario registrada en `docs/brand-web/CLAIMS_GATE_V1.md`; `CHK-BRAND-WEB-1` sigue **ABIERTO** hasta publicación y verificación selectiva del dominio.
+
 El gate debe aprobar, como mínimo:
 
 - posicionamiento, propuesta de valor y mensajes principales;

@@ -69,7 +69,7 @@ La presencia de un dato en la Home actual no constituye evidencia. Un reporte hi
 | Inventario enlazado en tiempo real con importadores | DO NOT USE | Sincronización y frescura por proveedor no comprobadas | Consulta el catálogo; disponibilidad por confirmar | Retirar del catálogo |
 | Entrega estimada 10 a 15 días | NEEDS VERIFICATION | Valor fijo en ficha sin contrato vigente general | Fecha por confirmar | Auditar origen y aplicabilidad antes de publicar |
 | Un asesor te contactará muy pronto | DO NOT USE | “Muy pronto” es un SLA implícito no medido | Revisaremos tu solicitud y usaremos los datos proporcionados para contactarte | Cambiar copy del estado de éxito |
-| Dirección, teléfono y correo del Footer | NEEDS VERIFICATION | Son visibles en producción, pero no se encontró validación canónica actual para republicación | Datos de contacto verificados | Confirmar identidad legal, vigencia y canal responsable |
+| Dirección, teléfono y correo del Footer | OWNER VERIFIED — 2026-11-09 | Atestación expresa del propietario Neguib Wejebe en esta conversación, PE-LAUNCH-03 (2026-11-09); datos confirmados tal como publicados en `src/pages/Index.tsx` | Sede operativa Av. Lomas Verdes 825, Centro Comercial Heliplaza, Loc. 213E, Naucalpan, Edomex, C.P. 53125; teléfono 55 3031 1686 para llamadas y WhatsApp; email promocionalesemocionales@gmail.com | Validación limitada a estos datos de contacto; no certifica atención 24/7, SLA, monitoreo continuo del correo ni revisión legal integral; sede operativa, no domicilio fiscal/legal |
 
 ## 5. Reglas de publicación
 

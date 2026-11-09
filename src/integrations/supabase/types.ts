@@ -7076,6 +7076,21 @@ export type Database = {
       can_access_deal: { Args: { _deal_id: string }; Returns: boolean }
       can_access_lead: { Args: { _lead_id: string }; Returns: boolean }
       can_manage_formal_quote: { Args: { _quote_id: string }; Returns: boolean }
+      capture_assistant_lead_internal: {
+        Args: {
+          p_budget_range: string
+          p_captured: Json
+          p_messages: Json
+          p_next_follow_up_at: string
+          p_privacy_consent: boolean
+          p_request_fingerprint: string
+          p_request_id: string
+          p_summary: string
+        }
+        Returns: {
+          result: string
+        }[]
+      }
       catalog_governance_admin_dashboard_v1: { Args: never; Returns: Json }
       catalog_governance_admin_detail_v1: {
         Args: { p_producto_b2b_id: string }
